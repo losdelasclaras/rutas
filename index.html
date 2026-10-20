@@ -254,11 +254,15 @@ html,body{height:100%;margin:0}
     <section class="view pad" id="v-cumbres" hidden><div class="inner">
       <h1 class="vt">Tus cumbres</h1>
       <p class="lead">Marca las que ya has subido y las que quieres subir. Desde cada una puedes ir a su ruta.</p>
+      <div id="colh-cumbres"></div>
+      <input class="search" id="qs-cumbres" type="search" placeholder="Busca una cumbre…" autocomplete="off" style="margin:4px 0 6px">
       <div id="col-cumbres"></div>
     </div></section>
     <section class="view pad" id="v-lugares" hidden><div class="inner">
       <h1 class="vt">Tus lugares</h1>
       <p class="lead">Brañas, foces, lagos, cascadas y otros rincones de tus rutas. Ve marcando dónde has estado y adónde quieres ir.</p>
+      <div id="colh-lugares"></div>
+      <input class="search" id="qs-lugares" type="search" placeholder="Busca un lugar: braña, lago, refugio…" autocomplete="off" style="margin:4px 0 6px">
       <div id="col-lugares"></div>
     </div></section>
   </main>
@@ -412,6 +416,11 @@ const fmtKm=v=>v.toLocaleString("es-ES",{maximumFractionDigits:1})+" km";
 const thumbHTML=r=>r.f!=null?`<img class="thumb" src="fotos/${r.f}.jpg" alt="" loading="lazy">`:`<span class="thumb none" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20l7-12 4 6 3-4 6 10z"/></svg></span>`;
 function rowHTML(r,extra,compact){const nums=[r.km?fmtKm(r.km):"",r.de?"+"+r.de.toLocaleString("es-ES")+" m":""].filter(Boolean).join(" · ");
  return `<button class="row${compact?" compact":""}" data-r="${r.id}">${compact?"":thumbHTML(r)}<div class="t"><b>${esc(routeTitle(r))}</b><span>${r.iv?`<i class="ivm" style="font-style:normal">❄ Invernal</i> · `:""}${r.y?(r.m?MESES[r.m]+" ":"")+r.y:"Sin fecha"} · ${esc(r.r)}${extra?" · "+extra:""}</span></div><span class="alt">${nums||fmtA(r.a)}</span></button>`}
+// boletines de montaña de AEMET por zona
+function aemetZone(lat,lon){
+  if(lat>42.95&&lat<43.4&&lon>-5.25&&lon<-4.45)return["peu1","Picos de Europa"];
+  if(lat>42.4&&lat<43.1&&lon>-1.6&&lon<3.3){if(lon<-0.74)return["nav1","Pirineo navarro"];if(lon<0.72)return["arn1","Pirineo aragonés"];return["cat1","Pirineo catalán"]}
+  return null}
 function openRoute(ri,pi){
   const wasFull=sheet.classList.contains("full")&&!sheet.hidden; sheet.classList.remove("full");
   ensureZone(zoneOf(ri!=null?R[ri].r:P[pi].r));
@@ -432,6 +441,8 @@ function openRoute(ri,pi){
   ${r.sal?`<p class="salida">Salida: ${esc(r.sal.replace(/\s*↗$/,""))}${r.zo?" · "+esc(r.zo):""}</p>`:""}
   <div class="actions">${r.u?`<a class="btn primary" href="${esc(r.u)}" target="_blank" rel="noopener">Leer la ruta en el blog</a>`:""}
   ${r.wk?`<a class="btn ghost" href="${esc(r.wk)}" target="_blank" rel="noopener">Track en Wikiloc</a>`:""}<a class="btn ghost" href="https://www.google.com/maps/search/?api=1&query=${hi.lat},${hi.lon}" target="_blank" rel="noopener">Google Maps</a></div>
+  <div class="sec"><h3>El tiempo</h3><p class="note" style="margin-bottom:6px">Previsión para ${esc(hi.c)}${hi.a?" ("+fmtA(hi.a)+")":""}.</p>
+  <div class="actions" style="margin-top:0"><a class="btn ghost" href="https://www.windy.com/${hi.lat.toFixed(3)}/${hi.lon.toFixed(3)}?${hi.lat.toFixed(3)},${hi.lon.toFixed(3)},12" target="_blank" rel="noopener">☁ Previsión en el punto (Windy)</a>${aemetZone(hi.lat,hi.lon)?`<a class="btn ghost" href="https://www.aemet.es/es/eltiempo/prediccion/montana?w=&p=${aemetZone(hi.lat,hi.lon)[0]}" target="_blank" rel="noopener">AEMET montaña · ${aemetZone(hi.lat,hi.lon)[1]}</a>`:""}</div></div>
   ${r.tk?`<div class="sec"><h3>Recorrido</h3><p class="note">Track de tu mapa: ${fmtKm(r.tkm)} · punto más alto ${fmtA(r.a)}. Está dibujado en el mapa.</p></div>`:""}
   ${pts.some(p=>!p.x)?`<div class="sec"><h3>Lugares en el mapa</h3><ul class="plist">${pts.filter(p=>!p.x).map(p=>`<li>${ICO(p.cat)}<span class="n">${esc(p.c)}</span><span class="a">${fmtA(p.a)}</span></li>`).join("")}</ul></div>`:""}
   ${near.length?`<div class="near"><h3>Otras rutas por la zona</h3><div class="rows">${near.map(x=>rowHTML(x.r,x.d.toFixed(0)+" km")).join("")}</div></div>`:""}`;
@@ -538,23 +549,27 @@ const BANDS=[["todas","Todas"],["2000","+2.000 m"],["1500","1.500–2.000"],["0"
 function bandOk(p,g){return g==="todas"||(g==="3000"&&p.a>=3000)||(g==="2000"&&p.a>=2000)||(g==="1500"&&p.a>=1500&&p.a<2000)||(g==="0"&&p.a<1500)||(g==="techo"&&p.techo)}
 function renderCol(kind){const C=COL[kind];
   const zc=Object.keys(ZONES).map(z=>[z,C.all.filter(p=>zoneOf(p.r)===z).length]);
-  C.items=C.all.filter(p=>zoneOf(p.r)===C.z);const key=p=>C.pre+norm(p.c);const st=p=>MARKS[key(p)]||"";
-  const nd=C.items.filter(p=>st(p)==="hecha").length,nq=C.items.filter(p=>st(p)==="quiero").length;
+  const qs=nk(document.getElementById("qs-"+kind).value||"");
+  const ZI=C.all.filter(p=>zoneOf(p.r)===C.z);
+  C.items=qs?ZI.filter(p=>nk(p.c).includes(qs)):ZI;const key=p=>C.pre+norm(p.c);const st=p=>MARKS[key(p)]||"";
+  const nd=ZI.filter(p=>st(p)==="hecha").length,nq=ZI.filter(p=>st(p)==="quiero").length;
   const groups=kind==="cumbres"?(C.z==="cant"?BANDS:[["todas","Todas"],["3000","+3.000 m"],["2000","+2.000 m"],["1500","1.500–2.000"],["0","Menos de 1.500"]]):[["todas","Todos"],...CATS.map(([k,l])=>[k,l]).filter(([k])=>C.items.some(p=>p.cat===k)),...(C.items.some(p=>p.cat==="otros")?[["otros","Otros"]]:[])];
   const list=C.items.filter(p=>(kind==="cumbres"?bandOk(p,C.g):(C.g==="todas"||p.cat===C.g))&&(C.f==="todas"||(C.f==="hecha"&&st(p)==="hecha")||(C.f==="quiero"&&st(p)==="quiero")||(C.f==="nada"&&!st(p))));
-  document.getElementById(C.el).innerHTML=`
-  <div class="colhead"><div class="prog"><i style="width:${(C.items.length?nd/C.items.length*100:0).toFixed(1)}%"></i></div>
+  const HTML=`
+  <div class="colhead"><div class="prog"><i style="width:${(ZI.length?nd/ZI.length*100:0).toFixed(1)}%"></i></div>
    <div class="sync"><button class="linkbtn" data-exp>Copiar mis marcas</button><button class="linkbtn" data-imp>Pegar marcas de otro móvil</button></div>
-   <p class="note"><b>${nd}</b> de ${C.items.length} ${kind==="cumbres"?"subidas":"visitados"} · <b>${nq}</b> en tu lista de pendientes</p></div>
+   <p class="note"><b>${nd}</b> de ${ZI.length} ${kind==="cumbres"?"subidas":"visitados"} · <b>${nq}</b> en tu lista de pendientes</p></div>
   ${zc.filter(x=>x[1]).length>1?`<div class="chips" data-k="${kind}" data-grp="z">${zc.filter(x=>x[1]).map(([z,n])=>`<button class="chip" data-v="${z}" aria-pressed="${C.z===z}">${ZONES[z].n} · ${n}</button>`).join("")}</div>`:""}
   <div class="chips" data-k="${kind}" data-grp="f">${[["todas","Todas"],["hecha",C.done],["quiero",C.want],["nada","Sin marcar"]].map(([v,l])=>`<button class="chip" data-v="${v}" aria-pressed="${C.f===v}">${l}</button>`).join("")}</div>
   <div class="chips" data-k="${kind}" data-grp="g">${groups.map(([v,l])=>`<button class="chip" data-v="${v}" aria-pressed="${C.g===v}">${l}</button>`).join("")}</div>
   <div class="rows">${list.length?list.map(p=>{const s=st(p);const ri=(P[p.i].rs||[])[0];
     return `<div class="row crow${s?" is-"+s:""}">${ICO(kind==="cumbres"?"cumbre":p.cat)}<div class="t"><b>${esc(p.c)}</b><span>${kind==="cumbres"?esc(p.r)+(p.techo?" · Techo de "+esc(p.techo):""):esc((CATS.find(c=>c[0]===p.cat)||[,"Otros"])[1])+" · "+esc(p.r)}</span></div>
     ${p.a?`<span class="alt">${fmtA(p.a)}</span>`:""}
-    <span class="mk" data-k="${kind}" data-key="${esc(key(p))}"><button data-m="hecha" aria-pressed="${s==="hecha"}" title="${C.done}">✓ <span>${C.done}</span></button><button data-m="quiero" aria-pressed="${s==="quiero"}" title="${C.want}">★ <span>${C.want}</span></button>${ri!=null?`<button data-go="${ri}" data-pt="${p.i}" title="Ver la ruta">Ruta</button>`:""}</span></div>`}).join(""):`<p class="empty">No hay ${kind} con ese filtro.</p>`}</div>`}
+    <span class="mk" data-k="${kind}" data-key="${esc(key(p))}"><button data-m="hecha" aria-pressed="${s==="hecha"}" title="${C.done}">✓ <span>${C.done}</span></button><button data-m="quiero" aria-pressed="${s==="quiero"}" title="${C.want}">★ <span>${C.want}</span></button>${ri!=null?`<button data-go="${ri}" data-pt="${p.i}" title="Ver la ruta">Ruta</button>`:""}</span></div>`}).join(""):`<p class="empty">No hay ${kind} con ese filtro.</p>`}</div>`;
+  const cut=HTML.indexOf('<div class="rows">');document.getElementById("colh-"+kind).innerHTML=HTML.slice(0,cut);document.getElementById(C.el).innerHTML=HTML.slice(cut)}
 function renderCols(){renderCol("cumbres");renderCol("lugares")}
-for(const kind of ["cumbres","lugares"]){document.getElementById(COL[kind].el).addEventListener("click",e=>{
+for(const kind of ["cumbres","lugares"]){const q=document.getElementById("qs-"+kind);q.addEventListener("input",()=>renderCol(kind));q.addEventListener("focus",()=>setTimeout(()=>q.scrollIntoView({block:"start",behavior:"smooth"}),250))}
+for(const kind of ["cumbres","lugares"]){document.getElementById("v-"+kind).addEventListener("click",e=>{
   const ch=e.target.closest(".chips[data-k] [data-v]");if(ch){const grp=ch.parentElement.dataset.grp;COL[kind][grp]=ch.dataset.v;if(grp==="z")COL[kind].g="todas";renderCol(kind);return}
   if(e.target.closest("[data-exp]")){const code="LDC1:"+btoa(unescape(encodeURIComponent(JSON.stringify(MARKS))));(navigator.clipboard?navigator.clipboard.writeText(code):Promise.reject()).then(()=>alert("Copiado. En el otro móvil, abre la app y pulsa «Pegar marcas de otro móvil»."),()=>prompt("Copia este código:",code));return}
   if(e.target.closest("[data-imp]")){const code=prompt("Pega aquí el código de tus marcas:");if(!code)return;try{const v=JSON.parse(decodeURIComponent(escape(atob(code.trim().replace(/^LDC1:/,"")))));Object.assign(MARKS,v);saveMarks();renderCols();alert("Marcas añadidas.")}catch(err){alert("Ese código no es válido.")}return}
