@@ -86,10 +86,12 @@ nav.tabs button:focus-visible,.chip:focus-visible,.btn:focus-visible,.row:focus-
 select.chip{appearance:none;padding-right:26px;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 14px) 52%,calc(100% - 9px) 52%;background-size:5px 5px;background-repeat:no-repeat}
 .fabs{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
 .wizbtn{width:100%;justify-content:center;font-size:17px;padding:14px;margin:4px 0 12px}
+.wiz[hidden]{display:none}
 .wiz{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center}
 .wiz .card{background:var(--card);width:100%;max-width:560px;max-height:92%;overflow:auto;border-radius:16px 16px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) 22px max(16px,env(safe-area-inset-left,0px));zoom:var(--fs)}
 @media (min-width:700px){.wiz{align-items:center}.wiz .card{border-radius:16px}}
 .wiz h2{font-family:var(--f-display);font-size:24px;margin:0 0 4px}.wiz .q{font-weight:700;margin:14px 0 8px}.wiz .opts{display:flex;flex-wrap:wrap;gap:8px}.wiz .opts .chip{font-size:15px;padding:9px 14px}
+.wzban{background:var(--card);border:2px solid var(--mark);border-radius:14px;padding:12px 14px;margin:0 0 10px;display:flex;flex-direction:column;gap:6px}.wzban b{font-size:17px}.oldh{margin:22px 0 4px;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.06);font-size:15px}
 .wiz .foot{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
 .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:14.5px}
 .btn.primary{background:var(--mark);color:var(--mark-ink)}
@@ -246,6 +248,7 @@ html,body{height:100%;margin:0}
       </div>
       <div class="fabs">
         <button class="btn ghost" id="b-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Ver todo</button>
+        <button class="btn primary" id="b-wiz2">🧭 ¿Qué ruta hago?</button>
         <button class="btn ghost" id="b-me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 19-7-4-7 4z"/></svg>Dónde estoy</button>
         <button class="btn primary" id="b-near"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Rutas cerca de…</button>
       </div>
@@ -323,13 +326,13 @@ R.forEach(r=>{const s=new Set();const ttl=(r.ti||r.t||"")+" ";
   for(const k in PRE)if(PRE[k].test(ttl))s.add(k);
   r.pa=[...s]});
 const years=[...new Set(R.map(r=>r.y).filter(Boolean))].sort((a,b)=>b-a);
-const F={reg:"todas",year:"todos",km:"",de:"",ex:"",co:"",nw:"",iv:"",pa:""};
+const F={reg:"todas",year:"todos",km:"",de:"",ex:"",co:"",nw:"",iv:"",pa:"",wz:null};
 const DIFN={"baja":"Baja","moderada":"Moderada","alta":"Alta","muy-alta":"Muy alta"};
 const KM={a:[0,10],b:[10,15],c:[15,20],d:[20,999]}, DE={a:[0,600],b:[600,1000],c:[1000,1500],d:[1500,9999]};
 const inR=(v,rg)=>v!=null&&v>=rg[0]&&v<rg[1];
-function routeOk(r){return (F.reg==="todas"||r.r===F.reg||(r.rs||[]).includes(F.reg))&&(!F.pa||(r.pa||[]).includes(F.pa))&&(!F.iv||(F.iv==="si"?r.iv:!r.iv))&&(F.year==="todos"||String(r.y)===F.year)
+function routeOk(r){return (!F.wz||F.wz.ids.has(r.id))&&(F.reg==="todas"||r.r===F.reg||(r.rs||[]).includes(F.reg))&&(!F.pa||(r.pa||[]).includes(F.pa))&&(!F.iv||(F.iv==="si"?r.iv:!r.iv))&&(F.year==="todos"||String(r.y)===F.year)
   &&(!F.km||inR(r.km,KM[F.km]))&&(!F.de||inR(r.de,DE[F.de]))&&(!F.ex||r.dl===F.ex)&&(!F.co||(r.co||[]).includes(F.co))&&(!F.nw||(F.nw==="nw"?r.nw:!r.nw))}
-const nExtra=()=>["year","km","de","ex","co","nw","iv","pa"].filter(k=>F[k]&&F[k]!=="todos").length;
+const nExtra=()=>["year","km","de","ex","co","nw","iv","pa","wz"].filter(k=>F[k]&&F[k]!=="todos").length;
 const mapbar=document.getElementById("mapbar");
 function renderMapbar(){const n=nExtra()+(F.reg!=="todas"?1:0);
  mapbar.innerHTML=Object.entries(ZONES).map(([z,o])=>`<button class="chip" data-zone="${z}" aria-pressed="${ZK===z}">${o.n}</button>`).join("")+
@@ -353,7 +356,7 @@ function renderFilters(){
   ${nExtra()||F.reg!=="todas"?`<button class="linkbtn" data-clear>Quitar todos los filtros</button>`:""}`;
 }
 document.getElementById("filters").addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(b){F[b.dataset.f]=b.dataset.v;if(b.dataset.f==="reg"&&b.dataset.v!=="todas")ensureZone(zoneOf(b.dataset.v));applyFilter();return}
-  if(e.target.closest("[data-clear]")){Object.assign(F,{reg:"todas",year:"todos",km:"",de:"",ex:"",co:"",nw:"",iv:"",pa:""});applyFilter()}});
+  if(e.target.closest("[data-clear]")){Object.assign(F,{reg:"todas",year:"todos",km:"",de:"",ex:"",co:"",nw:"",iv:"",pa:"",wz:null});applyFilter()}});
 document.getElementById("filters").addEventListener("change",e=>{if(e.target.id==="fco"){F.co=e.target.value;applyFilter()}if(e.target.id==="fy"){F.year=e.target.value;applyFilter()}});
 
 /* ---------- map (Leaflet, mapa topográfico) ---------- */
@@ -477,12 +480,16 @@ function wizClick(e){const el=document.getElementById("wiz");
     if(c.dataset.wk==="zona"&&c.dataset.wv==="cerca"&&!WZ.geo){const m=document.getElementById("wizgeo");m.textContent="Buscando tu ubicación…";
       if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{WZ.geo={lat:p.coords.latitude,lon:p.coords.longitude};m.textContent="Ubicación encontrada: rutas a menos de 40 km."},()=>{m.textContent="No he podido saber dónde estás; elige una zona.";WZ.zona=""; wizRender(1)},{timeout:10000,maximumAge:600000});else m.textContent="Este navegador no da la ubicación; elige una zona."}
     el.querySelectorAll(`[data-wk="${c.dataset.wk}"]`).forEach(b=>b.setAttribute("aria-pressed",b===c));return}
-  if(e.target.closest("[data-wgo]")){WZ.seen.clear();wizRender(2);return}
+  if(e.target.closest("[data-wgo]")){const ids=new Set(wizPool().map(x=>x.r.id));
+    const lab=[ZOP.find(o=>o[0]===WZ.zona),EOP.find(o=>o[0]===WZ.esf),PAIS.find(o=>o[0]===WZ.pa)].filter(o=>o&&o[0]).map(o=>o[1].replace("📍 ","")).join(" · ")||"Cualquier ruta";
+    Object.assign(F,{reg:"todas",year:"todos",km:"",de:"",ex:"",co:"",nw:"",iv:"",pa:"",wz:{ids,label:lab}});q.value="";el.hidden=true;showView("rutas");applyFilter();
+    document.getElementById("fbox").open=false;document.getElementById("v-rutas").scrollTop=0;window.scrollTo(0,0);return}
   if(e.target.closest("[data-wmore]")){wizRender(2);el.querySelector(".card").scrollTop=0;return}
   if(e.target.closest("[data-wback]")){wizRender(1);return}
   if(e.target.closest("[data-wall]")){Object.assign(F,{reg:WZ.zona&&WZ.zona!=="cerca"&&WZ.zona!=="Alpes"?WZ.zona:"todas",pa:WZ.pa});el.hidden=true;showView("rutas");applyFilter();document.getElementById("fbox").open=true;return}
   const row=e.target.closest("[data-r]");if(row){el.hidden=true;const r=R[+row.dataset.r];showView("mapa");openRoute(r.id);setTimeout(()=>flyTo(r.lat,r.lon,8),60)}}
 document.getElementById("b-wiz").addEventListener("click",()=>wizOpen(1));
+document.getElementById("b-wiz2").addEventListener("click",()=>wizOpen(1));
 // boletines de montaña de AEMET por zona
 function aemetZone(lat,lon){
   if(lat>42.95&&lat<43.4&&lon>-5.25&&lon<-4.45)return["peu1","Picos de Europa"];
@@ -591,10 +598,13 @@ function renderList(){
   const rs=R.filter(r=>r.u&&routeOk(r)&&(!s||norm((r.ti||"")+" "+r.p.map(i=>P[i].n).join(" ")+" "+r.r+" "+(r.sal||"")+" "+(r.zo||"")+" "+(r.co||[]).join(" ")).includes(s)));
   rs.sort(byDate);const by={};rs.forEach(r=>{(by[r.y||"Sin fecha"] ||= []).push(r)});
   const keys=Object.keys(by).sort((a,b)=>(+b||0)-(+a||0));
-  const cnt=`<p class="count">${rs.length} ${rs.length===1?"ruta":"rutas"}${(F.km||F.de)?" · solo las que tienen distancia y desnivel en la ficha":""}</p>`;
-  document.getElementById("list").innerHTML=cnt+(keys.length?keys.map(y=>`<h2 class="yearh">${y}<small>${by[y].length} ${by[y].length===1?"ruta":"rutas"}</small></h2><div class="rows">${by[y].map(r=>rowHTML(r)).join("")}</div>`).join(""):`<p class="empty">No hay rutas con esa búsqueda y esos filtros.</p>`);
+  const cut=new Date().getFullYear()-6, nRec=rs.filter(r=>(r.y||0)>=cut).length;
+  const ban=F.wz?`<div class="wzban"><b>🧭 Propuestas para ti</b><span>${esc(F.wz.label)}</span><span class="note">${nRec?`Primero las más recientes: ${nRec} de los últimos 6 años${rs.length>nRec?" y después las más antiguas":""}.`:"Todas tienen más de 6 años; puede que algo haya cambiado."}</span><div><button class="btn primary" data-wzedit>Cambiar</button> <button class="linkbtn" data-wzoff>Ver todas las rutas</button></div></div>`:"";
+  const cnt=ban+`<p class="count">${rs.length} ${rs.length===1?"ruta":"rutas"}${(F.km||F.de)?" · solo las que tienen distancia y desnivel en la ficha":""}</p>`;
+  let sep=false;
+  document.getElementById("list").innerHTML=cnt+(keys.length?keys.map(y=>`${F.wz&&nRec&&!sep&&(+y||0)<cut&&(sep=true)?`<h2 class="oldh">Más antiguas (antes de ${cut})</h2>`:""}<h2 class="yearh">${y}<small>${by[y].length} ${by[y].length===1?"ruta":"rutas"}</small></h2><div class="rows">${by[y].map(r=>rowHTML(r)).join("")}</div>`).join(""):`<p class="empty">No hay rutas con esa búsqueda y esos filtros.</p>`);
 }
-document.getElementById("list").addEventListener("click",e=>{const row=e.target.closest("[data-r]");if(!row)return;const r=R[+row.dataset.r];showView("mapa");openRoute(r.id);setTimeout(()=>flyTo(r.lat,r.lon,8),30)});
+document.getElementById("list").addEventListener("click",e=>{if(e.target.closest("[data-wzedit]")){wizOpen(1);return}if(e.target.closest("[data-wzoff]")){F.wz=null;applyFilter();return}const row=e.target.closest("[data-r]");if(!row)return;const r=R[+row.dataset.r];showView("mapa");openRoute(r.id);setTimeout(()=>flyTo(r.lat,r.lon,8),30)});
 
 /* ---------- colecciones: cumbres y lugares ---------- */
 // marcas: "hecha" | "quiero"; se guardan en tu cuenta (si está disponible) y en este navegador
