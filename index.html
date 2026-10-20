@@ -211,6 +211,7 @@ html,body{height:100%;margin:0}
 #map.hide-peaks .pt.cumbre,#map.hide-spots .pt.spot:not(.ini){display:none}
 #map .leaflet-tooltip.lbl{background:#fff;border:1px solid rgba(0,0,0,.18);border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,.3);padding:1px 6px;font-family:var(--f-body);font-weight:700;font-size:calc(13.5px*var(--fs));line-height:1.3;color:#a3141c;white-space:nowrap}
 #map .leaflet-tooltip.lbl::before{display:none}
+#map .leaflet-tooltip.lbl .la{color:#3a3a3a;font-weight:600;font-family:var(--f-num);font-size:.9em;margin-left:2px}
 #map .leaflet-tooltip.lbl.sp,#map .leaflet-tooltip.lbl.ini{color:#000;font-weight:800;text-decoration:underline;text-decoration-color:#3d6b4f;text-decoration-thickness:2px;text-underline-offset:2px}
 #map:not(.lbl-peaks) .leaflet-tooltip.pk,#map:not(.lbl-spots) .leaflet-tooltip.sp,#map:not(.lbl-spots) .leaflet-tooltip.ini,#map.hide-peaks .leaflet-tooltip.pk,#map.hide-spots .leaflet-tooltip.sp{display:none}
 #map .probe{fill:var(--mark);fill-opacity:.05;stroke:var(--mark);stroke-dasharray:6 4;stroke-width:2}
@@ -356,7 +357,7 @@ const MK={};
 P.forEach((p,i)=>{
   const cls="pt "+(p.t==="cumbre"?"cumbre":"spot")+(p.x?" ini":"");
   const m=L.marker([p.lat,p.lon],{icon:L.divIcon({className:cls,html:`<svg viewBox="-12 -12 24 24"><use href="#ic-${p.cat}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:p.c+(p.a?" · "+fmtA(p.a):""),riseOnHover:true,zIndexOffset:p.t==="cumbre"?(p.a||0):0});
-  m.bindTooltip(esc(p.c),{permanent:true,direction:"right",offset:[10,0],className:"lbl "+(p.t==="cumbre"?"pk":p.x?"ini":"sp"),interactive:false});
+  m.bindTooltip(esc(p.c)+(p.t==="cumbre"&&p.a?` <span class="la">${p.a.toLocaleString("es-ES")} m</span>`:""),{permanent:true,direction:"right",offset:[10,0],className:"lbl "+(p.t==="cumbre"?"pk":p.x?"ini":"sp"),interactive:false});
   m.on("click",e=>{L.DomEvent.stopPropagation(e); if(nearMode){nearAt(p.lat,p.lon);return} openRoute(p.rs?p.rs[0]:null,i)});
   m.addTo(map); MK[i]=m;
 });
