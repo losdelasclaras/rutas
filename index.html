@@ -226,6 +226,7 @@ header.top,nav.tabs,.view.pad>.inner,.sheet,.mapbar,.legend,.fabs,.hint,.attrib{
 html,body{height:100%;margin:0}
 #map{background:#e8e4da;isolation:isolate;z-index:0}
 .sheet{z-index:20}.sheet.full{z-index:30}
+#map path:focus,#map .leaflet-interactive:focus{outline:none}
 #map .pt svg{position:absolute;width:var(--ms,24px);height:var(--ms,24px);transform:translate(-50%,-50%);filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));cursor:pointer}
 #map .pt.cumbre svg{width:calc(var(--ms,24px)*1.12);height:calc(var(--ms,24px)*1.12)}
 #map .pt.sel svg{outline:3px solid var(--ink);outline-offset:1px;border-radius:50%}
@@ -259,7 +260,7 @@ html,body{height:100%;margin:0}
       <div class="legend" role="group" aria-label="Capas del mapa">
         <button class="lay" data-lay="peaks" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>Cumbres</button>
         <button class="lay" data-lay="spots" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-brana" x="-12" y="-12" width="24" height="24"/></svg>Lugares</button>
-      </div>
+      <button class="lay" data-lay="tracks" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><path d="M-4 3C-2 -3 0 3 1 -1S3 -3 4 -4" fill="none" stroke="#c3262e" stroke-width="1.6" stroke-linecap="round"/></svg>Tracks</button></div>
       <div class="fabs">
         <button class="btn ghost" id="b-home" data-short="Todo" title="Ver todo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Ver todo</button>
         <button class="btn primary" id="b-wiz2" data-short="¿Ruta?" title="¿Qué ruta hago?"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8l-2 6-6 2 2-6z"/></svg>¿Qué ruta hago?</button>
@@ -409,7 +410,7 @@ function ensureZone(zk){if(zk!==ZK){ZK=zk;store.set("ldc-zona",zk);renderMapbar(
 const FSV=[1,1.15,1.3,1.45];let FS=+store.get("ldc-fs",1.15);if(!FSV.includes(FS))FS=1.15;
 document.documentElement.style.setProperty("--fs",FS);
 document.getElementById("fsbtn").textContent=["Aa","Aa+","Aa++","Aa+++"][FSV.indexOf(FS)];
-const LAY={peaks:true,spots:true};
+const LAY={peaks:true,spots:true,tracks:store.get("ldc-trk","0")==="1"};
 function sizeMarks(){
   const z=map.getZoom(); k=2**(z-8);
   mapEl.style.setProperty("--ms",((z<7.5?11:z<8.5?14:z<10?19:z<12?24:28)*FS)+"px");
@@ -417,7 +418,17 @@ function sizeMarks(){
   mapEl.classList.toggle("lbl-spots",LAY.spots&&z>=13);
   mapEl.classList.toggle("hide-peaks",!LAY.peaks);
   mapEl.classList.toggle("hide-spots",!LAY.spots);
+  setTimeout(syncAllTracks,0);
 }
+/* capa con todos los tracks (botón «Tracks» de la leyenda) */
+let ALLTRK=null;
+function syncAllTracks(){store.set("ldc-trk",LAY.tracks?"1":"0");
+  if(LAY.tracks&&!ALLTRK){ALLTRK=L.layerGroup();
+    R.forEach(r=>{if(!r.gx||!r.gx.ln)return;const ll=r.gx.ln.map(p=>[p[0],p[1]]);
+      ALLTRK.addLayer(L.polyline(ll,{color:"#fff",weight:5,opacity:.7,interactive:false}));
+      ALLTRK.addLayer(L.polyline(ll,{color:"#c3262e",weight:3,opacity:.6}).bindTooltip(esc(routeTitle(r)),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);openRoute(r.id)}))})}
+  const on=LAY.tracks&&map.getZoom()>=10;
+  if(ALLTRK){if(on&&!map.hasLayer(ALLTRK)){ALLTRK.addTo(map);if(TRK)TRK.eachLayer(l=>l.bringToFront&&l.bringToFront())}else if(!on&&map.hasLayer(ALLTRK))ALLTRK.remove()}}
 map.on("zoomend",sizeMarks);
 map.on("moveend",()=>{const c=map.getCenter();const z=zoneAt(c.lat,c.lng);if(z!==ZK){ZK=z;store.set("ldc-zona",z);renderMapbar()}});
 map.on("click",e=>{if(!nearMode)return;const la=e.latlng.lat,lo=e.latlng.lng;nearAt(la,lo,nearestTown(la,lo))});
@@ -449,6 +460,8 @@ window.showTrack=function(r){if(TRK){TRK.remove();TRK=null}
   setTimeout(()=>{const el=mapEl.getBoundingClientRect(),wide=el.width>=860,sh=document.getElementById("sheet");
     const pb=!wide&&sh&&!sh.hidden?Math.min(el.height*0.62,sh.offsetHeight)+16:24;
     map.fitBounds(L.latLngBounds(ll),{paddingTopLeft:[wide?60:24,120],paddingBottomRight:[wide?640:80,pb+20],maxZoom:15,animate:!reduce()})},450)};
+
+setTimeout(()=>{const b=document.querySelector('[data-lay="tracks"]');if(b)b.setAttribute("aria-pressed",LAY.tracks)},0);
 
 /* ---------- sheet ---------- */
 const sheet=document.getElementById("sheet");
