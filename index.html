@@ -370,7 +370,7 @@ document.getElementById("fsbtn").textContent=["Aa","Aa+","Aa++","Aa+++"][FSV.ind
 const LAY={peaks:true,spots:true};
 function sizeMarks(){
   const z=map.getZoom(); k=2**(z-8);
-  mapEl.style.setProperty("--ms",((z<8?16:z<10?20:z<12?26:30)*FS)+"px");
+  mapEl.style.setProperty("--ms",((z<7.5?11:z<8.5?14:z<10?19:z<12?24:28)*FS)+"px");
   mapEl.classList.toggle("lbl-peaks",LAY.peaks&&z>=12);
   mapEl.classList.toggle("lbl-spots",LAY.spots&&z>=13);
   mapEl.classList.toggle("hide-peaks",!LAY.peaks);
