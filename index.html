@@ -91,6 +91,11 @@ select.chip{appearance:none;padding-right:26px;background-image:linear-gradient(
 .wiz .card{background:var(--card);width:100%;max-width:560px;max-height:92%;overflow:auto;border-radius:16px 16px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) 22px max(16px,env(safe-area-inset-left,0px));zoom:var(--fs)}
 @media (min-width:700px){.wiz{align-items:center}.wiz .card{border-radius:16px}}
 .wiz h2{font-family:var(--f-display);font-size:24px;margin:0 0 4px}.wiz .q{font-weight:700;margin:14px 0 8px}.wiz .opts{display:flex;flex-wrap:wrap;gap:8px}.wiz .opts .chip{font-size:15px;padding:9px 14px}
+.wizrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 12px}.wizrow .wizbtn{margin:0;font-size:15.5px;padding:13px 8px}
+.ov{position:fixed;inset:0;z-index:2500;background:var(--card);overflow:auto;-webkit-overflow-scrolling:touch}.ov[hidden]{display:none}
+.ovin{max-width:720px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));zoom:var(--fs)}
+.ovbar{position:sticky;top:0;z-index:2;background:var(--card);padding:calc(10px + env(safe-area-inset-top,0px)) 0 8px;margin-bottom:4px;border-bottom:1px solid var(--edge)}.ovbar .linkbtn{font-size:17px;font-weight:700}
+.ovh{font-family:var(--f-display);font-size:24px;margin:8px 0 6px}
 .wzban{background:var(--card);border:2px solid var(--mark);border-radius:14px;padding:12px 14px;margin:0 0 10px;display:flex;flex-direction:column;gap:6px}.wzban b{font-size:17px}.oldh{margin:22px 0 4px;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.06);font-size:15px}
 .wiz .foot{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
 .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:14.5px}
@@ -260,7 +265,7 @@ html,body{height:100%;margin:0}
     </section>
     <section class="view pad" id="v-rutas" hidden><div class="inner">
       <h1 class="vt">Las rutas</h1>
-      <button class="btn primary wizbtn" id="b-wiz">🧭 ¿Qué ruta hago?</button>
+      <div class="wizrow"><button class="btn primary wizbtn" id="b-wiz">🧭 ¿Qué ruta hago?</button><button class="btn ghost wizbtn" id="b-near2">📍 Cerca de un lugar</button></div>
       <input class="search" id="q" type="search" placeholder="Busca una ruta, cumbre, braña, foz, playa…" autocomplete="off">
       <details class="fbox" id="fbox"><summary>Filtrar rutas <span id="fsum"></span></summary><div id="filters"></div></details>
       <div id="list"></div>
@@ -492,23 +497,18 @@ function wizClick(e){const el=document.getElementById("wiz");
     document.getElementById("fbox").open=false;document.getElementById("v-rutas").scrollTop=0;window.scrollTo(0,0);return}}
 document.getElementById("b-wiz").addEventListener("click",()=>wizOpen(1));
 document.getElementById("b-wiz2").addEventListener("click",()=>wizOpen(1));
+document.getElementById("b-near2").addEventListener("click",()=>ovShow({t:"search"}));
 // boletines de montaña de AEMET por zona
 function aemetZone(lat,lon){
   if(lat>42.95&&lat<43.4&&lon>-5.25&&lon<-4.45)return["peu1","Picos de Europa"];
   if(lat>42.4&&lat<43.1&&lon>-1.6&&lon<3.3){if(lon<-0.74)return["nav1","Pirineo navarro"];if(lon<0.72)return["arn1","Pirineo aragonés"];return["cat1","Pirineo catalán"]}
   return null}
-function openRoute(ri,pi){
-  const wasFull=sheet.classList.contains("full")&&!sheet.hidden; sheet.classList.remove("full");
-  ensureZone(zoneOf(ri!=null?R[ri].r:P[pi].r));
-  nodes.classed("sel",i=>ri!=null?R[ri].p.includes(i):i===pi);
-  tracks.classed("sel",r=>r.id===ri);
-  if(ri==null){const p=P[pi];sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(p.c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><div class="meta">${p.a?`<span class="tag alt">${fmtA(p.a)}</span>`:""}<span class="tag">${esc(p.r)}</span></div><p class="note">Este punto del mapa todavía no tiene enlazada su entrada del blog.</p>`;sheet.hidden=false;return}
-  const r=R[ri];
+function routeBody(r){
   const pts=r.p.map(i=>P[i]).sort((a,b)=>(b.a||0)-(a.a||0));
   const hi=pts[0];
   const near=sortNear(nearestRoutes(r.lat,r.lon,3,r.id));
   const techos=pts.filter(p=>p.techo);
-  sheet.innerHTML=`<div class="grab" data-route="${r.id}"></div>
+  return `
   ${r.f!=null?`<div class="photo"><img src="fotos/${r.f}.jpg" alt=""></div>`:""}
   <div class="sheet-head"><h2>${esc(routeTitle(r))}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="meta">${r.iv?`<span class="tag iv">❄ Invernal</span>`:""}${r.nv?`<span class="tag new">Renovada</span>`:""}${r.y?`<span class="tag">${r.m?MESES[r.m]+" ":""}${r.y}</span>`:""}${(r.co&&r.co.length?r.co:r.grp?[r.r,r.grp]:[r.r]).map(c=>`<span class="tag">${esc(c)}</span>`).join("")}${r.a&&!r.tk?`<span class="tag alt">${fmtA(r.a)}</span>`:""}${techos.map(t=>`<span class="tag">Techo de ${esc(t.techo)}</span>`).join("")}</div>
@@ -522,6 +522,15 @@ function openRoute(ri,pi){
   ${r.tk?`<div class="sec"><h3>Recorrido</h3><p class="note">Track de tu mapa: ${fmtKm(r.tkm)} · punto más alto ${fmtA(r.a)}. Está dibujado en el mapa.</p></div>`:""}
   ${pts.some(p=>!p.x)?`<div class="sec"><h3>Lugares en el mapa</h3><ul class="plist">${pts.filter(p=>!p.x).map(p=>`<li>${ICO(p.cat)}<span class="n">${esc(p.c)}</span><span class="a">${fmtA(p.a)}</span></li>`).join("")}</ul></div>`:""}
   ${near.length?`<div class="near"><h3>Otras rutas por la zona</h3><div class="rows">${near.map(x=>rowHTML(x.r,x.d.toFixed(0)+" km")).join("")}</div></div>`:""}`;
+}
+function openRoute(ri,pi){
+  const wasFull=sheet.classList.contains("full")&&!sheet.hidden; sheet.classList.remove("full");
+  ensureZone(zoneOf(ri!=null?R[ri].r:P[pi].r));
+  nodes.classed("sel",i=>ri!=null?R[ri].p.includes(i):i===pi);
+  tracks.classed("sel",r=>r.id===ri);
+  if(ri==null){const p=P[pi];sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(p.c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><div class="meta">${p.a?`<span class="tag alt">${fmtA(p.a)}</span>`:""}<span class="tag">${esc(p.r)}</span></div><p class="note">Este punto del mapa todavía no tiene enlazada su entrada del blog.</p>`;sheet.hidden=false;return}
+  const r=R[ri];
+  sheet.innerHTML=`<div class="grab" data-route="${r.id}"></div>`+routeBody(r);
   if(wasFull&&lastNear)sheet.querySelector(".sheet-head").insertAdjacentHTML("beforebegin",`<button class="linkbtn" data-back-near style="margin:4px 0 6px">← Volver al listado</button>`);
   sheet.hidden=false; sheet.scrollTop=0;
 }
@@ -579,6 +588,36 @@ sheet.addEventListener("click",e=>{
   const so=e.target.closest("[data-sort]"); if(so){SORT=so.dataset.sort;store.set("ldc-orden",SORT);if(lastNear){const y=sheet.scrollTop;nearAt(...lastNear);sheet.scrollTop=y}return}
   const row=e.target.closest("[data-r]"); if(row){const r=R[+row.dataset.r];openRoute(r.id);flyTo(r.lat,r.lon,Math.max(k,7))}
 });
+/* ---------- ficha a pantalla completa, sin salir de la pestaña ---------- */
+const ov=document.createElement("div");ov.id="ov";ov.className="ov";ov.hidden=true;document.body.appendChild(ov);
+let OVS=[],ovFound=[],ovAll=false;
+function ovShow(st){OVS.push(st);try{history.pushState({ov:OVS.length},"")}catch(e){}ovDraw()}
+function ovBack(){try{history.back()}catch(e){OVS.pop();ovDraw()}}
+function ovCloseAll(){if(!OVS.length)return;ovAll=true;try{history.go(-OVS.length)}catch(e){OVS=[];ovDraw()}}
+addEventListener("popstate",()=>{if(!OVS.length)return;if(ovAll){OVS=[];ovAll=false}else OVS.pop();ovDraw()});
+function ovDraw(){const st=OVS[OVS.length-1];if(!st){ov.hidden=true;ov.innerHTML="";return}
+  let h="";
+  if(st.t==="route"){const r=R[st.id];h=routeBody(r)+`<div class="actions"><button class="btn ghost" data-ovmap="${r.id}">🗺 Ver en el mapa</button></div>`}
+  else if(st.t==="search"){h=`<h2 class="ovh">Rutas cerca de…</h2><label class="note" for="qpl2" style="display:block;margin:4px 0 8px">Escribe un pueblo, una villa o una cumbre:</label>
+    <input class="search" id="qpl2" type="search" placeholder="Por ejemplo: Felechosa, Taranes, Tuiza, Ubiña…" autocomplete="off"><div class="rows" id="sugg2" style="margin-top:6px"></div>
+    <p class="note" id="geomsg2" style="margin-top:12px"><button class="btn primary" data-ovgeo>📍 Usar mi ubicación</button></p>`}
+  else if(st.t==="near"){const list=sortNear(nearestRoutes(st.lat,st.lon,12));h=`<h2 class="ovh">Rutas cerca de ${esc(st.label)}</h2><p class="note">Las ${list.length} más próximas. <button class="linkbtn" data-ovsearch>Buscar otro sitio</button></p>${sortChips()}<div class="rows" style="margin-top:8px">${list.map(o=>rowHTML(o.r,o.d.toFixed(0)+" km",true)).join("")}</div>`}
+  ov.innerHTML=`<div class="ovin"><div class="ovbar"><button class="linkbtn" data-ovback>← Volver</button></div>${h}</div>`;ov.hidden=false;ov.scrollTop=0;
+  if(st.t==="search"){const inp=document.getElementById("qpl2");
+    inp.addEventListener("input",()=>{ovFound=findSites(inp.value);document.getElementById("sugg2").innerHTML=ovFound.length?ovFound.map((s,i)=>`<button class="row" data-ovsite="${i}"><div class="t"><b>${esc(s.alt?s.alt.split(";")[0]:s.n)}</b><span>${s.k}${s.reg?" · "+esc(s.reg):""}${s.alt?" · "+esc(s.n):""}</span></div></button>`).join(""):(inp.value.trim().length>1?`<p class="note">No encuentro «${esc(inp.value)}». Prueba con otro nombre.</p>`:"")});
+    inp.addEventListener("keydown",e=>{if(e.key==="Enter"&&ovFound[0]){const s=ovFound[0];ovShow({t:"near",lat:s.lat,lon:s.lon,label:s.alt?s.alt.split(";")[0]:s.n})}});
+    if(matchMedia("(pointer:fine)").matches)inp.focus()}}
+ov.addEventListener("click",e=>{
+  if(e.target.closest("[data-ovback]")){ovBack();return}
+  if(e.target.closest("[data-close]")){ovCloseAll();return}
+  const sh=e.target.closest("[data-share]");if(sh){shareRoute(R[+sh.dataset.share]);return}
+  const om=e.target.closest("[data-ovmap]");if(om){const r=R[+om.dataset.ovmap];ovCloseAll();setTimeout(()=>{showView("mapa");openRoute(r.id);setTimeout(()=>flyTo(r.lat,r.lon,8),60)},80);return}
+  const st=e.target.closest("[data-ovsite]");if(st){const s=ovFound[+st.dataset.ovsite];ovShow({t:"near",lat:s.lat,lon:s.lon,label:s.alt?s.alt.split(";")[0]:s.n});return}
+  if(e.target.closest("[data-ovsearch]")){ovShow({t:"search"});return}
+  if(e.target.closest("[data-ovgeo]")){const m=document.getElementById("geomsg2");if(!navigator.geolocation){m.textContent="Este navegador no da la ubicación; escribe un pueblo.";return}
+    m.textContent="Buscando tu ubicación…";navigator.geolocation.getCurrentPosition(p=>ovShow({t:"near",lat:p.coords.latitude,lon:p.coords.longitude,label:"tu ubicación"}),()=>{m.textContent="No he podido saber dónde estás. Revisa que la ubicación esté activada y con permiso; mientras tanto, escribe un pueblo."},{enableHighAccuracy:true,timeout:12000,maximumAge:300000});return}
+  const so=e.target.closest("[data-sort]");if(so){SORT=so.dataset.sort;store.set("ldc-orden",SORT);ovDraw();return}
+  const row=e.target.closest("[data-r]");if(row){ovShow({t:"route",id:+row.dataset.r});return}});
 let nearMode=false;
 const hint=document.getElementById("hint");
 function setNear(on){nearMode=on;hint.hidden=!on;document.getElementById("b-near").setAttribute("aria-pressed",on);mapEl.style.cursor=on?"crosshair":""}
@@ -608,7 +647,7 @@ function renderList(){
     document.getElementById("list").innerHTML=ban+`<p class="count">${L.length} ${L.length===1?"ruta":"rutas"}</p>`+(L.length?`<div class="rows">${L.map(r=>rowHTML(r)).join("")}</div>`:`<p class="empty">No hay rutas con esas condiciones. Pulsa «Cambiar» y quita alguna.</p>`);return}
   document.getElementById("list").innerHTML=cnt+(keys.length?keys.map(y=>`${F.wz&&nRec&&!sep&&(+y||0)<cut&&(sep=true)?`<h2 class="oldh">Más antiguas (antes de ${cut})</h2>`:""}<h2 class="yearh">${y}<small>${by[y].length} ${by[y].length===1?"ruta":"rutas"}</small></h2><div class="rows">${by[y].map(r=>rowHTML(r)).join("")}</div>`).join(""):`<p class="empty">No hay rutas con esa búsqueda y esos filtros.</p>`);
 }
-document.getElementById("list").addEventListener("click",e=>{if(e.target.closest("[data-wzedit]")){wizOpen(1);return}if(e.target.closest("[data-wzoff]")){F.wz=null;applyFilter();return}const row=e.target.closest("[data-r]");if(!row)return;const r=R[+row.dataset.r];showView("mapa");openRoute(r.id);setTimeout(()=>flyTo(r.lat,r.lon,8),30)});
+document.getElementById("list").addEventListener("click",e=>{if(e.target.closest("[data-wzedit]")){wizOpen(1);return}if(e.target.closest("[data-wzoff]")){F.wz=null;applyFilter();return}const row=e.target.closest("[data-r]");if(row)ovShow({t:"route",id:+row.dataset.r})});
 
 /* ---------- colecciones: cumbres y lugares ---------- */
 // marcas: "hecha" | "quiero"; se guardan en tu cuenta (si está disponible) y en este navegador
@@ -657,7 +696,7 @@ for(const kind of ["cumbres","lugares"]){document.getElementById("v-"+kind).addE
   if(e.target.closest("[data-imp]")){const code=prompt("Pega aquí el código de tus marcas:");if(!code)return;try{const v=JSON.parse(decodeURIComponent(escape(atob(code.trim().replace(/^LDC1:/,"")))));Object.assign(MARKS,v);saveMarks();renderCols();alert("Marcas añadidas.")}catch(err){alert("Ese código no es válido.")}return}
   const m=e.target.closest("[data-m]");if(m){const k=m.parentElement.dataset.key;MARKS[k]=MARKS[k]===m.dataset.m?"":m.dataset.m;if(!MARKS[k])delete MARKS[k];saveMarks();
     const y=document.getElementById("v-"+kind).scrollTop;renderCol(kind);document.getElementById("v-"+kind).scrollTop=y;return}
-  const go=e.target.closest("[data-go]");if(go){const r=R[+go.dataset.go];const p=P[+go.dataset.pt];showView("mapa");openRoute(r.id);setTimeout(()=>flyTo(p.lat,p.lon,10),30)}})}
+  const go=e.target.closest("[data-go]");if(go){ovShow({t:"route",id:+go.dataset.go})}})}
 
 /* ---------- init ---------- */
 applyFilter(); renderCols(); fitHome(false); sizeMarks();
