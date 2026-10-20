@@ -97,6 +97,8 @@ select.chip{appearance:none;padding-right:26px;background-image:linear-gradient(
 .btn.primary{background:var(--mark);color:var(--mark-ink)}
 .btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--edge);box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .btn svg{width:18px;height:18px;flex:none}
+@media (max-width:699px){.fabs{gap:7px;bottom:12px}.fabs .btn{font-size:0;width:54px;height:54px;padding:0;border-radius:50%;flex-direction:column;justify-content:center;gap:1px}
+.fabs .btn svg{width:20px;height:20px;margin:0}.fabs .btn::after{content:attr(data-short);font-size:9.5px;font-weight:700;line-height:1;letter-spacing:-.2px}}
 .legend{position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:22px;background:var(--card);border:1px solid var(--edge);border-radius:10px;padding:4px;display:flex;flex-direction:column;gap:2px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .lay{border:0;background:none;display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:7px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;text-align:left}
 .lay[aria-pressed="false"]{color:var(--muted);opacity:.55}
@@ -247,10 +249,10 @@ html,body{height:100%;margin:0}
         <button class="lay" data-lay="spots" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-brana" x="-12" y="-12" width="24" height="24"/></svg>Lugares</button>
       </div>
       <div class="fabs">
-        <button class="btn ghost" id="b-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Ver todo</button>
-        <button class="btn primary" id="b-wiz2">🧭 ¿Qué ruta hago?</button>
-        <button class="btn ghost" id="b-me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 19-7-4-7 4z"/></svg>Dónde estoy</button>
-        <button class="btn primary" id="b-near"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Rutas cerca de…</button>
+        <button class="btn ghost" id="b-home" data-short="Todo" title="Ver todo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Ver todo</button>
+        <button class="btn primary" id="b-wiz2" data-short="¿Ruta?" title="¿Qué ruta hago?"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8l-2 6-6 2 2-6z"/></svg>¿Qué ruta hago?</button>
+        <button class="btn ghost" id="b-me" data-short="Yo" title="Dónde estoy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 19-7-4-7 4z"/></svg>Dónde estoy</button>
+        <button class="btn primary" id="b-near" data-short="Cerca" title="Rutas cerca de…"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Rutas cerca de…</button>
       </div>
       
       <div class="hint" id="hint" hidden>Toca un punto del mapa para ver las rutas más cercanas</div>
@@ -451,22 +453,29 @@ function toast(msg){let el=document.getElementById("toast");if(!el){el=document.
 function openFromHash(){const h=decodeURIComponent((location.hash||"").slice(1));const r=BYSLUG[h];if(!r)return false;showView("mapa");openRoute(r.id);setTimeout(()=>flyTo(r.lat,r.lon,8),60);return true}
 addEventListener("hashchange",openFromHash);
 /* ---------- ¿Qué ruta hago? ---------- */
-const WZ={zona:"",esf:"",pa:"",geo:null,seen:new Set()};
-const ZOP=[["cerca","📍 Cerca de mí"],["Asturias","Asturias"],["León","León"],["Cantabria","Cantabria"],["Pirineos","Pirineos"],["Alpes","Alpes y Dolomitas"],["","Me da igual"]];
-const EOP=[["suave","Suave"],["media","Media"],["dura","Exigente"],["","Me da igual"]];
+const WZ={cuando:"ahora",zona:"",esf:"",ti:"",pa:"",geo:null,seen:new Set()};
+const ZOP=[["cerca","📍 Cerca de mí"],["ast-or","Asturias oriente"],["ast-ce","Asturias centro"],["ast-oc","Asturias occidente"],["León","León"],["Cantabria","Cantabria"],["Pirineos","Pirineos"],["Alpes","Alpes y Dolomitas"],["","Me da igual"]];
+const EOP=[["baja","Fácil"],["moderada","Moderada"],["alta","Difícil"],["","Me da igual"]];
+const wzMeses=()=>{const m=new Date().getMonth();return[m+1,(m+1)%12+1]};
+const COP=()=>{const[a,b]=wzMeses();return[["ahora",`En estas fechas (${MESES[a]} y ${MESES[b]})`],["","En cualquier época"]]};
+const TOP=[["monte","⛰️ Montaña"],["costa","🌊 Costa"],["","Me da igual"]];
+const isAst=r=>r.r==="Asturias"||(r.rs||[]).includes("Asturias");
+const astZ=r=>r.lon<-6.05?"ast-oc":r.lon>-5.4?"ast-or":"ast-ce";
 function esfOf(r){if(r.dl==="alta"||r.dl==="muy-alta"||(r.de||0)>=1150||(r.km||0)>=18)return"dura";if(r.dl==="baja"||((r.km||99)<=10&&(r.de||9999)<=600))return"suave";return"media"}
-function wizPool(){const mo=new Date().getMonth()+1, winter=mo===12||mo<=3;
-  return R.filter(r=>r.u&&(!WZ.zona||(WZ.zona==="cerca"?WZ.geo&&km(WZ.geo,r)<=40:WZ.zona==="Alpes"?["Alpes","Dolomitas"].includes(r.r):(r.r===WZ.zona||(r.rs||[]).includes(WZ.zona))))
-    &&(!WZ.esf||esfOf(r)===WZ.esf)&&(!WZ.pa||(r.pa||[]).includes(WZ.pa))&&(winter||!r.iv))
-   .map(r=>({r,s:(winter&&r.iv?3:0)+(winter&&(r.pa||[]).includes("alta")&&!r.iv?-2:0)+(WZ.seen.has(r.id)?-5:0)+Math.random()*2.5+(r.f!=null?1:0)}))
-   .sort((a,b)=>b.s-a.s)}
+function wizPool(){const ms=wzMeses();
+  return R.filter(r=>r.u&&(!WZ.zona||(WZ.zona==="cerca"?WZ.geo&&km(WZ.geo,r)<=40:WZ.zona.startsWith("ast-")?isAst(r)&&astZ(r)===WZ.zona:WZ.zona==="Alpes"?["Alpes","Dolomitas"].includes(r.r):(r.r===WZ.zona||(r.rs||[]).includes(WZ.zona))))
+    &&(WZ.cuando!=="ahora"||ms.includes(r.m))
+    &&(!WZ.esf||(WZ.esf==="alta"?["alta","muy-alta"].includes(r.dl):r.dl===WZ.esf))
+    &&(!WZ.ti||(WZ.ti==="costa"?(r.pa||[]).includes("costa"):!(r.pa||[]).includes("costa"))))
+   .map(r=>({r,s:0}))}
 function wizOpen(step){let el=document.getElementById("wiz");if(!el){el=document.createElement("div");el.id="wiz";el.className="wiz";document.body.appendChild(el);
   el.addEventListener("click",wizClick)}el.hidden=false;wizRender(step||1)}
 function wizRender(step){const el=document.getElementById("wiz");const chips=(k,opts)=>`<div class="opts">${opts.map(([v,l])=>`<button class="chip" data-wk="${k}" data-wv="${v}" aria-pressed="${WZ[k]===v}">${l}</button>`).join("")}</div>`;
   if(step===1){el.innerHTML=`<div class="card"><h2>¿Qué ruta hago?</h2><p class="note">Dime qué te apetece y te propongo unas cuantas de tus rutas.</p>
+    <p class="q">¿Cuándo?</p>${chips("cuando",COP())}<p class="note">Rutas que hiciste en estas fechas, para que la época encaje.</p>
     <p class="q">¿Por dónde?</p>${chips("zona",ZOP)}<p class="note" id="wizgeo"></p>
-    <p class="q">¿Cuánto esfuerzo?</p>${chips("esf",EOP)}
-    <p class="q">¿Qué paisaje te apetece?</p>${chips("pa",[...PAIS,["","Sorpréndeme"]])}
+    <p class="q">¿Qué dificultad?</p>${chips("esf",EOP)}
+    <p class="q">¿Montaña o costa?</p>${chips("ti",TOP)}
     <div class="foot"><button class="btn primary" data-wgo>Proponme rutas</button><button class="linkbtn" data-wclose>Cerrar</button></div></div>`;return}
   const pool=wizPool(), pick=pool.slice(0,4).map(x=>x.r); pick.forEach(r=>WZ.seen.add(r.id));
   const mo=new Date().getMonth()+1, winter=mo===12||mo<=3;
@@ -481,7 +490,7 @@ function wizClick(e){const el=document.getElementById("wiz");
       if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{WZ.geo={lat:p.coords.latitude,lon:p.coords.longitude};m.textContent="Ubicación encontrada: rutas a menos de 40 km."},()=>{m.textContent="No he podido saber dónde estás; elige una zona.";WZ.zona=""; wizRender(1)},{timeout:10000,maximumAge:600000});else m.textContent="Este navegador no da la ubicación; elige una zona."}
     el.querySelectorAll(`[data-wk="${c.dataset.wk}"]`).forEach(b=>b.setAttribute("aria-pressed",b===c));return}
   if(e.target.closest("[data-wgo]")){const ids=new Set(wizPool().map(x=>x.r.id));
-    const lab=[ZOP.find(o=>o[0]===WZ.zona),EOP.find(o=>o[0]===WZ.esf),PAIS.find(o=>o[0]===WZ.pa)].filter(o=>o&&o[0]).map(o=>o[1].replace("📍 ","")).join(" · ")||"Cualquier ruta";
+    const lab=[COP().find(o=>o[0]===WZ.cuando),ZOP.find(o=>o[0]===WZ.zona),EOP.find(o=>o[0]===WZ.esf),TOP.find(o=>o[0]===WZ.ti)].filter(o=>o&&o[0]).map(o=>o[1].replace("📍 ","").replace("En estas fechas ","").replace(/[()]/g,"")).join(" · ")||"Cualquier ruta";
     Object.assign(F,{reg:"todas",year:"todos",km:"",de:"",ex:"",co:"",nw:"",iv:"",pa:"",wz:{ids,label:lab}});q.value="";el.hidden=true;showView("rutas");applyFilter();
     document.getElementById("fbox").open=false;document.getElementById("v-rutas").scrollTop=0;window.scrollTo(0,0);return}
   if(e.target.closest("[data-wmore]")){wizRender(2);el.querySelector(".card").scrollTop=0;return}
