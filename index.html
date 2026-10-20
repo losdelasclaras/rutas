@@ -417,6 +417,19 @@ const fmtKm=v=>v.toLocaleString("es-ES",{maximumFractionDigits:1})+" km";
 const thumbHTML=r=>r.f!=null?`<img class="thumb" src="fotos/${r.f}.jpg" alt="" loading="lazy">`:`<span class="thumb none" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20l7-12 4 6 3-4 6 10z"/></svg></span>`;
 function rowHTML(r,extra,compact){const nums=[r.km?fmtKm(r.km):"",r.de?"+"+r.de.toLocaleString("es-ES")+" m":""].filter(Boolean).join(" · ");
  return `<button class="row${compact?" compact":""}" data-r="${r.id}">${compact?"":thumbHTML(r)}<div class="t"><b>${esc(routeTitle(r))}</b><span>${r.iv?`<i class="ivm" style="font-style:normal">❄ Invernal</i> · `:""}${r.y?(r.m?MESES[r.m]+" ":"")+r.y:"Sin fecha"} · ${esc(r.r)}${extra?" · "+extra:""}</span></div><span class="alt">${nums||fmtA(r.a)}</span></button>`}
+// enlace directo a una ruta: https://losdelasclaras.github.io/rutas/#r-2023-02-lago-del-valle-invernal
+const APPURL="https://losdelasclaras.github.io/rutas/";
+const slug=r=>r.u?"r-"+r.u.replace(/^https?:\/\/[^/]+\//,"").replace(/\.html$/,"").replace(/[^A-Za-z0-9]+/g,"-").replace(/-+$/,"").toLowerCase():null;
+const BYSLUG={};R.forEach(r=>{const s=slug(r);if(s)BYSLUG[s]=r});
+async function shareRoute(r){
+  const nums=[r.km?fmtKm(r.km):"",r.de?"+"+r.de.toLocaleString("es-ES")+" m":""].filter(Boolean).join(" · ");
+  const url=APPURL+"#"+slug(r), title=routeTitle(r).replace(/\s+/g," ").trim(), text="🏔️ "+title+(nums?" · "+nums:"");
+  try{if(navigator.share){await navigator.share({title,text,url});return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(text+"\n"+url);toast("Enlace copiado. Pégalo en WhatsApp.")}catch(e){window.open("https://wa.me/?text="+encodeURIComponent(text+"\n"+url),"_blank","noopener")}
+}
+function toast(msg){let el=document.getElementById("toast");if(!el){el=document.createElement("div");el.id="toast";el.style.cssText="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 16px;border-radius:10px;z-index:2000;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.25);max-width:86vw;text-align:center";document.body.appendChild(el)}el.textContent=msg;el.hidden=false;clearTimeout(el._t);el._t=setTimeout(()=>el.hidden=true,2600)}
+function openFromHash(){const h=decodeURIComponent((location.hash||"").slice(1));const r=BYSLUG[h];if(!r)return false;showView("mapa");openRoute(r.id);setTimeout(()=>flyTo(r.lat,r.lon,8),60);return true}
+addEventListener("hashchange",openFromHash);
 // boletines de montaña de AEMET por zona
 function aemetZone(lat,lon){
   if(lat>42.95&&lat<43.4&&lon>-5.25&&lon<-4.45)return["peu1","Picos de Europa"];
@@ -440,7 +453,7 @@ function openRoute(ri,pi){
   ${r.ds?`<p class="desc">${esc(r.ds.replace(/\s*📝.*$/,""))}</p>`:""}
   ${(r.km||r.de||r.tm||r.dif||r.dl)?`<div class="ficha">${r.km?`<div><b>${fmtKm(r.km)}</b><span>Distancia</span></div>`:""}${r.de?`<div><b>+${r.de.toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${r.tm?`<div><b>${esc(r.tm)}</b><span>Duración</span></div>`:""}${r.dl?`<div><b>${DIFN[r.dl]}</b><span>Dificultad</span></div>`:r.dif?`<div><b>${esc(r.dif)}</b><span>Dificultad</span></div>`:""}</div>`:""}
   ${r.sal?`<p class="salida">Salida: ${esc(r.sal.replace(/\s*↗$/,""))}${r.zo?" · "+esc(r.zo):""}</p>`:""}
-  <div class="actions">${r.u?`<a class="btn primary" href="${esc(r.u)}" target="_blank" rel="noopener">Leer la ruta en el blog</a>`:""}
+  <div class="actions">${r.u?`<a class="btn primary" href="${esc(r.u)}" target="_blank" rel="noopener">Leer la ruta en el blog</a><button class="btn ghost" data-share="${r.id}">↗ Compartir</button>`:""}
   ${r.wk?`<a class="btn ghost" href="${esc(r.wk)}" target="_blank" rel="noopener">Track en Wikiloc</a>`:""}<a class="btn ghost" href="https://www.google.com/maps/search/?api=1&query=${hi.lat},${hi.lon}" target="_blank" rel="noopener">Google Maps</a></div>
   <div class="sec"><h3>El tiempo</h3><p class="note" style="margin-bottom:6px">Previsión para ${esc(hi.c)}${hi.a?" ("+fmtA(hi.a)+")":""}.</p>
   <div class="actions" style="margin-top:0"><a class="btn ghost" href="https://www.windy.com/${hi.lat.toFixed(3)}/${hi.lon.toFixed(3)}?${hi.lat.toFixed(3)},${hi.lon.toFixed(3)},12" target="_blank" rel="noopener">☁ Previsión en el punto (Windy)</a>${aemetZone(hi.lat,hi.lon)?`<a class="btn ghost" href="https://www.aemet.es/es/eltiempo/prediccion/montana?w=&p=${aemetZone(hi.lat,hi.lon)[0]}" target="_blank" rel="noopener">AEMET montaña · ${aemetZone(hi.lat,hi.lon)[1]}</a>`:""}</div></div>
@@ -497,6 +510,7 @@ sheet.addEventListener("click",e=>{
   const st=e.target.closest("[data-site]"); if(st){const s=found[+st.dataset.site];nearAt(s.lat,s.lon,s.alt?s.alt.split(";")[0]:s.n);return}
   if(e.target.closest("[data-geo]")){useGeo();return}
   if(e.target.closest("[data-near-again]")){openNearPanel();return}
+  const sh=e.target.closest("[data-share]"); if(sh){shareRoute(R[+sh.dataset.share]);return}
   if(e.target.closest("[data-pickmap]")){sheet.hidden=true;sheet.classList.remove("full");setNear(true);return}
   const sm=e.target.closest("[data-showmap]"); if(sm){const f=sheet.classList.toggle("full");sm.textContent=f?"Ver en el mapa":"Solo el listado";sheet.scrollTop=0;return}
   if(e.target.closest("[data-back-near]")&&lastNear){nearAt(...lastNear);return}
@@ -582,6 +596,7 @@ for(const kind of ["cumbres","lugares"]){document.getElementById("v-"+kind).addE
 applyFilter(); renderCols(); fitHome(false); sizeMarks();
 document.getElementById("sub").textContent=`${R.filter(r=>r.u).length} rutas · Cantábrica, Pirineos, Alpes y Dolomitas`;
 const t0=store.get("ldc-tab","mapa"); showView(["mapa","rutas","cumbres","lugares"].includes(t0)?t0:"mapa");
+setTimeout(openFromHash,300);
 // estado inicial: mapa completo de Asturias y León
 addEventListener("resize",()=>{map.invalidateSize()});
 document.getElementById("b-me").addEventListener("click",()=>{openNearPanel();useGeo()});
