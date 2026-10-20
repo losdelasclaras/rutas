@@ -662,7 +662,7 @@ document.getElementById("b-near").addEventListener("click",openNearPanel);
 
 /* ---------- tabs ---------- */
 document.querySelector("nav.tabs").addEventListener("click",e=>{const b=e.target.closest("[data-v]");if(!b)return;showView(b.dataset.v)});
-function showView(v){if(v==="mapa")setTimeout(()=>map.invalidateSize(),0);document.querySelectorAll("nav.tabs [data-v]").forEach(x=>x.setAttribute("aria-selected",x.dataset.v===v));["mapa","rutas","cumbres","lugares"].forEach(n=>document.getElementById("v-"+n).hidden=n!==v);store.set("ldc-tab",v)}
+function showView(v){if(v==="mapa")setTimeout(()=>map.invalidateSize(),0);if(v!=="mapa"&&window.showTrack){showTrack(null);const tp=document.getElementById("trkpill");if(tp)tp.hidden=true}document.querySelectorAll("nav.tabs [data-v]").forEach(x=>x.setAttribute("aria-selected",x.dataset.v===v));["mapa","rutas","cumbres","lugares"].forEach(n=>document.getElementById("v-"+n).hidden=n!==v);store.set("ldc-tab",v)}
 
 /* ---------- route list ---------- */
 const q=document.getElementById("q"); q.addEventListener("input",renderList);
