@@ -96,6 +96,7 @@ select.chip{appearance:none;padding-right:26px;background-image:linear-gradient(
 .trkpill{position:absolute;left:max(12px,env(safe-area-inset-left,0px));bottom:12px;max-width:calc(100% - 96px);width:420px;z-index:25;display:flex;align-items:center;gap:6px;background:var(--card);border:2px solid var(--mark);border-radius:14px;padding:8px 8px 8px 12px;box-shadow:0 2px 10px rgba(0,0,0,.2);zoom:var(--fs)}.trkpill[hidden]{display:none}
 .trkpill .pn{flex:1;min-width:0;text-align:left;background:none;border:0;padding:0;color:var(--ink);font:inherit;cursor:pointer}.trkpill b{display:block;font-size:15px;line-height:1.2}.trkpill span{font-size:13px;color:var(--mark);font-weight:600}
 @media (min-width:700px){.trkpill{max-width:calc(100% - 280px)}}
+.farh{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 0 4px}
 .wizrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 12px}.wizrow .wizbtn{margin:0;font-size:15.5px;padding:13px 8px}
 .ov{position:fixed;inset:0;z-index:2500;background:var(--card);overflow:auto;-webkit-overflow-scrolling:touch}.ov[hidden]{display:none}
 .ovin{max-width:720px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));zoom:var(--fs)}
@@ -457,6 +458,12 @@ const byDate=(a,b)=>rdate(b.r||b).localeCompare(rdate(a.r||a));
 const sortNear=l=>SORT==="fecha"?l.slice().sort(byDate):l;
 const sortChips=()=>`<div class="chips" style="margin:6px 0 2px"><button class="chip" data-sort="fecha" aria-pressed="${SORT==="fecha"}">Más recientes</button><button class="chip" data-sort="cerca" aria-pressed="${SORT==="cerca"}">Más cercanas</button></div>`;
 let lastNear=null;
+const RAD=15;
+function nearSplit(lat,lon){const all=nearestRoutes(lat,lon,999);const ins=all.filter(o=>o.d<=RAD);const far=ins.length>=5?[]:all.filter(o=>o.d>RAD&&o.d<=40).slice(0,5-ins.length);return{ins:sortNear(ins),far}}
+function nearListHTML(ns){const row=o=>rowHTML(o.r,(o.d<10?o.d.toFixed(1).replace(".",","):o.d.toFixed(0))+" km",true);
+  return (ns.ins.length?`<div class="rows" style="margin-top:8px">${ns.ins.map(row).join("")}</div>`:`<p class="empty">No hay rutas a menos de ${RAD} km.</p>`)+
+  (ns.far.length?`<h3 class="farh">Un poco más lejos</h3><div class="rows">${ns.far.map(row).join("")}</div>`:"")}
+const nearNote=ns=>`${ns.ins.length} ${ns.ins.length===1?"ruta":"rutas"} a menos de ${RAD} km${F.reg!=="todas"||F.year!=="todos"||F.wz?", con los filtros actuales":""}.`;
 function nearestRoutes(lat,lon,n,excl){return R.filter(r=>r.id!==excl&&routeOk(r)).map(r=>({r,d:km({lat,lon},r)})).sort((a,b)=>a.d-b.d).slice(0,n)}
 const fmtKm=v=>v.toLocaleString("es-ES",{maximumFractionDigits:1})+" km";
 const thumbHTML=r=>r.f!=null?`<img class="thumb" src="fotos/${r.f}.jpg" alt="" loading="lazy">`:`<span class="thumb none" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20l7-12 4 6 3-4 6 10z"/></svg></span>`;
@@ -563,10 +570,10 @@ function openRoute(ri,pi){
 function nearAt(lat,lon,label){
   setNear(false); ensureZone(zoneAt(lat,lon));
   lastNear=[lat,lon,label];
-  const list=sortNear(nearestRoutes(lat,lon,12));
+  const ns=nearSplit(lat,lon),list=[...ns.ins,...ns.far];
   if(probeC)probeC.remove(); probeC=L.circle([lat,lon],{radius:15000,className:"probe",interactive:false}).addTo(map);
   nodes.classed("sel",i=>list.some(o=>o.r.p.includes(i)));
-  sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>Rutas cerca de ${label?esc(label):"aquí"}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><p class="note">Las ${list.length} más próximas${F.reg!=="todas"||F.year!=="todos"?", con los filtros actuales":""}. El círculo marca 15 km. <button class="linkbtn" data-near-again>Buscar otro sitio</button> <button class="linkbtn onlymob" data-showmap>Ver en el mapa</button></p>${sortChips()}<div class="rows" style="margin-top:8px">${list.map(o=>rowHTML(o.r,o.d.toFixed(0)+" km",true)).join("")}</div>`;
+  sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>Rutas cerca de ${label?esc(label):"aquí"}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><p class="note">${nearNote(ns)} El círculo marca los ${RAD} km. <button class="linkbtn" data-near-again>Buscar otro sitio</button> <button class="linkbtn onlymob" data-showmap>Ver en el mapa</button></p>${ns.ins.length>1?sortChips():""}${nearListHTML(ns)}`;
   sheet.classList.add("full"); sheet.hidden=false; sheet.scrollTop=0;
   flyTo(lat,lon,Math.max(7,Math.min(k,9)));
 }
@@ -631,7 +638,7 @@ function ovDraw(){const st=OVS[OVS.length-1];if(!st){ov.hidden=true;ov.innerHTML
   else if(st.t==="search"){h=`<h2 class="ovh">Rutas cerca de…</h2><label class="note" for="qpl2" style="display:block;margin:4px 0 8px">Escribe un pueblo, una villa o una cumbre:</label>
     <input class="search" id="qpl2" type="search" placeholder="Por ejemplo: Felechosa, Taranes, Tuiza, Ubiña…" autocomplete="off"><div class="rows" id="sugg2" style="margin-top:6px"></div>
     <p class="note" id="geomsg2" style="margin-top:12px"><button class="btn primary" data-ovgeo>📍 Usar mi ubicación</button></p>`}
-  else if(st.t==="near"){const list=sortNear(nearestRoutes(st.lat,st.lon,12));h=`<h2 class="ovh">Rutas cerca de ${esc(st.label)}</h2><p class="note">Las ${list.length} más próximas. <button class="linkbtn" data-ovsearch>Buscar otro sitio</button></p>${sortChips()}<div class="rows" style="margin-top:8px">${list.map(o=>rowHTML(o.r,o.d.toFixed(0)+" km",true)).join("")}</div>`}
+  else if(st.t==="near"){const ns=nearSplit(st.lat,st.lon);h=`<h2 class="ovh">Rutas cerca de ${esc(st.label)}</h2><p class="note">${nearNote(ns)} <button class="linkbtn" data-ovsearch>Buscar otro sitio</button></p>${ns.ins.length>1?sortChips():""}${nearListHTML(ns)}`}
   ov.innerHTML=`<div class="ovin"><div class="ovbar"><button class="linkbtn" data-ovback>← Volver</button></div>${h}</div>`;ov.hidden=false;ov.scrollTop=0;
   if(st.t==="search"){const inp=document.getElementById("qpl2");
     inp.addEventListener("input",()=>{ovFound=findSites(inp.value);document.getElementById("sugg2").innerHTML=ovFound.length?ovFound.map((s,i)=>`<button class="row" data-ovsite="${i}"><div class="t"><b>${esc(s.alt?s.alt.split(";")[0]:s.n)}</b><span>${s.k}${s.reg?" · "+esc(s.reg):""}${s.alt?" · "+esc(s.n):""}</span></div></button>`).join(""):(inp.value.trim().length>1?`<p class="note">No encuentro «${esc(inp.value)}». Prueba con otro nombre.</p>`:"")});
