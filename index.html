@@ -455,7 +455,7 @@ function toast(msg){let el=document.getElementById("toast");if(!el){el=document.
 function openFromHash(){const h=decodeURIComponent((location.hash||"").slice(1));const r=BYSLUG[h];if(!r)return false;showView("mapa");openRoute(r.id);setTimeout(()=>flyTo(r.lat,r.lon,8),60);return true}
 addEventListener("hashchange",openFromHash);
 /* ---------- ¿Qué ruta hago? ---------- */
-const WZ={cuando:"ahora",zona:"",esf:"",ti:"",pa:"",geo:null,seen:new Set()};
+const WZ={cuando:"",zona:"",esf:"",ti:"",pa:"",geo:null,seen:new Set()};
 const ZOP=[["cerca","📍 Cerca de mí"],["ast-or","Asturias oriente"],["ast-ce","Asturias centro"],["ast-oc","Asturias occidente"],["León","León"],["Cantabria","Cantabria"],["Pirineos","Pirineos"],["Alpes","Alpes y Dolomitas"],["","Me da igual"]];
 const EOP=[["baja","Fácil"],["moderada","Moderada"],["alta","Difícil"],["","Me da igual"]];
 const wzMeses=()=>{const m=new Date().getMonth();return[m+1,(m+1)%12+1]};
@@ -474,8 +474,7 @@ function wizPool(){const ms=wzMeses();
 function wizOpen(step){let el=document.getElementById("wiz");if(!el){el=document.createElement("div");el.id="wiz";el.className="wiz";document.body.appendChild(el);
   el.addEventListener("click",wizClick)}el.hidden=false;wizRender(step||1)}
 function wizRender(step){const el=document.getElementById("wiz");const chips=(k,opts)=>`<div class="opts">${opts.map(([v,l])=>`<button class="chip" data-wk="${k}" data-wv="${v}" aria-pressed="${WZ[k]===v}">${l}</button>`).join("")}</div>`;
-  if(step===1){el.innerHTML=`<div class="card"><h2>¿Qué ruta hago?</h2><p class="note">Dime qué te apetece y te propongo unas cuantas de tus rutas.</p>
-    <p class="q">¿Cuándo?</p>${chips("cuando",COP())}<p class="note">Salen las rutas que hiciste en esa época del año, para que la nieve, el barro o el calor se parezcan a lo que te vas a encontrar.</p>
+  if(step===1){el.innerHTML=`<div class="card"><h2>¿Qué ruta hago?</h2><p class="note">Dime qué te apetece. Primero te saldrán las rutas hechas en estas mismas fechas, para que la nieve, el barro o el calor se parezcan a lo que te vas a encontrar.</p>
     <p class="q">¿Por dónde?</p>${chips("zona",ZOP)}<p class="note" id="wizgeo"></p>
     <p class="q">¿Qué dificultad?</p>${chips("esf",EOP)}
     <p class="q">¿Qué distancia?</p>${chips("ti",TOP)}
@@ -493,7 +492,7 @@ function wizClick(e){const el=document.getElementById("wiz");
       if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{WZ.geo={lat:p.coords.latitude,lon:p.coords.longitude};m.textContent="Ubicación encontrada: rutas a menos de 40 km."},()=>{m.textContent="No he podido saber dónde estás; elige una zona.";WZ.zona=""; wizRender(1)},{timeout:10000,maximumAge:600000});else m.textContent="Este navegador no da la ubicación; elige una zona."}
     el.querySelectorAll(`[data-wk="${c.dataset.wk}"]`).forEach(b=>b.setAttribute("aria-pressed",b===c));return}
   if(e.target.closest("[data-wgo]")){const ids=new Set(wizPool().map(x=>x.r.id));
-    const lab=[COP().find(o=>o[0]===WZ.cuando),ZOP.find(o=>o[0]===WZ.zona),EOP.find(o=>o[0]===WZ.esf),TOP.find(o=>o[0]===WZ.ti)].filter(o=>o&&o[0]).map(o=>o[1].replace("📍 ","").replace(/^Estas fechas \((.*)\)$/,"$1")).join(" · ")||"Cualquier ruta";
+    const lab=[ZOP.find(o=>o[0]===WZ.zona),EOP.find(o=>o[0]===WZ.esf),TOP.find(o=>o[0]===WZ.ti)].filter(o=>o&&o[0]).map(o=>o[1].replace("📍 ","").replace(/^Estas fechas \((.*)\)$/,"$1")).join(" · ")||"Cualquier ruta";
     Object.assign(F,{reg:"todas",year:"todos",km:"",de:"",ex:"",co:"",nw:"",iv:"",pa:"",wz:{ids,label:lab}});q.value="";el.hidden=true;showView("rutas");applyFilter();
     document.getElementById("fbox").open=false;document.getElementById("v-rutas").scrollTop=0;window.scrollTo(0,0);return}
   if(e.target.closest("[data-wmore]")){wizRender(2);el.querySelector(".card").scrollTop=0;return}
@@ -614,6 +613,10 @@ function renderList(){
   const ban=F.wz?`<div class="wzban"><b>🧭 Propuestas para ti</b><span>${esc(F.wz.label)}</span><span class="note">${nRec?`Primero las más recientes: ${nRec} de los últimos 6 años${rs.length>nRec?" y después las más antiguas":""}.`:"Todas tienen más de 6 años; puede que algo haya cambiado."}</span><div><button class="btn primary" data-wzedit>Cambiar</button> <button class="linkbtn" data-wzoff>Ver todas las rutas</button></div></div>`:"";
   const cnt=ban+`<p class="count">${rs.length} ${rs.length===1?"ruta":"rutas"}${(F.km||F.de)?" · solo las que tienen distancia y desnivel en la ficha":""}</p>`;
   let sep=false;
+  if(F.wz){const ms=wzMeses(),y10=new Date().getFullYear()-10,G=[[],[],[]];rs.forEach(r=>G[(r.y||0)<y10?2:ms.includes(r.m)?0:1].push(r));
+    const H=[`Para estas fechas (${MESES[ms[0]]} y ${MESES[ms[1]]})`,"Otras de los últimos 10 años",`Más antiguas (antes de ${y10})`];
+    const cnt2=ban.replace(/<span class="note">.*?<\/span>/,`<span class="note">Primero las que hiciste en ${MESES[ms[0]]} y ${MESES[ms[1]]} en los últimos 10 años; después el resto, siempre de la más reciente a la más antigua.</span>`)+`<p class="count">${rs.length} ${rs.length===1?"ruta":"rutas"}</p>`;
+    document.getElementById("list").innerHTML=cnt2+(rs.length?G.map((g,i)=>g.length?`<h2 class="${i==2?"oldh":"yearh"}">${H[i]}<small>${g.length} ${g.length===1?"ruta":"rutas"}</small></h2><div class="rows">${g.map(r=>rowHTML(r)).join("")}</div>`:"").join(""):`<p class="empty">No hay rutas con esas condiciones. Pulsa «Cambiar» y quita alguna.</p>`);return}
   document.getElementById("list").innerHTML=cnt+(keys.length?keys.map(y=>`${F.wz&&nRec&&!sep&&(+y||0)<cut&&(sep=true)?`<h2 class="oldh">Más antiguas (antes de ${cut})</h2>`:""}<h2 class="yearh">${y}<small>${by[y].length} ${by[y].length===1?"ruta":"rutas"}</small></h2><div class="rows">${by[y].map(r=>rowHTML(r)).join("")}</div>`).join(""):`<p class="empty">No hay rutas con esa búsqueda y esos filtros.</p>`);
 }
 document.getElementById("list").addEventListener("click",e=>{if(e.target.closest("[data-wzedit]")){wizOpen(1);return}if(e.target.closest("[data-wzoff]")){F.wz=null;applyFilter();return}const row=e.target.closest("[data-r]");if(!row)return;const r=R[+row.dataset.r];showView("mapa");openRoute(r.id);setTimeout(()=>flyTo(r.lat,r.lon,8),30)});
