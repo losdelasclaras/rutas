@@ -328,11 +328,14 @@ R.forEach(r=>{const s=new Set();const ttl=(r.ti||r.t||"")+" ";
   for(const k in PRE)if(PRE[k].test(ttl))s.add(k);
   r.pa=[...s]});
 const years=[...new Set(R.map(r=>r.y).filter(Boolean))].sort((a,b)=>b-a);
+const isAst=r=>r.r==="Asturias"||(r.rs||[]).includes("Asturias");
+const astZ=r=>r.lon<-6.05?"ast-oc":r.lon>-5.4?"ast-or":"ast-ce";
+const ASTZ=[["ast-or","Asturias oriente"],["ast-ce","Asturias centro"],["ast-oc","Asturias occidente"]];
 const F={reg:"todas",year:"todos",km:"",de:"",ex:"",co:"",nw:"",iv:"",pa:"",wz:null};
 const DIFN={"baja":"Baja","moderada":"Moderada","alta":"Alta","muy-alta":"Muy alta"};
 const KM={a:[0,10],b:[10,15],c:[15,20],d:[20,999]}, DE={a:[0,600],b:[600,1000],c:[1000,1500],d:[1500,9999]};
 const inR=(v,rg)=>v!=null&&v>=rg[0]&&v<rg[1];
-function routeOk(r){return (!F.wz||F.wz.ids.has(r.id))&&(F.reg==="todas"||r.r===F.reg||(r.rs||[]).includes(F.reg))&&(!F.pa||(r.pa||[]).includes(F.pa))&&(!F.iv||(F.iv==="si"?r.iv:!r.iv))&&(F.year==="todos"||String(r.y)===F.year)
+function routeOk(r){return (!F.wz||F.wz.ids.has(r.id))&&(F.reg==="todas"||(F.reg.startsWith("ast-")?isAst(r)&&astZ(r)===F.reg:r.r===F.reg||(r.rs||[]).includes(F.reg)))&&(!F.pa||(r.pa||[]).includes(F.pa))&&(!F.iv||(F.iv==="si"?r.iv:!r.iv))&&(F.year==="todos"||String(r.y)===F.year)
   &&(!F.km||inR(r.km,KM[F.km]))&&(!F.de||inR(r.de,DE[F.de]))&&(!F.ex||r.dl===F.ex)&&(!F.co||(r.co||[]).includes(F.co))&&(!F.nw||(F.nw==="nw"?r.nw:!r.nw))}
 const nExtra=()=>["year","km","de","ex","co","nw","iv","pa","wz"].filter(k=>F[k]&&F[k]!=="todos").length;
 const mapbar=document.getElementById("mapbar");
@@ -347,8 +350,7 @@ const conCount=c=>R.filter(r=>(r.co||[]).includes(c)).length;
 function chipRow(key,opts){return opts.map(([v,l])=>`<button class="chip" data-f="${key}" data-v="${v}" aria-pressed="${F[key]===v}">${l}</button>`).join("")}
 function renderFilters(){
   const el=document.getElementById("filters");
-  el.innerHTML=`<div class="fgroup"><span class="flabel">Zona</span><div class="chips">${chipRow("reg",[["todas","Todas"],...REGS.map(x=>[x,x])])}</div></div>
-  <div class="fgroup"><span class="flabel">Paisaje</span><div class="chips">${chipRow("pa",[["","Todos"],...PAIS])}</div></div>
+  el.innerHTML=`<div class="fgroup"><span class="flabel">Zona</span><div class="chips">${chipRow("reg",[["todas","Todas"],...REGS.flatMap(x=>x==="Asturias"?[[x,x],...ASTZ]:[[x,x]])])}</div></div>
   <div class="fgroup"><span class="flabel">Época</span><div class="chips">${chipRow("iv",[["","Todas"],["si","❄ Invernales"],["no","Sin nieve"]])}</div></div>
   <div class="fgroup"><span class="flabel">Distancia</span><div class="chips">${chipRow("km",[["","Cualquiera"],["a","Menos de 10 km"],["b","10–15 km"],["c","15–20 km"],["d","Más de 20 km"]])}</div></div>
   <div class="fgroup"><span class="flabel">Desnivel</span><div class="chips">${chipRow("de",[["","Cualquiera"],["a","Menos de 600 m"],["b","600–1.000 m"],["c","1.000–1.500 m"],["d","Más de 1.500 m"]])}</div></div>
@@ -457,25 +459,26 @@ const WZ={cuando:"ahora",zona:"",esf:"",ti:"",pa:"",geo:null,seen:new Set()};
 const ZOP=[["cerca","📍 Cerca de mí"],["ast-or","Asturias oriente"],["ast-ce","Asturias centro"],["ast-oc","Asturias occidente"],["León","León"],["Cantabria","Cantabria"],["Pirineos","Pirineos"],["Alpes","Alpes y Dolomitas"],["","Me da igual"]];
 const EOP=[["baja","Fácil"],["moderada","Moderada"],["alta","Difícil"],["","Me da igual"]];
 const wzMeses=()=>{const m=new Date().getMonth();return[m+1,(m+1)%12+1]};
-const COP=()=>{const[a,b]=wzMeses();return[["ahora",`En estas fechas (${MESES[a]} y ${MESES[b]})`],["","En cualquier época"]]};
-const TOP=[["monte","⛰️ Montaña"],["costa","🌊 Costa"],["","Me da igual"]];
-const isAst=r=>r.r==="Asturias"||(r.rs||[]).includes("Asturias");
-const astZ=r=>r.lon<-6.05?"ast-oc":r.lon>-5.4?"ast-or":"ast-ce";
+const COP=()=>{const[a,b]=wzMeses();return[["ahora",`Estas fechas (${MESES[a]} y ${MESES[b]})`],["inv","❄ Invierno"],["pri","Primavera"],["ver","Verano"],["oto","Otoño"],["","Cualquier época"]]};
+const EST={inv:[12,1,2,3],pri:[4,5,6],ver:[7,8,9],oto:[10,11]};
+const TOP=[["corta","Corta (menos de 10 km)"],["media","Media (10–15 km)"],["larga","Larga (más de 15 km)"],["","Me da igual"]];
+const DKM={corta:[0,10],media:[10,15.01],larga:[15.01,999]};
+
 function esfOf(r){if(r.dl==="alta"||r.dl==="muy-alta"||(r.de||0)>=1150||(r.km||0)>=18)return"dura";if(r.dl==="baja"||((r.km||99)<=10&&(r.de||9999)<=600))return"suave";return"media"}
 function wizPool(){const ms=wzMeses();
   return R.filter(r=>r.u&&(!WZ.zona||(WZ.zona==="cerca"?WZ.geo&&km(WZ.geo,r)<=40:WZ.zona.startsWith("ast-")?isAst(r)&&astZ(r)===WZ.zona:WZ.zona==="Alpes"?["Alpes","Dolomitas"].includes(r.r):(r.r===WZ.zona||(r.rs||[]).includes(WZ.zona))))
-    &&(WZ.cuando!=="ahora"||ms.includes(r.m))
+    &&(!WZ.cuando||(WZ.cuando==="ahora"?ms:EST[WZ.cuando]).includes(r.m))
     &&(!WZ.esf||(WZ.esf==="alta"?["alta","muy-alta"].includes(r.dl):r.dl===WZ.esf))
-    &&(!WZ.ti||(WZ.ti==="costa"?(r.pa||[]).includes("costa"):!(r.pa||[]).includes("costa"))))
+    &&(!WZ.ti||inR(r.km,DKM[WZ.ti])))
    .map(r=>({r,s:0}))}
 function wizOpen(step){let el=document.getElementById("wiz");if(!el){el=document.createElement("div");el.id="wiz";el.className="wiz";document.body.appendChild(el);
   el.addEventListener("click",wizClick)}el.hidden=false;wizRender(step||1)}
 function wizRender(step){const el=document.getElementById("wiz");const chips=(k,opts)=>`<div class="opts">${opts.map(([v,l])=>`<button class="chip" data-wk="${k}" data-wv="${v}" aria-pressed="${WZ[k]===v}">${l}</button>`).join("")}</div>`;
   if(step===1){el.innerHTML=`<div class="card"><h2>¿Qué ruta hago?</h2><p class="note">Dime qué te apetece y te propongo unas cuantas de tus rutas.</p>
-    <p class="q">¿Cuándo?</p>${chips("cuando",COP())}<p class="note">Rutas que hiciste en estas fechas, para que la época encaje.</p>
+    <p class="q">¿Cuándo?</p>${chips("cuando",COP())}<p class="note">Salen las rutas que hiciste en esa época del año, para que la nieve, el barro o el calor se parezcan a lo que te vas a encontrar.</p>
     <p class="q">¿Por dónde?</p>${chips("zona",ZOP)}<p class="note" id="wizgeo"></p>
     <p class="q">¿Qué dificultad?</p>${chips("esf",EOP)}
-    <p class="q">¿Montaña o costa?</p>${chips("ti",TOP)}
+    <p class="q">¿Qué distancia?</p>${chips("ti",TOP)}
     <div class="foot"><button class="btn primary" data-wgo>Proponme rutas</button><button class="linkbtn" data-wclose>Cerrar</button></div></div>`;return}
   const pool=wizPool(), pick=pool.slice(0,4).map(x=>x.r); pick.forEach(r=>WZ.seen.add(r.id));
   const mo=new Date().getMonth()+1, winter=mo===12||mo<=3;
@@ -490,7 +493,7 @@ function wizClick(e){const el=document.getElementById("wiz");
       if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{WZ.geo={lat:p.coords.latitude,lon:p.coords.longitude};m.textContent="Ubicación encontrada: rutas a menos de 40 km."},()=>{m.textContent="No he podido saber dónde estás; elige una zona.";WZ.zona=""; wizRender(1)},{timeout:10000,maximumAge:600000});else m.textContent="Este navegador no da la ubicación; elige una zona."}
     el.querySelectorAll(`[data-wk="${c.dataset.wk}"]`).forEach(b=>b.setAttribute("aria-pressed",b===c));return}
   if(e.target.closest("[data-wgo]")){const ids=new Set(wizPool().map(x=>x.r.id));
-    const lab=[COP().find(o=>o[0]===WZ.cuando),ZOP.find(o=>o[0]===WZ.zona),EOP.find(o=>o[0]===WZ.esf),TOP.find(o=>o[0]===WZ.ti)].filter(o=>o&&o[0]).map(o=>o[1].replace("📍 ","").replace("En estas fechas ","").replace(/[()]/g,"")).join(" · ")||"Cualquier ruta";
+    const lab=[COP().find(o=>o[0]===WZ.cuando),ZOP.find(o=>o[0]===WZ.zona),EOP.find(o=>o[0]===WZ.esf),TOP.find(o=>o[0]===WZ.ti)].filter(o=>o&&o[0]).map(o=>o[1].replace("📍 ","").replace(/^Estas fechas \((.*)\)$/,"$1")).join(" · ")||"Cualquier ruta";
     Object.assign(F,{reg:"todas",year:"todos",km:"",de:"",ex:"",co:"",nw:"",iv:"",pa:"",wz:{ids,label:lab}});q.value="";el.hidden=true;showView("rutas");applyFilter();
     document.getElementById("fbox").open=false;document.getElementById("v-rutas").scrollTop=0;window.scrollTo(0,0);return}
   if(e.target.closest("[data-wmore]")){wizRender(2);el.querySelector(".card").scrollTop=0;return}
