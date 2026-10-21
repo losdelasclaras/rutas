@@ -1,5 +1,5 @@
 // Funciona sin cobertura: guarda la app, las fotos y las zonas del mapa que ya has visto.
-const V="ldc-v3", SHELL=["./","index.html","manifest.webmanifest","vendor/leaflet.js","vendor/leaflet.css","icons/icon-192.png","icons/icon-512.png"];
+const V="ldc-v4", SHELL=["./","index.html","manifest.webmanifest","vendor/leaflet.js","vendor/leaflet.css","icons/icon-192.png","icons/icon-512.png"];
 const TILES="ldc-tiles", MAXT=2500;
 self.addEventListener("install",e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V&&k!==TILES).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
@@ -14,7 +14,7 @@ self.addEventListener("fetch",e=>{
   if(u.origin===location.origin){
     // la página: primero la red (para tener siempre la última versión), y si no hay cobertura, la guardada
     if(e.request.mode==="navigate"||u.pathname.endsWith("index.html")){
-      e.respondWith(fetch(e.request).then(r=>{const cp=r.clone();caches.open(V).then(c=>c.put("index.html",cp));return r}).catch(()=>caches.match("index.html")));return}
+      e.respondWith(fetch(u.origin+u.pathname,{cache:"no-store"}).then(r=>{const cp=r.clone();caches.open(V).then(c=>c.put("index.html",cp));return r}).catch(()=>caches.match("index.html")));return}
     e.respondWith(caches.match(e.request).then(hit=>hit||fetch(e.request).then(r=>{if(r.ok){const cp=r.clone();caches.open(V).then(c=>c.put(e.request,cp))}return r})));
   }
 });

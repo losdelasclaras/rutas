@@ -352,9 +352,8 @@ function routeOk(r){return (!F.wz||F.wz.ids.has(r.id))&&(F.reg==="todas"||(F.reg
   &&(!F.km||inR(r.km,KM[F.km]))&&(!F.de||inR(r.de,DE[F.de]))&&(!F.ex||r.dl===F.ex)&&(!F.co||(r.co||[]).includes(F.co))&&(!F.nw||(F.nw==="nw"?r.nw:!r.nw))}
 const nExtra=()=>["year","km","de","ex","co","nw","iv","pa","wz"].filter(k=>F[k]&&F[k]!=="todos").length;
 const mapbar=document.getElementById("mapbar");
-function renderMapbar(){const n=nExtra()+(F.reg!=="todas"?1:0);
- mapbar.innerHTML=Object.entries(ZONES).map(([z,o])=>`<button class="chip" data-zone="${z}" aria-pressed="${ZK===z}">${o.n}</button>`).join("")+
- `<button class="chip" data-more aria-pressed="${n>0}">Filtros${n?" · "+n:""}</button>`+(n?`<button class="chip fclr" data-clearall>${F.wz?"Propuestas":"Filtro activo"} · Quitar ✕</button>`:"")}
+function renderMapbar(){
+ mapbar.innerHTML=Object.entries(ZONES).map(([z,o])=>`<button class="chip" data-zone="${z}" aria-pressed="${ZK===z}">${o.n}</button>`).join("")}
 mapbar.addEventListener("click",e=>{const b=e.target.closest("[data-zone]");if(b){sheet.hidden=true;setNear(false);if(F.reg!=="todas"&&zoneOf(F.reg)!==b.dataset.zone)F.reg="todas";drawZone(b.dataset.zone);applyFilter();return}
   if(e.target.closest("[data-clearall]")){Object.assign(F,{reg:"todas",year:"todos",km:"",de:"",ex:"",co:"",nw:"",iv:"",pa:"",wz:null});applyFilter();return}
   if(e.target.closest("[data-more]")){showView("rutas");document.getElementById("v-rutas").scrollTop=0}});
@@ -381,10 +380,9 @@ document.getElementById("filters").addEventListener("change",e=>{if(e.target.id=
 const ZONES={
  cant:{n:"Cantábrica",home:[-7.15,43.72,-4.35,42.5]},
  pir:{n:"Pirineos",home:[-0.85,43.0,1.12,42.55]},
- alp:{n:"Alpes",home:[6.0,46.5,8.2,44.85]},
- dol:{n:"Dolomitas",home:[11.55,46.63,12.3,46.42]}};
-const zoneOf=r=>r==="Pirineos"?"pir":r==="Alpes"?"alp":r==="Dolomitas"?"dol":"cant";
-const zoneAt=(lat,lon)=>lon>10?"dol":lon>4?"alp":(lon>-1.6&&lat<43.25)?"pir":"cant";
+ alp:{n:"Alpes y Dolomitas",home:[6.0,46.8,12.4,44.85]}};
+const zoneOf=r=>r==="Pirineos"?"pir":(r==="Alpes"||r==="Dolomitas")?"alp":"cant";
+const zoneAt=(lat,lon)=>lon>4?"alp":(lon>-1.6&&lat<43.25)?"pir":"cant";
 let ZK=ZONES[store.get("ldc-zona","cant")]?store.get("ldc-zona","cant"):"cant";
 const mapEl=document.getElementById("map");
 const map=L.map(mapEl,{zoomControl:false,minZoom:5,maxZoom:17,zoomSnap:0.5,worldCopyJump:false});
@@ -440,10 +438,8 @@ function flyTo(lat,lon,kk=10){const z=Math.max(map.getZoom(),Math.min(15,Math.ro
   let pt=map.project([lat,lon],z); pt=pt.add(wide?[r.width*0.12,0]:[0,r.height*0.2]);
   const c=map.unproject(pt,z);
   if(reduce())map.setView(c,z);else map.flyTo(c,z,{duration:.6})}
-function markNodes(){
-  for(const i in MK){const p=P[i];const ok=(p.rs||[null]).some(ri=>ri===null?F.reg==="todas"&&F.year==="todos":routeOk(R[ri]));
-    const el=MK[i].getElement(); if(el)el.classList.toggle("dim",!ok);
-    const tt=MK[i].getTooltip(); if(tt)tt.setOpacity(ok?1:0)}
+function markNodes(){ // el mapa no usa los filtros: se ven siempre todos los puntos
+  for(const i in MK){const el=MK[i].getElement(); if(el)el.classList.remove("dim");const tt=MK[i].getTooltip(); if(tt)tt.setOpacity(1)}
 }
 function applyFilter(){
   renderMapbar(); renderFilters(); const n=nExtra()+(F.reg!=="todas"?1:0); document.getElementById("fsum").textContent=n?`(${n} activo${n>1?"s":""})`:"";
@@ -572,7 +568,7 @@ function routeBody(r){
   <div class="actions">${r.u?`<a class="btn primary" href="${esc(r.u)}" target="_blank" rel="noopener">Leer la ruta en el blog</a><button class="btn ghost" data-share="${r.id}">↗ Compartir</button>`:""}
   ${r.wk?`<a class="btn ghost" href="${esc(r.wk)}" target="_blank" rel="noopener">Track en Wikiloc</a>`:""}<a class="btn ghost" href="https://www.google.com/maps/search/?api=1&query=${hi.lat},${hi.lon}" target="_blank" rel="noopener">Google Maps</a></div>
   <div class="sec"><h3>El tiempo</h3><p class="note" style="margin-bottom:6px">Previsión para ${esc(hi.c)}${hi.a?" ("+fmtA(hi.a)+")":""}.</p>
-  <div class="actions" style="margin-top:0"><a class="btn ghost" href="https://www.meteoblue.com/es/tiempo/semana/${hi.lat.toFixed(3)}N${hi.lon.toFixed(3)}E${hi.a?Math.round(hi.a):""}_${encodeURIComponent({alp:"Europe/Zurich",dol:"Europe/Rome"}[zoneOf(r.r)]||"Europe/Madrid")}" target="_blank" rel="noopener">☁ Previsión en el punto (Meteoblue)</a>${aemetZone(hi.lat,hi.lon)?`<a class="btn ghost" href="https://www.aemet.es/es/eltiempo/prediccion/montana?w=&p=${aemetZone(hi.lat,hi.lon)[0]}" target="_blank" rel="noopener">AEMET montaña · ${aemetZone(hi.lat,hi.lon)[1]}</a>`:""}</div></div>
+  <div class="actions" style="margin-top:0"><a class="btn ghost" href="https://www.meteoblue.com/es/tiempo/semana/${hi.lat.toFixed(3)}N${hi.lon.toFixed(3)}E${hi.a?Math.round(hi.a):""}_${encodeURIComponent((r.r==="Dolomitas"?"Europe/Rome":zoneOf(r.r)==="alp"?"Europe/Zurich":"Europe/Madrid"))}" target="_blank" rel="noopener">☁ Previsión en el punto (Meteoblue)</a>${aemetZone(hi.lat,hi.lon)?`<a class="btn ghost" href="https://www.aemet.es/es/eltiempo/prediccion/montana?w=&p=${aemetZone(hi.lat,hi.lon)[0]}" target="_blank" rel="noopener">AEMET montaña · ${aemetZone(hi.lat,hi.lon)[1]}</a>`:""}</div></div>
   ${r.gx?`<div class="sec"><h3>Perfil del recorrido</h3>${r.gx.pf.length?profSVG(r.gx):""}<p class="note" style="margin:4px 0 8px">Según el track: ${fmtKm(r.gx.km)} · +${r.gx.up.toLocaleString("es-ES")} m de subida${r.gx.mx?" · punto más alto "+r.gx.mx.toLocaleString("es-ES")+" m":""}.</p>
   <div class="actions" style="margin-top:0"><button class="btn primary" data-gpx="${r.id}">⬇ Descargar GPX</button><a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${r.gx.st[0]},${r.gx.st[1]}" target="_blank" rel="noopener">🚗 Cómo llegar al inicio</a></div></div>`:""}
   ${r.tk?`<div class="sec"><h3>Recorrido</h3><p class="note">Track de tu mapa: ${fmtKm(r.tkm)} · punto más alto ${fmtA(r.a)}. Está dibujado en el mapa.</p></div>`:""}
@@ -788,5 +784,5 @@ addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;
 ib.addEventListener("click",async()=>{if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice.catch(()=>{});deferredInstall=null;ib.hidden=true});
 addEventListener("appinstalled",()=>{ib.hidden=true});
 </script>
-<script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
+<script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>
 </body></html>
