@@ -472,8 +472,9 @@ const byDate=(a,b)=>rdate(b.r||b).localeCompare(rdate(a.r||a));
 const sortNear=l=>SORT==="fecha"?l.slice().sort(byDate):l;
 const sortChips=()=>`<div class="chips" style="margin:6px 0 2px"><button class="chip" data-sort="fecha" aria-pressed="${SORT==="fecha"}">Más recientes</button><button class="chip" data-sort="cerca" aria-pressed="${SORT==="cerca"}">Más cercanas</button></div>`;
 let lastNear=null;
-const RAD=15;
-function nearSplit(lat,lon){const all=nearestRoutes(lat,lon,999);const ins=all.filter(o=>o.d<=RAD);const far=ins.length>=5?[]:all.filter(o=>o.d>RAD&&o.d<=40).slice(0,5-ins.length);return{ins:sortNear(ins),far}}
+let RAD=15;
+const radAt=(lat,lon)=>zoneAt(lat,lon)==="cant"?15:25;
+function nearSplit(lat,lon){RAD=radAt(lat,lon);const all=nearestRoutes(lat,lon,999);const ins=all.filter(o=>o.d<=RAD);const far=ins.length>=5?[]:all.filter(o=>o.d>RAD&&o.d<=40).slice(0,5-ins.length);return{ins:sortNear(ins),far}}
 function nearListHTML(ns){const row=o=>rowHTML(o.r,(o.d<10?o.d.toFixed(1).replace(".",","):o.d.toFixed(0))+" km",true);
   return (ns.ins.length?`<div class="rows" style="margin-top:8px">${ns.ins.map(row).join("")}</div>`:`<p class="empty">No hay rutas a menos de ${RAD} km.</p>`)+
   (ns.far.length?`<h3 class="farh">Un poco más lejos</h3><div class="rows">${ns.far.map(row).join("")}</div>`:"")}
@@ -589,9 +590,9 @@ function nearAt(lat,lon,label){
   setNear(false); ensureZone(zoneAt(lat,lon));
   lastNear=[lat,lon,label];
   const ns=nearSplit(lat,lon),list=[...ns.ins,...ns.far];
-  if(probeC)probeC.remove(); probeC=L.circle([lat,lon],{radius:15000,className:"probe",interactive:false}).addTo(map);
+  if(probeC)probeC.remove(); probeC=L.circle([lat,lon],{radius:radAt(lat,lon)*1000,className:"probe",interactive:false}).addTo(map);
   nodes.classed("sel",i=>list.some(o=>o.r.p.includes(i)));
-  sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>Rutas cerca de ${label?esc(label):"aquí"}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><p class="note">${nearNote(ns)} El círculo marca los ${RAD} km. <button class="linkbtn" data-near-again>Buscar otro sitio</button> <button class="linkbtn onlymob" data-showmap>Ver en el mapa</button></p>${ns.ins.length>1?sortChips():""}${nearListHTML(ns)}`;
+  sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>Rutas cerca de ${label?esc(label):"aquí"}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><p class="note">${nearNote(ns)} El círculo marca ${RAD} km. <button class="linkbtn" data-near-again>Buscar otro sitio</button> <button class="linkbtn onlymob" data-showmap>Ver en el mapa</button></p>${ns.ins.length>1?sortChips():""}${nearListHTML(ns)}`;
   sheet.classList.add("full"); sheet.hidden=false; sheet.scrollTop=0;
   flyTo(lat,lon,Math.max(7,Math.min(k,9)));
 }
