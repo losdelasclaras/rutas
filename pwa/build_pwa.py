@@ -69,7 +69,7 @@ rep('''function showView(v){''','''function showView(v){if(v==="mapa")setTimeout
 rep('''drawZone(ZONES[store.get("ldc-zona","cant")]?store.get("ldc-zona","cant"):"cant"); applyFilter(); renderCols();''','''applyFilter(); renderCols(); fitHome(false); sizeMarks();''')
 rep('''requestAnimationFrame(()=>{fitHome(false);sizeMarks()});
 addEventListener("resize",()=>{sizeMarks()});''','''addEventListener("resize",()=>{map.invalidateSize()});
-document.getElementById("b-me").addEventListener("click",()=>{openNearPanel();useGeo()});
+document.getElementById("b-me").addEventListener("click",()=>{if(!navigator.geolocation){toast("Este móvil no da la ubicación");return}toast("Buscando dónde estás…");sheet.hidden=true;sheet.classList.remove("full");setNear(false);navigator.geolocation.getCurrentPosition(p=>{const la=p.coords.latitude,lo=p.coords.longitude;showMe(la,lo);ensureZone(zoneAt(la,lo));map.flyTo([la,lo],Math.max(map.getZoom(),14),{duration:reduce()?0:.8})},()=>toast("No he podido saber dónde estás. Revisa que la ubicación esté activada y con permiso."),{enableHighAccuracy:true,timeout:12000,maximumAge:60000})});
 let deferredInstall=null;const ib=document.getElementById("instbtn");
 addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;ib.hidden=false});
 ib.addEventListener("click",async()=>{if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice.catch(()=>{});deferredInstall=null;ib.hidden=true});
