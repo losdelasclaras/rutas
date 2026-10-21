@@ -87,6 +87,11 @@ select.chip{appearance:none;padding-right:26px;background-image:linear-gradient(
 .trkpill .pn{flex:1;min-width:0;text-align:left;background:none;border:0;padding:0;color:var(--ink);font:inherit;cursor:pointer}.trkpill b{display:block;font-size:15px;line-height:1.2}.trkpill span{font-size:13px;color:var(--mark);font-weight:600}
 @media (min-width:700px){.trkpill{max-width:calc(100% - 280px)}}
 .farh{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 0 4px}
+@media (min-width:700px){#b-rutas,#rmenu{display:none!important}}
+@media (max-width:699px){#b-wiz2,#b-near{display:none!important}
+ .rmenu{position:absolute;right:calc(max(12px,env(safe-area-inset-right,0px)) + 64px);bottom:12px;z-index:21;display:flex;flex-direction:column;gap:2px;background:var(--card);border:1px solid var(--edge);border-radius:12px;padding:6px;box-shadow:0 2px 10px rgba(0,0,0,.2);zoom:var(--fs)}
+ .rmenu[hidden]{display:none}.rmenu button{border:0;background:none;text-align:left;font:inherit;font-size:15px;font-weight:600;color:var(--ink);padding:11px 12px;border-radius:8px;cursor:pointer;white-space:nowrap}
+ .rmenu button:active{background:var(--land-dim)}#b-rutas[aria-expanded="true"]{background:var(--ink);border-color:var(--ink)}}
 .wizrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 12px}.wizrow .wizbtn{margin:0;font-size:15.5px;padding:13px 8px}
 .ov{position:fixed;inset:0;z-index:2500;background:var(--card);overflow:auto;-webkit-overflow-scrolling:touch}.ov[hidden]{display:none}
 .ovin{max-width:720px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));zoom:var(--fs)}
@@ -248,10 +253,16 @@ header.top,nav.tabs,.view.pad>.inner,.sheet,.mapbar,.legend,.fabs,.hint,.attrib{
         <button class="lay" data-lay="spots" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-brana" x="-12" y="-12" width="24" height="24"/></svg>Lugares</button>
         <button class="lay" data-lay="towns" aria-pressed="true"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-3.5" y="-3.5" width="7" height="7" fill="var(--ink)"/></svg>Pueblos</button>
       </div>
+      <div class="rmenu" id="rmenu" hidden>
+        <button data-rm="geo">📍 Rutas cerca de mí</button>
+        <button data-rm="lugar">🔎 Cerca de un pueblo o lugar</button>
+        <button data-rm="wiz">🧭 ¿Qué ruta hago?</button>
+      </div>
       <div class="fabs">
         <button class="btn ghost" id="b-home" data-short="Todo" title="Ver todo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Ver todo</button>
         <button class="btn primary" id="b-wiz2" data-short="¿Ruta?" title="¿Qué ruta hago?"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8l-2 6-6 2 2-6z"/></svg>¿Qué ruta hago?</button>
         <button class="btn primary" id="b-near" data-short="Cerca" title="Rutas cerca de…"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Rutas cerca de…</button>
+        <button class="btn primary" id="b-rutas" data-short="Rutas" aria-expanded="false" title="Buscar rutas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19c3-1 3-6 7-6s4-5 7-6"/><circle cx="4" cy="19" r="1.6"/><circle cx="18" cy="7" r="1.6"/></svg>Rutas</button>
       </div>
       <div class="attrib">Relieve: Terrain Tiles (Mapzen/AWS) · Pueblos: © OpenStreetMap</div>
       <div class="hint" id="hint" hidden>Toca un punto del mapa para ver las rutas más cercanas</div>
@@ -530,6 +541,10 @@ function wizClick(e){const el=document.getElementById("wiz");
 document.getElementById("b-wiz").addEventListener("click",()=>wizOpen(1));
 document.getElementById("b-wiz2").addEventListener("click",()=>wizOpen(1));
 document.getElementById("b-near2").addEventListener("click",()=>ovShow({t:"search"}));
+{const rb=document.getElementById("b-rutas"),rm=document.getElementById("rmenu");const close=()=>{rm.hidden=true;rb.setAttribute("aria-expanded",false)};
+ rb.addEventListener("click",e=>{e.stopPropagation();rm.hidden=!rm.hidden;rb.setAttribute("aria-expanded",!rm.hidden)});
+ rm.addEventListener("click",e=>{const b=e.target.closest("[data-rm]");if(!b)return;close();const a=b.dataset.rm;if(a==="wiz")wizOpen(1);else{openNearPanel();if(a==="geo")useGeo()}});
+ document.getElementById("map").addEventListener("pointerdown",close)}
 // boletines de montaña de AEMET por zona
 function aemetZone(lat,lon){
   if(lat>42.95&&lat<43.4&&lon>-5.25&&lon<-4.45)return["peu1","Picos de Europa"];
