@@ -1,0 +1,753 @@
+<?xml version='1.0' encoding='UTF-8'?><?xml-stylesheet href="http://www.blogger.com/styles/atom.css" type="text/css"?><feed xmlns='http://www.w3.org/2005/Atom' xmlns:openSearch='http://a9.com/-/spec/opensearchrss/1.0/' xmlns:blogger='http://schemas.google.com/blogger/2008' xmlns:georss='http://www.georss.org/georss' xmlns:gd="http://schemas.google.com/g/2005" xmlns:thr='http://purl.org/syndication/thread/1.0'><id>tag:blogger.com,1999:blog-8027918269373899721</id><updated>2026-10-19T18:21:46.390+02:00</updated><category term="Pirineos"/><category term="Picos"/><category term="Ninos"/><category term="Leon"/><category term="Trubia"/><category term="Alpes"/><category term="Redes"/><category term="Cabrales"/><category term="Ponga"/><category term="Aller"/><category term="Amieva"/><category term="Ubina"/><category term="Cangasdeonis"/><category term="pilonanava"/><category term="Alpes; Alpessuizos"/><category term="Aramo"/><category term="Caso"/><category term="Colunga"/><category term="Dolomitas"/><category term="Menorca"/><category term="Sierracosterasoriente"/><category term="Chiapas"/><category term="Costeraoccidente"/><category term="Ecrins"/><category term="Lena"/><category term="Mexico"/><category term="Resto"/><category term="Teverga"/><category term="Cabriegas"/><category term="Costeraoriente"/><category term="Piloña"/><category term="San Cristobal"/><category term="Somiedo"/><category term="ubiña"/><category term="Mirueno"/><category term="Narcea"/><category term="Pienzu"/><category term="marmota"/><category term="otroscentro"/><category term="Buanga"/><category term="Coaña"/><category term="Gredos"/><category term="Jermoso"/><category term="Laviana"/><category term="Llanes"/><category term="Maciedome"/><category term="Mea"/><category term="Monsacro"/><category term="Myanmar"/><category term="Sierrasoccidente"/><category term="Tabayon"/><category term="Valdepino"/><category term="Ablanosa"/><category term="Acherito"/><category term="Actividad"/><category term="Aduaneros"/><category term="Afrodisias"/><category term="Agero"/><category term="Aguilar"/><category term="Aguja"/><category term="Airua"/><category term="Airuas"/><category term="Ajaccio"/><category term="Alba"/><category term="Albos"/><category term="Albos2"/><category term="Alguero"/><category term="Almagrera"/><category term="Anglas"/><category term="Annapurna6"/><category term="Arco"/><category term="Arpin"/><category term="Arrudo"/><category term="Artedo"/><category term="Artemoia"/><category term="Asturias"/><category term="Asuan"/><category term="Ayutthaya"/><category term="Ayutthaya2"/><category term="Balagne"/><category term="Bangkok1"/><category term="Bangkok2"/><category term="Bangkok3"/><category term="Bangkok4"/><category term="Barragana"/><category term="Barro"/><category term="Bavella"/><category term="Benzua"/><category term="Beresna"/><category term="Bermeja"/><category term="Besurta"/><category term="Beyupen"/><category term="Beyuscos"/><category term="Beza"/><category term="Bierzo"/><category term="Biescona"/><category term="Bigaros"/><category term="Bigaros2"/><category term="Bisaurín"/><category term="Bistruey"/><category term="Bonifacio"/><category term="Bonifato"/><category term="Bosa"/><category term="Boya"/><category term="Branavalera"/><category term="Brañas Teverganas"/><category term="Buanga2"/><category term="Bulnes"/><category term="Busllar"/><category term="Busto"/><category term="CANTULOSU"/><category term="Cabeza"/><category term="Cabezaarco"/><category term="Cabrablanca"/><category term="Cabril"/><category term="Caceres"/><category term="CalaCoves"/><category term="CalaPorter"/><category term="Caldoveiro y Camin Frances"/><category term="Calvi"/><category term="Campeche"/><category term="Camperon"/><category term="Canalreninuevo"/><category term="Canellin"/><category term="Cangas de Onis"/><category term="Cantabria"/><category term="Cantucenal"/><category term="Caozo"/><category term="Caranga"/><category term="Carbaineu"/><category term="Cardenas"/><category term="Cares"/><category term="Carlos"/><category term="Carria"/><category term="Casar"/><category term="Cascayon"/><category term="Castillines"/><category term="Cerreo"/><category term="Cerreos"/><category term="Chamula"/><category term="Chiangmai"/><category term="Chiapa de Corzo"/><category term="Chizidi"/><category term="Chorron"/><category term="Cirbanal"/><category term="Ciñera"/><category term="Cogoyu"/><category term="Collada"/><category term="Corcega"/><category term="Cordal"/><category term="Corona"/><category term="Corse"/><category term="Corte"/><category term="Crespon"/><category term="Cruzada"/><category term="Cubilones"/><category term="Cuernullamas"/><category term="Cuevas"/><category term="Culebras"/><category term="Culiembro"/><category term="Cunio"/><category term="Curriello"/><category term="Cuyargayos"/><category term="Cuyargayos2"/><category term="Diente"/><category term="Dobra"/><category term="Dobros"/><category term="Efeso"/><category term="Egipto"/><category term="El Franco"/><category term="Ercina"/><category term="Escañorio"/><category term="Estambul1"/><category term="Esva"/><category term="Esva2"/><category term="Faceu"/><category term="Fana"/><category term="Farinentu"/><category term="Fontan"/><category term="Frayada"/><category term="Friera"/><category term="Friero"/><category term="Gabitu"/><category term="Gamoneo"/><category term="Garcillero"/><category term="Gavarnie"/><category term="Goreme"/><category term="Gradura2"/><category term="Gradura3"/><category term="Guanalon"/><category term="Gulpiyuri"/><category term="Hayedo"/><category term="Hibeo"/><category term="Huerto"/><category term="Huertos"/><category term="Ihlara"/><category term="Inabio"/><category term="Inle"/><category term="Isla"/><category term="Jerte"/><category term="Jucantu"/><category term="Junjumia"/><category term="Juralisa"/><category term="LISTADO"/><category term="La Forcada"/><category term="La Mesa desde Los Pontones"/><category term="Lagos"/><category term="Lagovalle"/><category term="Lagunagrande"/><category term="Lavezzi"/><category term="Libro"/><category term="Lindes"/><category term="Llabres"/><category term="Llastrona"/><category term="Llerosos"/><category term="Llosorio"/><category term="Llue"/><category term="Loral"/><category term="Luanco"/><category term="Main"/><category term="Main2"/><category term="Mandalay"/><category term="Manteca"/><category term="Mapa"/><category term="Maravio"/><category term="Marrakech"/><category term="Melera"/><category term="Meron"/><category term="Mesa3reyes"/><category term="Meteo"/><category term="Michu"/><category term="Michu2"/><category term="Midi"/><category term="Miembros"/><category term="Moal"/><category term="Moncuevo"/><category term="Monegru"/><category term="Monfrague"/><category term="Monfrechu"/><category term="Monsacro2"/><category term="Montihuero"/><category term="Morcin"/><category term="Morra"/><category term="Mostayal"/><category term="Mostayal2"/><category term="Mota"/><category term="Mua"/><category term="Mulleiroso"/><category term="Mulleres"/><category term="Mumian"/><category term="Mundo"/><category term="Muria"/><category term="Muxiven"/><category term="México"/><category term="Nalon"/><category term="Nianu"/><category term="Nieva"/><category term="Nogaleda"/><category term="Nogales"/><category term="Nora"/><category term="Novedad"/><category term="Obeson"/><category term="Ondon"/><category term="Oneta"/><category term="Orandi"/><category term="Orniz"/><category term="Osseau"/><category term="Oviedo"/><category term="Padiorna"/><category term="Palanca"/><category term="Palenque"/><category term="Pamukkale"/><category term="Pandescura"/><category term="Paramo"/><category term="Pelabarda"/><category term="Pelono"/><category term="Pen"/><category term="Penablanca"/><category term="Penamayor"/><category term="Penamellera"/><category term="Pequeño"/><category term="Perdiguero"/><category term="Peña Reonda"/><category term="Peñablanca"/><category term="Philae"/><category term="Picajo"/><category term="Picayo"/><category term="Pico Cogollu"/><category term="Pico Jario"/><category term="Pico La Trapa"/><category term="Pico la Plana"/><category term="PicondelaMota"/><category term="Pienzu por la Viescona"/><category term="Pilones"/><category term="Pineda"/><category term="Pino"/><category term="Pirineos: Posets 1. DIA"/><category term="Pirineos: Posets 2 DIA"/><category term="Pizboe"/><category term="Porcabezas"/><category term="Pornacal"/><category term="Port de Vielha"/><category term="Porto"/><category term="Pria"/><category term="Priede"/><category term="Priena y Sienra"/><category term="Priniello"/><category term="Purupintu"/><category term="Quiros"/><category term="Radule"/><category term="Raigoso"/><category term="Raigosu"/><category term="Ranchon"/><category term="Redigobia"/><category term="Redondo"/><category term="Reina"/><category term="Remelende"/><category term="Remuñe"/><category term="Reninuevo"/><category term="Restonica"/><category term="Retrinon"/><category term="Ribadesella"/><category term="Riegos"/><category term="Riegos2"/><category term="Ruana"/><category term="Rubo1"/><category term="Rubo2"/><category term="Salgado"/><category term="Saliencia"/><category term="Salón1"/><category term="Salón2"/><category term="Santos"/><category term="Saolla"/><category term="Sartene"/><category term="Scandolla"/><category term="SecretosdeMea"/><category term="Seimeira"/><category term="Siegalava"/><category term="Siella"/><category term="Siena"/><category term="Sienra"/><category term="Silencio"/><category term="Singapur1"/><category term="Singapur2"/><category term="Sobrescobio"/><category term="Sopiedra"/><category term="Sorapiss"/><category term="Sperone"/><category term="Sukhothai"/><category term="Sulawesi"/><category term="Sumidero"/><category term="Susaron"/><category term="Tailandia"/><category term="Tajadura"/><category term="Tajadura2"/><category term="Tapinon"/><category term="Tapinon2019"/><category term="Texerines"/><category term="Texeu"/><category term="Teyeu"/><category term="Tiatordos"/><category term="Timarro"/><category term="Tinganon"/><category term="Tornos"/><category term="Torres"/><category term="Torrezuela"/><category term="Toscana1"/><category term="Toscana2"/><category term="Toscana3"/><category term="Trallan"/><category term="Traviesos"/><category term="Trigueiro"/><category term="Trujillo"/><category term="Turbina"/><category term="Ubinapequena"/><category term="Untuje"/><category term="Urederra"/><category term="Valdunes"/><category term="Valle"/><category term="Vallemoru por Cuerries"/><category term="Vallibierna"/><category term="Vaxinas"/><category term="Vegabañoinvierno"/><category term="Ventaniella"/><category term="Vera"/><category term="Verdes"/><category term="Verdicio"/><category term="Verdilluenga"/><category term="Viaje Nepal: Annapurna 1.dia"/><category term="Viaje Nepal: Annapurna 2.dia"/><category term="Viaje Nepal: Annapurna 3.dia"/><category term="Viaje Nepal:Annapurna 4.dia"/><category term="Viaje Nepal:Annapurna 5.dia"/><category term="Viajes"/><category term="Vidio"/><category term="Viento"/><category term="Vierro"/><category term="Vigo"/><category term="Vigueras"/><category term="Vildeu"/><category term="Villamorey"/><category term="Vizcares"/><category term="Volterra"/><category term="Xabugo"/><category term="Xamoca"/><category term="Xistras"/><category term="Xivares"/><category term="Yordas"/><category term="Zelve"/><category term="Zorru"/><category term="gradura"/><category term="juanderobre"/><category term="sierracosteraoccidente"/><category term="track"/><title type='text'>Grupo de montaña  Los de las claras</title><subtitle type='html'></subtitle><link rel='http://schemas.google.com/g/2005#feed' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/posts/summary'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/summary?max-results=150'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/'/><link rel='hub' href='http://pubsubhubbub.appspot.com/'/><link rel='next' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/summary?start-index=151&amp;max-results=150'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><generator version='7.00' uri='http://www.blogger.com'>Blogger</generator><openSearch:totalResults>606</openSearch:totalResults><openSearch:startIndex>1</openSearch:startIndex><openSearch:itemsPerPage>150</openSearch:itemsPerPage><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-5055466483764638950</id><published>2026-10-13T08:38:12.575+02:00</published><updated>2026-10-13T08:38:12.576+02:00</updated><title type='text'>Pico Mustallar (techo de Lugo) desde Burbia</title><summary type="text">
+
+Circular desde Burbia, en los Ancares leoneses, al Mustallar (1.935 m), el techo de la provincia de Lugo: subida por el valle entre castaños y robles, canchal final hasta la cumbre y bajada por la cresta del Pico dos Lagos, las lagunas de Villouso y el bosque del Teixedal. Fue el tercer día de nuestra escapada a los Ancares.
+
+
+
+
+
+  
+    📝 Una ruta rescatada del cajón
+    Estos días estoy </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/5055466483764638950/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/5055466483764638950' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5055466483764638950'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5055466483764638950'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/10/pico-mustallar-techo-de-lugo-desde.html' title='Pico Mustallar (techo de Lugo) desde Burbia'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiUYbN1hLl3omMRuu94R_HeLMVuydZqdVmEDEw-kgVar3U0Xy7FgFffYKVjwyQ0b0_X934iL5FB01CXcassavrpaAP24y0oVRqBlCY2uyRQWkwwYsS-NuRMduWQEsV-H839jr6Rp-JRQIuXjiKf42_dYa-aSoJwngFzgo3otBQvAluy0cJvS9h78Kon/s72-w640-h480-c-rw/IMG_20230407_142700.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-5236431181525733596</id><published>2026-10-09T08:56:52.176+02:00</published><updated>2026-10-11T09:03:50.363+02:00</updated><title type='text'>Pico Fuentes y Sierra del Ajo desde el Fielato</title><summary type="text">
+
+Circular desde El Fielato (puerto de San Isidro, Aller) al Pico Fuentes (2.024 m), techo de la Sierra del Ajo, recorriendo su cordal por los Picos de la Verde, el Argüeyo y la crestería del Ruipinos, con vuelta por las brañas de La Capiya.
+
+
+
+
+
+  
+    📏15,5 kmDistancia
+    📈+1.000 mDesnivel
+    ⏱️8 hTiempo aproximado
+    🏔️2.024 mPico Fuentes
+    ⚠️ModeradaSubida dura y crestería
+    🔄</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/5236431181525733596/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/5236431181525733596' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5236431181525733596'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5236431181525733596'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/10/pico-fuentes-sierra-del-ajo-fielato.html' title='Pico Fuentes y Sierra del Ajo desde el Fielato'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg5Lqtj0dISDXmnOaPjCgF3BFcYngV8hPLk9w_hJ7mU_HMANgaB4Hrcl6lW71M_IjAVRQ1ddfFKSAN3jotClWMMthQnd07LSEsJmYOYQceb07UcJFoa7KZ4VztU88MAG1fXwIo0LLP545NXo-sJsYU0xAtQH_KxDjj0ZRkqB6VUACblkuqPOWmaCH2v9eo/s72-w640-h480-c-rw/_7230116.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-2815704192934636995</id><published>2026-10-06T20:06:12.530+02:00</published><updated>2026-10-15T09:52:36.768+02:00</updated><title type='text'>Top 10 rutas de otoño en Asturias y León</title><summary type="text">
+/* =========================================================
+   TOP 10 RUTAS DE OTOÑO - GRUPO DE MONTAÑA LOS DE LAS CLARAS
+   ========================================================= */
+
+.otono-top {
+  max-width: 1050px;
+  margin: 0 auto;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #30352f;
+  line-height: 1.65;
+}
+
+.otono-cabecera {
+  background: linear-gradient(135deg,#314936,#667c52)</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/2815704192934636995/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/2815704192934636995' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/2815704192934636995'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/2815704192934636995'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/10/top-rutas-de-otono-en-asturias-y-leon.html' title='Top 10 rutas de otoño en Asturias y León'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhuGkKfa567ae5OQUBMzcLm6hrJ6v19zyqqdLPeHT_9Z7of0oDP_qL143ac7LhG_xU8xlqFAh6dfhDX4HYraOAF4qILxJkqT8A3JJK_u_GxUPX8mCIvpsdELyEsAtZlAsA3Pd3BAcmFfg0wuU0DWw42kzCw9Yy2egc2Iet-ykwIRwMgae5S1ViPQ22HY68/s72-w640-h564-c-rw/IMG_20241101_161357.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-4902541793474882728</id><published>2026-09-14T20:41:27.337+02:00</published><updated>2026-10-09T11:01:27.926+02:00</updated><title type='text'>Indonesia 2026: primer día en Tana Toraja, entre búfalos, tumbas y arrozales</title><summary type="text">Indonesia 2026: de Makassar a Tana Toraja
+
+
+  
+    
+  
+
+
+
+  Después de nuestra llegada a Indonesia comenzaba realmente el viaje. Nuestro primer objetivo era adentrarnos en el corazón de Sulawesi rumbo a Tana Toraja. Para hacerlo, elegimos una de las opciones más habituales entre quienes viajamos por libre: el autobús nocturno desde Makassar hasta Rantepao.
+
+
+Llegada a Makassar: los trámites antes</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/4902541793474882728/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/4902541793474882728' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4902541793474882728'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4902541793474882728'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/09/indonesia-2026-primer-dia-en-tana.html' title='Indonesia 2026: primer día en Tana Toraja, entre búfalos, tumbas y arrozales'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjeEIDNut3Q7eaL7eBMT0nHP8kOz33gLjMqY8Oob1jMf0oSpOA0fdkWlj7mulMNaeTBueYTnUocgpvSGlYTIxpTk9hBNxKcCwk9ThipshaD6XiejKMldIr7hOy8gMXH2GUPIkGk-DENTE3WeNlZDa3lJ6xWTO6cZRQ8JKKv_Lg0nIaOepEP-YTABBzufiU/s72-w640-h480-c/PXL_20260913_061633572~2.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-4159442262626103590</id><published>2026-06-23T18:12:29.233+02:00</published><updated>2026-10-09T16:10:42.552+02:00</updated><title type='text'>Cañón del río Tera y Senda de los Monjes desde San Martín de Castañeda</title><summary type="text">
+
+Nos levantamos con la intención de subir a Peña Trevinca, el techo de la zona, pero el viento fuerte y el frío, impropios de finales de mayo, nos hicieron cambiar de planes nada más empezar. Ya en San Martín de Castañeda, donde nos alojábamos, decidimos improvisar: bajar por la Senda de los Monjes y enlazar con el Cañón del río Tera para cerrar un recorrido circular.
+El resultado fue un </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/4159442262626103590/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/4159442262626103590' title='1 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4159442262626103590'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4159442262626103590'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/06/canon-del-rio-tera-senda-de-los-monjes.html' title='Cañón del río Tera y Senda de los Monjes desde San Martín de Castañeda'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiwthbM8O8lsWLxhTMcaaeKzYN7TzYwMRDWO-53TO57GVnH-Bwv5eQp8LBZmlK78kx1CY_G6okzo6Ch8pxs6xHaWhpPMXhU8cf556cWpbcVDce6vjP9lOkm_3gwRO3UrrKz9FDY0wGmsoZGepRA1q0zdYPfPAGhqJcoLELPPwuya22jopp_5vMUVrgPjuM/s72-c/PXL_20260519_115215982.LONG_EXPOSURE-01.jpg" height="72" width="72"/><thr:total>1</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-8469703534491031530</id><published>2026-06-18T23:57:51.557+02:00</published><updated>2026-10-09T16:10:57.984+02:00</updated><title type='text'>Cumbres Avenas desde Mogrovejo</title><summary type="text">
+
+La propuesta de hoy recorre uno de los cordales más panorámicos de la vertiente lebaniega de los Picos de Europa: las Cumbres Avenas, un balcón privilegiado sobre los puertos de Áliva, los macizos Central y Oriental, la Sierra de Peña Sagra y buena parte de la comarca de Liébana.Desde Mogrovejo subiremos por Redo y Tanarrio hasta las Traviesas de Somajía y el espectacular Collado de Cámara, </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/8469703534491031530/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/8469703534491031530' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8469703534491031530'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8469703534491031530'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/06/cumbres-avenas-desde-mogrovejo.html' title='Cumbres Avenas desde Mogrovejo'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgwo0H9w5VU2x1q0Q7JGNhxrfHcuQVP3g5kS4BIFnYUodqFBoXyoKJlT8TbVZvB1qm5BBTC0lNl8uAsg_KuqqPY0ObzT8O2QU-izHcyzIPS1JnKsI9QZv4JusCkb7hyphenhyphenNDY2i5MZqJIXOZ7qwoq_8GixdHNrlpmP3mqgFJGmriR9IQzMPpdMJ17psJ7bzpI/s72-c/IMG_20260617_142406.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-4602951266117368488</id><published>2026-06-11T09:05:07.604+02:00</published><updated>2026-10-09T16:13:51.757+02:00</updated><title type='text'>🏔️ Cornón, Cornín y Sierra Pelada. Travesía del Puerto de Somiedo a Villar de Vildas</title><summary type="text">
+
+Una travesía que une dos de los rincones más emblemáticos del Parque Natural de Somiedo: el Cornón (2.188 m), una de las montañas más representativas de la Cordillera Cantábrica y un mirador excepcional sobre Somiedo, Babia y Laciana, y la Braña de la Pornacal, para muchos el conjunto brañego más importante y mejor conservado del parque.Una jornada de esas que reúnen todo lo que hace grande a </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/4602951266117368488/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/4602951266117368488' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4602951266117368488'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4602951266117368488'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/06/cornon-cornin-y-sierra-pelada-travesia.html' title='🏔️ Cornón, Cornín y Sierra Pelada. Travesía del Puerto de Somiedo a Villar de Vildas'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgaKea8b_RSlihIFAR4FGgEcncSOFF-9c9c-n2ILKFnsC_e0_XBBFaChIhUDu43r9N575cHo-Fa0GRsPqBDS0pOKHT-1wAgGKUMLkwIBMtJvqbA1pl2W48OvW32inhVu0yHlS4TyLJ9FF0B5hu8DcmsxM03jxxexNrfHSPSMS2_czzbxpxD0bMlJsvQiLY/s72-c/IMG_20260609_161154.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-5972959887860265410</id><published>2026-05-18T10:55:50.347+02:00</published><updated>2026-05-18T10:56:41.702+02:00</updated><title type='text'>Los Arribes del Duero (Parte I)</title><summary type="text">&lt;!--=========================--&gt;
+&lt;!--ARRIBES DEL DUERO--&gt;
+&lt;!--ESTILO MEJORADO--&gt;
+&lt;!--=========================--&gt;
+
+
+
+
+🍷 Arribes del Duero
+
+
+
+Día de llegada y primera jornada entre monasterios, cascadas, miradores y bodegas subterráneas.
+
+&lt;!--=====================--&gt;
+&lt;!--DIA LLEGADA--&gt;
+&lt;!--=====================--&gt;
+
+
+🚗 Día de llegada
+
+
+&lt;!--MORERUELA--&gt;
+
+
+🏛️ Monasterio de Moreruela
+
+
+
+La primera </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/5972959887860265410/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/5972959887860265410' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5972959887860265410'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5972959887860265410'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/05/los-arribes-del-duero-parte-i.html' title='Los Arribes del Duero (Parte I)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjlswR1oWWsMWMK_7F2CL_Dmj4XotW3HKEj8dMvQm7q6r5GBo1N98qOYcUgIjiubfbwEiA1A0yFvgLA9mIgeqHfh9GqxLhY3WB-gLiy4fzEW3YZTv4F3_QPqwGAzteymyaqP6I2QJI3XTmpWkUyXEfIovHI-cMlK5W6AqfT1JSTK8sWp8GxUeqo93mhAeI/s72-c/1000049286.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-2985529034169499936</id><published>2026-05-06T05:51:05.007+02:00</published><updated>2026-05-06T05:52:11.053+02:00</updated><title type='text'>Ubud día 3 El gran Besakih</title><summary type="text">🌏 Día 3 en Bali – Templos tradicionales y el gran Besakih
+
+
+⬅️ Día anterior | 
+Índice completo | 
+Día siguiente ➡️
+
+
+
+Este día lo dedicamos a explorar el Bali más tradicional, alejándonos un poco del entorno de Ubud para visitar templos menos concurridos, una de las cascadas más fotogénicas de la isla y varios pueblos con fuerte identidad cultural. Fue una jornada bastante completa, con </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/2985529034169499936/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/2985529034169499936' title='1 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/2985529034169499936'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/2985529034169499936'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/05/dia-3-en-bali-templos-tradicionales-y.html' title='Ubud día 3 El gran Besakih'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgCdOgQGwkeUFNDV6TcfNQdfswulKSizSBNEPFJrfCz4fh_srvUcc_7yklsvYrsLj2yqDsDoLYqp-m-SHguwkLey4kd4ajxX6pfYJCP0JQvX-HzLDLIMm8W2oAAgV6AcvY8RGkCf_bspDNR9E8c9DaxW_W0AQJeYKZhREeToebsbchTkPhK5rRuyxWk3Ac/s72-w480-h640-c/PXL_20250925_011000927.jpg" height="72" width="72"/><thr:total>1</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-8776653926161450539</id><published>2026-04-20T22:37:00.001+02:00</published><updated>2026-10-12T16:18:25.783+02:00</updated><title type='text'>María de los Corros y Peña Esquina desde Casares de Arbas (Las Tres Marías)</title><summary type="text">
+
+Subida a María de los Corros, la más alta de Las Tres Marías, y a Peña Esquina desde Casares de Arbas, en la montaña leonesa. Una ruta corta, perfecta para una mañana, con vistas espectaculares sobre el valle de Arbas y el macizo de Ubiña.
+
+
+
+
+
+
+  &lt;!-- ===== FICHA ===== --&gt;
+
+  
+    📏9,5 kmDistancia
+    📈+675 mDesnivel
+    ⏱️4 hDuración
+    🏔️1.964 mCota máxima
+    ⚡MediaDificultad
+    ↩️Ida </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/8776653926161450539/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/8776653926161450539' title='1 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8776653926161450539'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8776653926161450539'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/04/maria-de-los-corros-pena-esquina-desde.html' title='María de los Corros y Peña Esquina desde Casares de Arbas (Las Tres Marías)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgGRDT589NyPfCPzO6uOc6Quw_ChdB14o3jFwDs6tTpz_En-1YVOdWBWUGgKBwHsKTcdxpudTmUZbaEHeH4A0rDmsoteJg6HtGwrzv3O-E-JQYUfFXjIIJDZDTbAAzYteJ_lgd8_C8GqXXITyjSxg4QzC0zu7ji2stpPTgO2YEfhWQKacFtVrOnk1ClfkM/s72-w640-h480-c/PXL_20260419_093655389.jpg" height="72" width="72"/><thr:total>1</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-3613792524513011987</id><published>2026-03-25T23:42:00.004+01:00</published><updated>2026-10-09T19:19:26.804+02:00</updated><title type='text'>La Forcada y el Cuetu Santibánes (Cuchu) desde Pelluno </title><summary type="text">
+
+Ruta circular exigente desde Pelluno (Aller) para subir a La Forcada y al Cuetu Santibánes, dos cumbres con vistas sobre Aller, Laviana y Sobrescobio. Una jornada larga y auténtica, con tramos de piorno en los que toca abrirse paso.
+
+
+
+
+
+  
+    📏21 kmDistancia
+    📈+1.300 mDesnivel
+    ⏱️8 h 30 minDuración
+    🏔️1.646 mCota máxima
+    ⚡AltaDificultad
+    🔄CircularTipo
+  
+
+  
+    📍 Pelluno </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/3613792524513011987/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/3613792524513011987' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/3613792524513011987'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/3613792524513011987'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/03/forcada-y-cucho-desde-pelugano-pelluno.html' title='La Forcada y el Cuetu Santibánes (Cuchu) desde Pelluno '/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhKeyX4RRaRbLww-Uiko3KWF5-3D0pxxxE_FBrqts8BZmgfUuVMsygYwxACAdaaa-SeI2NDBwYOnojuBFhVDbP1NwDNwxv_-j4UV0FXeMUG4YyFjPg5LjdGJQR8YFm3lA86jj1GEM-w1a16iejvLDdtcw2fYQtDfMT9Ckdp7sUZvbLkxaLwEgLS9TRhSPY/s72-w640-h480-c/IMG_20260324_110808.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-2809419389723235304</id><published>2026-03-19T04:44:07.538+01:00</published><updated>2026-10-09T19:18:32.224+02:00</updated><title type='text'>Peña Michu desde Pto. San Lorenzo  (invernal)</title><summary type="text">
+
+Subida invernal con raquetas a la Peña Michu desde el Puerto de San Lorenzo, entre Teverga y Somiedo, siguiendo el histórico Camín Real de la Mesa. En verano es un paseo sencillo; con nieve, una jornada de montaña muy distinta, más exigente y más especial.
+
+
+
+
+
+  
+    📏~10 kmDistancia
+    📈+400 mDesnivel
+    ⏱️4–5 hDuración
+    🏔️1.646 mCota máxima
+    ❄️ModeradaDificultad en invierno
+    ↩️</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/2809419389723235304/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/2809419389723235304' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/2809419389723235304'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/2809419389723235304'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/03/pena-michu-desde-pto-san-lorenzo.html' title='Peña Michu desde Pto. San Lorenzo  (invernal)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUKnntZrEG47viAmrEerawfPLiy8qXWGXYIvnLiMO21UIcxILkOxGl3wjPirO5wFVZ6UYjWdG3fLgBdAW805KdqQqYM7Jp3Qm67IUCsPiJx8YHaA2336LsZsy4RYAeyDkqJ1N_f4a3th9P416JbjKZIyijs_sbwBTP9r6uL3swrtJ1YAfb8DJq9QsYpQI/s72-w640-h480-c/PXL_20260308_125155390.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-1959241367507704547</id><published>2026-03-16T13:35:00.001+01:00</published><updated>2026-10-09T19:17:40.254+02:00</updated><title type='text'>Peña Panda desde Ruayer</title><summary type="text">
+
+Travesía de Ruayer a Casomera, en Aller, para subir a Peña Panda (1.790 m), una cumbre con magníficas panorámicas que suele pasar desapercibida a la sombra de su vecina Peña Reonda. Majadas, cueñas, hayedos y viejos caminos en una ruta poco transitada.
+
+
+
+
+
+  
+    📏14 kmDistancia
+    📈+1.050 mDesnivel (−1.200 m)
+    ⏱️7 h 30 minDuración con paradas
+    🏔️1.790 mCota máxima
+    ⚡</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/1959241367507704547/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/1959241367507704547' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1959241367507704547'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1959241367507704547'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/03/pena-panda-desde-ruayer.html' title='Peña Panda desde Ruayer'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhYg4VhIabudjux_GoXm_s1Vj-yet-q6hLNOj0Asp1UXCDfmTRJiuL3f7o691yMb8oV2WT9AFAExEHK653x3nnW6jKcvgPrNOijD8ELL-Y7nj-9gVOQdfPDhLILYOWCOx1MsBSTDZZLFbAkgINFgCovIruVDiyqI4zYT5odUXUoP-UZng_prDXnfJUKTc0/s72-w640-h480-c/31-_3120132.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-4970467066892250810</id><published>2026-03-10T08:54:00.000+01:00</published><updated>2026-10-09T17:48:51.194+02:00</updated><title type='text'>Pico Moroma y Minas de Pandanes desde Soto de Agues</title><summary type="text">
+/* ===== PLANTILLA DE RUTA · Grupo de montaña Los de las Claras ===== */
+.ruta { max-width: 1000px; margin: 0 auto; font-family: Arial, Helvetica, sans-serif; color: #30352f; line-height: 1.7; font-size: 16px; }
+.ruta p { margin: 0 0 14px; }
+.ruta h3.ruta-seccion { display: flex; align-items: center; gap: 10px; margin: 44px 0 16px; padding-bottom: 10px; border-bottom: 2px solid #e4e8dc; </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/4970467066892250810/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/4970467066892250810' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4970467066892250810'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4970467066892250810'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/03/pico-moroma-y-minas-de-pandanes-desde.html' title='Pico Moroma y Minas de Pandanes desde Soto de Agues'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiC4hL4GCCWFHL9Z2duL4gYp9ekYLZuWBc281By9fHyKpoYdyn36BBgkIn_2vRsSPW0czXeifYl7otYgCOO1a2rHBMXcD7tFYIVphAhqr3abvUjuC-m86D9DVciP6fpCvI3SP-Z1FzxYz_-WtZp7Fa5x7xfsTYm4jXMSYyLVI4QmqEhILf-P2Nq5IVXnLE/s72-w640-h480-c/PXL_20260304_094327940.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-5234211621552668747</id><published>2026-03-02T13:12:00.008+01:00</published><updated>2026-10-09T19:17:09.321+02:00</updated><title type='text'>Huerto del Diablo Norte desde Puerto de Ventana (invernal)</title><summary type="text">
+
+Subida invernal al Huerto del Diablo Norte (2.110 m) desde el Puerto de Ventana, por la Collada y la Vega de Socellares. Una ruta corta con nieve a ratos, en un día de frío y viento fuerte que nos obligó a dejar para otra vez el Huerto del Diablo Sur y la Peña Melluque.
+
+
+
+
+
+  
+    📏~9,5 kmDistancia
+    📈+550 mDesnivel
+    ⏱️4 hDuración
+    🏔️2.110 mCota máxima
+    ❄️Fácil-moderadaDificultad</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/5234211621552668747/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/5234211621552668747' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5234211621552668747'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5234211621552668747'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/03/huerto-del-diablo-norte-desde-puerto-de.html' title='Huerto del Diablo Norte desde Puerto de Ventana (invernal)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgUWo6qY9sjSF4T6x7UrSTQ-deFvRtBrbeHftNPvlh2ArGeT9DXVtPJLwSwxsohDFZiwZ0chrvyO3rqu8Dr2dtBIilzAj1NhMWpfvS0i6fGFxSSWMxZs5Arz4648W2lhR4QM-K9F3dOfQlJQ2zXadvqgslOp0BqBZLPz58QTysEGKTDnDLmRaopjSTgPNM/s72-w640-h480-c/PXL_20260301_122304666.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-3281374262040599098</id><published>2026-02-24T13:52:00.002+01:00</published><updated>2026-10-09T18:16:15.790+02:00</updated><title type='text'>Pico Cellón desde Puerto Pajares </title><summary type="text">
+
+Subida invernal al Pico Cellón (2.029 m) desde el Puerto de Pajares, por la Sierra de la Candanosa y la divisoria entre Asturias y León. Una montaña modesta que con nieve se transforma: perfecta para iniciarse en el monte invernal, incluso con niños.
+
+
+
+
+
+  
+    📏10 kmDistancia
+    📈+650 mDesnivel
+    ⏱️4 h 30 minDuración
+    🏔️2.029 mCota máxima
+    ❄️FácilCon nieve estable
+    ↩️Ida y </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/3281374262040599098/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/3281374262040599098' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/3281374262040599098'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/3281374262040599098'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/02/pico-cellon-desde-puerto-pajares.html' title='Pico Cellón desde Puerto Pajares '/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgF21MMOn8ziPjUT0daKF15oHlOXozgeAZ4vWZPHdNoeAjFbKUjx1FK8Phw94wGniyIUp0MBLgDXGw174kwy9Cilh8Anucli4zpngICfil07GFpb0jCBfkgMt75vCBBpKXtjQ0q1obXJiy10VpkKn-Xw_ls9pL6zUyQ49oc914-5TLpPW_aO8mMduTPRk8/s72-w640-h480-c/PXL_20260221_124341462.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-3939377973164286921</id><published>2026-01-19T13:27:00.006+01:00</published><updated>2026-10-09T18:27:14.448+02:00</updated><title type='text'>Costa Quebrada: del Pinar de Liencres a la playa de Portío</title><summary type="text">
+
+Del Pinar de Liencres a la playa de Portío, encadenando calas, plataformas de abrasión y acantilados de la Costa Quebrada, Geoparque Mundial de la UNESCO. Un paseo fácil por uno de los litorales más espectaculares del Cantábrico, pero siempre al filo del acantilado.
+
+
+
+
+
+  
+    📏10,5 kmDistancia
+    📈+150 mDesnivel
+    ⏱️3 hDuración
+    🥾FácilOjo a los acantilados
+    🔁CircularTipo
+    🌊</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/3939377973164286921/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/3939377973164286921' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/3939377973164286921'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/3939377973164286921'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2026/01/costa-quebrada-desde-liencre.html' title='Costa Quebrada: del Pinar de Liencres a la playa de Portío'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEguvK8WKanSnQnidUWAKGHEDsatrCucyyjQyaFqnPyLUEGfi19cq4Jua1rVO9SCZ8PgX1gB1wX9R85yGlnFb_o746Neh108hftscjbjuJNKKDdkBx1DiJ4FQnpfhAna8P9c_M_88AKTeS4-bdo6DqJU8CMGSRBaIsPmlkbPiECPqdNkhGLO8duqdRYyO7U/s72-w640-h480-c/PXL_20251218_124127432.LONG_EXPOSURE-01.COVER.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-6000266697093483745</id><published>2025-12-23T21:40:00.001+01:00</published><updated>2026-10-09T18:39:45.626+02:00</updated><title type='text'>Cabaña Verónica invernal desde El Cable (Picos de Europa)</title><summary type="text">
+
+Subida invernal al refugio de Cabaña Verónica (2.325 m) desde El Cable, en pleno Macizo Central de los Picos de Europa. El teleférico de Fuente Dé nos planta en minutos en ambiente de alta montaña, pero con nieve todo depende de elegir bien por dónde pisar.
+
+
+
+
+
+  
+    📏9 kmDistancia
+    ⏱️5 hDuración
+    📈+500 mDesnivel
+    🏔️2.325 mCabaña Verónica
+    ❄️VariableSegún la nieve
+    ↩️Ida y </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/6000266697093483745/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/6000266697093483745' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/6000266697093483745'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/6000266697093483745'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/12/cabana-veronica-desde-el-cable-invernal.html' title='Cabaña Verónica invernal desde El Cable (Picos de Europa)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjyeZYpnsENJxVWDS4yk8CiiNGdanlO9tIR2ffDt49SgSfR0Yf8eNWEQ0lZEVu315B4Yz1z51nBRv084H702AepUid8U7kgt3Mr-gI-5rXlNUC6_qcYWPeirmSLhQEnDeYc01Nf5kphF7JU_SbKwSdqbHbMmvUQ2Pj6fY-1zPi7xWuGMVkgsBHUgNsvTW4/s72-w640-h480-c/PXL_20251217_110327474.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-5011625674805510844</id><published>2025-12-16T12:50:00.001+01:00</published><updated>2026-10-09T19:16:32.680+02:00</updated><title type='text'>Brañas de Mumián y Valdecuélabre (Somiedo)</title><summary type="text">
+
+Circular por Somiedo desde Llamardal, enlazando dos brañas de las más bellas del concejo, Mumián y Valdecuélabre, y la cumbre del Pico Entrebobias. Íbamos a cruzar a León por la Peña Salgada, pero la nieve blanda nos hizo cambiar de planes sobre la marcha.
+
+
+
+
+
+  
+    📏12 kmDistancia
+    📈+800 mDesnivel
+    ⏱️5 h 45 minDuración
+    🏔️1.935 mPico Entrebobias
+    🥾ModeradaDificultad
+    🔄</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/5011625674805510844/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/5011625674805510844' title='1 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5011625674805510844'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5011625674805510844'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/12/pena-valdecuelabre-desde-llamardal.html' title='Brañas de Mumián y Valdecuélabre (Somiedo)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi1HJKw76f0uvcJ5dllYDrowypZhyz-uYPRfm6sMiVbahzzO779va2GxFemvFtKYGWIXmWOaElq1O4qME8Ai4_psM6xcYEoIbriF8rA9lsdpnKAls_rvR4Ylls3crl4Env7y9c4gF3s7hGGgcXmYsWyvxEc1ba-NOEoykC_R9iF7LDxwVz8TCI6OrJ00Hk/s72-w640-h480-c/PXL_20251214_122634207.jpg" height="72" width="72"/><thr:total>1</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-165872592408004421</id><published>2025-12-10T18:40:00.002+01:00</published><updated>2026-10-09T19:13:17.032+02:00</updated><title type='text'>Cabeza Pandescura desde Canales</title><summary type="text">
+
+Circular invernal a la Cabeza Pandescura (1.004 m) desde Canales: una cumbre modesta con vistas enormes sobre el Cornión y el valle del Casaño. Por el camino, majadas, un arco natural de roca, la cueva donde madura el Gamonéu y el castillete de una vieja mina de cobre.
+
+
+
+
+
+  
+    ⏱️7 hDuración
+    📈+600 mDesnivel
+    🏔️1.004 mCabeza Pandescura
+    🏡440 mSalida en Canales
+    🥾</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/165872592408004421/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/165872592408004421' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/165872592408004421'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/165872592408004421'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/12/cabeza-pandescura-desde-canales.html' title='Cabeza Pandescura desde Canales'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgCJfypW7HFF_CvmGkW3bBD_KBkLDCS_8wOzBJcSTh9owfOpNds0dvSZ2mgLnduyk6mT5nOUuam9Nj32j3C57AfpvVVBU0SpTOrm2YF4vFQBSomh55v-E-AZyz0sswl7PT_JqfthvXmhPCuJ9PbQmAbGLhRw7G1eCbpWTf0k_51NDjSMEecFRr1MT3R6G4/s72-w640-h480-c/PXL_20251207_113010955.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-2684919679948131484</id><published>2025-11-13T13:03:00.005+01:00</published><updated>2026-10-09T19:38:47.763+02:00</updated><title type='text'>De La Redondina a Tajadura (LA AGRESTE PEÑAMELLERA PARTE II)</title><summary type="text">
+
+Segundo tramo de nuestra travesía por las Peñas Cabriegas: de la cabaña de la Redondina bajamos a las pozas del río Mildón y subimos por las majadas de Collantes y Nario hasta cerrar el círculo en Tajadura. Más de 1.000 metros de subida por conchas, hayedos y braña, casi siempre buscando el camino.
+
+
+
+
+
+  
+    📏7,5 kmDistancia
+    📈+1.100 mDesnivel de subida
+    📉−400 mDesnivel de bajada
+</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/2684919679948131484/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/2684919679948131484' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/2684919679948131484'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/2684919679948131484'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/11/de-la-redondina-tajadura-la-agreste.html' title='De La Redondina a Tajadura (LA AGRESTE PEÑAMELLERA PARTE II)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjuzVE99uhHv5_1SourJHdtyU_wdzhz4bOc_9RyLsVpDYKwmK1_wiay6u3hNR1SWzVQHnktDZAI3KW9of_9o5Se_GEsJ1ZdQSlod_4gIlSczQE20k0Kq2qSBK49qWDaA5czW_A4hpbZP-0/s72-c/IMG_5385.JPG" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-8888142713241403470</id><published>2025-11-12T11:15:00.017+01:00</published><updated>2026-10-09T19:29:58.842+02:00</updated><title type='text'>De Tajadura a la Redondina  (LA AGRESTE PEÑAMELLERA PARTE I)</title><summary type="text">
+
+Primer tramo de una travesía salvaje por las Peñas Cabriegas, en el Macizo Oriental de Picos: de la carretera de Tresviso a la majada de Tajadura, la escondida Cascada Blanca, el Prao Bos y la cabaña de la Redondina. Casi todo sin sendero, entre hayedos, riegas y cascadas a las que apenas llega nadie.
+
+
+
+
+
+  
+    📏6 kmDistancia
+    📈+300 mDesnivel de subida
+    📉−1.000 mDesnivel de bajada
+</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/8888142713241403470/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/8888142713241403470' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8888142713241403470'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8888142713241403470'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/11/tramo-1-ctra.html' title='De Tajadura a la Redondina  (LA AGRESTE PEÑAMELLERA PARTE I)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhU_xyvm0peBCXUDncTIZz9UCmCl7FMDlMtWfN_V8TtKwIeLzmyOyMuMrBE2ibA2Pmpozi23_lir_MFA5Y3lLN3QlvBOepUOXXgDwc8Nv6NutiTJ4Mbcz9wADvOQlV41OsWBK3H-NBiow0/s72-c/IMG_5317.JPG" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-1335627803313183719</id><published>2025-11-03T19:45:00.004+01:00</published><updated>2026-10-09T19:43:25.162+02:00</updated><title type='text'>Circular al Tiatordos desde Taranes</title><summary type="text">
+
+Circular al Pico Tiatordos (1.951 m), «la montaña perfecta» de Ponga, desde Tanda: 21 km y 1.600 m de desnivel por foces, hayedos, majadas y un espectacular circo calizo. No es la subida más corta, pero sí la más épica, salvaje y variada.
+
+
+
+
+
+  
+    📏21 kmDistancia
+    📈+1.600 mDesnivel
+    ⏱️9 h 15 minCon paradas
+    🏔️1.951 mPico Tiatordos
+    ⚠️AltaDificultad
+    🔄CircularDesde Tanda (</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/1335627803313183719/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/1335627803313183719' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1335627803313183719'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1335627803313183719'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/11/circular-al-tiatordos-desde-taranes.html' title='Circular al Tiatordos desde Taranes'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-UUH-PdXEEEHDSCMGKkfOFGIu0RnWRR-_E4EXEfxlf_dmwbz9fDJT7SAqltRBE59-vRtiNtzP1MFb-uzD8nHoujWtV_UMmyL8G52hB6GTG_FmTCpct-2EIdN-DBIMWGNXdR87zunxDWZPU-Vsf5rKHzgCOIaqqQFzsg_mA-5oIpdACnVrUl2OOSNK/s72-w640-h406-c/IMG_20230501_113559.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-4830993565179424059</id><published>2025-11-01T16:53:00.055+01:00</published><updated>2026-10-09T19:53:03.402+02:00</updated><title type='text'>Cabeza L’Arcu desde Caleao: por el valle de Xulió y la Pandiellina</title><summary type="text">
+
+Circular a la Cabeza L&#39;Arcu (1.602 m) desde Caleao, en el corazón del Parque Natural de Redes: subida por el valle de Xulió, un final entretenido por viras y crestas, y bajada por las majadas de la Pandiellina hasta Los Arrudos. Una cumbre modesta con vistas de las grandes.
+
+
+
+
+
+  
+    📏15,5 kmDistancia
+    📈+1.000 mDesnivel
+    ⏱️6 hCon paradas
+    🏔️1.602 mCabeza L&#39;Arcu
+    🥾MediaFinal </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/4830993565179424059/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/4830993565179424059' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4830993565179424059'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4830993565179424059'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/11/sena-de-luna-la-felechosa-la-llastrona.html' title='Cabeza L’Arcu desde Caleao: por el valle de Xulió y la Pandiellina'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjE4PJJJh4NVNGQXNyhhaiij8CfOddmuR9eizyRImypDeEn7jkM2qlCSNsPoBT_QckBnjhv6HM8uqui8UMSrJiFlPIMmKBwVfe75OyvAvgpUsh5IyejIQnr2YvDFObBSZ1GICdujwcKRMamLrxtYZg4cdj1A5o6rKUo1j6EHRfds9rQDAkDuSekyeR_SLE/s72-w640-h478-c/Imagen%20de%20WhatsApp%202023-11-05%20a%20las%2019.36.35_f14f1163.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-6636117810421406476</id><published>2025-10-30T17:41:00.006+01:00</published><updated>2026-10-09T19:57:07.894+02:00</updated><title type='text'>Pico Vildeu desde Pigüeces</title><summary type="text">
+
+Circular otoñal desde Pigüeces (Somiedo) por dos hayedos espectaculares, La Penalva y La Enramada, con subida al Pico Vildeu (1.539 m). Una ruta para disfrutar del bosque en su mejor momento, con la compañía de Orbayu, uno de los grandes conocedores de Somiedo.
+
+
+
+
+
+  
+    📏10 kmDistancia
+    📈+930 mDesnivel
+    ⏱️6 hDuración aproximada
+    🏔️1.539 mPico Vildeu
+    🥾MediaTramos sin sendero
+</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/6636117810421406476/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/6636117810421406476' title='1 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/6636117810421406476'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/6636117810421406476'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/10/pico-vildeu-desde-pigueces.html' title='Pico Vildeu desde Pigüeces'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjxRqwgP68-2FCGCdKNrsc1c7axJV4Hy9fmMTMF3HAVh0h2ZpYF2-5T1q8g2vsdeehTpHpoxEHxuo2qS3LPM4knBYutCgxrPUZ13248Hx19jsjwijSM8xoyGxdSUuT7_gjLUsHSHCH8GpkZE-RG1-P5N2i6RS7CB8ioCZctq24zaI2QkgTj-RGDsnOv7LA/s72-w640-h480-c/IMG_20251028_122927.jpg" height="72" width="72"/><thr:total>1</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-1577286642824441718</id><published>2025-10-23T14:17:00.002+02:00</published><updated>2025-10-23T17:44:37.651+02:00</updated><title type='text'>Día 2 en Ubud – Templos y paisajes del corazón de Bali</title><summary type="text">&amp;nbsp;&lt;!--INICIO: Día 2 en Ubud – Templos y paisajes del corazón de Bali--&gt;
+
+
+  &lt;!--Cabecera y Navegación--&gt;
+  
+    🌏 Día 2 en Ubud – Templos y paisajes del corazón de Bali
+    Primer contacto con Bali: expectativas y realidad
+    
+      ⬅️ Día anterior |
+       Índice completo |
+       Día siguiente ➡️
+    
+    
+    
+      Este era el plan para el día: visitar cascadas y varios templos y </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/1577286642824441718/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/1577286642824441718' title='1 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1577286642824441718'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1577286642824441718'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/10/dia-2-en-ubud-templos-y-paisajes-del.html' title='Día 2 en Ubud – Templos y paisajes del corazón de Bali'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/a/AVvXsEjIWXvRPnTPPJ07ZwmJNtgHOnfiUwpG7l9-aR0fnm3OznAbqQtIXlSDs4K3MbobT_X66ncWG1UgZrx5VzvP08VDLBeoNv_yr1aJ7LmCc_r8-r5UhrPAyJh7LFxYihJ5TpKb4XF1R2vd-OwPJSX1yLXpB9HATGQXndvYEkgqBPyeyjsby6oNT64yIcJ7JLM=s72-w640-h480-c" height="72" width="72"/><thr:total>1</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-1332005029130042106</id><published>2025-10-12T13:55:00.005+02:00</published><updated>2025-10-14T09:05:07.134+02:00</updated><title type='text'>Día 1 en Bali – Explorando el centro de Ubud</title><summary type="text">&amp;nbsp;&lt;!--INICIO: Diario de viaje Bali – Día 1--&gt;
+
+
+  🌏 Diario de viaje: Indonesia &amp;amp; Kuala Lumpur
+  
+    ⬅️ Día anterior |
+    Índice completo |
+    Día siguiente ➡️
+  
+
+  🌺 Día 1 en Bali – Explorando el centro de Ubud
+
+  Alojamiento: Uma Budhas Guest House
+  
+    Para nuestra estancia en Ubud elegimos la Uma Budhas Guest House, situada a las afueras del centro. Fue un gran acierto: lejos </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/1332005029130042106/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/1332005029130042106' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1332005029130042106'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1332005029130042106'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/10/diario-de-viaje-indonesia-kuala-lumpur.html' title='Día 1 en Bali – Explorando el centro de Ubud'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhwqMvfj7jNlLx3y29-yNZJNLo5g6FVMmg45ARXB3rlJ48zPu-Msx-8h7CUqY_DgnBTFrvEpfxiczrkO_F-nMh3AdtRWaGxTxZuT_G463LMNPFtBz1W67FQOZhfQ11rsemAx5WtW07-23a_xfB5IX5op21SGP274n4qoD9jfUkp9Bc4LJAhddFKT3HrbxA/s72-w640-h480-c/IMG_20250922_144902_1.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-4107894150932165733</id><published>2025-10-07T14:23:00.003+02:00</published><updated>2025-10-07T14:23:29.014+02:00</updated><title type='text'>Tour de 3 días: Bromo &amp; Ijen (día 3) </title><summary type="text">&lt;!--NAVEGACIÓN ENTRE DÍAS--&gt;
+
+🌏 Diario de viaje: Indonesia &amp;amp; Kuala Lumpur
+⬅️ Día anterior | 
+Índice completo | 
+Día siguiente ➡️
+
+
+🗻 Día 3 Tour Bromo/Ijen– Ascenso al Monte Ijen y el fuego azul 🔵🔥
+
+&lt;!--INTRODUCCIÓN / CONSEJOS RÁPIDOS--&gt;
+
+  Antes de nada — consejos rápidos 📋
+  
+    🕒 Hora de inicio: la excursión suele arrancar pasada la medianoche (en nuestro caso a las 23:30).
+    🥶 </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/4107894150932165733/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/4107894150932165733' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4107894150932165733'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4107894150932165733'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/10/tour-de-3-dias-bromo-ijen-dia-3.html' title='Tour de 3 días: Bromo &amp; Ijen (día 3) '/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhOKtty5QhgDvw_fWB_B8s5VvvNue6JMFLGUi55f9vzufYBpyuav4zMqCOoMJfgDQN1LIsO48_kfv0dYdHlkbOccGLIVZEaWDiEahSiQIsM-EFPEDVIPsjGtxnnApj1EUibdIIZvADYgWxLsx38U4791VkAHqokVooBkGDCoElQgRYQUbFznzs6nBcPmQQ/s72-w480-h640-c/PXL_20250921_184217205.PORTRAIT.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-7504653810816855810</id><published>2025-09-30T00:59:00.004+02:00</published><updated>2025-10-07T13:41:03.956+02:00</updated><title type='text'>Tour de 3 días: Bromo &amp; Ijen (día 2)</title><summary type="text">🌏 Diario de viaje: Indonesia &amp;amp; Kuala Lumpur
+
+⬅️ Día anterior | 
+Índice completo | 
+Día siguiente ➡️
+
+🗻 Día 2 Tour Bromo/Ijen– Subida al Monte Bromo
+
+⏰ A las 2:30 de la madrugada teníamos que estar preparados en la entrada de nuestro hotel. Allí nos recogió un 🚙 jeep que nos llevaría hasta el mirador para ver amanecer. El trayecto, debido a los colapsos de vehículos (todos los turistas </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/7504653810816855810/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/7504653810816855810' title='1 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/7504653810816855810'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/7504653810816855810'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/09/tour-de-3-dias-bromo-ijen-dia-2.html' title='Tour de 3 días: Bromo &amp; Ijen (día 2)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdHl8PfSwzGhDz36S6MUkKGP7IygEk4bGp_SY3dvaNgkcd8fXWmPIUd04Q-W4wif0O5_NDbLM6WGqtnTcB6jjdKqPq6GaaH83DuVW0ohSqi5jBrL-RVQcdMegxqMnkaPJ59ORnMJ7Nac5rsD0ZSLzDgMZHtExl4j_r_aiyj7CK7wHGI2Qo1fMfiHTFBGo/s72-w640-h480-c/1000028709.jpg" height="72" width="72"/><thr:total>1</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-5981356783059829808</id><published>2025-09-24T11:44:00.003+02:00</published><updated>2025-10-07T13:41:47.186+02:00</updated><title type='text'>Tour de 3 días: Bromo &amp; Ijen (día 1)</title><summary type="text">🌏 Diario de viaje: Indonesia &amp;amp; Kuala Lumpur
+
+⬅️ Día anterior | 
+Índice completo | 
+Día siguiente ➡️
+🚐 Tour de 3 días: Bromo &amp;amp; Ijen&amp;nbsp;
+
+ℹ️ Información práctica sobre el tour
+
+Antes de empezar el relato día a día, dejamos algunos detalles importantes sobre la 
+empresa con la que contratamos la excursión:
+
+
+  Contratamos el tour con Blue Flame Tour.
+  Elegimos la opción de alojamientos </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/5981356783059829808/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/5981356783059829808' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5981356783059829808'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5981356783059829808'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/09/tour-de-3-dias-bromo-ijen-dia-1.html' title='Tour de 3 días: Bromo &amp; Ijen (día 1)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgt4OXqhttpf9thCUMvbPEL7sBW8a1emu5jJUPwhiTWD3YqyeQZGQSZnJRZiY_zFVDjYcrtnxEeJ91nM0mL3aham_ptxOz8yjsk4SQmtZM6mAp7MeLnOSHUEoA-OHUlcFQXj90Z-_mjac1NAypNH3e9VWMczyLnWj1ufPzQ2xn76-Gw9KVwEqFOhGZY6Zo/s72-w480-h640-c/1000028531.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-5531827971643166422</id><published>2025-09-19T15:39:00.003+02:00</published><updated>2025-10-07T13:33:30.687+02:00</updated><title type='text'>Yogyakarta día 2</title><summary type="text">&lt;!--Navegación superior--&gt;
+Diario de viaje: Indonesia &amp;amp; Kuala Lumpur
+
+  ⬅️ Día anterior | 
+  Índice completo | 
+  Día siguiente ➡️
+
+
+🛕 Yogyakarta – Día 2: El majestuoso templo de Borobudur
+
+
+Para visitar Borobudur, optamos por lo cómodo: el mismo conductor de Grab que nos llevó ayer a Prambanan nos ofreció llevarnos hasta el templo, esperarnos y devolvernos al hotel. 
+El precio fue el </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/5531827971643166422/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/5531827971643166422' title='1 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5531827971643166422'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5531827971643166422'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/09/yogyakarta-dia-2.html' title='Yogyakarta día 2'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgE9WZA-Sv0H1J5iu4SVH4gNWVNKZfZ4kIHExKXFWYcQmiTitCdfw2AW4CQ_VgaRVsqkMMdS_WY_nnFups7cW4BF4jTrIl1T62ix_FvM3vRCtuXMjx-2BDc7oBAfS0l7TWHRzdTf5eVZmV26zUdp2w32b4kuQ9popsSABZhnkqjTr3zPT-_AQKlDp9cjbI/s72-w480-h640-c/1000028333.jpg" height="72" width="72"/><thr:total>1</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-8166177289054249707</id><published>2025-09-18T14:36:00.075+02:00</published><updated>2025-10-07T13:32:27.047+02:00</updated><title type='text'>Yogyakarta día 1 (Isla de Java) </title><summary type="text">Diario de viaje: Indonesia &amp;amp; Kuala Lumpur
+
+  ⬅️ Día anterior | 
+  Índice completo | 
+  Día siguiente ➡️
+
+  Hacia Yogyakarta&amp;nbsp;
+
+  El día estuvo marcado por otro largo traslado. Tuvimos que volver a hacer el trayecto hasta el aeropuerto de Medan, unas 3-4 horas de carretera desde Bukit Lawang.
+
+  🍴 Una vez en el aeropuerto aprovechamos para comer. Los precios nos sorprendieron: muy baratos</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/8166177289054249707/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/8166177289054249707' title='1 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8166177289054249707'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8166177289054249707'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/09/dia-anterior-indice-completo-dia.html' title='Yogyakarta día 1 (Isla de Java) '/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEggcgvh8ugwiTzkpajmzCuuY4AIMT4SsBGV8AKhD8C4JjQ3zuQj8iRdQMGJ23gyN2e66yp9cTytaAJ08CsR3E_W714ORVxSOuFBxxqdbLbucYaZT461kVJ4aSS1144Ns8H4UB7ecrZnCALZ-0p9KURUrXY1g3GK5_QPpiBSGp2CViIsJaqlwMOYRN419bk/s72-c/IMG_20250917_224638.jpg" height="72" width="72"/><thr:total>1</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-7356418412057947194</id><published>2025-09-17T05:12:00.005+02:00</published><updated>2025-09-19T02:54:16.912+02:00</updated><title type='text'>Treking en Bukit Lawang (Sumatra)</title><summary type="text">
+📖&amp;nbsp;Diario de viaje: Indonesia &amp;amp; Kuala Lumpur⬅️&amp;nbsp;Día anterior&amp;nbsp;|&amp;nbsp;Índice completo&amp;nbsp;|&amp;nbsp;Día siguiente&amp;nbsp;➡️Cómo llegar a Bukit Lawang ✈️🚐
+
+En nuestro caso volamos desde Kuala Lumpur con la compañía AirAsia. Los precios son bastante baratos, normalmente por menos de 50 €. El vuelo dura apenas 1 hora.
+
+Al llegar a Medan se realizan los trámites de visado. Puede hacerse</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/7356418412057947194/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/7356418412057947194' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/7356418412057947194'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/7356418412057947194'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/09/treking-en-bukit-lawang-sumatra.html' title='Treking en Bukit Lawang (Sumatra)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjDXMyK_AqYWa4RfhJSWXgQFLN1V5AX9ULJamE6Uae7ohUeaXALYAYVNbW1iIM56wMWQDPrLPSHUEupM45wzo0c6W4IabKweXwqM7Y4tXBJgjKPzNFt9rlOgQmwcxMDWZi2rFlZnaERgnafbTK-W6SO3vCPvLQ6IHqMlKEte9MMnUFNIkUE07KZ0HTiVGI/s72-w640-h480-c/1000027500.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-4548243929201139323</id><published>2025-09-13T13:07:00.014+02:00</published><updated>2025-09-19T02:52:00.567+02:00</updated><title type='text'>kuala lumpur día 2</title><summary type="text">
+
+
+  📖 Diario de viaje: Indonesia &amp;amp; Kuala Lumpur
+
+
+
+  ⬅️ Día anterior | 
+  Índice completo | 
+  Día siguiente ➡️
+
+
+
+  Kuala Lumpur Día 2 – Batu Caves y Chinatown 🐒🏮🌆
+
+Excursión a las Batu Caves ⛪🐒
+No madrugamos demasiado y comenzamos el día visitando las famosas Batu Caves, uno de los lugares más icónicos de Kuala Lumpur.
+
+Vestimenta. En la entrada suele haber gente intentando vender </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/4548243929201139323/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/4548243929201139323' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4548243929201139323'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4548243929201139323'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/09/kuala-lumpur-dia-2.html' title='kuala lumpur día 2'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhByEqqi9lAf3bMCLF5eRUGVotPoSeuc0bhfvspkcrHFi6k5h0vUEunKLpybrdAtd7PVy2e-YmweO_9BYJ1YUrtrqoRQkCwBWpy5kOjD6_vAMwghEK3bkY65sW8cYeb2vyKOiPSwKx2Amp_d9hHD4vFzy1CW_69sx_CgzS9ObXlKJS11WHmHbznOGXu9Qg/s72-w480-h640-c/1000026898.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-5153467892576239862</id><published>2025-09-12T16:06:00.003+02:00</published><updated>2025-09-17T06:13:21.962+02:00</updated><title type='text'>Kuala Lumpur día 1</title><summary type="text">&amp;nbsp;Diario de viaje a Kuala Lumpur ✈️🇲🇾
+
+
+  📖 Diario de viaje: Indonesia &amp;amp; Kuala Lumpur&amp;nbsp;| 
+  Día siguiente ➡️
+
+
+  Día 1 – Llegada y primeras impresionesDespués de casi 20 horas de viaje, aterrizar en Kuala Lumpur es toda una mezcla de ilusión y agotamiento. Por suerte, para los ciudadanos de la Unión Europea el trámite de la visa online es muy sencillo: se gestiona rápido y existe </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/5153467892576239862/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/5153467892576239862' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5153467892576239862'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5153467892576239862'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/09/kuala-lumpur-dia-1.html' title='Kuala Lumpur día 1'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjIU28rJG1pgPUIXJjNMiA-p5biH3p-zpV_mTrA2uZk4u9mqJaYtZivAWP_WmNlJO31WntlvWtTAloCuthU0M39vNyNek51kul1747cjtCsPHzM1ge4LfhRkP-vTcLIbhZwkLwdvkfdfBaOLvHCWMURLrS81do_U64smaIQxnd3s1aB8gdsMrqD4pdlURU/s72-w480-h640-c/1000026830.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-4167353276409610196</id><published>2025-09-09T12:32:00.004+02:00</published><updated>2026-10-10T20:07:59.773+02:00</updated><title type='text'>Vega Huerta y Los Moledizos desde Soto de Sajambre</title><summary type="text">
+
+Travesía de dos días desde Soto de Sajambre, con noche en el refugio de Vegabaño, para subir por la Canal del Perro hasta Vega Huerta, a los pies de la cara sur de la Peña Santa de Castilla, y coronar Los Moledizos (2.297 m). Hayedos, robles centenarios y el paisaje kárstico más salvaje del Cornión.
+
+
+
+
+
+  
+    📏26 kmDistancia
+    📈+1.600 mDesnivel
+    🌙2 díasNoche en Vegabaño
+    🏔️2.297 </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/4167353276409610196/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/4167353276409610196' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4167353276409610196'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4167353276409610196'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/09/vegahuerta-y-los-moledizos-desde-soto.html' title='Vega Huerta y Los Moledizos desde Soto de Sajambre'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiiuWl0lROkyoB26eHDBxTyP4k8h-jx4xxHB_K1FPcpIzza840GuYDokjyfQWLhbA8uT5sU5b6EPffFgY92C2wq7NP-qlK7RCNQBBxanSaBlSkmBeYDNQte9XLdxgThVfRF6F3KlaZZ2MpBiv_oA3qOv09a0qS_87LYihnteoPdhX1tPQjo6tyeGuNDrM0/s72-w640-h480-c-rw/IMG_20220815_122658.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-4998947839307804800</id><published>2025-09-01T11:36:00.013+02:00</published><updated>2026-10-09T20:11:59.044+02:00</updated><title type='text'>Mapa de las rutas por Asturias y León</title><summary type="text">&lt;!-- 👉 Si subes una captura del mapa, ponla aquí como foto de portada (sale en la portada del blog y al compartir) --&gt;
+
+Después de muchas horas de trabajo, por fin os presento el mapa interactivo del blog: todas las cumbres y lugares destacados de los 340 recorridos que he publicado en 17 años, por Asturias y León, reunidos en un solo mapa.
+
+
+
+
+
+  
+    🥾340Recorridos publicados
+    📅17 añosDe </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/4998947839307804800/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/4998947839307804800' title='3 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4998947839307804800'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4998947839307804800'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/09/el-mapa-de-rutas-por-asturias-y-leon.html' title='Mapa de las rutas por Asturias y León'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><thr:total>3</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-4241179953095987138</id><published>2025-08-28T16:32:00.002+02:00</published><updated>2026-10-09T20:22:03.149+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Pirineos"/><title type='text'> Anayet desde el Corral de las Mulas</title><summary type="text">
+
+Subida al Pico Anayet (2.574 m), un volcán dormido frente al Midi d&#39;Ossau: por el barranco de Culivillas y los llanos de Anayet, con cadenas y chimenea en el tramo final, y bajada por el ibón y la Glera de Anayet. Una de las siluetas más elegantes del Pirineo.
+
+
+
+
+
+  
+    📏16 kmDistancia
+    📈+1.000 mDesnivel
+    ⏱️Jornada completaDuración
+    🏔️2.574 mPico Anayet
+    ⛓️AltaCadenas y </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/4241179953095987138/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/4241179953095987138' title='2 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4241179953095987138'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4241179953095987138'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/08/anayet-desde-el-corral-de-las-mulas.html' title=' Anayet desde el Corral de las Mulas'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhAS2bTXqyF6WcLC_ugzVIuWEA14vfJZeYEOOpQ-WQid0dBeHwy7hAjxqR7UOsOOvUgbMDIZKusNlvKg7e-dedCv0ThWGmQiJbQiGwDFnyOffQQMwAbC1Eb1oK1fIshmn2e5WkE2hRSLf0kecqFOhkKYxL11Mj_khyUeBnHOYbQIMcMzVLrknnU81Wzg3k/s72-w640-h480-c/PXL_20250627_080314507.PORTRAIT.ORIGINAL.jpg" height="72" width="72"/><thr:total>2</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-781671577135842431</id><published>2025-08-11T15:40:00.002+02:00</published><updated>2026-10-19T09:55:40.036+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Leon"/><title type='text'>Peña Valdorria y Ermita de San Froilán: circular desde Valdorria</title><summary type="text">
+
+Circular desde Valdorria por toda la crestería caliza de la Peña Valdorria (1.926 m), con vistas infinitas sobre el Curueño, y final en la Ermita de San Froilán, colgada sobre el valle tras sus legendarios 365 escalones. Montaña, historia y leyenda en una sola jornada.
+
+
+
+
+
+  
+    📏11,5 kmDistancia
+    📈+835 mDesnivel
+    ⏱️7 hCon paradas
+    🏔️1.926 mPeña Valdorria
+    🎢Media-altaPor el </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/781671577135842431/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/781671577135842431' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/781671577135842431'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/781671577135842431'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/08/pena-valdorria-y-ermita-de-san-froilan.html' title='Peña Valdorria y Ermita de San Froilán: circular desde Valdorria'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjQhBPRLRhEKd4IE3pB_53y1aB-I8OKX-uh59xNnHAItKFBRuEvOhNgm_Cqx7gwgTVS4dV3QA0tLY9vpQt7hr-s_2wyVRlF2pCSBtlXBtUM04SVDCeGLjqO5GDYdginenGGM_1gt6CCMc0vzqAa-Yh2zaF9d4XsgTyKSGS37gopOvuo17h25JJwssd6EI0/s72-w640-h480-c/PXL_20250518_101738389.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-3732019574119603766</id><published>2025-08-04T16:48:00.013+02:00</published><updated>2026-10-19T10:16:48.598+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Pirineos"/><title type='text'>Ibones de Arriel y Respomuso desde La Sarra (Sallent de Gállego)</title><summary type="text">
+
+Desde el embalse de La Sarra a los Ibones de Arriel y al Ibón de Respomuso: cascadas, el Paso del Onso, pedreras, rododendros en flor y lagos glaciares a los pies del Balaitús, el Palas y el Arriel. Una de las rutas más bellas del Pirineo aragonés, condensada en una sola jornada.
+
+
+
+
+
+  
+    📏20,5 kmDistancia
+    📈+1.250 mDesnivel
+    ⏱️9 hCon paradas
+    🏔️2.259 mIbón Alto de Arriel
+    🥾</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/3732019574119603766/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/3732019574119603766' title='2 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/3732019574119603766'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/3732019574119603766'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/08/ibones-de-arriel-y-respomuso-desde-la.html' title='Ibones de Arriel y Respomuso desde La Sarra (Sallent de Gállego)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh9u1SVDQQYx15DHRKNDsAm6Bk2lTHlzfeHYizBqE2_1u9ckJZqgX100tdeHoYFujkLNsUn3fnJxDSf8bOWvTKbY2o9JXnAT7sy4s3am0WRTTOQnKQLX-zXrsSQBzVomjDa5tKoubYnkOpK5OKQpbrFRMenCUlc0uenw6K-erg_89vXwIgB6XSXVxgPQUs/s72-w640-h480-c-rw/PXL_20250626_104533019.jpg" height="72" width="72"/><thr:total>2</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-8570396803247589866</id><published>2025-07-30T16:03:00.001+02:00</published><updated>2026-10-09T21:36:14.432+02:00</updated><title type='text'>PR-AS 319: Ruta Altas Cumbres de los Lagos +2.000 de Somiedo (Pico Calabazosa)</title><summary type="text">
+
+El PR-AS 319 Altas Cumbres de los Lagos de Somiedo, desde el Alto de La Farrapona, ampliado con 8 cumbres del cordal, seis de ellas de más de 2.000 metros, con la Peña Calabazosa (2.104 m) como techo del día. Crestas calizas, trepadas sencillas y los lagos de Saliencia a nuestros pies.
+
+
+
+
+
+  
+    📏14,5 kmDistancia
+    📈+975 mDesnivel
+    ⏱️7 hDuración
+    🏔️2.104 mPeña Calabazosa
+    ⛰️8 </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/8570396803247589866/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/8570396803247589866' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8570396803247589866'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8570396803247589866'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/07/pr-as-319-ruta-altas-cumbres-de-los_30.html' title='PR-AS 319: Ruta Altas Cumbres de los Lagos +2.000 de Somiedo (Pico Calabazosa)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi3F_jItucXeItxPG8v7XKzvfM3j7a0oyxXZrGwWFIeij_l1oY-0A9OiAvzv_BHlKYlc38NHVJ-vBmIknSiEX0lLh6W1eNamg9agFN1iOiER4k7rS379l58hMaY5qlk3YCU9rsm75YScgJCTOeDgLk5z2i1VxgWXhj7oVbzmgnN_7Ej99kknAv0V6dYUvk/s72-w640-h480-c/PXL_20250719_105742082.MP.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-2557935859086776261</id><published>2025-07-30T15:56:00.002+02:00</published><updated>2026-10-19T10:00:13.419+02:00</updated><title type='text'>Refugio de Serradets (Sarradets) desde Bujaruelo</title><summary type="text">
+
+Subida desde San Nicolás de Bujaruelo al refugio de Serradets (2.587 m), cruzando a Francia por el Puerto de Bujaruelo y subiendo el nevero del glaciar des Sarradets con crampones. Uno de los enclaves más espectaculares del Pirineo, con la Brecha de Rolando recortada en el horizonte.
+
+
+
+
+
+  
+    🛖2.587 mRefugio de Serradets
+    ⛰️2.273 mPuerto de Bujaruelo
+    ⚠️ExigenteDistancia y desnivel
+</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/2557935859086776261/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/2557935859086776261' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/2557935859086776261'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/2557935859086776261'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/07/refugio-serradets-desde-bujaruelo.html' title='Refugio de Serradets (Sarradets) desde Bujaruelo'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgC-f8jUS4q43rFiYzpWIMbQWxM-IkqVdXMiaxW0x6er4owUUdJzITcz4ymYMsqvnASCK7Bi1mEeal4-l0tskQQvxaAxhbYYRMA23Zw4efFu-F_zYJdt2AALIelhI20mEjtFXyY4tATo7U7p1f5V3LTxjUXvHWLT49ltJJ5jhd5oz9r5acjm0eAC5HFLv0/s72-w640-h480-c/PXL_20250622_114703167.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-470777389443886731</id><published>2025-07-30T14:59:00.000+02:00</published><updated>2026-10-10T10:18:03.583+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Pirineos"/><title type='text'>Cañon de Añisclo</title><summary type="text">
+
+Recorrido por el Cañón de Añisclo, en el Parque Nacional de Ordesa y Monte Perdido, desde La Tella hasta el llano de La Ripareta: cascadas, pozas de agua esmeralda, hayedos de cuento, un tejo de más de 300 años y la ermita troglodita de San Úrbez. Una excursión larga, pero sin ninguna dificultad técnica.
+
+
+
+
+
+  
+    📏20 kmIda y vuelta
+    📈+700 mDesnivel
+    ⏱️6–7 hCon paradas
+    🌿1.405 mLa</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/470777389443886731/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/470777389443886731' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/470777389443886731'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/470777389443886731'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/07/canon-de-anisclo.html' title='Cañon de Añisclo'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhPEWa4L6i7bbW9KjIvyLsuTthRJmGI3ErgvM1oorCZofMeqS7Uoip7GkAOB5hpIr-2FlYZMQ66tBtki5XGFjeUKfuMZDTMdpR9PPsbwJMj0WqUpC4R-pNm_rOgzxNpthps1pKoDut9z46vZ4MxNwow0Q_d8OyxthrhGGqwVxLv86mnx6JVrm8r8s5pKCU/s72-w640-h480-c/PXL_20250624_134817185.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-1018283616486050733</id><published>2025-07-28T17:58:00.006+02:00</published><updated>2026-10-10T10:24:08.401+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Leon"/><title type='text'>Peña Orniz desde Torre de Babia: Fuentes del Sil y Laguna de las Verdes</title><summary type="text">
+
+Desde Torre de Babia a la Peña Orniz (2.191 m), techo de Somiedo, bajando por las Fuentes del Sil, donde nace el río, y la Laguna de las Verdes, una joya glaciar al pie del Montihuero. Valles de altura, majadas de trashumancia y un paisaje calizo de los que no se olvidan.
+
+
+
+
+
+  
+    📏17 kmDistancia
+    📈+900 mDesnivel
+    ⏱️7 h 30 minDuración
+    🏔️2.191 mPeña Orniz
+    🥾ModeradaDificultad</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/1018283616486050733/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/1018283616486050733' title='1 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1018283616486050733'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1018283616486050733'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/07/pena-orniz-y-laguna-las-verdes.html' title='Peña Orniz desde Torre de Babia: Fuentes del Sil y Laguna de las Verdes'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh8UvJJfd_Eyd0ccmMqUFFEl7Y9WOdmYqEf1MDT9npBdxxnw88GmfFd6AXxlnFaDEO0rqTP4ImYIEo6ebodbxB2WYmpNxEtYaMupF-1LskOhGvoX2zceYcWNla8TzAdi4zOtwIii6e0SCFuExd2yQ1kbV9f0gCCP44HuiLaIlMXbmahi-3opYd3WVDNXTg/s72-w640-h480-c/PXL_20250706_135620195.jpg" height="72" width="72"/><thr:total>1</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-5531669220026512487</id><published>2025-07-24T14:48:00.009+02:00</published><updated>2026-10-09T13:10:31.735+02:00</updated><title type='text'>Rutas por Picos y Peñas Cabriegas</title><summary type="text">
+  67 rutas por Picos de Europa y Peñas Cabriegas.
+  
+    Macizo del Cornión (Occidental)
+    
+      Vega Huerta y Los Moledizos desde Soto de Sajambre
+      Cabeza Pandescura y Foz del Casaño por la Canal de la Llucia
+      Cabeza Pandescura desde Canales
+      El Cuetón desde Inguanzo
+      Peña Ruana desde el Lago Ercina
+      Vega de Ario por las canales de Trea y Culiembro
+      Pico Cotalba</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/5531669220026512487/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/5531669220026512487' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5531669220026512487'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5531669220026512487'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/07/listado-de-rutas-de-montana-body-font.html' title='Rutas por Picos y Peñas Cabriegas'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-5978575769385730517</id><published>2025-07-07T14:30:00.004+02:00</published><updated>2026-10-10T19:39:07.902+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Pirineos"/><title type='text'>Faja de las Flores por las Clavijas de Salarons y Cotatuero (Ordesa)</title><summary type="text">
+
+Circular por el corazón de Ordesa: subida por las Clavijas de Salarons, travesía por la mítica Faja de las Flores, una cornisa colgada a casi 800 metros sobre el valle, y bajada por las Clavijas de Cotatuero. Un recorrido vertical, aéreo y expuesto… pero inmensamente espectacular.
+
+
+
+
+
+  
+    📏17 kmDistancia
+    📈+1.300 mDesnivel
+    ⏱️8–10 hDuración
+    🧗AltaClavijas y exposición
+    🎒</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/5978575769385730517/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/5978575769385730517' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5978575769385730517'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/5978575769385730517'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/07/faja-de-las-flores-por-clavijas-de.html' title='Faja de las Flores por las Clavijas de Salarons y Cotatuero (Ordesa)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi5ezwLG_DKys-hcEy1VPvOyR_CJ4euqX0RVJkc14CrmH1kBp9K0k26SKktt_8T8_Ihv2IBqh6wkLJe5Hgbny0BfzKgluLY5d5SC8bcGB63rKEqlVav90xt2QqOQSaXWWNbSqH-JosYmoM4cCJ607RjFU8dsI2RDCrJF5sfH5P9GvZxvKpbxxbdq4611zI/s72-w640-h480-c-rw/PXL_20250623_111245136.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-8182317011271994913</id><published>2025-07-02T16:39:00.001+02:00</published><updated>2026-10-09T13:23:17.232+02:00</updated><title type='text'>Alpes</title><summary type="text">
+  18 rutas por los Alpes suizos, franceses e italianos.
+  
+    Alpes Suizos
+    
+      Pointe de Drône (2.948 m.) desde el Col Grand St. Bernard
+      Cabane Tracuit desde Zinal
+      Glaciar Alexsch Glestscher
+      Cabane de Moiry
+      Circular al Bec de Rosses desde Verbier
+      Refugio Hörnlihütte (A los pies del mítico Cervino)
+      Circular al Grand Chavalard
+    
+  
+  
+    Alpes </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/8182317011271994913/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/8182317011271994913' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8182317011271994913'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8182317011271994913'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/07/alpes.html' title='Alpes'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-8660503546490057188</id><published>2025-06-11T08:54:00.001+02:00</published><updated>2026-10-10T10:42:41.403+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Leon"/><title type='text'>Integral al Mampodre</title><summary type="text">
+
+Integral al macizo del Mampodre desde Maraña: cinco cumbres de más de 2.000 metros encadenadas por crestas calizas —La Polinosa, Peña La Cruz, Valcerrao, Peña Mediodía y Valjarto— y bajada a la Laguna del Mampodre. Montaña leonesa clásica, agreste y solitaria, con trepadas sencillas y mucho desnivel.
+
+
+
+
+
+  
+    📏16 kmDistancia
+    📈+1.450 mDesnivel
+    ⏱️9 h 30 minDuración
+    🏔️2.196 mPeña</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/8660503546490057188/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/8660503546490057188' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8660503546490057188'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8660503546490057188'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/06/integral-al-mampodre.html' title='Integral al Mampodre'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgPLW5Nt704xOqiOBKXUg4tS6Q1yEWmHx0HMtk7RHbLm1Uffr5U0BHYBrK7PBF8MYHCyLDToIFmyyFwT3giA-Sk5URseovAPIoY51v_5L5l_aR7toEdzVLYMlqA0RWNW1-WScooFZVOWIqHCiuzQB9Gxy_U-c_-X8EIMy1B0o4bdm3jGWAQBkS-An6drTE/s72-w640-h480-c/PXL_20250607_140700532.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-4677550865062157050</id><published>2025-05-27T02:00:00.008+02:00</published><updated>2026-10-10T11:52:33.050+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Somiedo"/><title type='text'>Bigaros y Muñón (Travesía de Saliencia a Torrestío)</title><summary type="text">
+
+Travesía primaveral por la cresta del Muñón y Los Bígaros, en Somiedo: subimos desde Saliencia por la Foz de los Arroxos y la Braña La Mesa y bajamos a Torrestío. Una de las crestas más panorámicas de la zona, sin dificultades técnicas ni pasos aéreos.
+
+
+
+
+
+  
+    🏔️2.038 mLos Bígaros
+    ⛰️2.033 mEl Muñón
+    ↗️TravesíaSaliencia → Torrestío
+    🥾MediaSin pasos aéreos
+  
+
+  
+    📍 Saliencia </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/4677550865062157050/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/4677550865062157050' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4677550865062157050'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4677550865062157050'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/05/bigaros-y-munon-travesia-de-saliencia.html' title='Bigaros y Muñón (Travesía de Saliencia a Torrestío)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEionDcGrb7IDR1hExY6H0WHCHFkTkIN-su90klwsWLaW9Dya4Fi9o2Zc-2o363OcTtncIuwmSEudC5_1yySsSvpmvQe1_4jvWJHpYTqw2ZowEDc6daHB9tn63O5YPCh624Hb9-934AF2NbA0G9ptYyiTI35XzIpUEA8sTBYJMNbVbv_5WN3Pc7A7budw8M/s72-w640-h480-c/PXL_20250525_114429208.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-4043353405933759574</id><published>2025-05-21T16:11:00.006+02:00</published><updated>2026-10-19T10:17:24.805+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Leon"/><title type='text'>Pico Bodón desde Llamazares por la Cuevona de las Horas</title><summary type="text">
+
+Subida al Pico Bodón (1.959 m) desde Llamazares, una de las cumbres más emblemáticas del norte de León, con visita a la Cuevona de las Horas. Seguimos por su crestería hasta el Cueto Cabañas y bajamos directos por el hayedo.
+
+
+
+
+
+  
+    📏10 kmDistancia
+    📈+1.000 mDesnivel
+    🏔️1.959 mPico Bodón
+    ⚠️MediaExigente físicamente
+    🔄CircularDesde Llamazares
+  
+
+  
+    📍 Llamazares (León)
+</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/4043353405933759574/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/4043353405933759574' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4043353405933759574'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/4043353405933759574'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/05/picos-bodon-y-cabanas-desde-llamazares.html' title='Pico Bodón desde Llamazares por la Cuevona de las Horas'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDGpSiz0oN38xHB_YjPyPu-MAocOKmzMPUAhhzauxABr0ti6oCPJt4vNtSFLgjPDuu-GGs8b-w2VoP0rczLCFj7GF3DgksjJ3C0k0Dm-TpJCHIpD4bAW1PfjlRAdp7xFgxLtnsdRXDkBuWCcZQzIS2UAZe5ccdlOWPhcXQ9Uc9JdkR3EO7f6G9ankSSog/s72-w640-h480-c-rw/PXL_20250517_111434714.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-7423171333029596242</id><published>2025-05-14T01:25:00.008+02:00</published><updated>2026-10-10T17:17:20.199+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Laviana"/><category scheme="http://www.blogger.com/atom/ns#" term="Redes"/><title type='text'>Pico Guanalón desde Soto de Agues</title><summary type="text">
+
+Subida al Pico Guanalón (1.229 m) desde Soto de Agues, en Redes: un recorrido corto pero con desnivel, con una cumbre aérea asomada a Laviana, la vuelta por la Güeya Cogollu y la bajada por el precioso hayedo de Aviaos.
+
+
+
+
+
+  
+    📏12,5 kmDistancia
+    📈+900 mDesnivel
+    🏔️1.229 mPico Guanalón
+    ⚠️MediaUna pequeña destrepada
+    🔄CircularDesde Soto de Agues
+  
+
+  
+    📍 Soto de Agues (</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/7423171333029596242/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/7423171333029596242' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/7423171333029596242'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/7423171333029596242'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/05/pico-guanalon-desde-soto-de-agues.html' title='Pico Guanalón desde Soto de Agues'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgQMX5KlwFwrpDEiv60rnibL1YkARQYYBGNe6S2eqXKB1WGc2DH6DhnTRUya7QfbcAleaRoBIZM6gQV74CLZ5BkmGR2Aw9FRZ6X3zknf2KD8IFvZREv_xpFyAdjN2QCLhGrkZbOQgWgyhu2dHvFx317i-uzRLA-MdMFEaIg51iGsyq2TAKhBuPtJXtS4jY/s72-w640-h480-c-rw/PXL_20250503_104012775.jpg" height="72" width="72"/><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-548498952619639619</id><published>2025-05-07T17:32:00.003+02:00</published><updated>2026-10-09T13:16:12.513+02:00</updated><title type='text'>Parque Natural de Somiedo</title><summary type="text">
+  30 rutas por el Parque Natural de Somiedo.
+  
+    PR-AS 319: Ruta Altas Cumbres de los Lagos +2.000 de Somiedo (Pico Calabazosa)
+    Cornón, Cornín y Sierra Pelada. Travesía del Puerto de Somiedo a Villar de Vildas
+    Peña Michu desde Puerto San Lorenzo
+    Brañas de Mumian y Valdecuélabre desde Llamardal
+    Pico Vildeu desde Pigueces
+    Pico Calabazosa y PR AS-319 desde La Farrapona
+    </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/548498952619639619/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/548498952619639619' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/548498952619639619'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/548498952619639619'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2024/07/pnacional-de-somiedo.html' title='Parque Natural de Somiedo'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><thr:total>0</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-7284596605908309312</id><published>2025-05-05T11:45:00.005+02:00</published><updated>2026-10-10T17:25:56.135+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Ninos"/><category scheme="http://www.blogger.com/atom/ns#" term="Piloña"/><category scheme="http://www.blogger.com/atom/ns#" term="Redes"/><title type='text'>Pico Faceo desde Tozu</title><summary type="text">
+
+Ruta corta y fácil al Pico Facéu (1.228 m) desde Tozu, en Caso. Lo mejor es el tramo por el Camín Real del Sellón, que aún conserva la caja original e incluso trozos del empedrado antiguo.
+
+
+
+
+
+  
+    📏9 kmDistancia
+    📈+800 mDesnivel
+    🏔️1.228 mPico Facéu
+    🟢BajaApta para niños
+    🔄CircularDesde Tozu
+  
+
+  
+    📍 Tozu (Caso)
+    🌳 Parque Natural de Redes
+    📅 Marzo de 2025
+    </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/7284596605908309312/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/7284596605908309312' title='3 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/7284596605908309312'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/7284596605908309312'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/05/pico-faceo-desde-tozu.html' title='Pico Faceo desde Tozu'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi4X40CbAXZl8uFOrmUqto_Rf90C00SrK64aNBgV-det7KQHgLh1yQesldBD8TH2WVk_VZB-O9aQKJcSJGNHq_AzhprMyBNXuKv98e07vqq2gNaPX24xkiy2YB9-zxLYBsxEeKsJSY0wE5QOqrr1IIut2zsepMXR_xup_nADqhwSlMfncNOSvh0VY5fh_8/s72-w640-h384-c-rw/IMG_20250214_120439.jpg" height="72" width="72"/><thr:total>3</thr:total><georss:featurename>Piloña, Asturias, España</georss:featurename><georss:point>43.3202455 -5.3520876</georss:point><georss:box>17.88933747709488 -40.5083376 68.751153522905113 29.8041624</georss:box></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-6213736033995975196</id><published>2025-04-07T20:28:00.003+02:00</published><updated>2026-10-10T21:45:02.204+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Cabriegas"/><category scheme="http://www.blogger.com/atom/ns#" term="Picos"/><title type='text'>De S.Esteban de Cuñaba a Urdón:  Pasá Picayo y Camino de la Peña.</title><summary type="text">
+
+Travesía entre precipicios e historia: de San Esteban de Cuñaba a Tresviso por la vertiginosa Pasá Picayo, y bajada a Urdón, en el desfiladero de La Hermida, por el Camino de la Peña, el viejo camino minero. Solo para montañeros con buena cabeza.
+
+
+
+
+
+  
+    📏12 kmDistancia
+    📈+800 mDesnivel de subida
+    📉−1.050 mDesnivel de bajada
+    🏔️975 mCanto las Torcas
+    ⚠️AltaPasos expuestos </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/6213736033995975196/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/6213736033995975196' title='4 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/6213736033995975196'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/6213736033995975196'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/04/de-sesteban-de-cunaba-uron-pasa-picayo.html' title='De S.Esteban de Cuñaba a Urdón:  Pasá Picayo y Camino de la Peña.'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiD7WO8gyJjEGzH3DNYYbnHGVUO-0HF_ZZCiu2AZpUfm4EyKr6vDD69vUcQBojE9plDv2FjbigS-1IOjKUO0y1jAEk8H50PuWnXQ2WpKRc6pE86e7mp7QxCzyM0znKZav2f3BNB1jd1oKgJcRATnAzHQBO_0xyIBfKO3nmamYTNnr0-b387fuKVydlhPg0/s72-w640-h480-c-rw/IMG_20250406_134100.jpg" height="72" width="72"/><thr:total>4</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-8819703145451399244</id><published>2025-03-10T19:50:00.006+01:00</published><updated>2026-10-10T22:58:07.910+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="pilonanava"/><title type='text'>Horcada Traslasenda y Foz de Moñacos.</title><summary type="text">
+
+Circular desde La Pesanca (Piloña) por la foz del Infierno, la espectacular foz de Moñacos con sus tejos, los hayedos de Moñacos y Corbera, la Horcada Traslasenda y las majadas de Ovia y La Felguerina. Con el Grupo Kilimanjaro.
+
+
+
+
+
+  
+    📏20 kmDistancia
+    📈+1.000 mDesnivel
+    🏔️1.330 mHorcada Traslasenda
+    ⚠️MediaMucho barro en tramos
+    🔄CircularDesde La Pesanca
+    👶Niños: </summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/8819703145451399244/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/8819703145451399244' title='4 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8819703145451399244'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/8819703145451399244'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/03/horcada-traslasenda-y-foz-de-monacos.html' title='Horcada Traslasenda y Foz de Moñacos.'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjzoUKitioQGIGhUGfNXJPdnnTFp_UgLiNxvT3JREIhEhMQaIXAskphzBfS-wjTeFHwEOffpBerFBZ8PbZ5KxuCtWouEvBczucAVzMgSfjpYoFAkP3i6sr01p2rmCkmtfU9yXaeQICIiv3oLKvfj6hJpiZY7E6d1B9Bu4TqSpnphaW-QBYGa7RZpGQ7yoo/s72-w640-h480-c-rw/IMG_20250305_153934.jpg" height="72" width="72"/><thr:total>4</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-3382378147015436268</id><published>2025-02-24T08:46:00.001+01:00</published><updated>2026-10-10T23:07:32.707+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Trubia"/><title type='text'>Peña Gradura y La Sala por Senda L&#39; Gabitu y Cuafurada</title><summary type="text">
+
+Corta pero intensa ruta por la sierra de Gradura (Teverga): subida por el aéreo sedo de la Senda L&#39;Gabitu y su arco de roca, cumbres de Peña Gradura (1.159 m) y Peña La Sala (1.228 m), y bajada atravesando la cueva Cuafurada. Solo con terreno seco.
+
+
+
+
+
+  
+    📏8,5 kmDistancia
+    📈+700 mDesnivel
+    🏔️1.228 mPeña La Sala
+    ⚠️AltaPasos aéreos y destrepe
+    🔄CircularDesde Gradura
+    🚫</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/3382378147015436268/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/3382378147015436268' title='3 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/3382378147015436268'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/3382378147015436268'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/02/pena-gradura-y-la-sala-por-senda-l.html' title='Peña Gradura y La Sala por Senda L&#39; Gabitu y Cuafurada'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgbqCYTEHU_aZ3NwfPNY9bvdQRSIK0jQS3ekNJVPJkCp0B8HFjMxEHrZgjK-f3dLae6deYWVpX6N87bvlh5RnJOThn6c31ixqpdWg27cAFKEGariZPVfyjNGvChTPpICOL_Tj-Uqc2_wGCzICRZ_im4RyJIsC35tCim52FhPcu0-l-XIF_xd1OUEaaKSao/s72-w640-h480-c-rw/IMG_20250219_103339.jpg" height="72" width="72"/><thr:total>3</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-7495158580463250080</id><published>2025-02-17T12:55:00.009+01:00</published><updated>2026-10-10T23:13:22.768+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Ninos"/><category scheme="http://www.blogger.com/atom/ns#" term="Trubia"/><title type='text'>Braña Vicenturo y Pico Redondo desde Marabio (raquetas) </title><summary type="text">
+
+Ruta con raquetas desde los Puertos de Marabio por el Camín Francés hasta la gran vega nevada de Vicenturo, con subida final al Pico Redondo (1.414 m). Una ruta invernal accesible y muy disfrutable entre Teverga y Yernes y Tameza.
+
+
+
+
+
+  
+    📏14 kmDistancia
+    📈+600 mDesnivel
+    ⏱️5 h 30 minParadas incluidas
+    🏔️1.414 mPico Redondo
+    🟢FácilCon raquetas
+    ↔️Ida y vueltaNiños: sí
+  
+</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/7495158580463250080/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/7495158580463250080' title='2 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/7495158580463250080'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/7495158580463250080'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/02/brana-vicenturo-y-pico-redondo-desde.html' title='Braña Vicenturo y Pico Redondo desde Marabio (raquetas) '/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh02z4E22gEG2SFCwQ1s9ROskEZQt1hG0efwRNF5KPHUQvGyNDUPt5XPgXQ7EuBqUgPlVXPxd79a_AytKVlkM_nNqq4GDBTdban6ifD5f9ORLqjgtqm3WUhUHgitAVBlSlMikHpF1zcV9HGiyoYrr12Hfki42xzgz77p0qxb7MxhMddlsjLp_E3hqZLghA/s72-w640-h320-c-rw/IMG_20241215_125601.jpg" height="72" width="72"/><thr:total>2</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-1297654117881528262</id><published>2025-01-27T18:45:00.001+01:00</published><updated>2026-10-11T00:31:09.953+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Pirineos"/><title type='text'>Valle de Ordesa: Cola de Caballo y fajas de Canarellos y Racón</title><summary type="text">
+
+Gran recorrido por el valle de Ordesa: subida clásica por las cascadas del Arazas hasta la Cola de Caballo y vuelta por dos fajas poco transitadas, Canarellos y Racón, auténticos balcones sobre el valle con vistas a la cascada de Cotatuero.
+
+
+
+
+
+  
+    📏26 kmDistancia
+    📈+1.000 mDesnivel
+    ⏱️8 hTiempo total
+    ⚠️Media +Larga, sin pasos técnicos
+    🔄CircularDesde la Pradera de Ordesa
+</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/1297654117881528262/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/1297654117881528262' title='1 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1297654117881528262'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1297654117881528262'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/01/fajas-de-racon-y-canarellos-pn-ordesa-y.html' title='Valle de Ordesa: Cola de Caballo y fajas de Canarellos y Racón'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgLB15IXirUJeekDwss7ot7llxqCN678ROQ1CFoeE5Y4fRUuBMSZq8YTmUzIi-3F2n8oSIBWltqdWLVhh0NdgLd22FIZEsF7pRwlqqCMWJ3IjCoGH2_AxYs-m0sbpFxU9hhR5QZrozehH5r1WWyopFIXss51YXJ312BVAqOHnZ37cso2r85ohxcg91GQsY/s72-w640-h410-c-rw/IMG_20240528_145958.jpg" height="72" width="72"/><thr:total>1</thr:total></entry><entry><id>tag:blogger.com,1999:blog-8027918269373899721.post-1020067282558088768</id><published>2025-01-15T16:52:00.011+01:00</published><updated>2026-10-11T09:17:44.585+02:00</updated><category scheme="http://www.blogger.com/atom/ns#" term="Alpes"/><category scheme="http://www.blogger.com/atom/ns#" term="Alpes; Alpessuizos"/><title type='text'>Grande Chenalette y Pointe de Drône: ferrata y cresta desde el Gran San Bernardo (Alpes)</title><summary type="text">
+
+Ascensión breve pero espectacular desde el histórico Col du Grand-Saint-Bernard (2.469 m): ferrata fácil al Grande Chenalette (2.889 m), cresta aérea hasta la Pointe de Drône y bajada por el Col de Fenêtre, con el Mont Blanc y el Grand Combin a la vista.
+
+
+
+
+
+  
+    📏7 kmDistancia
+    📈+700 mDesnivel
+    ⏱️4 hTiempo total
+    🏔️2.949 mPointe de Drône
+    ⚠️Media +Ferrata y cresta I-II
+    🔄</summary><link rel='replies' type='application/atom+xml' href='https://losdelasclaras.blogspot.com/feeds/1020067282558088768/comments/default' title='Enviar comentarios'/><link rel='replies' type='text/html' href='https://www.blogger.com/comment/fullpage/post/8027918269373899721/1020067282558088768' title='0 comentarios'/><link rel='edit' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1020067282558088768'/><link rel='self' type='application/atom+xml' href='https://www.blogger.com/feeds/8027918269373899721/posts/default/1020067282558088768'/><link rel='alternate' type='text/html' href='https://losdelasclaras.blogspot.com/2025/01/pointe-de-drone-2948-m-desde-el-col.html' title='Grande Chenalette y Pointe de Drône: ferrata y cresta desde el Gran San Bernardo (Alpes)'/><author><name>jonatan</name><uri>http://www.blogger.com/profile/09402666363737751311</uri><email>noreply@blogger.com</email><gd:image rel='http://schemas.google.com/g/2005#thumbnail' width='32' height='24' src='http://1.bp.blogspot.com/_1OtV_eUJjYo/SLXIKJPVhAI/AAAAAAAAAJ8/ZyO-eh9nCj8/S220/sanabria,salidas+y+concierto+de+bustamante+103.jpg'/></author><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRRK08Wmp1Vvaw1jqxST9CNnaZo0z-f0eUwkVrTnYhEvgQ8PNQqw_vi2JKj26r4YAA8RFiyt1dYj3XUMw2uwIf4EtCWd4lZ2eYZrmo4EREcqpBIfW79joY7nINPVY_sIOs0z0vXvA4SBKI3btDbf7RiOfi14KnFd-JR9KpuQfmt_F8H0PobPxz9Y57MQM/s72-w640-h320-c-rw/IMG_20240729_103837.jpg" height="72" width="72"/><thr:total>0</thr:total></entry></feed>
