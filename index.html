@@ -607,6 +607,16 @@ function findSites(q){q=nk(q);if(q.length<2)return[];const seen=new Set();
   return SITES.map(s=>({s,sc:score(s,q)})).filter(x=>x.sc<9).sort((a,b)=>(a.sc-b.sc)||(a.s.o-b.s.o)||a.s.n.localeCompare(b.s.n,"es"))
    .map(x=>x.s).filter(s=>{const key=s.q[0]+"|"+s.lat.toFixed(2)+s.lon.toFixed(2);if(seen.has(key))return false;seen.add(key);return true}).slice(0,10)
    .map(s=>(s.reg??=regionOf(s.lat,s.lon),s))}
+/* búsqueda de sitios: primero la lista propia; si encuentra poco, pregunta a Photon (OpenStreetMap) para pueblos de Pirineos, Alpes… */
+let webT=0;const WEBK={city:"Ciudad",town:"Villa",village:"Pueblo",hamlet:"Aldea",locality:"Lugar",isolated_dwelling:"Lugar",suburb:"Barrio"};
+const siteRowsHTML=(list,attr)=>list.map((s,i)=>`<button class="row" data-${attr}="${i}"><div class="t"><b>${esc(s.alt?s.alt.split(";")[0]:s.n)}</b><span>${s.k}${s.reg?" · "+esc(s.reg):""}${s.alt?" · "+esc(s.n):""}</span></div></button>`).join("");
+function bindPlaceSearch(inp,sugg,attr,set){
+  const draw=(list,wait)=>{set(list);sugg.innerHTML=list.length?siteRowsHTML(list,attr)+(wait?`<p class="note">Buscando más sitios…</p>`:""):(inp.value.trim().length>1?(wait?`<p class="note">Buscando…</p>`:`<p class="note">No encuentro «${esc(inp.value)}». Prueba con otro nombre.</p>`):"")};
+  inp.addEventListener("input",()=>{const v=inp.value,loc=findSites(v);const need=nk(v).length>=3&&loc.length<5&&navigator.onLine!==false;draw(loc,need);clearTimeout(webT);if(!need)return;
+    webT=setTimeout(async()=>{try{const r=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(v)}&limit=10&osm_tag=place&bbox=-10,36,17,48.5`);const j=await r.json();if(inp.value!==v)return;
+      const have=new Set(loc.map(s=>nk(s.n)+"|"+s.lat.toFixed(1)));
+      const web=(j.features||[]).filter(f=>WEBK[f.properties.osm_value]&&f.properties.name).map(f=>({n:f.properties.name,alt:"",k:WEBK[f.properties.osm_value],lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],reg:[f.properties.state,f.properties.country].filter(Boolean).join(", ")})).filter(s=>{const k=nk(s.n)+"|"+s.lat.toFixed(1);if(have.has(k))return false;have.add(k);return true});
+      draw([...loc,...web].slice(0,12),false)}catch(e){draw(loc,false)}},350)})}
 let found=[];
 function openNearPanel(){
   sheet.classList.add("full"); setNear(true); hint.hidden=true; probe.attr("r",0); nodes.classed("sel",false);
@@ -618,7 +628,7 @@ function openNearPanel(){
   <p class="note" id="geomsg" style="margin-top:10px"><button class="btn primary" data-geo style="margin-bottom:8px">Usar mi ubicación</button><br>¿Prefieres señalarlo tú? <button class="linkbtn" data-pickmap>Elegir un sitio en el mapa</button>.</p>`;
   sheet.hidden=false; sheet.scrollTop=0;
   const inp=document.getElementById("qpl");
-  inp.addEventListener("input",()=>{found=findSites(inp.value);document.getElementById("sugg").innerHTML=found.length?found.map((s,i)=>`<button class="row" data-site="${i}"><div class="t"><b>${esc(s.alt?s.alt.split(";")[0]:s.n)}</b><span>${s.k}${s.reg?" · "+esc(s.reg):""}${s.alt?" · "+esc(s.n):""}</span></div></button>`).join(""):(inp.value.trim().length>1?`<p class="note">No encuentro «${esc(inp.value)}». Prueba con otro nombre o toca el mapa.</p>`:"")});
+  bindPlaceSearch(inp,document.getElementById("sugg"),"site",l=>found=l);
   inp.addEventListener("keydown",e=>{if(e.key==="Enter"&&found[0]){const s=found[0];nearAt(s.lat,s.lon,s.alt?s.alt.split(";")[0]:s.n)}});
   if(matchMedia("(pointer:fine)").matches)inp.focus();
 }
@@ -660,7 +670,7 @@ function ovDraw(){const st=OVS[OVS.length-1];if(!st){ov.hidden=true;ov.innerHTML
   else if(st.t==="near"){const ns=nearSplit(st.lat,st.lon);h=`<h2 class="ovh">Rutas cerca de ${esc(st.label)}</h2><p class="note">${nearNote(ns)} <button class="linkbtn" data-ovsearch>Buscar otro sitio</button></p>${ns.ins.length>1?sortChips():""}${nearListHTML(ns)}`}
   ov.innerHTML=`<div class="ovin"><div class="ovbar"><button class="linkbtn" data-ovback>← Volver</button></div>${h}</div>`;ov.hidden=false;ov.scrollTop=0;
   if(st.t==="search"){const inp=document.getElementById("qpl2");
-    inp.addEventListener("input",()=>{ovFound=findSites(inp.value);document.getElementById("sugg2").innerHTML=ovFound.length?ovFound.map((s,i)=>`<button class="row" data-ovsite="${i}"><div class="t"><b>${esc(s.alt?s.alt.split(";")[0]:s.n)}</b><span>${s.k}${s.reg?" · "+esc(s.reg):""}${s.alt?" · "+esc(s.n):""}</span></div></button>`).join(""):(inp.value.trim().length>1?`<p class="note">No encuentro «${esc(inp.value)}». Prueba con otro nombre.</p>`:"")});
+    bindPlaceSearch(inp,document.getElementById("sugg2"),"ovsite",l=>ovFound=l);
     inp.addEventListener("keydown",e=>{if(e.key==="Enter"&&ovFound[0]){const s=ovFound[0];ovShow({t:"near",lat:s.lat,lon:s.lon,label:s.alt?s.alt.split(";")[0]:s.n})}});
     if(matchMedia("(pointer:fine)").matches)inp.focus()}}
 ov.addEventListener("click",e=>{
