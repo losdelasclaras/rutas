@@ -260,7 +260,7 @@ html,body{height:100%;margin:0}
       <div class="legend" role="group" aria-label="Capas del mapa">
         <button class="lay" data-lay="peaks" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>Cumbres</button>
         <button class="lay" data-lay="spots" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-brana" x="-12" y="-12" width="24" height="24"/></svg>Lugares</button>
-      <button class="lay" data-lay="tracks" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><path d="M-4 3C-2 -3 0 3 1 -1S3 -3 4 -4" fill="none" stroke="#c3262e" stroke-width="1.6" stroke-linecap="round"/></svg>Tracks</button></div>
+      <button class="lay" data-lay="ign" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#e8d9a8" stroke="#8a6d2b" stroke-width=".8"/><path d="M-3 2.5C-1.5 0 0 2 1 0S3 -2 3.5 -3" fill="none" stroke="#8a6d2b" stroke-width=".8"/></svg>Mapa IGN</button><button class="lay" data-lay="tracks" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><path d="M-4 3C-2 -3 0 3 1 -1S3 -3 4 -4" fill="none" stroke="#c3262e" stroke-width="1.6" stroke-linecap="round"/></svg>Tracks</button></div>
       <div class="fabs">
         <button class="btn ghost" id="b-home" data-short="Todo" title="Ver todo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Ver todo</button>
         <button class="btn primary" id="b-wiz2" data-short="¿Ruta?" title="¿Qué ruta hago?"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8l-2 6-6 2 2-6z"/></svg>¿Qué ruta hago?</button>
@@ -410,7 +410,7 @@ function ensureZone(zk){if(zk!==ZK){ZK=zk;store.set("ldc-zona",zk);renderMapbar(
 const FSV=[1,1.15,1.3,1.45];let FS=+store.get("ldc-fs",1.15);if(!FSV.includes(FS))FS=1.15;
 document.documentElement.style.setProperty("--fs",FS);
 document.getElementById("fsbtn").textContent=["Aa","Aa+","Aa++","Aa+++"][FSV.indexOf(FS)];
-const LAY={peaks:true,spots:true,tracks:store.get("ldc-trk","0")==="1"};
+const LAY={peaks:true,spots:true,tracks:store.get("ldc-trk","0")==="1",ign:store.get("ldc-ign","0")==="1"};
 function sizeMarks(){
   const z=map.getZoom(); k=2**(z-8);
   mapEl.style.setProperty("--ms",((z<7.5?11:z<8.5?14:z<10?19:z<12?24:28)*FS)+"px");
@@ -418,7 +418,7 @@ function sizeMarks(){
   mapEl.classList.toggle("lbl-spots",LAY.spots&&z>=13);
   mapEl.classList.toggle("hide-peaks",!LAY.peaks);
   mapEl.classList.toggle("hide-spots",!LAY.spots);
-  setTimeout(syncAllTracks,0);
+  setTimeout(syncAllTracks,0);syncIGN();
 }
 /* capa con todos los tracks (botón «Tracks» de la leyenda) */
 let ALLTRK=null;
@@ -462,6 +462,14 @@ window.showTrack=function(r){if(TRK){TRK.remove();TRK=null}
     map.fitBounds(L.latLngBounds(ll),{paddingTopLeft:[wide?60:24,120],paddingBottomRight:[wide?640:80,pb+20],maxZoom:15,animate:!reduce()})},450)};
 
 setTimeout(()=>{const b=document.querySelector('[data-lay="tracks"]');if(b)b.setAttribute("aria-pressed",LAY.tracks)},0);
+
+/* mapa del IGN (MTN raster) encima del OpenTopoMap: solo cubre España */
+let IGN=null;
+function syncIGN(){store.set("ldc-ign",LAY.ign?"1":"0");
+  if(LAY.ign&&!IGN)IGN=L.tileLayer("https://www.ign.es/wmts/mapa-raster?service=WMTS&request=GetTile&version=1.0.0&Format=image/jpeg&layer=MTN&style=default&tilematrixset=GoogleMapsCompatible&TileMatrix={z}&TileRow={y}&TileCol={x}",
+    {minZoom:4,maxZoom:17,bounds:L.latLngBounds([35.2,-9.6],[43.95,4.6]),crossOrigin:true,attribution:'Mapa ráster © <a href="https://www.ign.es" target="_blank" rel="noopener">IGN</a> (CC BY 4.0 scne.es)'});
+  if(IGN){if(LAY.ign&&!map.hasLayer(IGN))IGN.addTo(map);else if(!LAY.ign&&map.hasLayer(IGN))IGN.remove()}}
+setTimeout(()=>{const b=document.querySelector('[data-lay="ign"]');if(b)b.setAttribute("aria-pressed",LAY.ign);syncIGN()},0);
 
 /* ---------- sheet ---------- */
 const sheet=document.getElementById("sheet");
