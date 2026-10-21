@@ -115,13 +115,18 @@ select.chip{appearance:none;padding-right:26px;background-image:linear-gradient(
 @media (max-width:699px){
  header.top{padding-block:6px}#sub{display:none}
  .mapbar{top:8px;gap:5px;flex-wrap:nowrap}.mapbar .chip{font-size:13.5px;padding:6px 11px}
- .legend{padding:0;border:0;background:none;box-shadow:none;bottom:12px;gap:6px;align-items:flex-start;flex-direction:column-reverse}
- .legend .laytog{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:54px;height:54px;border-radius:50%;border:1px solid var(--edge);background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:pointer}
- .legend .laytog svg{width:20px;height:20px}.legend .laytog span{font-size:9.5px;font-weight:700}
- .legend .lay{display:none;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.15);border:1px solid var(--edge);border-radius:10px;padding:8px 11px;font-size:14px}
- .legend.open .lay{display:flex}.legend.open .laytog{background:var(--ink);color:var(--card)}
 }
-@media (min-width:700px){.legend .laytog{display:none}}
+.legend{padding:0!important;border:0!important;background:none!important;box-shadow:none!important;bottom:12px;gap:8px;align-items:flex-start;flex-direction:column-reverse}
+.legend .laytog{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:54px;height:54px;border-radius:50%;border:1px solid var(--edge);background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:pointer}
+.legend .laytog svg{width:20px;height:20px}.legend .laytog span{font-size:9.5px;font-weight:700}
+.legend.open .laytog{background:var(--ink);color:var(--card)}
+.laypanel{display:none;flex-direction:column;gap:1px;background:var(--card);border:1px solid var(--edge);border-radius:12px;padding:6px;box-shadow:0 2px 10px rgba(0,0,0,.18);min-width:190px}
+.legend.open .laypanel{display:flex}
+.laygh{margin:4px 8px 2px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.laypanel .lay{font-size:14.5px;padding:8px 10px}
+.laypanel .lay[data-base][aria-pressed="true"]{background:var(--land-dim);color:var(--ink);opacity:1;font-weight:700}
+.laypanel .lay[data-base][aria-pressed="false"]{color:var(--ink);opacity:.8}.laypanel .lay[data-base] .ico{filter:none}
+#map.nobase{background:var(--land)}
 .lay{border:0;background:none;display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:7px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;text-align:left}
 .lay[aria-pressed="false"]{color:var(--muted);opacity:.55}
 .lay[aria-pressed="false"] .ico{filter:grayscale(1)}
@@ -267,11 +272,9 @@ html,body{height:100%;margin:0}
     <section class="view" id="v-mapa">
       <div id="map" aria-label="Mapa de rutas"></div>
       <div class="mapbar" id="mapbar"></div>
-      <div class="legend" role="group" aria-label="Capas del mapa">
-        <button class="laytog" aria-expanded="false" aria-label="Capas del mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Capas</span></button>
-        <button class="lay" data-lay="peaks" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>Cumbres</button>
+      <div class="legend" role="group" aria-label="Capas del mapa"><button class="laytog" aria-expanded="false" aria-label="Capas del mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Capas</span></button><div class="laypanel"><p class="laygh">Mapa</p><button class="lay" data-base="topo" aria-pressed="true"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#cfe0b8" stroke="#6b8a4a" stroke-width=".8"/></svg>Topográfico</button><button class="lay" data-base="ign" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#e8d9a8" stroke="#8a6d2b" stroke-width=".8"/></svg>IGN</button><button class="lay" data-base="orto" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#5f7a4a" stroke="#2f4224" stroke-width=".8"/></svg>Ortofoto (IGN)</button><button class="lay" data-base="none" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#f1f1ec" stroke="#999" stroke-width=".8"/></svg>Sin mapa</button><p class="laygh">Ver</p><button class="lay" data-lay="peaks" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>Cumbres</button>
         <button class="lay" data-lay="spots" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-brana" x="-12" y="-12" width="24" height="24"/></svg>Lugares</button>
-      <button class="lay" data-lay="ign" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#e8d9a8" stroke="#8a6d2b" stroke-width=".8"/><path d="M-3 2.5C-1.5 0 0 2 1 0S3 -2 3.5 -3" fill="none" stroke="#8a6d2b" stroke-width=".8"/></svg>Mapa IGN</button><button class="lay" data-lay="tracks" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><path d="M-4 3C-2 -3 0 3 1 -1S3 -3 4 -4" fill="none" stroke="#c3262e" stroke-width="1.6" stroke-linecap="round"/></svg>Tracks</button></div>
+      <button class="lay" data-lay="tracks" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><path d="M-4 3C-2 -3 0 3 1 -1S3 -3 4 -4" fill="none" stroke="#c3262e" stroke-width="1.6" stroke-linecap="round"/></svg>Tracks</button></div></div>
       <div class="fabs">
         <button class="btn ghost" id="b-home" data-short="Todo" title="Ver todo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Ver todo</button>
         <button class="btn primary" id="b-wiz2" data-short="¿Ruta?" title="¿Qué ruta hago?"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8l-2 6-6 2 2-6z"/></svg>¿Qué ruta hago?</button>
@@ -396,9 +399,9 @@ const zoneOf=r=>r==="Pirineos"?"pir":(r==="Alpes"||r==="Dolomitas")?"alp":"cant"
 const zoneAt=(lat,lon)=>lon>4?"alp":(lon>-1.6&&lat<43.25)?"pir":"cant";
 let ZK=ZONES[store.get("ldc-zona","cant")]?store.get("ldc-zona","cant"):"cant";
 const mapEl=document.getElementById("map");
-const map=L.map(mapEl,{zoomControl:false,minZoom:5,maxZoom:17,zoomSnap:0.5,worldCopyJump:false});
-L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{subdomains:"abc",maxZoom:17,crossOrigin:true,
-  attribution:'Mapa © <a href="https://opentopomap.org" target="_blank" rel="noopener">OpenTopoMap</a> (CC-BY-SA) · datos © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(map);
+const map=L.map(mapEl,{zoomControl:false,minZoom:5,maxZoom:18,zoomSnap:0.5,worldCopyJump:false});
+const OTM=L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{subdomains:"abc",maxNativeZoom:17,maxZoom:18,crossOrigin:true,
+  attribution:'Mapa © <a href="https://opentopomap.org" target="_blank" rel="noopener">OpenTopoMap</a> (CC-BY-SA) · datos © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'});
 map.attributionControl.setPrefix(false);
 const MK={};
 P.forEach((p,i)=>{
@@ -419,7 +422,7 @@ function ensureZone(zk){if(zk!==ZK){ZK=zk;store.set("ldc-zona",zk);renderMapbar(
 const FSV=[1,1.15,1.3,1.45];let FS=+store.get("ldc-fs",1.15);if(!FSV.includes(FS))FS=1.15;
 document.documentElement.style.setProperty("--fs",FS);
 document.getElementById("fsbtn").textContent=["Aa","Aa+","Aa++","Aa+++"][FSV.indexOf(FS)];
-const LAY={peaks:true,spots:true,tracks:store.get("ldc-trk","0")==="1",ign:store.get("ldc-ign","0")==="1"};
+const LAY={peaks:true,spots:true,tracks:store.get("ldc-trk","0")==="1"};
 function sizeMarks(){
   const z=map.getZoom(); k=2**(z-8);
   mapEl.style.setProperty("--ms",((z<7.5?11:z<8.5?14:z<10?19:z<12?24:28)*FS)+"px");
@@ -427,7 +430,7 @@ function sizeMarks(){
   mapEl.classList.toggle("lbl-spots",LAY.spots&&z>=13);
   mapEl.classList.toggle("hide-peaks",!LAY.peaks);
   mapEl.classList.toggle("hide-spots",!LAY.spots);
-  setTimeout(syncAllTracks,0);syncIGN();
+  setTimeout(syncAllTracks,0);
 }
 /* capa con todos los tracks (botón «Tracks» de la leyenda) */
 let ALLTRK=null;
@@ -470,13 +473,22 @@ window.showTrack=function(r){if(TRK){TRK.remove();TRK=null}
 
 setTimeout(()=>{const b=document.querySelector('[data-lay="tracks"]');if(b)b.setAttribute("aria-pressed",LAY.tracks)},0);
 
-/* mapa del IGN (MTN raster) encima del OpenTopoMap: solo cubre España */
-let IGN=null;
-function syncIGN(){store.set("ldc-ign",LAY.ign?"1":"0");
-  if(LAY.ign&&!IGN)IGN=L.tileLayer("https://www.ign.es/wmts/mapa-raster?service=WMTS&request=GetTile&version=1.0.0&Format=image/jpeg&layer=MTN&style=default&tilematrixset=GoogleMapsCompatible&TileMatrix={z}&TileRow={y}&TileCol={x}",
-    {minZoom:4,maxZoom:17,bounds:L.latLngBounds([35.2,-9.6],[43.95,4.6]),crossOrigin:true,attribution:'Mapa ráster © <a href="https://www.ign.es" target="_blank" rel="noopener">IGN</a> (CC BY 4.0 scne.es)'});
-  if(IGN){if(LAY.ign&&!map.hasLayer(IGN))IGN.addTo(map);else if(!LAY.ign&&map.hasLayer(IGN))IGN.remove()}}
-setTimeout(()=>{const b=document.querySelector('[data-lay="ign"]');if(b)b.setAttribute("aria-pressed",LAY.ign);syncIGN()},0);
+/* mapa de fondo: topográfico (OpenTopoMap), IGN, ortofoto PNOA o ninguno. Los del IGN solo cubren España: debajo queda el topográfico */
+const ESP=L.latLngBounds([35.2,-9.6],[43.95,4.6]),IGNATT='© <a href="https://www.ign.es" target="_blank" rel="noopener">IGN</a> (CC BY 4.0 scne.es)';
+const wmts=(svc,layer,fmt)=>`https://www.ign.es/wmts/${svc}?service=WMTS&request=GetTile&version=1.0.0&Format=image/${fmt}&layer=${layer}&style=default&tilematrixset=GoogleMapsCompatible&TileMatrix={z}&TileRow={y}&TileCol={x}`;
+const BASES={topo:[OTM],
+  ign:[OTM,L.tileLayer(wmts("mapa-raster","MTN","jpeg"),{minZoom:4,maxNativeZoom:17,maxZoom:18,bounds:ESP,crossOrigin:true,attribution:"Mapa ráster "+IGNATT})],
+  orto:[OTM,L.tileLayer(wmts("pnoa-ma","OI.OrthoimageCoverage","jpeg"),{minZoom:4,maxNativeZoom:19,maxZoom:18,bounds:ESP,crossOrigin:true,attribution:"Ortofoto PNOA "+IGNATT})],
+  none:[]};
+let BASE=store.get("ldc-base",store.get("ldc-ign","0")==="1"?"ign":"topo");if(!BASES[BASE])BASE="topo";
+function setBase(b){BASE=b;store.set("ldc-base",b);const want=new Set(BASES[b]);
+  for(const k in BASES)for(const l of BASES[k])if(!want.has(l)&&map.hasLayer(l))l.remove();
+  for(const l of BASES[b])if(!map.hasLayer(l))l.addTo(map);
+  mapEl.classList.toggle("nobase",b==="none");
+  document.querySelectorAll("[data-base]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.base===b))}
+setBase(BASE);
+document.querySelector(".legend").addEventListener("click",e=>{const b=e.target.closest("[data-base]");if(b)setBase(b.dataset.base)});
+map.on("click",()=>{const lg=document.querySelector(".legend.open");if(lg){lg.classList.remove("open");lg.querySelector(".laytog").setAttribute("aria-expanded",false)}});
 
 /* ---------- sheet ---------- */
 const sheet=document.getElementById("sheet");
