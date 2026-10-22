@@ -491,7 +491,10 @@ window.showTrack=function(r){if(TRK){TRK.remove();TRK=null}
     L.circleMarker(ll[0],{radius:7,color:"#fff",weight:2,fillColor:"#2a7a3b",fillOpacity:1,interactive:false}).bindTooltip("Inicio",{direction:"top"})]).addTo(map);
   setTimeout(()=>{const el=mapEl.getBoundingClientRect(),wide=el.width>=860,sh=document.getElementById("sheet");
     const pb=!wide&&sh&&!sh.hidden?Math.min(el.height*0.62,sh.offsetHeight)+16:24;
-    map.fitBounds(L.latLngBounds(ll),{paddingTopLeft:[wide?60:24,120],paddingBottomRight:[wide?640:80,pb+20],maxZoom:15,animate:!reduce()})},450)};
+    const b=L.latLngBounds(ll),TL=[wide?60:24,110],BR=[wide?640:76,pb+16];
+    const z=Math.min(15,Math.max(12.5,map.getBoundsZoom(b,false,L.point(TL[0]+BR[0],TL[1]+BR[1]))));
+    const c=map.unproject(map.project(b.getCenter(),z).add([(BR[0]-TL[0])/2,(BR[1]-TL[1])/2]),z);
+    if(reduce())map.setView(c,z);else map.flyTo(c,z,{duration:.6})},450)};
 
 setTimeout(()=>{const b=document.querySelector('[data-lay="tracks"]');if(b)b.setAttribute("aria-pressed",LAY.tracks)},0);
 
