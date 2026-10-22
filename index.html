@@ -253,6 +253,10 @@ html,body{height:100%;margin:0}
 #map{background:#e8e4da;isolation:isolate;z-index:0}
 .sheet{z-index:20}.sheet.full{z-index:30}
 #map path:focus,#map .leaflet-interactive:focus{outline:none}
+#map .pt.mk-h::after,#map .pt.mk-q::after{position:absolute;left:calc(var(--ms,24px)*.28);top:calc(var(--ms,24px)*-.78);width:15px;height:15px;border-radius:50%;font-size:10px;line-height:15px;text-align:center;font-weight:900;color:#fff;border:1.5px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.4);pointer-events:none}
+#map .pt.mk-h::after{content:"✓";background:#2e7d4f}#map .pt.mk-q::after{content:"★";background:#d9a400}
+#map.solo-mios .pt:not(.mio){display:none}#map.solo-mios .leaflet-tooltip:not(.mio-t){}
+.lico{display:inline-flex;width:18px;height:18px;border-radius:50%;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;background:#888}.lico.lh{background:#2e7d4f}.lico.lq{background:#d9a400}
 #map .pt svg{position:absolute;width:var(--ms,24px);height:var(--ms,24px);transform:translate(-50%,-50%);filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));cursor:pointer}
 #map .pt.cumbre svg{width:calc(var(--ms,24px)*1.12);height:calc(var(--ms,24px)*1.12)}
 #map .pt.sel svg{outline:3px solid var(--ink);outline-offset:1px;border-radius:50%}
@@ -285,7 +289,7 @@ html,body{height:100%;margin:0}
       <div class="mapbar" id="mapbar"></div>
       <div class="legend" role="group" aria-label="Capas del mapa"><button class="laytog" aria-expanded="false" aria-label="Capas del mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Capas</span></button><div class="laypanel"><p class="laygh">Mapa</p><button class="lay" data-base="topo" aria-pressed="true"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#cfe0b8" stroke="#6b8a4a" stroke-width=".8"/></svg>Topográfico</button><button class="lay" data-base="ign" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#e8d9a8" stroke="#8a6d2b" stroke-width=".8"/></svg>IGN</button><button class="lay" data-base="orto" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#5f7a4a" stroke="#2f4224" stroke-width=".8"/></svg>Ortofoto (IGN)</button><button class="lay" data-base="none" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#f1f1ec" stroke="#999" stroke-width=".8"/></svg>Sin mapa</button><p class="laygh">Ver</p><button class="lay" data-lay="peaks" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>Cumbres</button>
         <button class="lay" data-lay="spots" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-brana" x="-12" y="-12" width="24" height="24"/></svg>Lugares</button>
-      <button class="lay" data-lay="tracks" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><path d="M-4 3C-2 -3 0 3 1 -1S3 -3 4 -4" fill="none" stroke="#c3262e" stroke-width="1.6" stroke-linecap="round"/></svg>Tracks</button></div></div>
+      <button class="lay" data-lay="tracks" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><path d="M-4 3C-2 -3 0 3 1 -1S3 -3 4 -4" fill="none" stroke="#c3262e" stroke-width="1.6" stroke-linecap="round"/></svg>Tracks</button><p class="laygh">Mis lugares</p><button class="lay" data-lay="mh" aria-pressed="true"><span class="lico lh">✓</span>Visitados</button><button class="lay" data-lay="mq" aria-pressed="true"><span class="lico lq">★</span>Quiero ir</button><button class="lay" data-lay="solo" aria-pressed="false"><span class="lico">◎</span>Ver solo los míos</button></div></div>
       <div class="rmenu" id="rmenu" hidden>
         <button data-rm="geo">📍 Rutas cerca de mí</button>
         <button data-rm="lugar">🔎 Cerca de un pueblo o lugar</button>
@@ -439,7 +443,7 @@ function ensureZone(zk){if(zk!==ZK){ZK=zk;store.set("ldc-zona",zk);renderMapbar(
 const FSV=[1,1.15,1.3,1.45];let FS=+store.get("ldc-fs",1.15);if(!FSV.includes(FS))FS=1.15;
 document.documentElement.style.setProperty("--fs",FS);
 document.getElementById("fsbtn").textContent=["Aa","Aa+","Aa++","Aa+++"][FSV.indexOf(FS)];
-const LAY={peaks:true,spots:true,tracks:store.get("ldc-trk","0")==="1"};
+const LAY={peaks:true,spots:true,tracks:store.get("ldc-trk","0")==="1",mh:store.get("ldc-mh","1")==="1",mq:store.get("ldc-mq","1")==="1",solo:false};
 function sizeMarks(){
   const z=map.getZoom(); k=2**(z-8);
   mapEl.style.setProperty("--ms",((z<7.5?11:z<8.5?14:z<10?19:z<12?24:28)*FS)+"px");
@@ -447,7 +451,7 @@ function sizeMarks(){
   mapEl.classList.toggle("lbl-spots",LAY.spots&&z>=13);
   mapEl.classList.toggle("hide-peaks",!LAY.peaks);
   mapEl.classList.toggle("hide-spots",!LAY.spots);
-  setTimeout(syncAllTracks,0);
+  setTimeout(syncAllTracks,0);setTimeout(refreshMarks,0);
 }
 /* capa con todos los tracks (botón «Tracks» de la leyenda) */
 let ALLTRK=null;
@@ -506,6 +510,14 @@ function setBase(b){BASE=b;store.set("ldc-base",b);const want=new Set(BASES[b]);
 setBase(BASE);
 document.querySelector(".legend").addEventListener("click",e=>{const b=e.target.closest("[data-base]");if(b)setBase(b.dataset.base)});
 map.on("click",()=>{const lg=document.querySelector(".legend.open");if(lg){lg.classList.remove("open");lg.querySelector(".laytog").setAttribute("aria-expanded",false)}});
+
+/* mis lugares: insignia ✓ (visitados) o ★ (quiero ir) en los puntos marcados; «solo los míos» oculta el resto */
+function refreshMarks(){store.set("ldc-mh",LAY.mh?"1":"0");store.set("ldc-mq",LAY.mq?"1":"0");
+  mapEl.classList.toggle("solo-mios",LAY.solo);
+  for(const i in MK){const el=MK[i].getElement();if(!el)continue;const k=mkKey(P[i]),m=k?MARKS[k]:"";
+    el.classList.toggle("mk-h",LAY.mh&&m==="hecha");el.classList.toggle("mk-q",LAY.mq&&m==="quiero");el.classList.toggle("mio",!!m);const tt=MK[i].getTooltip();if(tt)tt.setOpacity(LAY.solo&&!m?0:1)}}
+map.on("layeradd",e=>{if(e.layer instanceof L.Marker)setTimeout(refreshMarks,0)});
+setTimeout(()=>{for(const k of ["mh","mq","solo"]){const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",LAY[k])}refreshMarks()},0);
 
 /* ---------- sheet ---------- */
 const sheet=document.getElementById("sheet");
@@ -606,7 +618,7 @@ function mkBlock(pi){const p=P[pi];if(!p||!mkKey(p))return"";return `<div class=
 document.addEventListener("click",e=>{const b=e.target.closest("[data-mk]");if(!b)return;const k=b.parentElement.dataset.key,v=b.dataset.mk;
   MARKS[k]=MARKS[k]===v?"":v;if(!MARKS[k])delete MARKS[k];saveMarks();
   document.querySelectorAll(`.mk[data-key="${CSS.escape(k)}"]`).forEach(g=>g.querySelectorAll("[data-mk]").forEach(x=>x.setAttribute("aria-pressed",MARKS[k]===x.dataset.mk)));
-  renderCols()});
+  renderCols();if(window.refreshMarks)refreshMarks()});
 function routeBody(r){
   const pts=r.p.map(i=>P[i]).sort((a,b)=>(b.a||0)-(a.a||0));
   const hi=pts[0];
@@ -822,7 +834,7 @@ for(const kind of ["cumbres","lugares"]){document.getElementById("v-"+kind).addE
   const ch=e.target.closest(".chips[data-k] [data-v]");if(ch){const grp=ch.parentElement.dataset.grp;COL[kind][grp]=ch.dataset.v;if(grp==="z")COL[kind].g="todas";renderCol(kind);return}
   if(e.target.closest("[data-exp]")){const code="LDC1:"+btoa(unescape(encodeURIComponent(JSON.stringify(MARKS))));(navigator.clipboard?navigator.clipboard.writeText(code):Promise.reject()).then(()=>alert("Copiado. En el otro móvil, abre la app y pulsa «Pegar marcas de otro móvil»."),()=>prompt("Copia este código:",code));return}
   if(e.target.closest("[data-imp]")){const code=prompt("Pega aquí el código de tus marcas:");if(!code)return;try{const v=JSON.parse(decodeURIComponent(escape(atob(code.trim().replace(/^LDC1:/,"")))));Object.assign(MARKS,v);saveMarks();renderCols();alert("Marcas añadidas.")}catch(err){alert("Ese código no es válido.")}return}
-  const m=e.target.closest("[data-m]");if(m){const k=m.parentElement.dataset.key;MARKS[k]=MARKS[k]===m.dataset.m?"":m.dataset.m;if(!MARKS[k])delete MARKS[k];saveMarks();
+  const m=e.target.closest("[data-m]");if(m){const k=m.parentElement.dataset.key;MARKS[k]=MARKS[k]===m.dataset.m?"":m.dataset.m;if(!MARKS[k])delete MARKS[k];saveMarks();if(window.refreshMarks)refreshMarks();
     const y=document.getElementById("v-"+kind).scrollTop;renderCol(kind);document.getElementById("v-"+kind).scrollTop=y;return}
   const go=e.target.closest("[data-go]");if(go){ovShow(+go.dataset.n>1?{t:"pt",i:+go.dataset.pt}:{t:"route",id:+go.dataset.go})}})}
 
