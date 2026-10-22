@@ -92,6 +92,10 @@ select.chip{appearance:none;padding-right:26px;background-image:linear-gradient(
  .rmenu{position:absolute;right:calc(max(12px,env(safe-area-inset-right,0px)) + 64px);bottom:12px;z-index:21;display:flex;flex-direction:column;gap:2px;background:var(--card);border:1px solid var(--edge);border-radius:12px;padding:6px;box-shadow:0 2px 10px rgba(0,0,0,.2);zoom:var(--fs)}
  .rmenu[hidden]{display:none}.rmenu button{border:0;background:none;text-align:left;font:inherit;font-size:15px;font-weight:600;color:var(--ink);padding:11px 12px;border-radius:8px;cursor:pointer;white-space:nowrap}
  .rmenu button:active{background:var(--land-dim)}#b-rutas[aria-expanded="true"]{background:var(--ink);border-color:var(--ink)}}
+.mkblock{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:2px 0 12px;padding:8px 10px;border:1px solid var(--edge);border-radius:10px;background:var(--land-dim)}
+.mkblock>span:first-child{flex:1 1 100%;font-weight:700;font-size:14px}
+.mkblock .mk button{font-size:14px;padding:8px 12px}
+.plist .mk-s{margin-left:6px}.plist .mk-s button{padding:4px 8px;font-size:13px;min-width:34px}
 .wizrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 12px}.wizrow .wizbtn{margin:0;font-size:15.5px;padding:13px 8px}
 .ov{position:fixed;inset:0;z-index:2500;background:var(--card);overflow:auto;-webkit-overflow-scrolling:touch}.ov[hidden]{display:none}
 .ovin{max-width:720px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));zoom:var(--fs)}
@@ -226,6 +230,8 @@ h1.vt{font-family:var(--f-display);font-weight:700;font-size:30px;line-height:1;
 .mk button[data-m="hecha"][aria-pressed="true"]{background:var(--moss);border-color:var(--moss);color:#fff}
 .mk button[data-m="quiero"][aria-pressed="true"]{background:var(--mark);border-color:var(--mark);color:#fff}
 .mk button[data-go]{color:var(--ink)}
+.mk button[data-mk="hecha"][aria-pressed="true"]{background:var(--moss);border-color:var(--moss);color:#fff}
+.mk button[data-mk="quiero"][aria-pressed="true"]{background:var(--mark);border-color:var(--mark);color:#fff}
 @media (max-width:520px){.mk button span{display:none}.crow .alt{font-size:12px}}
 header.top,nav.tabs,.view.pad>.inner,.sheet,.mapbar,.legend,.fabs,.hint,.attrib{zoom:var(--fs)}
 .fsbtn{margin-left:auto;border:1px solid var(--edge);background:var(--card);border-radius:8px;padding:5px 10px;font-family:var(--f-display);font-weight:700;font-size:16px;cursor:pointer;color:var(--ink);flex:none}
@@ -558,6 +564,16 @@ function profSVG(g){const W=600,H=190,pl=70,pb=34,pt=12,pr=8,pf=g.pf,X=pf[pf.len
 function dlGPX(r){const g=r.gx,nm=routeTitle(r);const x=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
   const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1"><metadata><name>${x(nm)}</name><link href="${x(r.u)}"><text>Los de las Claras</text></link></metadata><trk><name>${x(nm)}</name><trkseg>\n${g.ln.map(p=>`<trkpt lat="${p[0]}" lon="${p[1]}">${p[2]!=null?`<ele>${p[2]}</ele>`:""}</trkpt>`).join("\n")}\n</trkseg></trk></gpx>`;
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([gpx],{type:"application/gpx+xml"}));a.download=slug(r).replace(/^r-/,"")+".gpx";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
+/* marcar cumbres y lugares desde el mapa y las fichas (mismas marcas que en las pestañas Cumbres y Lugares) */
+const mkKey=p=>{const k=(p.t==="cumbre"?"c:":"l:")+norm(p.c);return p.t==="cumbre"||SPOTS.some(q=>"l:"+norm(q.c)===k)?k:null};
+function mkBtns(p,small){const k=mkKey(p);if(!k)return"";const c=k[0]==="c",s=MARKS[k]||"";
+  const L=c?["Subida","Quiero subir"]:["He estado","Quiero ir"];
+  return `<span class="mk${small?" mk-s":""}" data-key="${esc(k)}"><button data-mk="hecha" aria-pressed="${s==="hecha"}" title="${L[0]}">✓${small?"":" "+L[0]}</button><button data-mk="quiero" aria-pressed="${s==="quiero"}" title="${L[1]}">★${small?"":" "+L[1]}</button></span>`}
+function mkBlock(pi){const p=P[pi];if(!p||!mkKey(p))return"";return `<div class="mkblock"><span>${esc(p.c)}${p.a?" · "+fmtA(p.a):""}</span>${mkBtns(p)}</div>`}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-mk]");if(!b)return;const k=b.parentElement.dataset.key,v=b.dataset.mk;
+  MARKS[k]=MARKS[k]===v?"":v;if(!MARKS[k])delete MARKS[k];saveMarks();
+  document.querySelectorAll(`.mk[data-key="${CSS.escape(k)}"]`).forEach(g=>g.querySelectorAll("[data-mk]").forEach(x=>x.setAttribute("aria-pressed",MARKS[k]===x.dataset.mk)));
+  renderCols()});
 function routeBody(r){
   const pts=r.p.map(i=>P[i]).sort((a,b)=>(b.a||0)-(a.a||0));
   const hi=pts[0];
@@ -577,21 +593,22 @@ function routeBody(r){
   ${r.gx?`<div class="sec"><h3>Perfil del recorrido</h3>${r.gx.pf.length?profSVG(r.gx):""}<p class="note" style="margin:4px 0 8px">Según el track: ${fmtKm(r.gx.km)} · +${r.gx.up.toLocaleString("es-ES")} m de subida${r.gx.mx?" · punto más alto "+r.gx.mx.toLocaleString("es-ES")+" m":""}.</p>
   <div class="actions" style="margin-top:0"><button class="btn primary" data-gpx="${r.id}">⬇ Descargar GPX</button><a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${r.gx.st[0]},${r.gx.st[1]}" target="_blank" rel="noopener">🚗 Cómo llegar al inicio</a></div></div>`:""}
   ${r.tk?`<div class="sec"><h3>Recorrido</h3><p class="note">Track de tu mapa: ${fmtKm(r.tkm)} · punto más alto ${fmtA(r.a)}. Está dibujado en el mapa.</p></div>`:""}
-  ${pts.some(p=>!p.x)?`<div class="sec"><h3>Lugares en el mapa</h3><ul class="plist">${pts.filter(p=>!p.x).map(p=>`<li>${ICO(p.cat)}<span class="n">${esc(p.c)}</span><span class="a">${fmtA(p.a)}</span></li>`).join("")}</ul></div>`:""}
+  ${pts.some(p=>!p.x)?`<div class="sec"><h3>Lugares en el mapa</h3><ul class="plist">${pts.filter(p=>!p.x).map(p=>`<li>${ICO(p.cat)}<span class="n">${esc(p.c)}</span><span class="a">${fmtA(p.a)}</span>${mkBtns(p,true)}</li>`).join("")}</ul></div>`:""}
   ${near.length?`<div class="near"><h3>Otras rutas por la zona</h3><div class="rows">${near.map(x=>rowHTML(x.r,x.d.toFixed(0)+" km")).join("")}</div></div>`:""}`;
 }
 function pickRoute(pi){const rs=(P[pi].rs||[]).filter(ri=>R[ri].u);if(rs.length<2){openRoute(rs.length?rs[0]:(P[pi].rs?P[pi].rs[0]:null),pi);return}
   ensureZone(zoneOf(P[pi].r));nodes.classed("sel",i=>i===pi);if(window.showTrack)showTrack(null);{const tp=document.getElementById("trkpill");if(tp)tp.hidden=true}
-  sheet.classList.remove("full");sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(P[pi].c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>${P[pi].a?`<div class="meta"><span class="tag alt">${fmtA(P[pi].a)}</span></div>`:""}<p class="note">Está en ${rs.length} rutas. Elige cuál ver:</p><div class="rows">${rs.map(ri=>R[ri]).sort(byDate).map(r=>rowHTML(r)).join("")}</div>`;
+  sheet.classList.remove("full");sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(P[pi].c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>${P[pi].a?`<div class="meta"><span class="tag alt">${fmtA(P[pi].a)}</span></div>`:""}${mkBlock(pi)}<p class="note">Está en ${rs.length} rutas. Elige cuál ver:</p><div class="rows">${rs.map(ri=>R[ri]).sort(byDate).map(r=>rowHTML(r)).join("")}</div>`;
   sheet.hidden=false;sheet.scrollTop=0}
 function openRoute(ri,pi){
   const wasFull=sheet.classList.contains("full")&&!sheet.hidden; sheet.classList.remove("full");
   ensureZone(zoneOf(ri!=null?R[ri].r:P[pi].r));
   nodes.classed("sel",i=>ri!=null?R[ri].p.includes(i):i===pi);
   tracks.classed("sel",r=>r.id===ri);if(window.showTrack)showTrack(ri!=null?R[ri]:null);{const tp=document.getElementById("trkpill");if(tp)tp.hidden=true}
-  if(ri==null){const p=P[pi];sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(p.c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><div class="meta">${p.a?`<span class="tag alt">${fmtA(p.a)}</span>`:""}<span class="tag">${esc(p.r)}</span></div><p class="note">Este punto del mapa todavía no tiene enlazada su entrada del blog.</p>`;sheet.hidden=false;return}
+  if(ri==null){const p=P[pi];sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(p.c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><div class="meta">${p.a?`<span class="tag alt">${fmtA(p.a)}</span>`:""}<span class="tag">${esc(p.r)}</span></div><p class="note">Este punto del mapa todavía no tiene enlazada su entrada del blog.</p>${mkBlock(pi)}`;sheet.hidden=false;return}
   const r=R[ri];
   sheet.innerHTML=`<div class="grab" data-route="${r.id}"></div>`+routeBody(r);
+  if(pi!=null&&mkKey(P[pi])){const h=sheet.querySelector(".sheet-head");if(h)h.insertAdjacentHTML("afterend",mkBlock(pi))}
   if(wasFull&&lastNear)sheet.querySelector(".sheet-head").insertAdjacentHTML("beforebegin",`<button class="linkbtn" data-back-near style="margin:4px 0 6px">← Volver al listado</button>`);
   sheet.hidden=false; sheet.scrollTop=0;
 }
