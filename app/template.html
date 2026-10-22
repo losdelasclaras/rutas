@@ -793,7 +793,7 @@ for(const kind of ["cumbres","lugares"]){document.getElementById("v-"+kind).addE
 /* ---------- init ---------- */
 drawZone(ZONES[store.get("ldc-zona","cant")]?store.get("ldc-zona","cant"):"cant"); applyFilter(); renderCols();
 document.getElementById("sub").textContent=`${R.filter(r=>r.u).length} rutas · Cantábrica, Pirineos, Alpes y Dolomitas`;
-const t0=store.get("ldc-tab","mapa"); showView(["mapa","rutas","cumbres","lugares"].includes(t0)?t0:"mapa");
+showView("mapa"); // la app arranca siempre en el mapa
 setTimeout(openFromHash,300);
 // estado inicial: mapa completo de Asturias y León
 requestAnimationFrame(()=>{fitHome(false);sizeMarks()});

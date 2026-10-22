@@ -30,7 +30,7 @@ function ensureZone(zk){if(zk!==ZK){ZK=zk;store.set("ldc-zona",zk);renderMapbar(
 const FSV=[1,1.15,1.3,1.45];let FS=+store.get("ldc-fs",1.15);if(!FSV.includes(FS))FS=1.15;
 document.documentElement.style.setProperty("--fs",FS);
 document.getElementById("fsbtn").textContent=["Aa","Aa+","Aa++","Aa+++"][FSV.indexOf(FS)];
-const LAY={peaks:true,spots:true,tracks:store.get("ldc-trk","0")==="1",mh:store.get("ldc-mh","1")==="1",mq:store.get("ldc-mq","1")==="1",solo:false};
+const LAY={peaks:true,spots:true,tracks:false,mh:true,mq:true,solo:false}; // al arrancar: tracks apagados y mis lugares visibles
 function sizeMarks(){
   const z=map.getZoom(); k=2**(z-8);
   mapEl.style.setProperty("--ms",((z<7.5?11:z<8.5?14:z<10?19:z<12?24:28)*FS)+"px");
