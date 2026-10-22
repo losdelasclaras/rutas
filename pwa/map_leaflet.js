@@ -30,7 +30,7 @@ function ensureZone(zk){if(zk!==ZK){ZK=zk;store.set("ldc-zona",zk);renderMapbar(
 const FSV=[1,1.15,1.3,1.45];let FS=+store.get("ldc-fs",1.15);if(!FSV.includes(FS))FS=1.15;
 document.documentElement.style.setProperty("--fs",FS);
 document.getElementById("fsbtn").textContent=["Aa","Aa+","Aa++","Aa+++"][FSV.indexOf(FS)];
-const LAY={peaks:true,spots:true,tracks:store.get("ldc-trk","0")==="1"};
+const LAY={peaks:true,spots:true,tracks:store.get("ldc-trk","0")==="1",mh:store.get("ldc-mh","1")==="1",mq:store.get("ldc-mq","1")==="1",solo:false};
 function sizeMarks(){
   const z=map.getZoom(); k=2**(z-8);
   mapEl.style.setProperty("--ms",((z<7.5?11:z<8.5?14:z<10?19:z<12?24:28)*FS)+"px");
@@ -38,7 +38,7 @@ function sizeMarks(){
   mapEl.classList.toggle("lbl-spots",LAY.spots&&z>=13);
   mapEl.classList.toggle("hide-peaks",!LAY.peaks);
   mapEl.classList.toggle("hide-spots",!LAY.spots);
-  setTimeout(syncAllTracks,0);
+  setTimeout(syncAllTracks,0);setTimeout(refreshMarks,0);
 }
 /* capa con todos los tracks (botón «Tracks» de la leyenda) */
 let ALLTRK=null;
@@ -97,3 +97,11 @@ function setBase(b){BASE=b;store.set("ldc-base",b);const want=new Set(BASES[b]);
 setBase(BASE);
 document.querySelector(".legend").addEventListener("click",e=>{const b=e.target.closest("[data-base]");if(b)setBase(b.dataset.base)});
 map.on("click",()=>{const lg=document.querySelector(".legend.open");if(lg){lg.classList.remove("open");lg.querySelector(".laytog").setAttribute("aria-expanded",false)}});
+
+/* mis lugares: insignia ✓ (visitados) o ★ (quiero ir) en los puntos marcados; «solo los míos» oculta el resto */
+function refreshMarks(){store.set("ldc-mh",LAY.mh?"1":"0");store.set("ldc-mq",LAY.mq?"1":"0");
+  mapEl.classList.toggle("solo-mios",LAY.solo);
+  for(const i in MK){const el=MK[i].getElement();if(!el)continue;const k=mkKey(P[i]),m=k?MARKS[k]:"";
+    el.classList.toggle("mk-h",LAY.mh&&m==="hecha");el.classList.toggle("mk-q",LAY.mq&&m==="quiero");el.classList.toggle("mio",!!m);const tt=MK[i].getTooltip();if(tt)tt.setOpacity(LAY.solo&&!m?0:1)}}
+map.on("layeradd",e=>{if(e.layer instanceof L.Marker)setTimeout(refreshMarks,0)});
+setTimeout(()=>{for(const k of ["mh","mq","solo"]){const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",LAY[k])}refreshMarks()},0);

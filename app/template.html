@@ -573,7 +573,7 @@ function mkBlock(pi){const p=P[pi];if(!p||!mkKey(p))return"";return `<div class=
 document.addEventListener("click",e=>{const b=e.target.closest("[data-mk]");if(!b)return;const k=b.parentElement.dataset.key,v=b.dataset.mk;
   MARKS[k]=MARKS[k]===v?"":v;if(!MARKS[k])delete MARKS[k];saveMarks();
   document.querySelectorAll(`.mk[data-key="${CSS.escape(k)}"]`).forEach(g=>g.querySelectorAll("[data-mk]").forEach(x=>x.setAttribute("aria-pressed",MARKS[k]===x.dataset.mk)));
-  renderCols()});
+  renderCols();if(window.refreshMarks)refreshMarks()});
 function routeBody(r){
   const pts=r.p.map(i=>P[i]).sort((a,b)=>(b.a||0)-(a.a||0));
   const hi=pts[0];
@@ -786,7 +786,7 @@ function renderCols(){renderCol("cumbres");renderCol("lugares")}
 for(const kind of ["cumbres","lugares"]){const q=document.getElementById("qs-"+kind);q.addEventListener("input",()=>renderCol(kind));q.addEventListener("focus",()=>setTimeout(()=>q.scrollIntoView({block:"start",behavior:"smooth"}),250))}
 for(const kind of ["cumbres","lugares"]){document.getElementById("v-"+kind).addEventListener("click",e=>{
   const ch=e.target.closest(".chips[data-k] [data-v]");if(ch){const grp=ch.parentElement.dataset.grp;COL[kind][grp]=ch.dataset.v;if(grp==="z")COL[kind].g="todas";renderCol(kind);return}
-  const m=e.target.closest("[data-m]");if(m){const k=m.parentElement.dataset.key;MARKS[k]=MARKS[k]===m.dataset.m?"":m.dataset.m;if(!MARKS[k])delete MARKS[k];saveMarks();
+  const m=e.target.closest("[data-m]");if(m){const k=m.parentElement.dataset.key;MARKS[k]=MARKS[k]===m.dataset.m?"":m.dataset.m;if(!MARKS[k])delete MARKS[k];saveMarks();if(window.refreshMarks)refreshMarks();
     const y=document.getElementById("v-"+kind).scrollTop;renderCol(kind);document.getElementById("v-"+kind).scrollTop=y;return}
   const go=e.target.closest("[data-go]");if(go){ovShow(+go.dataset.n>1?{t:"pt",i:+go.dataset.pt}:{t:"route",id:+go.dataset.go})}})}
 
