@@ -102,6 +102,6 @@ map.on("click",()=>{const lg=document.querySelector(".legend.open");if(lg){lg.cl
 function refreshMarks(){store.set("ldc-mh",LAY.mh?"1":"0");store.set("ldc-mq",LAY.mq?"1":"0");
   mapEl.classList.toggle("solo-mios",LAY.solo);
   for(const i in MK){const el=MK[i].getElement();if(!el)continue;const k=mkKey(P[i]),m=k?MARKS[k]:"";
-    el.classList.toggle("mk-h",LAY.mh&&m==="hecha");el.classList.toggle("mk-q",LAY.mq&&m==="quiero");el.classList.toggle("mio",!!m);const tt=MK[i].getTooltip();if(tt)tt.setOpacity(LAY.solo&&!m?0:1)}}
+    el.classList.toggle("mk-h",LAY.mh&&m==="hecha");el.classList.toggle("mk-q",LAY.mq&&m==="quiero");const on=(m==="hecha"&&LAY.mh)||(m==="quiero"&&LAY.mq);el.classList.toggle("mio",on);const tt=MK[i].getTooltip();if(tt)tt.setOpacity(LAY.solo&&!on?0:1)}}
 map.on("layeradd",e=>{if(e.layer instanceof L.Marker)setTimeout(refreshMarks,0)});
 setTimeout(()=>{for(const k of ["mh","mq","solo"]){const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",LAY[k])}refreshMarks()},0);
