@@ -30,7 +30,9 @@ function ensureZone(zk){if(zk!==ZK){ZK=zk;store.set("ldc-zona",zk);renderMapbar(
 const FSV=[1,1.15,1.3,1.45];let FS=+store.get("ldc-fs",1.15);if(!FSV.includes(FS))FS=1.15;
 document.documentElement.style.setProperty("--fs",FS);
 document.getElementById("fsbtn").textContent=["Aa","Aa+","Aa++","Aa+++"][FSV.indexOf(FS)];
-const LAY={peaks:true,spots:true,tracks:false,mh:true,mq:true,solo:false}; // al arrancar: tracks apagados y mis lugares visibles
+// capas: la primera vez, cumbres y lugares (y mis marcas); después, lo que dejó la última vez
+const LAY=Object.assign({peaks:true,spots:true,tracks:false,mh:true,mq:true,solo:false},store.get("ldc-capas",{}));
+const saveLay=()=>store.set("ldc-capas",LAY);
 function sizeMarks(){
   const z=map.getZoom(); k=2**(z-8);
   mapEl.style.setProperty("--ms",((z<7.5?11:z<8.5?14:z<10?19:z<12?24:28)*FS)+"px");
@@ -38,7 +40,7 @@ function sizeMarks(){
   mapEl.classList.toggle("lbl-spots",LAY.spots&&z>=13);
   mapEl.classList.toggle("hide-peaks",!LAY.peaks);
   mapEl.classList.toggle("hide-spots",!LAY.spots);
-  setTimeout(syncAllTracks,0);setTimeout(refreshMarks,0);
+  setTimeout(syncAllTracks,0);setTimeout(refreshMarks,0);saveLay();
 }
 /* capa con todos los tracks (botón «Tracks» de la leyenda) */
 let ALLTRK=null;
@@ -107,4 +109,4 @@ function refreshMarks(){store.set("ldc-mh",LAY.mh?"1":"0");store.set("ldc-mq",LA
   for(const i in MK){const el=MK[i].getElement();if(!el)continue;const k=mkKey(P[i]),m=k?MARKS[k]:"";
     el.classList.toggle("mk-h",LAY.mh&&m==="hecha");el.classList.toggle("mk-q",LAY.mq&&m==="quiero");const on=(m==="hecha"&&LAY.mh)||(m==="quiero"&&LAY.mq);el.classList.toggle("mio",on);const tt=MK[i].getTooltip();if(tt)tt.setOpacity(LAY.solo&&!on?0:1)}}
 map.on("layeradd",e=>{if(e.layer instanceof L.Marker)setTimeout(refreshMarks,0)});
-setTimeout(()=>{for(const k of ["mh","mq","solo"]){const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",LAY[k])}refreshMarks()},0);
+setTimeout(()=>{for(const k of ["peaks","spots","tracks","mh","mq","solo"]){const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",LAY[k])}refreshMarks()},0);
