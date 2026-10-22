@@ -45,9 +45,9 @@ let ALLTRK=null;
 function syncAllTracks(){store.set("ldc-trk",LAY.tracks?"1":"0");
   if(LAY.tracks&&!ALLTRK){ALLTRK=L.layerGroup();
     R.forEach(r=>{if(!r.gx||!r.gx.ln)return;const ll=r.gx.ln.map(p=>[p[0],p[1]]);
-      ALLTRK.addLayer(L.polyline(ll,{color:"#fff",weight:5,opacity:.7,interactive:false}));
-      ALLTRK.addLayer(L.polyline(ll,{color:"#c3262e",weight:3,opacity:.6}).bindTooltip(esc(routeTitle(r)),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);openRoute(r.id)}))})}
-  const on=LAY.tracks&&map.getZoom()>=10;
+      ALLTRK.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.85,interactive:false}));
+      ALLTRK.addLayer(L.polyline(ll,{color:"#6a2bd1",weight:3.5,opacity:.9}).bindTooltip(esc(routeTitle(r)),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);openRoute(r.id)}))})}
+  const on=LAY.tracks&&map.getZoom()>=8;
   if(ALLTRK){if(on&&!map.hasLayer(ALLTRK)){ALLTRK.addTo(map);if(TRK)TRK.eachLayer(l=>l.bringToFront&&l.bringToFront())}else if(!on&&map.hasLayer(ALLTRK))ALLTRK.remove()}}
 map.on("zoomend",sizeMarks);
 map.on("moveend",()=>{const c=map.getCenter();const z=zoneAt(c.lat,c.lng);if(z!==ZK){ZK=z;store.set("ldc-zona",z);renderMapbar()}});

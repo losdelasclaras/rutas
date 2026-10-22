@@ -665,7 +665,7 @@ function useGeo(){const msg=document.getElementById("geomsg");
   if(msg)msg.textContent="Buscando tu ubicación…";
   try{navigator.geolocation.getCurrentPosition(p=>nearAt(p.coords.latitude,p.coords.longitude,"tu ubicación"),fail,{timeout:8000,maximumAge:600000})}catch(e){fail()}}
 sheet.addEventListener("click",e=>{
-  if(e.target.closest("[data-close]")){if(window.showTrack){const g=sheet.querySelector(".grab[data-route]"),rr=g?R[+g.dataset.route]:null;if(rr&&rr.gx)trkPill(rr);else showTrack(null)}sheet.hidden=true;sheet.classList.remove("full");setNear(false);nodes.classed("sel",false);tracks.classed("sel",false);probe.attr("r",0);return}
+  if(e.target.closest("[data-close]")){if(window.showTrack){showTrack(null);const tp=document.getElementById("trkpill");if(tp)tp.hidden=true}sheet.hidden=true;sheet.classList.remove("full");setNear(false);nodes.classed("sel",false);tracks.classed("sel",false);probe.attr("r",0);return}
   const st=e.target.closest("[data-site]"); if(st){const s=found[+st.dataset.site];nearAt(s.lat,s.lon,s.alt?s.alt.split(";")[0]:s.n);return}
   if(e.target.closest("[data-geo]")){useGeo();return}
   if(e.target.closest("[data-near-again]")){openNearPanel();return}
