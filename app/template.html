@@ -565,7 +565,7 @@ function dlGPX(r){const g=r.gx,nm=routeTitle(r);if(!g.ln&&window.loadTracks){toa
   const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1"><metadata><name>${x(nm)}</name><link href="${x(r.u)}"><text>Los de las Claras</text></link></metadata><trk><name>${x(nm)}</name><trkseg>\n${g.ln.map(p=>`<trkpt lat="${p[0]}" lon="${p[1]}">${p[2]!=null?`<ele>${p[2]}</ele>`:""}</trkpt>`).join("\n")}\n</trkseg></trk></gpx>`;
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([gpx],{type:"application/gpx+xml"}));a.download=slug(r).replace(/^r-/,"")+".gpx";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 /* marcar cumbres y lugares desde el mapa y las fichas (mismas marcas que en las pestañas Cumbres y Lugares) */
-const mkKey=p=>{const k=(p.t==="cumbre"?"c:":"l:")+norm(p.c);return p.t==="cumbre"||SPOTS.some(q=>"l:"+norm(q.c)===k)?k:null};
+let SPOTK=null;const MKC=new Map();const mkKey=p=>{if(MKC.has(p))return MKC.get(p);if(!SPOTK)SPOTK=new Set(SPOTS.map(q=>"l:"+norm(q.c)));const k=(p.t==="cumbre"?"c:":"l:")+norm(p.c);const r=p.t==="cumbre"||SPOTK.has(k)?k:null;MKC.set(p,r);return r};
 function mkBtns(p,small){const k=mkKey(p);if(!k)return"";const c=k[0]==="c",s=MARKS[k]||"";
   const L=c?["Subida","Quiero subir"]:["He estado","Quiero ir"];
   return `<span class="mk${small?" mk-s":""}" data-key="${esc(k)}"><button data-mk="hecha" aria-pressed="${s==="hecha"}" title="${L[0]}">✓${small?"":" "+L[0]}</button><button data-mk="quiero" aria-pressed="${s==="quiero"}" title="${L[1]}">★${small?"":" "+L[1]}</button></span>`}

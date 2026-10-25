@@ -11,16 +11,24 @@ const map=L.map(mapEl,{zoomControl:false,minZoom:5,maxZoom:18,zoomSnap:0.5,world
 const OTM=L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{subdomains:"abc",maxNativeZoom:17,maxZoom:18,crossOrigin:true,
   attribution:'Mapa © <a href="https://opentopomap.org" target="_blank" rel="noopener">OpenTopoMap</a> (CC-BY-SA) · datos © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'});
 map.attributionControl.setPrefix(false);
-const MK={};
+const TRC=L.canvas({padding:.3,tolerance:6});const MK={};let RMT=0;
 P.forEach((p,i)=>{
   const cls="pt "+(p.t==="cumbre"?"cumbre":"spot")+(p.x?" ini":"");
   const m=L.marker([p.lat,p.lon],{icon:L.divIcon({className:cls,html:`<svg viewBox="-12 -12 24 24"><use href="#ic-${p.cat}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:p.c+(p.a?" · "+fmtA(p.a):""),riseOnHover:true,zIndexOffset:p.t==="cumbre"?(p.a||0):0});
-  m.bindTooltip(esc(p.c)+(p.t==="cumbre"&&p.a?` <span class="la">${p.a.toLocaleString("es-ES")} m</span>`:""),{permanent:true,direction:"right",offset:[10,0],className:"lbl "+(p.t==="cumbre"?"pk":p.x?"ini":"sp"),interactive:false});
   m.on("click",e=>{L.DomEvent.stopPropagation(e); if(nearMode){nearAt(p.lat,p.lon);return} pickRoute(i)});
-  m.addTo(map); MK[i]=m;
+  m.on("add",()=>{applyCls(i);if(map.getZoom()>=LBLZ)bindLbl(i)}); MK[i]=m;
 });
 // pequeñas ayudas con la misma forma que usaba el mapa anterior
-const nodes={classed(c,f){for(const i in MK){const el=MK[i].getElement();if(el)el.classList.toggle(c,typeof f==="function"?!!f(+i):!!f)}return nodes}};
+// las etiquetas de nombre solo existen cuando se ven (zoom 12 o más); así el mapa no arrastra cientos de rótulos ocultos
+const LBLZ=11.5;
+function bindLbl(i){const m=MK[i],p=P[i];if(m.getTooltip())return;m.bindTooltip(esc(p.c)+(p.t==="cumbre"&&p.a?` <span class="la">${p.a.toLocaleString("es-ES")} m</span>`:""),{permanent:true,direction:"right",offset:[10,0],className:"lbl "+(p.t==="cumbre"?"pk":p.x?"ini":"sp"),interactive:false});clearTimeout(RMT);RMT=setTimeout(refreshMarks,30)}
+let LBLON=null;function syncLbls(){const on=map.getZoom()>=LBLZ;if(on===LBLON)return;LBLON=on;for(const i in MK){const m=MK[i];if(on){if(map.hasLayer(m))bindLbl(i)}else if(m.getTooltip())m.unbindTooltip()}}
+map.on("zoomend",syncLbls);
+const CLS={};function applyCls(i){const el=MK[i].getElement();if(!el)return;for(const c in CLS){const f=CLS[c];el.classList.toggle(c,typeof f==="function"?!!f(+i):!!f)}}
+const nodes={classed(c,f){CLS[c]=f;for(const i in MK){const el=MK[i].getElement();if(el)el.classList.toggle(c,typeof f==="function"?!!f(+i):!!f)}return nodes}};
+// solo se dibujan los puntos que caen en pantalla (más un margen): el mapa va mucho más fluido
+function cullMarks(){const b=map.getBounds().pad(0.35);for(const i in MK){const m=MK[i],inb=b.contains(m.getLatLng()),on=map.hasLayer(m);if(inb&&!on)m.addTo(map);else if(!inb&&on)m.remove()}}
+map.on("moveend",cullMarks);
 const tracks={classed(){return tracks}};
 let probeC=null;
 const probe={attr(a,v){if(a==="r"&&!v&&probeC){probeC.remove();probeC=null}return probe}};
@@ -50,8 +58,8 @@ setTimeout(loadTracks,1500);
 function syncAllTracks(){if(LAY.tracks&&!TRKP){loadTracks().then(syncAllTracks);return}if(LAY.tracks&&TRKP&&!R.some(r=>r.gx&&r.gx.ln)){TRKP.then(ok=>{if(ok)syncAllTracks()});return}
   if(LAY.tracks&&!ALLTRK){ALLTRK=L.layerGroup();
     R.forEach(r=>{if(!r.gx||!r.gx.ln)return;const ll=r.gx.ln.map(p=>[p[0],p[1]]);
-      ALLTRK.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.85,interactive:false}));
-      ALLTRK.addLayer(L.polyline(ll,{color:"#6a2bd1",weight:3.5,opacity:.9}).bindTooltip(esc(routeTitle(r)),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);openRoute(r.id)}))})}
+      ALLTRK.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.85,interactive:false,renderer:TRC}));
+      ALLTRK.addLayer(L.polyline(ll,{color:"#6a2bd1",weight:3.5,opacity:.9,renderer:TRC}).bindTooltip(esc(routeTitle(r)),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);openRoute(r.id)}))})}
   const on=LAY.tracks&&map.getZoom()>=8;
   if(ALLTRK){if(on&&!map.hasLayer(ALLTRK)){ALLTRK.addTo(map);if(TRK)TRK.eachLayer(l=>l.bringToFront&&l.bringToFront())}else if(!on&&map.hasLayer(ALLTRK))ALLTRK.remove()}}
 map.on("zoomend",sizeMarks);
@@ -111,5 +119,5 @@ function refreshMarks(){store.set("ldc-mh",LAY.mh?"1":"0");store.set("ldc-mq",LA
   mapEl.classList.toggle("solo-mios",LAY.solo);
   for(const i in MK){const el=MK[i].getElement();if(!el)continue;const k=mkKey(P[i]),m=k?MARKS[k]:"";
     el.classList.toggle("mk-h",LAY.mh&&m==="hecha");el.classList.toggle("mk-q",LAY.mq&&m==="quiero");const on=(m==="hecha"&&LAY.mh)||(m==="quiero"&&LAY.mq);el.classList.toggle("mio",on);const tt=MK[i].getTooltip();if(tt)tt.setOpacity(LAY.solo&&!on?0:1)}}
-map.on("layeradd",e=>{if(e.layer instanceof L.Marker)setTimeout(refreshMarks,0)});
+map.on("layeradd",e=>{if(e.layer instanceof L.Marker){clearTimeout(RMT);RMT=setTimeout(refreshMarks,30)}});
 setTimeout(()=>{for(const k of ["peaks","spots","tracks","mh","mq","solo"]){const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",LAY[k])}refreshMarks()},0);
