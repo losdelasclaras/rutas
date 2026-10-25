@@ -44,7 +44,10 @@ function sizeMarks(){
 }
 /* capa con todos los tracks (botón «Tracks» de la leyenda) */
 let ALLTRK=null;
-function syncAllTracks(){store.set("ldc-trk",LAY.tracks?"1":"0");
+let TRKP=null;
+function loadTracks(){if(TRKP)return TRKP;TRKP=fetch("__TRACKS__").then(r=>r.json()).then(j=>{R.forEach(r=>{if(r.gx&&j[r.u])r.gx.ln=j[r.u]});return true}).catch(()=>{TRKP=null;return false});return TRKP}
+setTimeout(loadTracks,1500);
+function syncAllTracks(){if(LAY.tracks&&!TRKP){loadTracks().then(syncAllTracks);return}if(LAY.tracks&&TRKP&&!R.some(r=>r.gx&&r.gx.ln)){TRKP.then(ok=>{if(ok)syncAllTracks()});return}
   if(LAY.tracks&&!ALLTRK){ALLTRK=L.layerGroup();
     R.forEach(r=>{if(!r.gx||!r.gx.ln)return;const ll=r.gx.ln.map(p=>[p[0],p[1]]);
       ALLTRK.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.85,interactive:false}));
@@ -71,8 +74,8 @@ function applyFilter(){
 }
 function showMe(lat,lon){if(meDot)meDot.remove();meDot=L.circleMarker([lat,lon],{radius:8,color:"#fff",weight:3,fillColor:"#1a73e8",fillOpacity:1}).addTo(map)}
 /* track del GPX: solo se dibuja con la ruta abierta */
-let TRK=null;
-window.showTrack=function(r){if(TRK){TRK.remove();TRK=null}
+let TRK=null,SHOWN=null;
+window.showTrack=function(r){if(TRK){TRK.remove();TRK=null}SHOWN=r;if(r&&r.gx&&!r.gx.ln){loadTracks().then(ok=>{if(ok&&SHOWN===r)showTrack(r)});return}
   if(!r||!r.gx||!r.gx.ln||!r.gx.ln.length)return;
   const ll=r.gx.ln.map(p=>[p[0],p[1]]);
   TRK=L.layerGroup([L.polyline(ll,{color:"#fff",weight:7,opacity:.9,interactive:false}),L.polyline(ll,{color:"#c3262e",weight:4,opacity:.95,interactive:false}),

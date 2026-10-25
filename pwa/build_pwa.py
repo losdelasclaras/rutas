@@ -86,6 +86,13 @@ rep('''  const m=e.target.closest("[data-m]");if(m){''','''  if(e.target.closest
   if(e.target.closest("[data-imp]")){const code=prompt("Pega aquí el código de tus marcas:");if(!code)return;try{const v=JSON.parse(decodeURIComponent(escape(atob(code.trim().replace(/^LDC1:/,"")))));Object.assign(MARKS,v);saveMarks();renderCols();alert("Marcas añadidas.")}catch(err){alert("Ese código no es válido.")}return}
   const m=e.target.closest("[data-m]");if(m){''')
 d=json.load(open(A+'final_data.json'))
+# los recorridos de los tracks van en un archivo aparte que se carga después (la app abre antes)
+import hashlib,glob as _g
+TL={r['u']:r['gx'].pop('ln') for r in d['routes'] if r.get('gx') and r['gx'].get('ln')}
+_tj=json.dumps(TL,separators=(',',':'));_th=hashlib.md5(_tj.encode()).hexdigest()[:8]
+for _old in _g.glob(O+'tracks-*.json'):os.remove(_old)
+open(O+f'tracks-{_th}.json','w').write(_tj)
+t=t.replace('__TRACKS__',f'tracks-{_th}.json')
 PL=[[p['n'].split(' / ')[0],p['t'],p['lat'],p['lon']] for p in json.load(open(A+'places.json'))]; o={'c':0,'t':1,'v':2}; PL.sort(key=lambda p:o[p[1]])
 t=t.replace('__DATA__',json.dumps(d,ensure_ascii=False,separators=(',',':'))).replace('__GEO__',open(A+'geo.json').read()).replace('__TOWNS__',open(A+'towns.json').read()).replace('__PLACES__',json.dumps(PL,ensure_ascii=False,separators=(',',':')))
 open(O+'index.html','w').write(t)
