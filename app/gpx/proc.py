@@ -42,35 +42,58 @@ def dp(P,eps):
             if dd>best:best,k=dd,n
         if k is not None and best>eps:keep[k]=True;st+= [(i,k),(k,j)]
     return [p for p,kk in zip(P,keep) if kk]
-res={};log=[]
+import datetime as _dt
+def ym(s):
+    try: y,m=int(s[:4]),int(s[5:7]);return y*12+m
+    except: return None
+MAN=json.load(open('asignar.json')) if os.path.exists('asignar.json') else {}   # archivo -> url de la entrada (o null para descartar)
+FILES=[];CAND={}
 for f in sorted(glob.glob('raw/*.gpx')):
-    t=open(f,encoding='utf-8').read();P=parse(t);P,cut=trim(P)
+    fb=os.path.basename(f)
+    t=open(f,encoding='utf-8').read();P,cut=trim(parse(t))
+    if len(P)<5:continue
+    FILES.append((f,t,P,cut))
+    if fb in MAN:
+        CAND[fb]=[(1000,MAN[fb],'asignado a mano')] if MAN[fb] else [];continue
+    cs=[]
     link=re.search(r'<link href="([^"]+)"',t);link=link.group(1) if link else ''
-    wid=re.search(r'-(\d+)$',link);r=None;how=''
-    if wid:
-        r=next((x for x in D if x.get('wk') and re.search(r'-'+wid.group(1)+r'(\D|$)',x['wk'])),None);how='enlace Wikiloc' if r else ''
-    if not r:
-        # por geometría: los puntos de la ruta deben quedar cerca del track; desempate por nombre y fecha
-        S=P[::max(1,len(P)//400)]
-        fn=re.sub(r'[^a-z0-9]+',' ',os.path.basename(f).lower().replace('.gpx',''))
-        tw={w for w in fn.split() if len(w)>3}
-        tdate=next((p[3][:7] for p in P if p[3]),None)
-        cands=[]
-        for x in D:
-            if not x.get('u'):continue
-            ds=[min(dist((PT[i]['lat'],PT[i]['lon']),q) for q in S) for i in x['p']]
-            if min(ds)>400:continue
-            near=sum(1 for d in ds if d<400)/len(ds)
-            slug=re.sub(r'[^a-z0-9]+',' ',x['u'].lower()+' '+(x.get('ti') or '').lower())
-            nm=len([w for w in tw if w in slug])
-            dt=1 if tdate and x.get('d','')[:7]==tdate else 0
-            cands.append((near*2+nm*0.6+dt*1.5,x,round(min(ds)),near,nm,dt))
-        cands.sort(key=lambda c:-c[0])
-        if cands:
-            best=cands[0];r=best[1];how=f"geometría (puntos cerca {best[3]:.0%}, palabras {best[4]}, fecha {'sí' if best[5] else 'no'})"
-            if len(cands)>1 and cands[1][0]>=best[0]-0.5: how+=' · DUDA con: '+(cands[1][1].get('ti') or cands[1][1]['u'])
-    if not r:log.append(f'SIN EMPAREJAR {os.path.basename(f)}');continue
-    if r['u'] in res: log.append(f"REPETIDO {os.path.basename(f)} -> {r.get('ti')} (ya tenía otro GPX; me quedo con el primero)");continue
+    wid=re.search(r'-(\d+)$',link)
+    stem=re.sub(r'(\s*\(\d+\)|_\d+)$','',fb[:-4].lower()).strip()
+    S=P[::max(1,len(P)//400)]
+    fn=re.sub(r'[^a-z0-9]+',' ',stem);tw={w for w in fn.split() if len(w)>3}
+    tdate=next((p[3] for p in P if p[3]),None);tm=ym(tdate) if tdate else None
+    for x in D:
+        if not x.get('u'):continue
+        wk=(x.get('wk') or '').rstrip('/')
+        if wid and re.search(r'-'+wid.group(1)+r'(\D|$)',wk):cs.append((100,x['u'],'enlace Wikiloc'));continue
+        wslug=re.sub(r'-\d+$','',wk.split('/')[-1]).lower() if wk else ''
+        ds=[min(dist((PT[i]['lat'],PT[i]['lon']),q) for q in S) for i in x['p']]
+        if min(ds)>400:continue
+        near=sum(1 for d in ds if d<400)/len(ds)
+        if wslug and (wslug==stem or wslug==stem.replace('(1)','').strip()):cs.append((60+near,x['u'],'nombre del track en Wikiloc'));continue
+        slug=re.sub(r'[^a-z0-9]+',' ',x['u'].lower()+' '+(x.get('ti') or '').lower())
+        nm=len([w for w in tw if w in slug])
+        pm=ym(x.get('d','')) ;dd=(pm-tm) if (pm and tm) else None
+        dsc=0 if dd is None else (1.5 if 0<=dd<=3 else 0.7 if -1<=dd<=8 else -0.8 if abs(dd)>24 else 0)
+        sc=near*2+nm*0.6+dsc
+        cs.append((sc,x['u'],f"recorrido (puntos cerca {near:.0%}, palabras {nm}, fecha {'cuadra' if dsc>=1 else 'parecida' if dsc>0 else 'lejana' if dsc<0 else 'no'})"))
+    cs.sort(key=lambda c:-c[0]);CAND[fb]=cs
+# reparto: primero las parejas más seguras; cada ruta y cada archivo una sola vez
+pairs=sorted(((c[0],fb,c[1],c[2],k) for fb,cs in CAND.items() for k,c in enumerate(cs)),key=lambda p:-p[0])
+ASG={};TAKEN=set()
+for sc,fb,u,how,k in pairs:
+    if fb in ASG or u in TAKEN or sc<1.2:continue
+    cs=CAND[fb];alt=[c for c in cs if c[1]!=u and c[1] not in TAKEN]
+    if k>0:how+=' · (era su 2.ª opción: la 1.ª ya tenía otro track)'
+    if sc<60 and alt and alt[0][0]>=sc-0.5:how+=' · DUDA con: '+next((x.get('ti') for x in D if x['u']==alt[0][1]),alt[0][1])
+    ASG[fb]=(u,how);TAKEN.add(u)
+UBY={x['u']:x for x in D}
+res={};log=[]
+for f,t,P,cut in FILES:
+    fb=os.path.basename(f)
+    if fb not in ASG:
+        log.append(f"SIN EMPAREJAR {fb}"+(" (descartado a mano)" if fb in MAN else (" · mejor opción: "+(UBY[CAND[fb][0][1]].get('ti') or '')+" (ya tenía track o poco segura)" if CAND.get(fb) else "")));continue
+    u,how=ASG[fb];r=UBY[u]
     cum=[0]
     for i in range(1,len(P)):cum.append(cum[-1]+dist(P[i-1],P[i]))
     E=[p[2] for p in P];has=all(e is not None for e in E)
