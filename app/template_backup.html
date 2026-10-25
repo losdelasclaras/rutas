@@ -1,0 +1,516 @@
+<title>Los de las Claras · Rutas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+/* Layout: app de una pantalla — cabecera fina, vista central (mapa / listas) y barra de pestañas abajo, como una app de móvil. */
+:root{
+  --paper:#eef0ea; --land:#f7f7f2; --land-dim:#e3e6de; --sea:#c4d6dc; --line:#b9beb2;
+  --ink:#1f2a24; --muted:#5f6b62; --card:#ffffff; --edge:#d4d8cf;
+  --mark:#c3262e; --mark-ink:#ffffff; --moss:#3d6b4f; --river:#8fb3c4;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --bar-h:64px; --fs:1.15; --rev:#e08a00; --halo:rgba(255,255,255,.85); --relief:none;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#141a17; --land:#1f2722; --land-dim:#18201b; --sea:#0f1b1f; --line:#36423b;
+  --ink:#e6ebe4; --muted:#9aa79e; --card:#1d2520; --edge:#2e3a33;
+  --mark:#ff5a60; --mark-ink:#ffffff; --moss:#7fb592; --river:#3d6577; --halo:rgba(15,22,18,.85); --relief:brightness(.62) saturate(.8); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#141a17; --land:#1f2722; --land-dim:#18201b; --sea:#0f1b1f; --line:#36423b;
+  --ink:#e6ebe4; --muted:#9aa79e; --card:#1d2520; --edge:#2e3a33;
+  --mark:#ff5a60; --mark-ink:#ffffff; --moss:#7fb592; --river:#3d6577; --halo:rgba(15,22,18,.85); --relief:brightness(.62) saturate(.8); color-scheme:dark}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;overflow:hidden}
+button{font:inherit;color:inherit}
+.app{height:100%;display:flex;flex-direction:column}
+header.top{display:flex;align-items:center;gap:12px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--edge);background:var(--paper)}
+.trail{display:inline-grid;grid-template-rows:1fr 1fr 1fr;width:30px;height:24px;border-radius:3px;overflow:hidden;flex:none;box-shadow:0 0 0 1px var(--edge)}
+.trail i{display:block;background:var(--mark)} .trail i:nth-child(2){background:#fff}
+.brand{min-width:0}
+.brand b{display:block;font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:.02em;text-transform:uppercase;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand span{display:block;font-size:12.5px;color:var(--muted)}
+main{flex:1;min-height:0;position:relative}
+.view{position:absolute;inset:0;overflow:auto}
+.view.pad{padding-block:16px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.inner{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+/* tabs */
+nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--edge);background:var(--paper);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav.tabs button{border:0;background:none;padding:8px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--f-display);font-weight:600;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);cursor:pointer}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-selected="true"]{color:var(--mark)}
+nav.tabs button:focus-visible,.chip:focus-visible,.btn:focus-visible,.row:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+/* map */
+#map{position:absolute;inset:0;background:var(--sea);touch-action:none}
+#map svg{width:100%;height:100%;display:block}
+.relief{filter:var(--relief)}
+.border{fill:none;stroke:var(--ink);stroke-opacity:.45;stroke-width:1.2;stroke-dasharray:6 3 1.5 3;vector-effect:non-scaling-stroke;pointer-events:none}
+.town{pointer-events:none}
+.town circle{fill:var(--ink);stroke:#fff;stroke-width:.6;vector-effect:non-scaling-stroke}
+.town text{font-family:var(--f-body);fill:var(--ink);paint-order:stroke;stroke:var(--halo);stroke-linejoin:round}
+.town.tc text{font-weight:600}
+.town.tv text{fill:var(--muted)}
+.attrib{position:absolute;left:max(6px,env(safe-area-inset-left,0px));bottom:2px;font-size:10px;color:var(--muted);background:var(--card);opacity:.8;padding:1px 5px;border-radius:4px;pointer-events:none}
+.plabel{font-family:var(--f-display);font-weight:600;text-transform:uppercase;fill:var(--ink);opacity:.5;pointer-events:none;paint-order:stroke;stroke:var(--halo);stroke-width:0}
+.pt{cursor:pointer}
+.pt .peak{fill:var(--mark);stroke:#fff;vector-effect:non-scaling-stroke;stroke-width:1.2}
+.pt .spot{fill:var(--moss);stroke:#fff;vector-effect:non-scaling-stroke;stroke-width:1.2}
+.pt .rev{fill:var(--rev);stroke:#fff;vector-effect:non-scaling-stroke;stroke-width:1.2}
+.pt.dim{opacity:.12;pointer-events:none}
+.pt .ring{fill:none;stroke:var(--ink);stroke-width:2.5;vector-effect:non-scaling-stroke;display:none}
+.pt.sel .ring{display:block}
+.ico2{width:20px;height:20px;flex:none;align-self:center}
+.pt use{filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.lsp{fill:var(--moss)!important;font-weight:500!important}
+.lbl{font-family:var(--f-body);font-weight:600;fill:var(--mark);paint-order:stroke;stroke:var(--halo);stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+.probe{fill:none;stroke:var(--mark);stroke-dasharray:4 3;vector-effect:non-scaling-stroke;stroke-width:1.5}
+.mapbar{position:absolute;top:10px;left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}
+.mapbar>*{pointer-events:auto}
+.chip{border:1px solid var(--edge);background:var(--card);border-radius:999px;padding:6px 12px;font-size:13.5px;font-weight:500;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+select.chip{appearance:none;padding-right:26px;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 14px) 52%,calc(100% - 9px) 52%;background-size:5px 5px;background-repeat:no-repeat}
+.fabs{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:14.5px}
+.btn.primary{background:var(--mark);color:var(--mark-ink)}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--edge);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.btn svg{width:18px;height:18px;flex:none}
+.legend{position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:22px;background:var(--card);border:1px solid var(--edge);border-radius:10px;padding:4px;display:flex;flex-direction:column;gap:2px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.lay{border:0;background:none;display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:7px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;text-align:left}
+.lay[aria-pressed="false"]{color:var(--muted);opacity:.55}
+.lay[aria-pressed="false"] .ico{filter:grayscale(1)}
+.lay:focus-visible{outline:2px solid var(--mark)}
+.provfill{fill:var(--land);stroke:none}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.hint{position:absolute;left:50%;top:56px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:7px 12px;border-radius:8px;font-size:13.5px;max-width:calc(100% - 32px);text-align:center}
+/* sheet */
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:62%;overflow:auto;background:var(--card);border-top:1px solid var(--edge);border-radius:16px 16px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.15);padding-block:6px 18px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:860px){.sheet{left:auto;right:16px;bottom:16px;top:56px;width:380px;max-height:none;border-radius:14px;border:1px solid var(--edge)}}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--edge);margin:4px auto 10px}
+.sheet-head{display:flex;gap:10px;align-items:flex-start}
+.sheet-head h2{flex:1;min-width:0;margin:0;font-family:var(--f-display);font-weight:700;font-size:24px;line-height:1.05;text-wrap:balance}
+.x{border:0;background:var(--paper);border-radius:999px;width:32px;height:32px;cursor:pointer;flex:none;font-size:18px;line-height:1}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}
+.tag{font-size:12.5px;padding:3px 9px;border-radius:999px;background:var(--paper);color:var(--muted);font-weight:500}
+.tag.alt{font-family:var(--f-num);color:var(--ink)}
+.plist{list-style:none;margin:0;padding:0;border-top:1px solid var(--edge)}
+.plist li{display:flex;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--edge)}
+.plist li .n{flex:1;min-width:0}
+.plist li .a{font-family:var(--f-num);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ico{width:10px;height:10px;flex:none;align-self:center}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.near h3,.sec h3{font-family:var(--f-display);font-weight:600;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:18px 0 6px}
+.note{font-size:13px;color:var(--muted);margin:10px 0 0}
+/* lists */
+.search{width:100%;border:1px solid var(--edge);background:var(--card);border-radius:10px;padding:11px 14px;font:inherit;color:var(--ink)}
+.yearh{position:sticky;top:-16px;background:var(--paper);font-family:var(--f-display);font-weight:700;font-size:22px;padding:8px 0 4px;margin:0;display:flex;justify-content:space-between;align-items:baseline;z-index:1}
+.yearh small{font-family:var(--f-body);font-weight:500;font-size:13px;color:var(--muted)}
+.rows{display:flex;flex-direction:column}
+.row{display:flex;gap:12px;align-items:center;padding:11px 2px;border-bottom:1px solid var(--edge);background:none;border-left:0;border-right:0;border-top:0;text-align:left;cursor:pointer;width:100%}
+.row .t{flex:1;min-width:0}
+.row .t b{display:block;font-weight:600}
+.row .t span{display:block;font-size:13px;color:var(--muted)}
+.row .alt{font-family:var(--f-num);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.check{width:22px;height:22px;accent-color:var(--mark);flex:none}
+.prog{height:10px;border-radius:5px;background:var(--land-dim);overflow:hidden;border:1px solid var(--edge)}
+.prog i{display:block;height:100%;background:var(--mark)}
+.lead{font-size:14.5px;color:var(--muted);margin:0}
+h1.vt{font-family:var(--f-display);font-weight:700;font-size:30px;line-height:1;margin:0;text-transform:uppercase;letter-spacing:.02em}
+/* stats */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.kpi{background:var(--card);border:1px solid var(--edge);border-radius:10px;padding:12px 14px}
+.kpi b{display:block;font-family:var(--f-display);font-weight:700;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.kpi span{font-size:13px;color:var(--muted)}
+.chart{overflow-x:auto}
+.chart svg{display:block;min-width:520px;width:100%}
+.chart text{fill:var(--muted);font-family:var(--f-num);font-size:10px}
+.chart .bar{fill:var(--moss)} .chart .bar.top{fill:var(--mark)}
+.chart .grid{stroke:var(--edge)}
+.chart .val{fill:var(--ink)}
+.toplist{counter-reset:n;list-style:none;margin:0;padding:0}
+.toplist li{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--edge);align-items:baseline}
+.toplist li::before{counter-increment:n;content:counter(n);font-family:var(--f-num);color:var(--muted);width:20px;font-size:12.5px}
+.toplist .n{flex:1;min-width:0}
+.toplist .a{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.photo{margin:2px -4px 12px;border-radius:10px;overflow:hidden;aspect-ratio:400/248;background:var(--land-dim);max-width:calc(100% + 8px)}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.desc{margin:0 0 12px;font-size:14.5px}
+.ficha{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:1px;background:var(--edge);border:1px solid var(--edge);border-radius:10px;overflow:hidden;margin:0 0 12px}
+.ficha div{background:var(--card);padding:8px 10px}
+.ficha b{display:block;font-family:var(--f-num);font-size:15px;font-variant-numeric:tabular-nums}
+.ficha span{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.salida{font-size:13.5px;color:var(--muted);margin:-4px 0 12px}
+.thumb{width:64px;height:44px;border-radius:6px;object-fit:cover;flex:none;background:var(--land-dim)}
+.thumb.none{display:grid;place-items:center;color:var(--muted)}
+.tag.new{background:var(--mark);color:var(--mark-ink)}
+.linkbtn{border:0;background:none;color:var(--mark);font-weight:600;padding:0;cursor:pointer;text-decoration:underline}
+.fbox{background:var(--card);border:1px solid var(--edge);border-radius:10px;padding:0 14px}
+.fbox summary{cursor:pointer;padding:11px 0;font-weight:600;list-style-position:inside}
+.fbox summary span{font-weight:500;color:var(--mark)}
+#filters{display:flex;flex-direction:column;gap:12px;padding-bottom:14px}
+.fgroup{display:flex;flex-direction:column;gap:6px}
+.flabel{font-family:var(--f-display);font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.fnote{font-size:12.5px;color:var(--muted)}
+.fsel select{padding:9px 12px}
+.count{font-size:14px;color:var(--muted);margin:0}
+.revbox{background:color-mix(in srgb,var(--rev) 14%,var(--card));border:1px solid color-mix(in srgb,var(--rev) 45%,transparent);border-radius:10px;padding:10px 12px;font-size:13.5px;margin:0 0 12px}
+.revbox b{color:var(--ink)}
+.rvbtns{display:flex;gap:4px;flex:none}
+.rvbtns button{border:1px solid var(--edge);background:var(--card);border-radius:6px;padding:3px 8px;font-size:12.5px;cursor:pointer;font-weight:600}
+.rvbtns button[aria-pressed="true"][data-st="ok"]{background:var(--moss);color:#fff;border-color:var(--moss)}
+.rvbtns button[aria-pressed="true"][data-st="mal"]{background:var(--mark);color:#fff;border-color:var(--mark)}
+.plist li .osm{display:block;font-size:12px;color:var(--muted)}
+.plist li a.gm{font-size:12.5px;color:var(--mark);white-space:nowrap}
+.tag.rev{background:var(--rev);color:#fff}
+.colhead{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+#col-cumbres .chips,#col-lugares .chips{margin-bottom:8px}
+.crow{cursor:default;flex-wrap:wrap}
+.crow.is-hecha .t b{text-decoration:line-through;text-decoration-color:var(--moss);text-decoration-thickness:2px}
+.mk{display:flex;gap:4px;flex:none}
+.mk button{border:1px solid var(--edge);background:var(--card);border-radius:7px;padding:5px 9px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--muted);white-space:nowrap}
+.mk button[data-m="hecha"][aria-pressed="true"]{background:var(--moss);border-color:var(--moss);color:#fff}
+.mk button[data-m="quiero"][aria-pressed="true"]{background:var(--mark);border-color:var(--mark);color:#fff}
+.mk button[data-go]{color:var(--ink)}
+@media (max-width:520px){.mk button span{display:none}.crow .alt{font-size:12px}}
+header.top,nav.tabs,.view.pad>.inner,.sheet,.mapbar,.legend,.fabs,.hint,.attrib{zoom:var(--fs)}
+.fsbtn{margin-left:auto;border:1px solid var(--edge);background:var(--card);border-radius:8px;padding:5px 10px;font-family:var(--f-display);font-weight:700;font-size:16px;cursor:pointer;color:var(--ink);flex:none}
+.row.compact{padding:9px 2px}
+.row.compact .t span{font-size:12.5px}
+.empty{padding:24px 0;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="ic-cumbre" viewBox="-12 -12 24 24"><circle r="10.6" fill="#c3262e" stroke="#fff" stroke-width="1.8"/><path d="M-8 6 L-2.5-5 L1 0.5 L3-2 L8 6Z" fill="#fff"/><path d="M-2.5-5 L-0.6-1.8 L-1.7-2.4 L-2.6-1.2 L-3.5-2.4 L-4.5-1.7Z" fill="#c3262e"/></symbol><symbol id="ic-brana" viewBox="-12 -12 24 24"><circle r="10.6" fill="#8a5a2b" stroke="#fff" stroke-width="1.8"/><path d="M-7 0 L0-6.5 L7 0 V6 H-7Z" fill="#fff"/><path d="M-1.6 6 V2 H1.6 V6Z" fill="#8a5a2b"/></symbol><symbol id="ic-foz" viewBox="-12 -12 24 24"><circle r="10.6" fill="#7a6a58" stroke="#fff" stroke-width="1.8"/><path d="M-7.5-6 H-3 L-1.5 6.5 H-7.5Z M7.5-6 H3 L1.5 6.5 H7.5Z" fill="#fff"/></symbol><symbol id="ic-agua" viewBox="-12 -12 24 24"><circle r="10.6" fill="#2f7fb5" stroke="#fff" stroke-width="1.8"/><path d="M-7-1.5 q1.75-2 3.5 0 t3.5 0 t3.5 0 t3.5 0 M-7 3 q1.75-2 3.5 0 t3.5 0 t3.5 0 t3.5 0" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></symbol><symbol id="ic-cascada" viewBox="-12 -12 24 24"><circle r="10.6" fill="#3a9ad9" stroke="#fff" stroke-width="1.8"/><path d="M-6-5.5 H6" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M-3.5-4 V5 M0-4 V6.5 M3.5-4 V5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></symbol><symbol id="ic-bosque" viewBox="-12 -12 24 24"><circle r="10.6" fill="#2f7a43" stroke="#fff" stroke-width="1.8"/><path d="M0-7.5 L5 -1 H2.6 L6.5 4 H-6.5 L-2.6-1 H-5Z" fill="#fff"/><path d="M-1.1 4 H1.1 V7.5 H-1.1Z" fill="#fff"/></symbol><symbol id="ic-costa" viewBox="-12 -12 24 24"><circle r="10.6" fill="#1f8a8a" stroke="#fff" stroke-width="1.8"/><circle cx="0" cy="-2.5" r="3.4" fill="#fff"/><path d="M-7.5 4 q1.9-2 3.75 0 t3.75 0 t3.75 0 t3.75 0" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></symbol><symbol id="ic-patrimonio" viewBox="-12 -12 24 24"><circle r="10.6" fill="#7b5ea7" stroke="#fff" stroke-width="1.8"/><path d="M-6 6.5 V-1 L0-5.5 L6-1 V6.5Z" fill="#fff"/><path d="M0-8 V-4.5 M-1.4-6.6 H1.4" stroke="#fff" stroke-width="1.3"/><path d="M-1.6 6.5 V2.5 a1.6 1.6 0 0 1 3.2 0 V6.5Z" fill="#7b5ea7"/></symbol><symbol id="ic-cueva" viewBox="-12 -12 24 24"><circle r="10.6" fill="#55524d" stroke="#fff" stroke-width="1.8"/><path d="M-7.5 6.5 V1 a7.5 7.5 0 0 1 15 0 V6.5 H3 V2.5 a3 3 0 0 0-6 0 V6.5Z" fill="#fff"/></symbol><symbol id="ic-refugio" viewBox="-12 -12 24 24"><circle r="10.6" fill="#c47a1a" stroke="#fff" stroke-width="1.8"/><path d="M0-7 L7.5 6 H-7.5Z" fill="#fff"/><path d="M0 0 L2.6 6 H-2.6Z" fill="#c47a1a"/></symbol><symbol id="ic-collado" viewBox="-12 -12 24 24"><circle r="10.6" fill="#6b7f3a" stroke="#fff" stroke-width="1.8"/><path d="M-8 5 L-4-4 L0 1.5 L4-4 L8 5" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></symbol><symbol id="ic-senda" viewBox="-12 -12 24 24"><circle r="10.6" fill="#9a6b3f" stroke="#fff" stroke-width="1.8"/><path d="M-6 6 C-6 1 6 1 4-3 C2.5-6 -2-6 -1-7.5" fill="none" stroke="#fff" stroke-width="1.9" stroke-dasharray="2.4 2" stroke-linecap="round"/></symbol><symbol id="ic-otros" viewBox="-12 -12 24 24"><circle r="10.6" fill="#5f6b62" stroke="#fff" stroke-width="1.8"/><circle r="3.2" fill="#fff"/></symbol></svg>
+<div class="app">
+  <header class="top">
+    <span class="trail" aria-hidden="true"><i></i><i></i><i></i></span>
+    <div class="brand"><b>Los de las Claras</b><span id="sub">Rutas de montaña · Asturias y León</span></div>
+    <button class="fsbtn" id="fsbtn" aria-label="Cambiar tamaño del texto">Aa</button>
+  </header>
+  <main>
+    <section class="view" id="v-mapa">
+      <div id="map" aria-label="Mapa de rutas"></div>
+      <div class="mapbar" id="mapbar"></div>
+      <div class="legend" role="group" aria-label="Capas del mapa">
+        <button class="lay" data-lay="relief" aria-pressed="true"><svg class="ico" viewBox="-5 -5 10 10"><path d="M-4.5 4L-1-3 1.5 1 3-1 4.5 4Z" fill="var(--muted)"/></svg>Relieve</button>
+        <button class="lay" data-lay="peaks" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-cumbre"/></svg>Cumbres</button>
+        <button class="lay" data-lay="spots" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-brana"/></svg>Lugares</button>
+        <button class="lay" data-lay="towns" aria-pressed="true"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-3.5" y="-3.5" width="7" height="7" fill="var(--ink)"/></svg>Pueblos</button>
+      </div>
+      <div class="fabs">
+        <button class="btn ghost" id="b-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Ver todo</button>
+        <button class="btn primary" id="b-near"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Rutas cerca de…</button>
+      </div>
+      <div class="attrib">Relieve: Terrain Tiles (Mapzen/AWS) · Pueblos: © OpenStreetMap</div>
+      <div class="hint" id="hint" hidden>Toca un punto del mapa para ver las rutas más cercanas</div>
+      <aside class="sheet" id="sheet" hidden></aside>
+    </section>
+    <section class="view pad" id="v-rutas" hidden><div class="inner">
+      <h1 class="vt">Las rutas</h1>
+      <input class="search" id="q" type="search" placeholder="Busca una ruta, cumbre, braña, foz, playa…" autocomplete="off">
+      <details class="fbox" id="fbox"><summary>Filtrar rutas <span id="fsum"></span></summary><div id="filters"></div></details>
+      <div id="list"></div>
+    </div></section>
+    <section class="view pad" id="v-cumbres" hidden><div class="inner">
+      <h1 class="vt">Tus cumbres</h1>
+      <p class="lead">Marca las que ya has subido y las que quieres subir. Desde cada una puedes ir a su ruta.</p>
+      <div id="col-cumbres"></div>
+    </div></section>
+    <section class="view pad" id="v-lugares" hidden><div class="inner">
+      <h1 class="vt">Tus lugares</h1>
+      <p class="lead">Brañas, foces, lagos, cascadas y otros rincones de tus rutas. Ve marcando dónde has estado y adónde quieres ir.</p>
+      <div id="col-lugares"></div>
+    </div></section>
+  </main>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-v="mapa" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg>Mapa</button>
+    <button role="tab" data-v="rutas" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Rutas</button>
+    <button role="tab" data-v="cumbres" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20l7-12 4 6 3-4 6 10z"/></svg>Cumbres</button>
+    <button role="tab" data-v="lugares" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"/></svg>Lugares</button>
+  </nav>
+</div>
+
+<script>
+const DATA = __DATA__;
+const GEO = __GEO__;
+const PLACES = __PLACES__;
+const TOWNS = __TOWNS__;
+const P = DATA.pts, R = DATA.routes;
+const MAIN = new Set(["Asturias","León"]);
+const MESES=["","enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+R.forEach((r,i)=>{r.id=i; r.p.forEach(pi=>{(P[pi].rs ||= []).push(i)})});
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtA=a=>a? a.toLocaleString("es-ES")+" m":"";
+const norm=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const km=(a,b)=>{const R0=6371,toR=Math.PI/180,dl=(b.lat-a.lat)*toR,dn=(b.lon-a.lon)*toR;const h=Math.sin(dl/2)**2+Math.cos(a.lat*toR)*Math.cos(b.lat*toR)*Math.sin(dn/2)**2;return 2*R0*Math.asin(Math.sqrt(h))};
+
+/* ---------- tipos de lugar ---------- */
+const CATS=[["brana","Brañas y majadas",/(?:^|[\s(/-])(braña|brañas|majada|majdada|mayada|mayá|invernales|prau|vega|puertos de verano|panera)(?=$|[\s,.)/-])/i],
+ ["foz","Foces, canales y sedos",/(?:^|[\s(/-])(foz|foces|desfiladero|canal|canalón|sedo|sedos|travesedo|olla|jour|hierbas altas)(?=$|[\s,.)/-])/i],
+ ["agua","Lagos y fuentes",/(?:^|[\s(/-])(lago|lagos|laguna|lagunas|llaguna|llagos|nacimiento|fuente|oyu|pozo)(?=$|[\s,.)/-])/i],
+ ["cascada","Cascadas",/(?:^|[\s(/-])(cascada|cascadas|tabayon|tabayón|salto|pingañón)(?=$|[\s,.)/-])/i],
+ ["bosque","Bosques",/(?:^|[\s(/-])(bosque|hayedo|faedo|fayeu|tejeda)(?=$|[\s,.)/-])/i],
+ ["costa","Costa",/(?:^|[\s(/-])(playa|faro|cabo|punta|acantilados|bufones|cala|pedreru)(?=$|[\s,.)/-])/i],
+ ["patrimonio","Patrimonio",/(?:^|[\s(/-])(ermita|iglesia|monasterio|castro|dolmen|ídolo|minas|poblado|calzada|medieval|puente|molinos|castillo|abandonado|túnel|tunel|conjunto)(?=$|[\s,.)/-])/i],
+ ["cueva","Cuevas",/(?:^|[\s(/-])(cueva|covarones)(?=$|[\s,.)/-])/i],
+ ["refugio","Refugios",/(?:^|[\s(/-])refugio(?=$|[\s,.)/-])/i],
+ ["collado","Collados, sierras y miradores",/(?:^|[\s(/-])(collado|collada|collaú|pasá|mirador|muezca|copa|sierra|arista)(?=$|[\s,.)/-])/i],
+ ["senda","Sendas y caminos",/(?:^|[\s(/-])(senda|camín|ruta)(?=$|[\s,.)/-])/i]];
+const catOf=n=>{for(const [k,,re] of CATS)if(re.test(n))return k;return "otros"};
+P.forEach(p=>{p.cat=p.t==="cumbre"?"cumbre":catOf(p.c)});
+const ICO=c=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true"><use href="#ic-${c}"/></svg>`;
+/* ---------- filters ---------- */
+const years=[...new Set(R.map(r=>r.y).filter(Boolean))].sort((a,b)=>b-a);
+const F={reg:"todas",year:"todos",km:"",de:"",ex:"",co:"",nw:""};
+const DIFN={"baja":"Baja","moderada":"Moderada","alta":"Alta","muy-alta":"Muy alta"};
+const KM={a:[0,10],b:[10,15],c:[15,20],d:[20,999]}, DE={a:[0,600],b:[600,1000],c:[1000,1500],d:[1500,9999]};
+const inR=(v,rg)=>v!=null&&v>=rg[0]&&v<rg[1];
+function routeOk(r){return (F.reg==="todas"||r.r===F.reg)&&(F.year==="todos"||String(r.y)===F.year)
+  &&(!F.km||inR(r.km,KM[F.km]))&&(!F.de||inR(r.de,DE[F.de]))&&(!F.ex||r.dl===F.ex)&&(!F.co||(r.co||[]).includes(F.co))&&(!F.nw||(F.nw==="nw"?r.nw:!r.nw))}
+const nExtra=()=>["year","km","de","ex","co","nw"].filter(k=>F[k]&&F[k]!=="todos").length;
+const mapbar=document.getElementById("mapbar");
+function renderMapbar(){const n=nExtra();
+ mapbar.innerHTML=["todas","Asturias","León","Cantabria"].map(v=>`<button class="chip" data-reg="${v}" aria-pressed="${F.reg===v}">${v==="todas"?"Todas":v}</button>`).join("")+
+ `<button class="chip" data-more aria-pressed="${n>0}">Filtros${n?" · "+n:""}</button>`}
+renderMapbar();
+mapbar.addEventListener("click",e=>{const b=e.target.closest("[data-reg]");if(b){F.reg=b.dataset.reg;applyFilter();return}
+  if(e.target.closest("[data-more]")){showView("rutas");document.getElementById("v-rutas").scrollTop=0}});
+const CONCEJOS=[...new Set(R.flatMap(r=>r.co||[]))].sort((a,b)=>a.localeCompare(b,"es"));
+const conCount=c=>R.filter(r=>(r.co||[]).includes(c)).length;
+function chipRow(key,opts){return opts.map(([v,l])=>`<button class="chip" data-f="${key}" data-v="${v}" aria-pressed="${F[key]===v}">${l}</button>`).join("")}
+function renderFilters(){
+  const el=document.getElementById("filters");
+  el.innerHTML=`<div class="fgroup"><span class="flabel">Zona</span><div class="chips">${chipRow("reg",[["todas","Todas"],["Asturias","Asturias"],["León","León"],["Cantabria","Cantabria"]])}</div></div>
+  <div class="fgroup"><span class="flabel">Distancia</span><div class="chips">${chipRow("km",[["","Cualquiera"],["a","Menos de 10 km"],["b","10–15 km"],["c","15–20 km"],["d","Más de 20 km"]])}</div></div>
+  <div class="fgroup"><span class="flabel">Desnivel</span><div class="chips">${chipRow("de",[["","Cualquiera"],["a","Menos de 600 m"],["b","600–1.000 m"],["c","1.000–1.500 m"],["d","Más de 1.500 m"]])}</div></div>
+  <div class="fgroup"><span class="flabel">Dificultad</span><div class="chips">${chipRow("ex",[["","Cualquiera"],["baja","Baja"],["moderada","Moderada"],["alta","Alta"],["muy-alta","Muy alta"]])}</div><span class="fnote">La de tus listados del blog.</span></div>
+  <div class="fgroup fsel"><label class="flabel" for="fco">Concejo</label><select class="search" id="fco"><option value="">Todos los concejos</option>${CONCEJOS.map(c=>`<option value="${esc(c)}" ${F.co===c?"selected":""}>${esc(c)} (${conCount(c)})</option>`).join("")}</select></div>
+  <div class="fgroup fsel"><label class="flabel" for="fy">Año</label><select class="search" id="fy"><option value="todos">Todos los años</option>${years.map(y=>`<option ${F.year===String(y)?"selected":""}>${y}</option>`).join("")}</select></div>
+  ${nExtra()||F.reg!=="todas"?`<button class="linkbtn" data-clear>Quitar todos los filtros</button>`:""}`;
+}
+document.getElementById("filters").addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(b){F[b.dataset.f]=b.dataset.v;applyFilter();return}
+  if(e.target.closest("[data-clear]")){Object.assign(F,{reg:"todas",year:"todos",km:"",de:"",ex:"",co:"",nw:""});applyFilter()}});
+document.getElementById("filters").addEventListener("change",e=>{if(e.target.id==="fco"){F.co=e.target.value;applyFilter()}if(e.target.id==="fy"){F.year=e.target.value;applyFilter()}});
+
+/* ---------- map ---------- */
+// Proyección Web Mercator (zoom 11), la misma que el relieve
+const Z=524288, X0=979*256, Y0=745*256, W=6656, H=3584;
+const px=(lon,lat)=>[(lon+180)/360*Z-X0,(1-Math.asinh(Math.tan(lat*Math.PI/180))/Math.PI)/2*Z-Y0];
+const unpx=(x,y)=>[Math.atan(Math.sinh(Math.PI*(1-2*(y+Y0)/Z)))*180/Math.PI,(x+X0)/Z*360-180];
+const mapEl=document.getElementById("map");
+const svg=d3.select(mapEl).append("svg").attr("viewBox",`0 0 ${W} ${H}`).attr("preserveAspectRatio","xMidYMid meet");
+const g=svg.append("g");
+const provfill=g.append("g").attr("display","none");
+provfill.selectAll("path").data(GEO.p).join("path").attr("class","provfill").attr("d",d=>d.r.map(r=>"M"+r.map(c=>px(c[0],c[1]).map(v=>v.toFixed(0)).join(",")).join("L")+"Z").join(""));
+const base=g.append("g").attr("class","relief");
+base.append("image").attr("href","relieve/ov.jpg").attr("width",W).attr("height",H).attr("preserveAspectRatio","none");
+let hiOn=false;
+function hiRes(){if(hiOn)return;hiOn=true;for(let r=0;r<2;r++)for(let c=0;c<4;c++)base.append("image").attr("href",`relieve/r${r}c${c}.jpg`).attr("x",c*W/4).attr("y",r*H/2).attr("width",W/4+1).attr("height",H/2+1).attr("preserveAspectRatio","none")}
+const path=r=>"M"+r.map(c=>px(c[0],c[1]).map(v=>v.toFixed(0)).join(",")).join("L")+"Z";
+g.append("g").selectAll("path").data(GEO.p).join("path").attr("class","border").attr("d",d=>d.r.map(path).join(""));
+const pl=[["ASTURIAS",-6.05,43.36],["LEÓN",-5.75,42.62],["CANTABRIA",-4.15,43.17],["LUGO",-7.38,42.95],["PALENCIA",-4.62,42.62],["MAR CANTÁBRICO",-5.4,43.66]];
+const plab=g.append("g").selectAll("text").data(pl).join("text").attr("class","plabel").attr("text-anchor","middle").text(d=>d[0]).each(function(d){const [x,y]=px(d[1],d[2]);d3.select(this).attr("x",x).attr("y",y)});
+const towns=g.append("g").selectAll("g").data(PLACES).join("g").attr("class",d=>"town t"+d[1]).attr("transform",d=>{const [x,y]=px(d[3],d[2]);return `translate(${x},${y})`});
+towns.append("circle");towns.append("text").text(d=>d[0]);
+const probe=g.append("circle").attr("class","probe").attr("r",0);
+const gp=g.append("g");
+const order=P.map((p,i)=>i).sort((a,b)=>(P[a].a||0)-(P[b].a||0));
+const nodes=gp.selectAll("g").data(order).join("g").attr("class","pt").attr("transform",i=>{const [x,y]=px(P[i].lon,P[i].lat);return `translate(${x},${y})`})
+  .on("click",(e,i)=>{e.stopPropagation(); if(nearMode){nearAt(P[i].lat,P[i].lon);return} openRoute(P[i].rs?P[i].rs[0]:null,i)});
+nodes.append("title").text(i=>P[i].c+(P[i].a?" · "+fmtA(P[i].a):""));
+const ring=nodes.append("circle").attr("class","ring");
+const shapes=nodes.append("use").attr("href",i=>"#ic-"+P[i].cat);
+const labels=gp.append("g").selectAll("text").data(order).join("text").attr("class",i=>P[i].t==="cumbre"?"lbl":"lbl lsp").text(i=>P[i].c).each(function(i){const [x,y]=px(P[i].lon,P[i].lat);d3.select(this).attr("x",x).attr("y",y)});
+let k=1;
+const FSV=[1,1.15,1.3,1.45];let FS=+store.get("ldc-fs",1.15);if(!FSV.includes(FS))FS=1.15;
+document.documentElement.style.setProperty("--fs",FS);
+document.getElementById("fsbtn").textContent=["Aa","Aa+","Aa++","Aa+++"][FSV.indexOf(FS)];
+const LAY={relief:true,peaks:true,spots:true,towns:true};
+function upp(){const r=mapEl.getBoundingClientRect();return Math.max(W/(r.width||400),H/(r.height||600))} // unidades del mapa por píxel de pantalla
+function sizeMarks(){
+  const u=upp()/k*FS; const s=(k<2?4.2:5.6)*u;
+  const z=(k<2?13:k<6?16:19)*u; const zc=z*1.12;
+  shapes.attr("width",i=>P[i].cat==="cumbre"?zc:z).attr("height",i=>P[i].cat==="cumbre"?zc:z).attr("x",i=>-(P[i].cat==="cumbre"?zc:z)/2).attr("y",i=>-(P[i].cat==="cumbre"?zc:z)/2);
+  ring.attr("r",z*.72);
+  plab.attr("font-size",(k<3?15:13)*u).attr("letter-spacing",(k<3?4:3)*u).attr("display",k>5?"none":null);
+  labels.attr("font-size",i=>(P[i].t==="cumbre"?11.5:10.5)*u).attr("dx",8*u).attr("dy",4*u).attr("stroke-width",3*u).attr("display",i=>(P[i].t==="cumbre"?LAY.peaks&&k>=6:LAY.spots&&k>=8)?null:"none");
+  nodes.attr("display",i=>(P[i].t==="cumbre"?LAY.peaks:LAY.spots)?null:"none");
+  towns.attr("display",d=>LAY.towns&&((d[1]==="c"&&k>=1)||(d[1]==="t"&&k>=3)||(d[1]==="v"&&k>=8))?null:"none");
+  towns.select("circle").attr("r",d=>(d[1]==="c"?3.2:d[1]==="t"?2.4:1.8)*u);
+  towns.select("text").attr("x",d=>5*u).attr("y",d=>4*u).attr("font-size",d=>(d[1]==="c"?13:d[1]==="t"?11.5:10.5)*u).attr("stroke-width",3*u);
+  if(k>=2.4)hiRes();
+}
+const zoom=d3.zoom().scaleExtent([0.9,40]).translateExtent([[-W*.05,-H*.05],[W*1.05,H*1.05]]).on("zoom",e=>{g.attr("transform",e.transform);const nk=e.transform.k;if(Math.abs(nk-k)/k>.04){k=nk;sizeMarks()}});
+svg.call(zoom).on("dblclick.zoom",null);
+svg.on("click",e=>{if(!nearMode)return;const [x,y]=d3.zoomTransform(svg.node()).invert(d3.pointer(e,svg.node()));const [la,lo]=unpx(x,y);nearAt(la,lo,nearestTown(la,lo))});
+function nearestTown(la,lo){let best=null,bd=1e9;for(const p of PLACES){const d=km({lat:la,lon:lo},{lat:p[2],lon:p[3]});if(d<bd){bd=d;best=p[0]}}return bd<4?best:null}
+const reduce=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+function fitHome(anim){const [x0,y0]=px(-7.15,43.72),[x1,y1]=px(-4.35,42.5);const r=mapEl.getBoundingClientRect();
+  // escala para que el recuadro Asturias-León quepa en la pantalla
+  const u=upp();const vw=(r.width||400)*u,vh=(r.height||600)*u;const kk=Math.max(1,Math.min(vw/(x1-x0),vh/(y1-y0))*0.95);
+  const t=d3.zoomIdentity.translate(W/2,H/2).scale(kk).translate(-(x0+x1)/2,-(y0+y1)/2);
+  (anim&&!reduce()?svg.transition().duration(500):svg).call(zoom.transform,t)}
+function flyTo(lat,lon,kk=10){const [x,y]=px(lon,lat);const r=mapEl.getBoundingClientRect();const wide=r.width>=860;const u=upp();
+  const cy=wide?H/2:H/2-(r.height*u)*0.2; const cx=wide?W/2-(r.width*u)*0.12:W/2;
+  const t=d3.zoomIdentity.translate(cx,cy).scale(kk).translate(-x,-y);
+  svg.transition().duration(reduce()?0:650).call(zoom.transform,t)}
+function applyFilter(){
+  renderMapbar(); renderFilters(); const n=nExtra()+(F.reg!=="todas"?1:0); document.getElementById("fsum").textContent=n?`(${n} activo${n>1?"s":""})`:"";
+  nodes.classed("dim",i=>!(P[i].rs||[null]).some(ri=>ri===null?F.reg==="todas"&&F.year==="todos":routeOk(R[ri])));
+  labels.attr("visibility",i=>(P[i].rs||[]).some(ri=>routeOk(R[ri]))?null:"hidden");
+  renderList();
+}
+
+/* ---------- sheet ---------- */
+const sheet=document.getElementById("sheet");
+function routeTitle(r){return r.ti||r.t}
+function nearestRoutes(lat,lon,n,excl){return R.filter(r=>r.id!==excl&&routeOk(r)).map(r=>({r,d:km({lat,lon},r)})).sort((a,b)=>a.d-b.d).slice(0,n)}
+const fmtKm=v=>v.toLocaleString("es-ES",{maximumFractionDigits:1})+" km";
+const thumbHTML=r=>r.f!=null?`<img class="thumb" src="fotos/${r.f}.jpg" alt="" loading="lazy">`:`<span class="thumb none" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20l7-12 4 6 3-4 6 10z"/></svg></span>`;
+function rowHTML(r,extra,compact){const nums=[r.km?fmtKm(r.km):"",r.de?"+"+r.de.toLocaleString("es-ES")+" m":""].filter(Boolean).join(" · ");
+ return `<button class="row${compact?" compact":""}" data-r="${r.id}">${compact?"":thumbHTML(r)}<div class="t"><b>${esc(routeTitle(r))}</b><span>${r.y?(r.m?MESES[r.m]+" ":"")+r.y:"Sin fecha"} · ${esc(r.r)}${extra?" · "+extra:""}</span></div><span class="alt">${nums||fmtA(r.a)}</span></button>`}
+function openRoute(ri,pi){
+  nodes.classed("sel",i=>ri!=null?R[ri].p.includes(i):i===pi);
+  if(ri==null){const p=P[pi];sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(p.c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><div class="meta">${p.a?`<span class="tag alt">${fmtA(p.a)}</span>`:""}<span class="tag">${esc(p.r)}</span></div><p class="note">Este punto del mapa todavía no tiene enlazada su entrada del blog.</p>`;sheet.hidden=false;return}
+  const r=R[ri];
+  const pts=r.p.map(i=>P[i]).sort((a,b)=>(b.a||0)-(a.a||0));
+  const hi=pts[0];
+  const near=nearestRoutes(r.lat,r.lon,3,r.id);
+  const techos=pts.filter(p=>p.techo);
+  sheet.innerHTML=`<div class="grab" data-route="${r.id}"></div>
+  ${r.f!=null?`<div class="photo"><img src="fotos/${r.f}.jpg" alt=""></div>`:""}
+  <div class="sheet-head"><h2>${esc(routeTitle(r))}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  <div class="meta">${r.nv?`<span class="tag new">Renovada</span>`:""}${r.y?`<span class="tag">${r.m?MESES[r.m]+" ":""}${r.y}</span>`:""}${(r.co&&r.co.length?r.co:[r.r]).map(c=>`<span class="tag">${esc(c)}</span>`).join("")}${r.a?`<span class="tag alt">${fmtA(r.a)}</span>`:""}${techos.map(t=>`<span class="tag">Techo de ${esc(t.techo)}</span>`).join("")}</div>
+  ${r.ds?`<p class="desc">${esc(r.ds.replace(/\s*📝.*$/,""))}</p>`:""}
+  ${(r.km||r.de||r.tm||r.dif||r.dl)?`<div class="ficha">${r.km?`<div><b>${fmtKm(r.km)}</b><span>Distancia</span></div>`:""}${r.de?`<div><b>+${r.de.toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${r.tm?`<div><b>${esc(r.tm)}</b><span>Duración</span></div>`:""}${r.dl?`<div><b>${DIFN[r.dl]}</b><span>Dificultad</span></div>`:r.dif?`<div><b>${esc(r.dif)}</b><span>Dificultad</span></div>`:""}</div>`:""}
+  ${r.sal?`<p class="salida">Salida: ${esc(r.sal.replace(/\s*↗$/,""))}${r.zo?" · "+esc(r.zo):""}</p>`:""}
+  <div class="actions">${r.u?`<a class="btn primary" href="${esc(r.u)}" target="_blank" rel="noopener">Leer la ruta en el blog</a>`:""}
+  ${r.wk?`<a class="btn ghost" href="${esc(r.wk)}" target="_blank" rel="noopener">Track en Wikiloc</a>`:""}<a class="btn ghost" href="https://www.google.com/maps/search/?api=1&query=${hi.lat},${hi.lon}" target="_blank" rel="noopener">Google Maps</a></div>
+  <div class="sec"><h3>Lugares en el mapa</h3><ul class="plist">${pts.map(p=>`<li>${ICO(p.cat)}<span class="n">${esc(p.c)}</span><span class="a">${fmtA(p.a)}</span></li>`).join("")}</ul></div>
+  ${near.length?`<div class="near"><h3>Otras rutas por la zona</h3><div class="rows">${near.map(x=>rowHTML(x.r,x.d.toFixed(0)+" km")).join("")}</div></div>`:""}`;
+  sheet.hidden=false; sheet.scrollTop=0;
+}
+function nearAt(lat,lon,label){
+  setNear(false);
+  const list=nearestRoutes(lat,lon,12);
+  const [x,y]=px(lon,lat); probe.attr("cx",x).attr("cy",y).attr("r",15000/(156543.03*Math.cos(lat*Math.PI/180)/2048));
+  nodes.classed("sel",i=>list.some(o=>o.r.p.includes(i)));
+  sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>Rutas cerca de ${label?esc(label):"aquí"}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><p class="note">Las ${list.length} más próximas${F.reg!=="todas"||F.year!=="todos"?", con los filtros actuales":""}. El círculo marca 15 km. <button class="linkbtn" data-near-again>Buscar otro sitio</button></p><div class="rows" style="margin-top:8px">${list.map(o=>rowHTML(o.r,o.d.toFixed(0)+" km",true)).join("")}</div>`;
+  sheet.hidden=false; sheet.scrollTop=0;
+  flyTo(lat,lon,Math.max(7,Math.min(k,9)));
+}
+/* buscador de lugares: pueblos + puntos del mapa */
+const TIPO={c:"Ciudad",t:"Villa",v:"Pueblo",h:"Aldea"};
+const nk=s=>norm(s).replace(/[^a-z0-9ñ ]+/g," ").replace(/\s+/g," ").trim();
+const SITES=TOWNS.map(p=>({n:p[0],alt:p[4]||"",k:TIPO[p[1]],lat:p[2],lon:p[3],o:{c:0,t:1,v:2,h:3}[p[1]]}))
+  .concat(P.map(p=>({n:p.c,alt:"",k:p.a?"Cumbre":"Lugar del mapa",lat:p.lat,lon:p.lon,o:2.5})));
+SITES.forEach(s=>{s.q=[s.n,...s.alt.split(";")].filter(Boolean).map(nk)});
+function regionOf(lat,lon){for(const pr of GEO.p)for(const r of pr.r){let c=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const [x1,y1]=r[i],[x2,y2]=r[j];if((y1>lat)!==(y2>lat)&&lon<(x2-x1)*(lat-y1)/(y2-y1)+x1)c=!c}if(c)return pr.n}return""}
+function score(s,q){let best=9;for(const x of s.q){if(x===q)best=Math.min(best,0);else if(x.startsWith(q))best=Math.min(best,1);else if((" "+x).includes(" "+q))best=Math.min(best,2);else if(x.includes(q))best=Math.min(best,3)}return best}
+function findSites(q){q=nk(q);if(q.length<2)return[];const seen=new Set();
+  return SITES.map(s=>({s,sc:score(s,q)})).filter(x=>x.sc<9).sort((a,b)=>(a.sc-b.sc)||(a.s.o-b.s.o)||a.s.n.localeCompare(b.s.n,"es"))
+   .map(x=>x.s).filter(s=>{const key=s.q[0]+"|"+s.lat.toFixed(2)+s.lon.toFixed(2);if(seen.has(key))return false;seen.add(key);return true}).slice(0,10)
+   .map(s=>(s.reg??=regionOf(s.lat,s.lon),s))}
+let found=[];
+function openNearPanel(){
+  setNear(true); hint.hidden=true; probe.attr("r",0); nodes.classed("sel",false);
+  sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>Rutas cerca de…</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  <label class="note" for="qpl" style="display:block;margin:4px 0 8px">Escribe un pueblo, una villa o una cumbre:</label>
+  <input class="search" id="qpl" type="search" placeholder="Por ejemplo: Felechosa, Taranes, Tuiza, Ubiña…" autocomplete="off">
+  <div class="rows" id="sugg" style="margin-top:6px"></div>
+
+  <p class="note" id="geomsg" style="margin-top:10px">También puedes tocar cualquier sitio del mapa. La búsqueda por tu ubicación llegará con la app instalable.</p>`;
+  sheet.hidden=false; sheet.scrollTop=0;
+  const inp=document.getElementById("qpl");
+  inp.addEventListener("input",()=>{found=findSites(inp.value);document.getElementById("sugg").innerHTML=found.length?found.map((s,i)=>`<button class="row" data-site="${i}"><div class="t"><b>${esc(s.alt?s.alt.split(";")[0]:s.n)}</b><span>${s.k}${s.reg?" · "+esc(s.reg):""}${s.alt?" · "+esc(s.n):""}</span></div></button>`).join(""):(inp.value.trim().length>1?`<p class="note">No encuentro «${esc(inp.value)}». Prueba con otro nombre o toca el mapa.</p>`:"")});
+  inp.addEventListener("keydown",e=>{if(e.key==="Enter"&&found[0]){const s=found[0];nearAt(s.lat,s.lon,s.alt?s.alt.split(";")[0]:s.n)}});
+  if(matchMedia("(pointer:fine)").matches)inp.focus();
+}
+function useGeo(){const msg=document.getElementById("geomsg");
+  const fail=()=>{if(msg)msg.textContent="Este navegador no deja usar tu ubicación en esta versión de prueba. En la app instalada sí funcionará. Mientras tanto, escribe tu pueblo o toca el mapa."};
+  if(!navigator.geolocation){fail();return}
+  if(msg)msg.textContent="Buscando tu ubicación…";
+  try{navigator.geolocation.getCurrentPosition(p=>nearAt(p.coords.latitude,p.coords.longitude,"tu ubicación"),fail,{timeout:8000,maximumAge:600000})}catch(e){fail()}}
+sheet.addEventListener("click",e=>{
+  if(e.target.closest("[data-close]")){sheet.hidden=true;setNear(false);nodes.classed("sel",false);probe.attr("r",0);return}
+  const st=e.target.closest("[data-site]"); if(st){const s=found[+st.dataset.site];nearAt(s.lat,s.lon,s.alt?s.alt.split(";")[0]:s.n);return}
+  if(e.target.closest("[data-geo]")){useGeo();return}
+  if(e.target.closest("[data-near-again]")){openNearPanel();return}
+  const row=e.target.closest("[data-r]"); if(row){const r=R[+row.dataset.r];openRoute(r.id);flyTo(r.lat,r.lon,Math.max(k,7))}
+});
+let nearMode=false;
+const hint=document.getElementById("hint");
+function setNear(on){nearMode=on;hint.hidden=!on;document.getElementById("b-near").setAttribute("aria-pressed",on);mapEl.style.cursor=on?"crosshair":""}
+document.querySelector(".legend").addEventListener("click",e=>{const b=e.target.closest("[data-lay]");if(!b)return;const key=b.dataset.lay;LAY[key]=!LAY[key];b.setAttribute("aria-pressed",LAY[key]);
+  base.attr("display",LAY.relief?null:"none");provfill.attr("display",LAY.relief?"none":null);sizeMarks()});
+document.getElementById("fsbtn").addEventListener("click",()=>{FS=FSV[(FSV.indexOf(FS)+1)%FSV.length];store.set("ldc-fs",FS);document.documentElement.style.setProperty("--fs",FS);sizeMarks();
+  const b=document.getElementById("fsbtn");b.textContent=["Aa","Aa+","Aa++","Aa+++"][FSV.indexOf(FS)]});
+document.getElementById("b-home").addEventListener("click",()=>{sheet.hidden=true;nodes.classed("sel",false);probe.attr("r",0);fitHome(true)});
+document.getElementById("b-near").addEventListener("click",openNearPanel);
+
+/* ---------- tabs ---------- */
+document.querySelector("nav.tabs").addEventListener("click",e=>{const b=e.target.closest("[data-v]");if(!b)return;showView(b.dataset.v)});
+function showView(v){document.querySelectorAll("nav.tabs [data-v]").forEach(x=>x.setAttribute("aria-selected",x.dataset.v===v));["mapa","rutas","cumbres","lugares"].forEach(n=>document.getElementById("v-"+n).hidden=n!==v);store.set("ldc-tab",v)}
+
+/* ---------- route list ---------- */
+const q=document.getElementById("q"); q.addEventListener("input",renderList);
+function renderList(){
+  const s=norm(q.value.trim());
+  const rs=R.filter(r=>r.u&&routeOk(r)&&(!s||norm((r.ti||"")+" "+r.p.map(i=>P[i].n).join(" ")+" "+r.r+" "+(r.sal||"")+" "+(r.zo||"")+" "+(r.co||[]).join(" ")).includes(s)));
+  const by={};rs.forEach(r=>{(by[r.y||"Sin fecha"] ||= []).push(r)});
+  const keys=Object.keys(by).sort((a,b)=>(+b||0)-(+a||0));
+  const cnt=`<p class="count">${rs.length} ${rs.length===1?"ruta":"rutas"}${(F.km||F.de)?" · solo las que tienen distancia y desnivel en la ficha":""}</p>`;
+  document.getElementById("list").innerHTML=cnt+(keys.length?keys.map(y=>`<h2 class="yearh">${y}<small>${by[y].length} ${by[y].length===1?"ruta":"rutas"}</small></h2><div class="rows">${by[y].map(r=>rowHTML(r)).join("")}</div>`).join(""):`<p class="empty">No hay rutas con esa búsqueda y esos filtros.</p>`);
+}
+document.getElementById("list").addEventListener("click",e=>{const row=e.target.closest("[data-r]");if(!row)return;const r=R[+row.dataset.r];showView("mapa");openRoute(r.id);setTimeout(()=>flyTo(r.lat,r.lon,8),30)});
+
+/* ---------- colecciones: cumbres y lugares ---------- */
+// marcas: "hecha" | "quiero"; se guardan en tu cuenta (si está disponible) y en este navegador
+let MARKS=store.get("ldc-marcas",null);
+if(!MARKS){MARKS={};for(const k of store.get("ldc-cumbres",[]))MARKS["c:"+k]="hecha"}
+let MDOC=null,saveT=null;
+function saveMarks(){store.set("ldc-marcas",MARKS);if(!MDOC)return;clearTimeout(saveT);saveT=setTimeout(()=>MDOC.set({m:MARKS}).catch(()=>{}),600)}
+(async()=>{try{const db=await window.claude?.use?.("db");const user=await window.claude?.use?.("user");if(!db||!user)return;const id=await user.id();if(!id)return;
+  MDOC=db.collection("data/users/"+id).doc("marcas");
+  let first=true;MDOC.onSnapshot(s=>{const v=s.exists&&s.data()&&s.data().m;
+    if(v){MARKS=Object.assign({},v);store.set("ldc-marcas",MARKS);renderCols()}
+    else if(first&&Object.keys(MARKS).length){MDOC.set({m:MARKS}).catch(()=>{})}
+    first=false},()=>{})}catch(e){}})();
+const uniq=(arr,f)=>{const s=new Set();return arr.filter(x=>{const k=f(x);if(s.has(k))return false;s.add(k);return true})};
+const PEAKS=uniq(P.map((p,i)=>({...p,i})).filter(p=>p.t==="cumbre").sort((a,b)=>(b.a||0)-(a.a||0)),p=>norm(p.c));
+const SPOTS=uniq(P.map((p,i)=>({...p,i})).filter(p=>p.t!=="cumbre"&&!/^(inicio|subida|p\.?r\.?\s)|\sdesde\s/i.test(p.c)),p=>norm(p.c)).map(p=>({...p,cat:catOf(p.c)})).sort((a,b)=>a.c.localeCompare(b.c,"es"));
+const COL={cumbres:{items:PEAKS,pre:"c:",done:"Subida",want:"Quiero subir",f:"todas",g:"todas",el:"col-cumbres"},
+           lugares:{items:SPOTS,pre:"l:",done:"He estado",want:"Quiero ir",f:"todas",g:"todas",el:"col-lugares"}};
+const BANDS=[["todas","Todas"],["2000","+2.000 m"],["1500","1.500–2.000"],["0","Menos de 1.500"],["techo","Techos de concejo"]];
+function bandOk(p,g){return g==="todas"||(g==="2000"&&p.a>=2000)||(g==="1500"&&p.a>=1500&&p.a<2000)||(g==="0"&&p.a<1500)||(g==="techo"&&p.techo)}
+function renderCol(kind){const C=COL[kind];const key=p=>C.pre+norm(p.c);const st=p=>MARKS[key(p)]||"";
+  const nd=C.items.filter(p=>st(p)==="hecha").length,nq=C.items.filter(p=>st(p)==="quiero").length;
+  const groups=kind==="cumbres"?BANDS:[["todas","Todos"],...CATS.map(([k,l])=>[k,l]).filter(([k])=>C.items.some(p=>p.cat===k)),...(C.items.some(p=>p.cat==="otros")?[["otros","Otros"]]:[])];
+  const list=C.items.filter(p=>(kind==="cumbres"?bandOk(p,C.g):(C.g==="todas"||p.cat===C.g))&&(C.f==="todas"||(C.f==="hecha"&&st(p)==="hecha")||(C.f==="quiero"&&st(p)==="quiero")||(C.f==="nada"&&!st(p))));
+  document.getElementById(C.el).innerHTML=`
+  <div class="colhead"><div class="prog"><i style="width:${(nd/C.items.length*100).toFixed(1)}%"></i></div>
+   <p class="note"><b>${nd}</b> de ${C.items.length} ${kind==="cumbres"?"subidas":"visitados"} · <b>${nq}</b> en tu lista de pendientes</p></div>
+  <div class="chips" data-k="${kind}" data-grp="f">${[["todas","Todas"],["hecha",C.done],["quiero",C.want],["nada","Sin marcar"]].map(([v,l])=>`<button class="chip" data-v="${v}" aria-pressed="${C.f===v}">${l}</button>`).join("")}</div>
+  <div class="chips" data-k="${kind}" data-grp="g">${groups.map(([v,l])=>`<button class="chip" data-v="${v}" aria-pressed="${C.g===v}">${l}</button>`).join("")}</div>
+  <div class="rows">${list.length?list.map(p=>{const s=st(p);const ri=(P[p.i].rs||[])[0];
+    return `<div class="row crow${s?" is-"+s:""}">${ICO(kind==="cumbres"?"cumbre":p.cat)}<div class="t"><b>${esc(p.c)}</b><span>${kind==="cumbres"?esc(p.r)+(p.techo?" · Techo de "+esc(p.techo):""):esc((CATS.find(c=>c[0]===p.cat)||[,"Otros"])[1])+" · "+esc(p.r)}</span></div>
+    ${p.a?`<span class="alt">${fmtA(p.a)}</span>`:""}
+    <span class="mk" data-k="${kind}" data-key="${esc(key(p))}"><button data-m="hecha" aria-pressed="${s==="hecha"}" title="${C.done}">✓ <span>${C.done}</span></button><button data-m="quiero" aria-pressed="${s==="quiero"}" title="${C.want}">★ <span>${C.want}</span></button>${ri!=null?`<button data-go="${ri}" data-pt="${p.i}" title="Ver la ruta">Ruta</button>`:""}</span></div>`}).join(""):`<p class="empty">No hay ${kind} con ese filtro.</p>`}</div>`}
+function renderCols(){renderCol("cumbres");renderCol("lugares")}
+for(const kind of ["cumbres","lugares"]){document.getElementById(COL[kind].el).addEventListener("click",e=>{
+  const ch=e.target.closest(".chips[data-k] [data-v]");if(ch){const grp=ch.parentElement.dataset.grp;COL[kind][grp]=ch.dataset.v;renderCol(kind);return}
+  const m=e.target.closest("[data-m]");if(m){const k=m.parentElement.dataset.key;MARKS[k]=MARKS[k]===m.dataset.m?"":m.dataset.m;if(!MARKS[k])delete MARKS[k];saveMarks();
+    const y=document.getElementById("v-"+kind).scrollTop;renderCol(kind);document.getElementById("v-"+kind).scrollTop=y;return}
+  const go=e.target.closest("[data-go]");if(go){const r=R[+go.dataset.go];const p=P[+go.dataset.pt];showView("mapa");openRoute(r.id);setTimeout(()=>flyTo(p.lat,p.lon,10),30)}})}
+
+/* ---------- init ---------- */
+applyFilter(); renderCols();
+document.getElementById("sub").textContent=`${R.filter(r=>r.u).length} rutas · ${P.length} puntos en el mapa`;
+const t0=store.get("ldc-tab","mapa"); showView(["mapa","rutas","cumbres","lugares"].includes(t0)?t0:"mapa");
+// estado inicial: mapa completo de Asturias y León
+sizeMarks(); requestAnimationFrame(()=>{fitHome(false);sizeMarks()});
+addEventListener("resize",()=>{sizeMarks()});
+</script>
