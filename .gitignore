@@ -1,0 +1,4 @@
+app/fotos/
+pwa/site
+__pycache__/
+*.pyc

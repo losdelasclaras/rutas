@@ -1,0 +1,39 @@
+name: Robot de la app
+# Cada noche mira el blog, el mapa de My Maps y la carpeta de Drive, y si hay algo nuevo regenera y publica la app.
+on:
+  schedule: [{cron: '23 3 * * *'}]     # 3:23 UTC (las 4:23 o 5:23 en España)
+  workflow_dispatch: {}                 # «Run workflow» a mano desde la pestaña Actions
+  push: {branches: [datos], paths: ['robot/**', '.github/workflows/robot.yml']}
+permissions: {contents: write, pages: write}
+concurrency: {group: robot, cancel-in-progress: false}
+jobs:
+  robot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main, path: site, fetch-depth: 1}
+      - uses: actions/checkout@v4
+        with: {ref: datos, path: datos, fetch-depth: 1}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -q pillow
+      - name: Preparar
+        run: |
+          sudo mkdir -p /home/claude && sudo chown $USER /home/claude
+          ln -s $GITHUB_WORKSPACE/datos/app /home/claude/app
+          ln -s $GITHUB_WORKSPACE/datos/pwa /home/claude/pwa
+          ln -s $GITHUB_WORKSPACE/site $GITHUB_WORKSPACE/datos/pwa/site
+          mkdir -p /tmp/claude-0 datos/app/fotos
+          cp site/fotos/*.jpg datos/app/fotos/
+      - name: Mirar el blog, el mapa y Drive
+        run: python datos/robot/actualizar.py
+      - name: Guardar y publicar
+        run: |
+          git config --global user.name "Robot de Los de las Claras"
+          git config --global user.email "losdelasclaras@users.noreply.github.com"
+          cd datos && git add -A && (git commit -qm "Robot: datos $(date +%F)" || true) && git pull -q --rebase origin datos && git push -q origin HEAD:datos
+          cd ../site
+          if [ "$(cat /home/claude/robot/hay-cambios)" = "1" ]; then
+            git add -A && git commit -qm "Robot: app actualizada $(date +%F)" && git pull -q --rebase origin main && git push -q origin HEAD:main
+            curl -s -X POST -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github+json" https://api.github.com/repos/${{ github.repository }}/pages/builds || true
+          fi
