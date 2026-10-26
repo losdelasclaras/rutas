@@ -168,7 +168,7 @@ function imp(txt,fname){const doc=new DOMParser().parseFromString(txt,"applicati
   if(!np&&!nt){toast("No he encontrado puntos ni tracks en ese archivo");return}
   saveMP();if(nt&&!saveMT()){MT=store.get(MTK,[])}
   LAY.mp=true;LAY.mt=true;saveLay();["mp","mt"].forEach(k=>{const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",true)});
-  drawMP();drawMT();renderBox();toast([np?`${np} punto${np===1?"":"s"}`:"",nt?`${nt} track${nt===1?"":"s"}`:""].filter(Boolean).join(" y ")+(np+nt===1?" cargado":" cargados")+(nt?" · están en Lugares › Mis tracks":""));
+  drawMP();drawMT();renderBox();toast([np?`${np} punto${np===1?"":"s"}`:"",nt?`${nt} track${nt===1?"":"s"}`:""].filter(Boolean).join(" y ")+(np+nt===1?" cargado":" cargados")+(nt?" · están en Mis cosas › Mis tracks":""));
   for(const o of nuevos)if(o.pts.some(p=>p[2]==null))demAlt(o.id);
   if(nt===1&&!np&&window.MISTRACKS)MISTRACKS.open(nuevos[0].id,true)}
 // desnivel de un track (con margen de 4 m para que el ruido no sume)
