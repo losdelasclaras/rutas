@@ -1833,7 +1833,7 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
 </script>
 <div id="upd" hidden style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:5000;background:#1f6b32;color:#fff;border-radius:14px;padding:10px 12px 10px 16px;box-shadow:0 6px 20px rgba(0,0,0,.3);display:flex;gap:12px;align-items:center;font:600 15px system-ui;width:max-content;max-width:calc(100% - 20px)"><span>🔄 Hay una versión nueva de la app</span><button id="updb" style="border:0;background:#fff;color:#1f6b32;border-radius:10px;padding:8px 12px;font:700 15px system-ui;cursor:pointer">Actualizar</button><button id="updx" aria-label="Cerrar" style="border:0;background:none;color:#fff;font:700 20px system-ui;cursor:pointer;padding:0 4px">×</button></div>
 <script>
-window.__BUILD="1793026153";
+window.__BUILD="1793026337";
 (function(){let busy=false;
  async function check(){if(busy||!navigator.onLine)return;busy=true;
   try{const v=(await (await fetch("version.txt?"+Date.now(),{cache:"no-store"})).text()).trim();
@@ -1843,7 +1843,7 @@ window.__BUILD="1793026153";
  document.getElementById("updx").onclick=()=>{document.getElementById("upd").hidden=true};
  document.getElementById("updb").onclick=async()=>{const b=document.getElementById("updb");b.textContent="Actualizando…";b.disabled=true;
   try{const v=(await (await fetch("version.txt?"+Date.now(),{cache:"no-store"})).text()).trim();localStorage.setItem("ldc-upd",JSON.stringify({v,t:Date.now()}))}catch(e){}
-  try{await fetch("index.html?"+Date.now(),{cache:"no-store"});await new Promise(r=>setTimeout(r,600))}catch(e){}
+  try{const r=await fetch("index.html?"+Date.now(),{cache:"no-store"});await r.text();await new Promise(r=>setTimeout(r,1500))}catch(e){}
   location.reload()};
  setTimeout(check,4000);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")check()})})();
 </script>
