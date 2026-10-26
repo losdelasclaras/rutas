@@ -163,6 +163,11 @@ PL=[[p['n'].split(' / ')[0],p['t'],p['lat'],p['lon']] for p in json.load(open(A+
 t=t.replace('__DATA__',json.dumps(d,ensure_ascii=False,separators=(',',':'))).replace('__GEO__',open(A+'geo.json').read()).replace('__TOWNS__',open(A+'towns.json').read()).replace('__PLACES__',json.dumps(PL,ensure_ascii=False,separators=(',',':')))
 # aviso de versión nueva: QUITADO a petición suya (26 oct). version.txt se deja vacío para que las copias antiguas de la app dejen de avisar
 open(O+'version.txt','w').write("")
+# actualización silenciosa: si vuelves a la app tras un rato y hay versión nueva, se recarga sola (sin avisos)
+import hashlib
+_bh=hashlib.md5(t.encode()).hexdigest()[:10]
+open(O+'build.txt','w').write(_bh)
+t=t.replace('</body></html>','<script>(function(){const B="'+_bh+'";let oc=Date.now();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<3e5||!navigator.onLine)return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>\n</body></html>',1)
 open(O+'index.html','w').write(t)
 s=re.findall(r'<script>(.*?)</script>',t,re.S); open('/tmp/claude-0/app.js','w').write(s[0])
 # ficheros
