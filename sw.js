@@ -1,5 +1,5 @@
 // Funciona sin cobertura: guarda la app, las fotos y las zonas del mapa que ya has visto.
-const V="ldc-v8", SHELL=["./","index.html","manifest.webmanifest","vendor/leaflet.js","vendor/leaflet.css","icons/icon-192.png","icons/icon-512.png"];
+const V="ldc-v9", SHELL=["./","index.html","manifest.webmanifest","vendor/leaflet.js","vendor/leaflet.css","icons/icon-192.png","icons/icon-512.png"];
 const TILES="ldc-tiles2", MAXT=2500, OFF="ldc-offline";   // OFF: mapas descargados a propósito (no se recortan)
 self.addEventListener("install",e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL.map(u=>new Request(u,{cache:"reload"})))).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V&&k!==TILES&&k!==OFF).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
@@ -12,6 +12,8 @@ self.addEventListener("fetch",e=>{
       const net=fetch(e.request).then(r=>{if(r.ok){c.put(e.request,r.clone());trimTiles()}return r}).catch(()=>hit||Response.error());
       return hit||net}));return}
   if(u.origin===location.origin){
+    // versión publicada: siempre a la red (para avisar de que hay una nueva)
+    if(u.pathname.endsWith("version.txt")){e.respondWith(fetch(e.request,{cache:"no-store"}).catch(()=>new Response("")));return}
     if(e.request.mode==="navigate"||u.pathname.endsWith("index.html")){
       // la página: se pregunta a la red si hay versión nueva (si no la hay, la respuesta es mínima);
       // si la red tarda más de 2,5 s o no hay cobertura, se abre la guardada y la nueva queda para la próxima vez

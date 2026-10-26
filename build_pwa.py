@@ -146,6 +146,23 @@ open(O+f'tracks-{_th}.json','w').write(_tj)
 t=t.replace('__TRACKS__',f'tracks-{_th}.json')
 PL=[[p['n'].split(' / ')[0],p['t'],p['lat'],p['lon']] for p in json.load(open(A+'places.json'))]; o={'c':0,'t':1,'v':2}; PL.sort(key=lambda p:o[p[1]])
 t=t.replace('__DATA__',json.dumps(d,ensure_ascii=False,separators=(',',':'))).replace('__GEO__',open(A+'geo.json').read()).replace('__TOWNS__',open(A+'towns.json').read()).replace('__PLACES__',json.dumps(PL,ensure_ascii=False,separators=(',',':')))
+# versión: si el móvil abre una copia antigua, la app lo detecta y ofrece actualizar
+import hashlib as _hl
+_ver=_hl.md5(t.encode()).hexdigest()[:10]
+t=t.replace('</body>','''<div id="upd" hidden style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:5000;background:#1f6b32;color:#fff;border-radius:14px;padding:10px 12px 10px 16px;box-shadow:0 6px 20px rgba(0,0,0,.3);display:flex;gap:12px;align-items:center;font:600 15px system-ui;width:max-content;max-width:calc(100% - 20px)"><span>🔄 Hay una versión nueva de la app</span><button id="updb" style="border:0;background:#fff;color:#1f6b32;border-radius:10px;padding:8px 12px;font:700 15px system-ui;cursor:pointer">Actualizar</button></div>
+<script>
+window.__BUILD="__VER__";
+(function(){let busy=false;
+ async function check(){if(busy||!navigator.onLine)return;busy=true;
+  try{const v=(await (await fetch("version.txt?"+Date.now(),{cache:"no-store"})).text()).trim();
+   if(v&&v!==window.__BUILD&&!/[?&]reset/.test(location.search)){document.getElementById("upd").hidden=false}}catch(e){}busy=false}
+ document.getElementById("updb").onclick=async()=>{const b=document.getElementById("updb");b.textContent="Actualizando…";b.disabled=true;
+  try{await fetch("index.html?"+Date.now(),{cache:"no-store"});await new Promise(r=>setTimeout(r,600))}catch(e){}
+  location.reload()};
+ setTimeout(check,4000);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")check()})})();
+</script>
+</body>''').replace("__VER__",_ver)
+open(O+'version.txt','w').write(_ver+"\n")
 open(O+'index.html','w').write(t)
 s=re.findall(r'<script>(.*?)</script>',t,re.S); open('/tmp/claude-0/app.js','w').write(s[0])
 # ficheros
