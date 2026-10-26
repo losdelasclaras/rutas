@@ -492,7 +492,7 @@ function syncAllTracks(){if(LAY.tracks&&!TRKP){loadTracks().then(syncAllTracks);
     R.forEach(r=>{if(!r.gx||!r.gx.ln)return;const ll=r.gx.ln.map(p=>[p[0],p[1]]);
       ALLTRK.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.85,interactive:false,renderer:TRC}));
       ALLTRK.addLayer(L.polyline(ll,{color:"#6a2bd1",weight:3.5,opacity:.9,renderer:TRC}).bindTooltip(esc(routeTitle(r)),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);openRoute(r.id)}))})}
-  const on=LAY.tracks&&!LAY.solo&&map.getZoom()>=8; // con «solo los míos» se ocultan los tracks del blog (el de la ruta abierta sí se ve)
+  const on=LAY.tracks&&!LAY.solo&&!window.FOLONLY&&map.getZoom()>=8; // con «solo los míos» se ocultan los tracks del blog (el de la ruta abierta sí se ve)
   if(ALLTRK){if(on&&!map.hasLayer(ALLTRK)){ALLTRK.addTo(map);if(TRK)TRK.eachLayer(l=>l.bringToFront&&l.bringToFront())}else if(!on&&map.hasLayer(ALLTRK))ALLTRK.remove()}}
 map.on("zoomend",sizeMarks);
 map.on("moveend",()=>{const c=map.getCenter();const z=zoneAt(c.lat,c.lng);if(z!==ZK){ZK=z;store.set("ldc-zona",z);renderMapbar()}});
@@ -943,7 +943,7 @@ function drawMT(){MTL.clearLayers();
   for(const t of MT){MTL.addLayer(L.polyline(t.pts,{color:"#fff",weight:6,opacity:.8,interactive:false}));
     MTL.addLayer(L.polyline(t.pts,{color:"#e8711a",weight:3.5,opacity:.95}).bindTooltip(esc(t.n),{sticky:true}))}
   syncMP()}
-function syncMP(){const a=LAY.mp&&MP.length,b=LAY.mt&&MT.length;
+function syncMP(){const a=LAY.mp&&MP.length&&!window.FOLONLY,b=LAY.mt&&MT.length&&!window.FOLONLY;
   if(a&&!map.hasLayer(MPL))MPL.addTo(map);else if(!a&&map.hasLayer(MPL))MPL.remove();
   if(b&&!map.hasLayer(MTL))MTL.addTo(map);else if(!b&&map.hasLayer(MTL))MTL.remove();
   const bm=document.querySelector('[data-lay="mt"]');if(bm)bm.hidden=!MT.length}
@@ -1086,7 +1086,7 @@ document.addEventListener("click",e=>{if(e.target.closest("[data-bkp]")){bkpSave
 window.ldcBkp=bkpButtons;if(typeof renderCols==="function")renderCols();
 /* "ver solo los míos" también deja ver mis puntos (van en su propia capa) */
 drawMP();drawMT();renderBox();
-window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,
+window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,sync:()=>syncMP(),
   // la sincronización cambia lo guardado sin volver a avisar a la nube
   set(mp,mt){if(mp){MP.length=0;MP.push(...mp);store.set(MPK,MP)}if(mt){MT.length=0;MT.push(...mt);try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}}
     drawMP();drawMT();renderBox();if(MPSEL&&!MP.some(p=>p.id===MPSEL)){MPSEL=null}}};
@@ -1274,9 +1274,10 @@ addEventListener("online",()=>{if(store.get(SK,"0")==="1"&&!FB)load().catch(()=>
 /* ---------- Seguir esta ruta: dónde estás sobre el track, lo que falta y aviso si te sales ----------
    Funciona con la app abierta y la pantalla encendida (se pide que no se apague). */
 (function(){
-const FK="ldc-siguiendo";
+const FK="ldc-siguiendo",MPI=window.MISPUNTOS;
 const vm=document.getElementById("v-mapa");
 document.head.insertAdjacentHTML("beforeend",`<style>
+#map.fol-only .leaflet-marker-pane>*:not(.folme),#map.fol-only .leaflet-tooltip-pane{display:none!important}
 #v-mapa.fol-on .fabs,#v-mapa.fol-on .legend,#v-mapa.fol-on .mapbar,#v-mapa.fol-on .rmenu{display:none!important}
 .fol{position:absolute;left:8px;right:8px;bottom:8px;z-index:1200;background:var(--card);color:var(--ink);border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.28);padding:10px 12px 12px;max-width:460px}
 @media(min-width:860px){.fol{left:12px;right:auto;width:420px;bottom:14px}}
@@ -1377,6 +1378,9 @@ function start(r,rev,resume){if(!r||!r.gx)return;
   if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");if(window.showTrack)showTrack(null);sheet.hidden=true;sheet.classList.remove("full");
   F={r,rev:!!rev,T:prep(r,!!rev),s:0,i:0,t:0,on:false,off:0,fin:false,fixes:0,follow:true};
   if(resume&&resume.rev===F.rev){F.s=resume.s||0;F.on=!!resume.on;F.i=resume.i||0;F.t=resume.tt||0}
+  // solo se ve la ruta: fuera puntos, nombres, tracks del blog, mis puntos y mis tracks (vuelven al terminar)
+  window.FOLONLY=true;document.getElementById("map").classList.add("fol-only");
+  if(probeC){probeC.remove();probeC=null}if(meDot){meDot.remove();meDot=null}if(typeof syncAllTracks==="function")syncAllTracks();MPI&&MPI.sync&&MPI.sync();
   F.el=document.createElement("div");F.el.className="fol";F.el.innerHTML=panelHTML();vm.appendChild(F.el);vm.classList.add("fol-on");
   L.DomEvent.disableClickPropagation(F.el);L.DomEvent.disableScrollPropagation(F.el);
   draw();map.fitBounds(L.polyline(F.T.ln.map(p=>[p[0],p[1]])).getBounds(),{padding:[30,30],paddingBottomRight:[30,F.el.offsetHeight+20]});
@@ -1384,7 +1388,8 @@ function start(r,rev,resume){if(!r||!r.gx)return;
   wake();save()}
 function stop(quiet){if(!F)return;try{navigator.geolocation.clearWatch(F.watch)}catch(e){}
   try{F.wl&&F.wl.release()}catch(e){}
-  [F.lay,F.me,F.acc].forEach(l=>l&&l.remove());F.el.remove();vm.classList.remove("fol-on");F=null;store.set(FK,null);if(!quiet)toast("Has dejado de seguir la ruta")}
+  [F.lay,F.me,F.acc].forEach(l=>l&&l.remove());F.el.remove();vm.classList.remove("fol-on");
+  window.FOLONLY=false;document.getElementById("map").classList.remove("fol-only");if(typeof cullMarks==="function")cullMarks();if(typeof refreshMarks==="function")refreshMarks();if(typeof syncAllTracks==="function")syncAllTracks();MPI&&MPI.sync&&MPI.sync();F=null;store.set(FK,null);if(!quiet)toast("Has dejado de seguir la ruta")}
 
 // si sigues el mapa con el dedo, deja de centrarse solo hasta que pulses «Centrar»
 map.on("dragstart",()=>{if(F&&F.follow){F.follow=false;const b=Q("[data-fc]");if(b)b.classList.remove("on")}});
