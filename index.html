@@ -975,7 +975,7 @@ function form(p,isNew){const ic=p.ic||"otro";
   <label for="mpt">Nota (opcional)</label><textarea id="mpt" rows="3" maxlength="1000" placeholder="Agua todo el año, sitio para aparcar 5 coches…">${esc(p.nota||"")}</textarea>
   <div class="mpacts"><button class="mpb pri" data-mpsave>💾 Guardar</button>${isNew?"":`<button class="mpb" data-mpmove="${p.id}">✥ Mover de sitio</button>`}<button class="mpb" data-close>Cancelar</button></div></div>`);
   sheet._mp={...p,ic,isNew};setTimeout(()=>{const i=document.getElementById("mpn");if(i&&isNew)i.focus()},50)}
-function newAt(lat,lon,acc){form({lat:c5(lat),lon:c5(lon),acc,n:"",ic:"otro"},true)}
+function newAt(lat,lon,acc){if(window.cuentaOk&&!cuentaOk(()=>newAt(lat,lon,acc),"puntos"))return;form({lat:c5(lat),lon:c5(lon),acc,n:"",ic:"otro"},true)}
 
 sheet.addEventListener("click",e=>{
   const ic=e.target.closest("[data-mpic]");if(ic){sheet.querySelectorAll("[data-mpic]").forEach(b=>b.setAttribute("aria-pressed",b===ic));if(sheet._mp)sheet._mp.ic=ic.dataset.mpic;return}
@@ -996,11 +996,11 @@ function shareMP(p){const url=`https://www.google.com/maps/search/?api=1&query=$
   else window.open("https://wa.me/?text="+encodeURIComponent(txt),"_blank")}
 
 /* marcar: dónde estoy, punto de mira, pulsación larga */
-function gps(){if(!navigator.geolocation){toast("Este aparato no da la ubicación");return}toast("Buscando dónde estás…");
+function gps(){if(window.cuentaOk&&!cuentaOk(gps,"puntos"))return;if(!navigator.geolocation){toast("Este aparato no da la ubicación");return}toast("Buscando dónde estás…");
   navigator.geolocation.getCurrentPosition(pos=>{const{latitude:la,longitude:lo,accuracy:ac}=pos.coords;if(window.showMe)showMe(la,lo);map.flyTo([la,lo],Math.max(map.getZoom(),15));newAt(la,lo,ac)},
     ()=>toast("No he podido saber dónde estás. Revisa el permiso de ubicación."),{enableHighAccuracy:true,timeout:15000,maximumAge:0})}
 let crossOn=false;
-function cross(moveId){if(typeof showView==="function")showView("mapa");if(crossOn)return;crossOn=true;closeLegend();sheet.hidden=true;
+function cross(moveId){if(!moveId&&window.cuentaOk&&!cuentaOk(()=>cross(),"puntos"))return;if(typeof showView==="function")showView("mapa");if(crossOn)return;crossOn=true;closeLegend();sheet.hidden=true;
   const v=document.getElementById("map"),c=document.createElement("div");c.className="mpcross";c.id="mpcross";v.appendChild(c);
   const b=document.createElement("div");b.className="mpbar";b.id="mpbar";b.innerHTML=`<span>${moveId?"Mueve el mapa hasta poner la cruz en el sitio correcto":"Mueve el mapa hasta poner la cruz encima del sitio"}</span><button class="mpb pri" data-mpok>${moveId?"Dejarlo aquí":"Guardar aquí"}</button><button class="mpb" data-mpcancel>Cancelar</button>`;v.appendChild(b);
   L.DomEvent.disableClickPropagation(b);
@@ -1031,7 +1031,7 @@ function renderBox(){const ps=MP.slice().sort((a,b)=>(b.f||"").localeCompare(a.f
   ${ps.map(p=>`<div class="mprow" data-mpgo="${p.id}"><span class="e">${EMO(p.ic)}</span><span><b>${esc(p.n)}</b><small>${esc(ICO(p.ic)[2])}${p.a!=null?" · "+p.a.toLocaleString("es-ES")+" m":""}${p.f?" · "+fmtF(p.f):""}</small></span></div>`).join("")}
 `;if(window.MISTRACKS)MISTRACKS.render()}
 box.addEventListener("click",e=>{const x=e.target.closest("[data-mpx]");
-  if(x){const k=x.dataset.mpx;if(k==="gps"){showView("mapa");gps()}else if(k==="cross")cross();else if(k==="gpx")dl("mis-puntos.gpx",toGPX(),"application/gpx+xml");else if(k==="kml")dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml");else if(k==="imp"){fin.value="";fin.click()}return}
+  if(x){const k=x.dataset.mpx;if(k==="gps"){showView("mapa");gps()}else if(k==="cross")cross();else if(k==="gpx")dl("mis-puntos.gpx",toGPX(),"application/gpx+xml");else if(k==="kml")dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml");else if(k==="imp"){if(window.cuentaOk&&!cuentaOk(()=>toast("Ya has entrado. Pulsa otra vez «Importar» para elegir el archivo"),"puntos"))return;fin.value="";fin.click()}return}
   const g=e.target.closest("[data-mpgo]");if(g){const p=MP.find(x=>x.id===g.dataset.mpgo);if(!p)return;showView("mapa");if(!LAY.mp){LAY.mp=true;saveLay();syncMP()}map.flyTo([p.lat,p.lon],Math.max(map.getZoom(),15));openMP(p.id);return}
 });
 const xe=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"}[c]));
@@ -1110,7 +1110,7 @@ window.ldcBkp=bkpButtons;if(typeof renderCols==="function")renderCols();
 drawMP();drawMT();renderBox();
 window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,sync:()=>syncMP(),ptsOf,desn,demAlt,dl,
   saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
-  importar(){fin.value="";fin.click()},
+  importar(){if(window.cuentaOk&&!cuentaOk(()=>toast("Ya has entrado. Pulsa otra vez «Cargar GPX/KML» para elegir el archivo"),"tracks"))return;fin.value="";fin.click()},
   // la sincronización cambia lo guardado sin volver a avisar a la nube
   set(mp,mt){if(mp){MP.length=0;MP.push(...mp);store.set(MPK,MP)}if(mt){MT.length=0;MT.push(...mt);try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}}
     drawMP();drawMT();renderBox();if(window.MISTRACKS)MISTRACKS.render();if(MPSEL&&!MP.some(p=>p.id===MPSEL)){MPSEL=null}}};
@@ -1188,7 +1188,7 @@ const ICON=btn.innerHTML;
 const bg=document.createElement("div");bg.className="accbg";bg.hidden=true;bg.innerHTML=`<div class="accdlg" role="dialog" aria-label="Tu cuenta"></div>`;document.body.appendChild(bg);
 const dlg=bg.firstChild;
 function show(html){dlg.innerHTML=html;bg.hidden=false}
-const cerrar=()=>{bg.hidden=true;OPEN=false};
+const cerrar=()=>{bg.hidden=true;OPEN=false;PEND=null;MOT=null};
 bg.addEventListener("click",e=>{if(e.target===bg||e.target.closest("[data-close]"))cerrar()});
 addEventListener("keydown",e=>{if(e.key==="Escape"&&!bg.hidden)cerrar()});
 const ini=u=>esc(((u.displayName||u.email||"?").trim()[0]||"?").toUpperCase());
@@ -1200,14 +1200,20 @@ const hora=()=>{const h=store.get(TK,null);if(!h)return"";const d=new Date(h),ho
   return(hoy?"hoy":d.toLocaleDateString("es-ES",{day:"numeric",month:"short"}))+" a las "+d.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})};
 const cuenta=()=>{const nm=Object.keys(MARKS).length,np=MPI.get().length,nt=MPI.tracks().length;
   return`${nm} marca${nm===1?"":"s"} de cumbres y lugares · ${np} punto${np===1?"":"s"}${nt?` · ${nt} track${nt===1?"":"s"}`:""}`};
-let OPEN=false;
+let OPEN=false,PEND=null,MOT=null;
+const MOTS={marcas:"Entra para guardar tus marcas",puntos:"Entra para guardar tus puntos",tracks:"Entra para guardar tus tracks"};
+// guardar algo tuyo pide haber entrado con Google; lo que pulsaste se hace solo después de entrar
+window.cuentaOk=(fn,motivo)=>{if(store.get(SK,"0")==="1")return true;PEND=fn;MOT=motivo||"marcas";panel();return false};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;
+  e.preventDefault();e.stopPropagation();const k=b.parentElement.dataset.key,v=b.dataset.m;
+  cuentaOk(()=>{if(MARKS[k]!==v){MARKS[k]=v;saveMarks();renderCols();if(typeof refreshMarks==="function")refreshMarks()}toast(v==="hecha"?"Marcado ✓":"Apuntado en tu lista ★")},"marcas")},true);
 function panel(){OPEN=true;
   if(!USER){load().catch(()=>{});
-    show(`<div class="sheet-head"><h2>Tu cuenta</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
-    <p>Entra con tu cuenta de Google y tus <b>marcas de cumbres y lugares, tus puntos y tus tracks</b> se guardan en tu cuenta: los tendrás iguales en el móvil y en el ordenador, y no se pierden si cambias de móvil.</p>
-    <p class="note">No hace falta para usar la app. Solo se guarda lo tuyo y nadie más puede verlo.</p>
+    show(`<div class="sheet-head"><h2>${MOT?esc(MOTS[MOT]||"Entra con tu cuenta"):"Tu cuenta"}</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
+    <p>${MOT?"Para guardar algo tuyo hay que entrar con tu cuenta de Google. ":"Entra con tu cuenta de Google y "}Tus <b>marcas de cumbres y lugares, tus puntos y tus tracks</b> se guardan en tu cuenta: los tendrás en el móvil y en el ordenador, y no se pierden si cambias de móvil.</p>
+    <p class="note">Solo hace falta una vez: después la app entra sola. Para ver rutas y mapas no hace falta. Solo se guarda lo tuyo y nadie más puede verlo.</p>
     ${ERR?`<p class="syncst er">${esc(ERR)}</p>`:""}
-    <p style="margin:14px 0 6px"><button class="gbtn" data-gin>${GLOGO}Entrar con Google</button></p>`);return}
+    <p style="margin:14px 0 6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="gbtn" data-gin>${GLOGO}Entrar con Google</button>${MOT?`<button class="mpb" data-close>Ahora no</button>`:""}</p>`);return}
   const np=Object.keys(pend()).length;
   const st=BUSY?`<p class="syncst pe">Sincronizando…</p>`:!READY||np?`<p class="syncst pe">⏳ Hay cambios sin subir todavía${navigator.onLine?"":" (sin cobertura)"}. Se suben solos cuando haya conexión.</p>`
     :`<p class="syncst ok">✓ Todo guardado en tu cuenta${hora()?` · ${hora()}`:""}</p>`;
@@ -1277,7 +1283,8 @@ async function onUser(u){
   w.push(pushTracks());
   await Promise.all(w);
   store.set(UK,u.uid);store.set(PK,{});store.set(TK,new Date().toISOString());READY=true;BUSY=false;
-  if(OPEN)cerrar();
+  if(PEND){const f=PEND;PEND=null;MOT=null;setTimeout(()=>{try{f()}catch(e){}},300)}
+  if(OPEN){bg.hidden=true;OPEN=false}
   if(first){const tot=Object.keys(m).length+pts.length+trs.length;toast(tot?`Conectado: ${cuenta()} guardados en tu cuenta`:"Conectado con tu cuenta")}
   else if(nm>0||np>0||nt>0)toast("Recibidos los cambios de tu cuenta");
   // a partir de aquí, lo que cambie en otro aparato llega solo
@@ -1519,7 +1526,7 @@ sheet.addEventListener("click",e=>{
 /* en la ficha de una ruta del blog: «☆ Guardar en mis tracks» */
 window.MTSAVED=r=>!!savedOf(r);
 document.addEventListener("click",e=>{const b=e.target.closest("[data-mtsave]");if(!b)return;e.preventDefault();e.stopPropagation();
-  const r=R[+b.dataset.mtsave];if(!r||!r.gx)return;const s=savedOf(r);
+  const r=R[+b.dataset.mtsave];if(!r||!r.gx)return;if(window.cuentaOk&&!cuentaOk(()=>{const bb=document.querySelector(`[data-mtsave="${r.id}"]`);if(bb&&!savedOf(r))bb.click();else if(!savedOf(r)){MPI.saveTracks([...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString()}]);toast("Guardado en Lugares › Mis tracks")}},"tracks"))return;const s=savedOf(r);
   if(s){MPI.saveTracks(T().filter(x=>x!==s));b.textContent="☆ Guardar en mis tracks";toast("Quitado de Mis tracks")}
   else{MPI.saveTracks([...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString()}]);
     b.textContent="★ En mis tracks";toast("Guardado en Lugares › Mis tracks")}},true);
