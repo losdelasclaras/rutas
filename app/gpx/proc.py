@@ -19,6 +19,7 @@ def parse(t):
     if len(out)<2:out.clear();grab('rtept')
     return out
 def trim(P):  # quita al principio y al final los tramos en coche (>12 km/h), aunque haya paradas cortas
+    if sum(1 for p in P if p[3])<0.9*len(P):return P,0  # sin horas fiables en casi todos los puntos: no se recorta
     def sp(i):
         p,q=P[i-1],P[i]
         if not(p[3] and q[3]):return 0

@@ -7,8 +7,9 @@ for pm in t.iter('{http://www.opengis.net/kml/2.2}Placemark'):
     desc=(pm.findtext('k:description',default='',namespaces=ns) or '').strip()
     c=pm.find('.//k:coordinates',ns).text.strip().split(',')
     us=[]
-    for x in re.findall(r'https?://[^\s<>"]+',desc):
+    for x in re.findall(r'h?ttps?://[^\s<>"]+',desc):
         x=x.split('#')[0].rstrip('.,;)')
+        if x.startswith('ttp'):x='h'+x
         if x not in us: us.append(x)
     url=us[0] if us else None
     alt=None
