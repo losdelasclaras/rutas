@@ -77,10 +77,10 @@ function openMP(id){const p=MP.find(x=>x.id===id);if(!p)return;MPSEL=id;sheet._m
   <div class="meta"><span class="tag">Mi punto · ${esc(ICO(p.ic)[2])}</span>${p.a!=null?`<span class="tag alt">${p.a.toLocaleString("es-ES")} m</span>`:""}${p.f?`<span class="tag">${fmtF(p.f)}</span>`:""}</div>
   ${p.nota?`<p class="desc" style="white-space:pre-wrap">${esc(p.nota)}</p>`:""}
   <p class="note">${ll}${p.acc?` · precisión ±${Math.round(p.acc)} m`:""}</p>
-  <h3 style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px">El tiempo</h3><div class="wx" data-lat="${p.lat}" data-lon="${p.lon}" data-alt="${p.a!=null?p.a:""}"></div>
   <div class="mpacts"><a class="mpb pri" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}">🚗 Cómo llegar</a>
   <button class="mpb" data-mpshare="${p.id}">📤 Compartir</button><button class="mpb" data-mpedit="${p.id}">✏️ Editar</button>
-  <button class="mpb" data-mpnear="${p.id}">🔎 Rutas cerca</button><button class="mpb dan" data-mpdel="${p.id}"><svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg> Borrar</button></div>`)}
+  <button class="mpb" data-mpnear="${p.id}">🔎 Rutas cerca</button><button class="mpb dan" data-mpdel="${p.id}"><svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg> Borrar</button></div>
+  <h3 style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px">El tiempo</h3><div class="wx" data-lat="${p.lat}" data-lon="${p.lon}" data-alt="${p.a!=null?p.a:""}"></div>`)}
 function form(p,isNew){const ic=p.ic||"otro";
   show(`<div class="sheet-head"><h2>${isNew?"Nuevo punto":"Editar punto"}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="mpform"><p class="note">${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}${p.acc?` · precisión ±${Math.round(p.acc)} m`:""}</p>
