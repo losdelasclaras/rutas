@@ -115,7 +115,9 @@ addEventListener("appinstalled",()=>{ib.hidden=true});''')
 rep('function saveMarks(){store.set("ldc-marcas",MARKS);','function saveMarks(){store.set("ldc-marcas",MARKS);if(window.ldcSync)ldcSync("marcas");')
 rep('<button class="fsbtn" id="fsbtn" aria-label="Cambiar tamaño del texto">Aa</button>','<button class="fsbtn" id="fsbtn" aria-label="Cambiar tamaño del texto">Aa</button>\n    <button class="userbtn" id="userbtn" aria-label="Tu cuenta" title="Tu cuenta"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c1-4.5 4.5-6.5 8-6.5s7 2 8 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>')
 # seguir esta ruta (botón en la ficha) y «rutas cerca» medido desde el inicio del track
-rep('<button class="btn primary" data-gpx="${r.id}">⬇ Descargar GPX</button>','<button class="btn primary" data-follow="${r.id}">▶ Seguir esta ruta</button><button class="btn ghost" data-gpx="${r.id}">⬇ Descargar GPX</button>')
+rep('<button class="btn primary" data-gpx="${r.id}">⬇ Descargar GPX</button>','<button class="btn ghost" data-gpx="${r.id}">⬇ Descargar GPX</button>')
+rep('<button class="x" aria-label="Cerrar" data-close>×</button></div>\n  <div class="meta">${r.iv?','<button class="x" aria-label="Cerrar" data-close>×</button></div>\n  ${r.gx?`<button class="btn primary followb" data-follow="${r.id}">▶ Seguir esta ruta con el GPS</button>`:""}\n  <div class="meta">${r.iv?')
+rep('.fsbtn{','.followb{display:flex;width:100%;justify-content:center;margin:2px 0 10px;font-size:16.5px;padding:12px}\n.fsbtn{')
 rep('.map(r=>({r,d:km({lat,lon},r)}))','.map(r=>({r,d:km({lat,lon},r.gx&&r.gx.st?{lat:r.gx.st[0],lon:r.gx.st[1]}:r)}))')
 # marcas: copiar a otro móvil
 rep('''   <p class="note"><b>${nd}</b> de ${ZI.length}''','''      <p class="note"><b>${nd}</b> de ${ZI.length}''')
