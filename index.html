@@ -245,6 +245,7 @@ h1.vt{font-family:var(--f-display);font-weight:700;font-size:30px;line-height:1;
 @media (max-width:520px){.mk button span{display:none}.crow .alt{font-size:12px}}
 header.top,nav.tabs,.view.pad>.inner,.sheet,.mapbar,.legend,.fabs,.hint,.attrib{zoom:var(--fs)}
 .topacts .ovonly{display:none}#ov .topacts .ovonly{display:flex}#ov .topacts [data-share]{display:none}
+#sheet .sheet-head .x,#ov .sheet-head .x{width:42px;height:42px;font-size:26px;font-weight:700;background:#c3262e;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .topacts{display:flex;gap:6px;margin:2px 0 10px}.topacts .btn{flex:1 1 0;min-width:0;justify-content:center;text-align:center;padding:11px 4px;font-size:14.5px;line-height:1.15;white-space:nowrap;gap:4px;overflow:hidden;text-overflow:ellipsis}@media(max-width:420px){.topacts .btn{font-size:13.5px}}
 .fsbtn{margin-left:auto;border:1px solid var(--edge);background:var(--card);border-radius:8px;padding:5px 10px;font-family:var(--f-display);font-weight:700;font-size:16px;cursor:pointer;color:var(--ink);flex:none}
 .row.compact{padding:9px 2px}
@@ -683,7 +684,7 @@ function routeBody(r){
   <div class="sec"><h3>El tiempo</h3><p class="note" style="margin-bottom:6px">Previsión para ${esc(hi.c)}${hi.a?" ("+fmtA(hi.a)+")":""}.</p><div class="wx" data-lat="${hi.lat}" data-lon="${hi.lon}" data-alt="${hi.a||""}"></div>
   <div class="actions" style="margin-top:0"><a class="btn ghost" href="https://www.meteoblue.com/es/tiempo/semana/${hi.lat.toFixed(3)}N${hi.lon.toFixed(3)}E${hi.a?Math.round(hi.a):""}_${encodeURIComponent((r.r==="Dolomitas"?"Europe/Rome":zoneOf(r.r)==="alp"?"Europe/Zurich":"Europe/Madrid"))}" target="_blank" rel="noopener">☁ Previsión en el punto (Meteoblue)</a>${aemetZone(hi.lat,hi.lon)?`<a class="btn ghost" href="https://www.aemet.es/es/eltiempo/prediccion/montana?w=&p=${aemetZone(hi.lat,hi.lon)[0]}" target="_blank" rel="noopener">AEMET montaña · ${aemetZone(hi.lat,hi.lon)[1]}</a>`:""}</div></div>
   ${r.gx?`<div class="sec"><h3>Perfil del recorrido</h3>${r.gx.pf.length?profSVG(r.gx):""}<p class="note" style="margin:4px 0 8px">Según el track: ${fmtKm(r.gx.km)} · +${r.gx.up.toLocaleString("es-ES")} m de subida${r.gx.mx?" · punto más alto "+r.gx.mx.toLocaleString("es-ES")+" m":""}.</p>
-  <div class="actions" style="margin-top:0"><button class="btn ghost" data-offr="${r.id}">${window.OFFLBL?OFFLBL(r.u):"📥 Mapa sin cobertura"}</button><button class="btn ghost" data-mtsave="${r.id}">${window.MTSAVED&&MTSAVED(r)?"★ En mis tracks":"☆ Guardar en mis tracks"}</button><button class="btn ghost" data-gpx="${r.id}">⬇ Descargar GPX</button><a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${r.gx.st[0]},${r.gx.st[1]}" target="_blank" rel="noopener">🚗 Cómo llegar al inicio</a></div></div>`:""}
+  <div class="actions" style="margin-top:0">${window.RESTBTN?RESTBTN(r):""}<button class="btn ghost" data-offr="${r.id}">${window.OFFLBL?OFFLBL(r.u):"📥 Mapa sin cobertura"}</button><button class="btn ghost" data-mtsave="${r.id}">${window.MTSAVED&&MTSAVED(r)?"★ En mis tracks":"☆ Guardar en mis tracks"}</button><button class="btn ghost" data-gpx="${r.id}">⬇ Descargar GPX</button><a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${r.gx.st[0]},${r.gx.st[1]}" target="_blank" rel="noopener">🚗 Cómo llegar al inicio</a></div></div>`:""}
   ${r.tk?`<div class="sec"><h3>Recorrido</h3><p class="note">Track de tu mapa: ${fmtKm(r.tkm)} · punto más alto ${fmtA(r.a)}. Está dibujado en el mapa.</p></div>`:""}
   ${pts.some(p=>!p.x)?`<div class="sec"><h3>Lugares en el mapa</h3><ul class="plist">${pts.filter(p=>!p.x).map(p=>`<li>${ICO(p.cat)}<span class="n">${esc(p.c)}</span><span class="a">${fmtA(p.a)}</span>${mkBtns(p,true)}</li>`).join("")}</ul></div>`:""}
   ${near.length?`<div class="near"><h3>Otras rutas por la zona</h3><div class="rows">${near.map(x=>rowHTML(x.r,x.d.toFixed(0)+" km")).join("")}</div></div>`:""}`;
@@ -1487,7 +1488,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .mtfil button[aria-pressed=true]{background:var(--ink);color:var(--card);border-color:var(--ink)}.mtfil small{opacity:.7}
 .mpq{width:100%;box-sizing:border-box;border:1px solid var(--edge);border-radius:10px;padding:10px 12px;font:inherit;font-size:16px;background:var(--card);color:var(--ink);margin:2px 0 4px}
 .est{display:inline-block;margin-top:3px;font-size:12px;font-weight:700;border-radius:999px;padding:2px 8px}.est.h{background:#e3f1e6;color:#1f6b32}.est.p{background:#fdf0d8;color:#8a4b00}
-.estbox{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 10px}.estbox .mpb.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.estbox{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 10px}.rest{display:flex;gap:6px;flex-wrap:wrap;width:100%}.rest .btn.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.estbox .mpb.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
 .estbox input[type=date]{border:1px solid var(--edge);border-radius:8px;padding:6px;font:inherit;background:var(--card);color:var(--ink)}
 </style>`);
 const box=document.createElement("div");box.className="mpbox";box.id="mtbox";
@@ -1584,6 +1586,18 @@ sheet.addEventListener("click",e=>{
 
 /* en la ficha de una ruta del blog: «☆ Guardar en mis tracks» */
 window.MTSAVED=r=>!!savedOf(r);
+/* en la ficha de una ruta del blog: «✓ La he hecho» / «★ Pendiente» (se guarda en Mis tracks con esa marca) */
+window.RESTBTN=r=>{const s=savedOf(r),e=s&&s.est;return`<span class="rest" data-r="${r.id}"><button class="btn ghost${e==="hecho"?" on":""}" data-rest="hecho">✓ ${e==="hecho"?"Hecha"+(s.fh?" ("+fmtF(s.fh)+")":""):"La he hecho"}</button><button class="btn ghost${e==="pend"?" on":""}" data-rest="pend">★ ${e==="pend"?"Pendiente":"La quiero hacer"}</button></span>`};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-rest]");if(!b)return;e.preventDefault();e.stopPropagation();
+  const box2=b.closest(".rest"),r=R[+box2.dataset.r],v=b.dataset.rest;if(!r||!r.gx)return;
+  const go=()=>{const s=savedOf(r);let ts;
+    if(!s)ts=[...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString(),est:v,...(v==="hecho"?{fh:new Date().toISOString().slice(0,10)}:{})}];
+    else ts=T().map(x=>{if(x!==s)return x;const y={...x};if(y.est===v){delete y.est;delete y.fh}else{y.est=v;if(v==="hecho")y.fh=new Date().toISOString().slice(0,10);else delete y.fh}return y});
+    MPI.saveTracks(ts);const n=savedOf(r);
+    toast(n&&n.est?(n.est==="hecho"?"Marcada como hecha":"Apuntada como pendiente")+" · está en Mis cosas › Mis tracks":"Marca quitada");
+    document.querySelectorAll(`.rest[data-r="${r.id}"]`).forEach(x=>x.outerHTML=RESTBTN(r));
+    document.querySelectorAll(`[data-mtsave="${r.id}"]`).forEach(x=>x.textContent=savedOf(r)?"★ En mis tracks":"☆ Guardar en mis tracks")};
+  if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go()},true);
 document.addEventListener("click",e=>{const b=e.target.closest("[data-mtsave]");if(!b)return;e.preventDefault();e.stopPropagation();
   const r=R[+b.dataset.mtsave];if(!r||!r.gx)return;if(window.cuentaOk&&!cuentaOk(()=>{const bb=document.querySelector(`[data-mtsave="${r.id}"]`);if(bb&&!savedOf(r))bb.click();else if(!savedOf(r)){MPI.saveTracks([...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString()}]);toast("Guardado en Mis cosas › Mis tracks")}},"tracks"))return;const s=savedOf(r);
   if(s){MPI.saveTracks(T().filter(x=>x!==s));b.textContent="☆ Guardar en mis tracks";toast("Quitado de Mis tracks")}
