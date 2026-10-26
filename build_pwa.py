@@ -148,15 +148,20 @@ PL=[[p['n'].split(' / ')[0],p['t'],p['lat'],p['lon']] for p in json.load(open(A+
 t=t.replace('__DATA__',json.dumps(d,ensure_ascii=False,separators=(',',':'))).replace('__GEO__',open(A+'geo.json').read()).replace('__TOWNS__',open(A+'towns.json').read()).replace('__PLACES__',json.dumps(PL,ensure_ascii=False,separators=(',',':')))
 # versión: si el móvil abre una copia antigua, la app lo detecta y ofrece actualizar
 import hashlib as _hl
-_ver=_hl.md5(t.encode()).hexdigest()[:10]
-t=t.replace('</body>','''<div id="upd" hidden style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:5000;background:#1f6b32;color:#fff;border-radius:14px;padding:10px 12px 10px 16px;box-shadow:0 6px 20px rgba(0,0,0,.3);display:flex;gap:12px;align-items:center;font:600 15px system-ui;width:max-content;max-width:calc(100% - 20px)"><span>🔄 Hay una versión nueva de la app</span><button id="updb" style="border:0;background:#fff;color:#1f6b32;border-radius:10px;padding:8px 12px;font:700 15px system-ui;cursor:pointer">Actualizar</button></div>
+import time as _tm
+_ver=str(int(_tm.time()))   # hora de publicación: solo se avisa si la publicada es MÁS nueva que la abierta
+t=t.replace('</body>','''<div id="upd" hidden style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:5000;background:#1f6b32;color:#fff;border-radius:14px;padding:10px 12px 10px 16px;box-shadow:0 6px 20px rgba(0,0,0,.3);display:flex;gap:12px;align-items:center;font:600 15px system-ui;width:max-content;max-width:calc(100% - 20px)"><span>🔄 Hay una versión nueva de la app</span><button id="updb" style="border:0;background:#fff;color:#1f6b32;border-radius:10px;padding:8px 12px;font:700 15px system-ui;cursor:pointer">Actualizar</button><button id="updx" aria-label="Cerrar" style="border:0;background:none;color:#fff;font:700 20px system-ui;cursor:pointer;padding:0 4px">×</button></div>
 <script>
 window.__BUILD="__VER__";
 (function(){let busy=false;
  async function check(){if(busy||!navigator.onLine)return;busy=true;
   try{const v=(await (await fetch("version.txt?"+Date.now(),{cache:"no-store"})).text()).trim();
-   if(v&&v!==window.__BUILD&&!/[?&]reset/.test(location.search)){document.getElementById("upd").hidden=false}}catch(e){}busy=false}
+   let tried={};try{tried=JSON.parse(localStorage.getItem("ldc-upd")||"{}")}catch(e){}
+   // si ya se intentó actualizar a esa versión hace poco y sigue la vieja (el servidor tarda unos minutos), no se insiste
+   if(+v>+window.__BUILD&&!/[?&]reset/.test(location.search)&&!(tried.v===v&&Date.now()-tried.t<20*60e3)){document.getElementById("upd").hidden=false}}catch(e){}busy=false}
+ document.getElementById("updx").onclick=()=>{document.getElementById("upd").hidden=true};
  document.getElementById("updb").onclick=async()=>{const b=document.getElementById("updb");b.textContent="Actualizando…";b.disabled=true;
+  try{const v=(await (await fetch("version.txt?"+Date.now(),{cache:"no-store"})).text()).trim();localStorage.setItem("ldc-upd",JSON.stringify({v,t:Date.now()}))}catch(e){}
   try{await fetch("index.html?"+Date.now(),{cache:"no-store"});await new Promise(r=>setTimeout(r,600))}catch(e){}
   location.reload()};
  setTimeout(check,4000);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")check()})})();
