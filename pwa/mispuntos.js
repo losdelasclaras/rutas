@@ -3,6 +3,7 @@
 const MPK="ldc-mispuntos", MTK="ldc-mistracks";
 const ICOS=[["otro","📍","Punto"],["fuente","💧","Fuente"],["parking","🅿️","Aparcamiento"],["refugio","🏠","Refugio"],["cabana","🛖","Cabaña"],["cumbre","⛰️","Cumbre"],["collado","🥾","Collado / paso"],["vista","👀","Mirador"],["foto","📷","Foto"],["acampada","⛺","Acampada"],["peligro","⚠️","Peligro"],["agua","🏊","Baño / poza"]];
 const ICO=k=>(ICOS.find(x=>x[0]===k)||ICOS[0]);
+const EMO=k=>k==="cumbre"?'<svg viewBox="-12 -12 24 24" style="width:1.15em;height:1.15em;vertical-align:-.2em"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>':ICO(k)[1];
 let MP=store.get(MPK,[]), MT=store.get(MTK,[]);
 if(LAY.mp===undefined)LAY.mp=true; if(LAY.mt===undefined)LAY.mt=true;
 const saveMP=()=>store.set(MPK,MP), saveMT=()=>{try{localStorage.setItem(MTK,JSON.stringify(MT));return true}catch(e){toast("No queda sitio en el móvil para más tracks");return false}};
@@ -39,7 +40,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 const MPL=L.layerGroup(), MTL=L.layerGroup();
 let MPSEL=null;
 function drawMP(){MPL.clearLayers();
-  for(const p of MP){const m=L.marker([p.lat,p.lon],{icon:L.divIcon({className:"mpk",html:`<span>${ICO(p.ic)[1]}</span>`,iconSize:[0,0]}),title:p.n,zIndexOffset:900,riseOnHover:true});
+  for(const p of MP){const m=L.marker([p.lat,p.lon],{icon:L.divIcon({className:"mpk",html:`<span>${EMO(p.ic)}</span>`,iconSize:[0,0]}),title:p.n,zIndexOffset:900,riseOnHover:true});
     m.on("click",e=>{L.DomEvent.stopPropagation(e);openMP(p.id)});
     m.on("add",()=>{const el=m.getElement();if(el)el.classList.toggle("sel",MPSEL===p.id)});
     MPL.addLayer(m)}
@@ -57,7 +58,7 @@ function syncMP(){const a=LAY.mp&&MP.length,b=LAY.mt&&MT.length;
 function show(html){sheet.classList.remove("full");sheet.innerHTML=`<div class="grab"></div>`+html;sheet.hidden=false;sheet.scrollTop=0}
 function openMP(id){const p=MP.find(x=>x.id===id);if(!p)return;MPSEL=id;drawMP();
   const ll=`${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}`;
-  show(`<div class="sheet-head"><h2>${ICO(p.ic)[1]} ${esc(p.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  show(`<div class="sheet-head"><h2>${EMO(p.ic)} ${esc(p.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="meta"><span class="tag">Mi punto · ${esc(ICO(p.ic)[2])}</span>${p.f?`<span class="tag">${fmtF(p.f)}</span>`:""}</div>
   ${p.nota?`<p class="desc" style="white-space:pre-wrap">${esc(p.nota)}</p>`:""}
   <p class="note">${ll}${p.acc?` · precisión ±${Math.round(p.acc)} m`:""}</p>
@@ -68,7 +69,7 @@ function form(p,isNew){const ic=p.ic||"otro";
   show(`<div class="sheet-head"><h2>${isNew?"Nuevo punto":"Editar punto"}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="mpform"><p class="note">${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}${p.acc?` · precisión ±${Math.round(p.acc)} m`:""}</p>
   <label for="mpn">Nombre</label><input type="text" id="mpn" maxlength="80" value="${esc(p.n||"")}" placeholder="Por ejemplo: Fuente de la braña">
-  <label>Icono</label><div class="mpicos">${ICOS.map(x=>`<button type="button" data-mpic="${x[0]}" aria-pressed="${x[0]===ic}"><span>${x[1]}</span>${x[2]}</button>`).join("")}</div>
+  <label>Icono</label><div class="mpicos">${ICOS.map(x=>`<button type="button" data-mpic="${x[0]}" aria-pressed="${x[0]===ic}"><span>${EMO(x[0])}</span>${x[2]}</button>`).join("")}</div>
   <label for="mpt">Nota (opcional)</label><textarea id="mpt" rows="3" maxlength="1000" placeholder="Agua todo el año, sitio para aparcar 5 coches…">${esc(p.nota||"")}</textarea>
   <div class="mpacts"><button class="mpb pri" data-mpsave>💾 Guardar</button><button class="mpb" data-close>Cancelar</button></div></div>`);
   sheet._mp={...p,ic,isNew};setTimeout(()=>{const i=document.getElementById("mpn");if(i&&isNew)i.focus()},50)}
@@ -123,7 +124,7 @@ function renderBox(){const ps=MP.slice().sort((a,b)=>(b.f||"").localeCompare(a.f
   ${MP.length?"":`<p class="note">Guarda fuentes, aparcamientos, refugios o cualquier sitio. En el mapa: <b>Capas › Guardar dónde estoy</b> o <b>Marcar en el mapa</b>, o mantén pulsado sobre el mapa.</p>`}
   <div class="mpacts" style="margin:6px 0 8px"><button class="mpb" data-mpx="gps">🎯 Dónde estoy</button><button class="mpb" data-mpx="cross">✛ En el mapa</button>
   ${MP.length?`<button class="mpb" data-mpx="gpx">⬇️ GPX</button><button class="mpb" data-mpx="kml">⬇️ KML</button>`:""}<button class="mpb" data-mpx="imp">⬆️ Importar GPX/KML</button></div>
-  ${ps.map(p=>`<div class="mprow" data-mpgo="${p.id}"><span class="e">${ICO(p.ic)[1]}</span><span><b>${esc(p.n)}</b><small>${esc(ICO(p.ic)[2])}${p.f?" · "+fmtF(p.f):""}</small></span></div>`).join("")}
+  ${ps.map(p=>`<div class="mprow" data-mpgo="${p.id}"><span class="e">${EMO(p.ic)}</span><span><b>${esc(p.n)}</b><small>${esc(ICO(p.ic)[2])}${p.f?" · "+fmtF(p.f):""}</small></span></div>`).join("")}
   ${MT.length?`<h2 style="margin-top:14px">🧵 Mis tracks <small style="font-weight:500;color:#666">(${MT.length})</small></h2>${MT.map(t=>`<div class="mprow" data-mtgo="${t.id}"><span class="e">〰️</span><span><b>${esc(t.n)}</b><small>${t.km} km</small></span><button class="mpb dan del" data-mtdel="${t.id}">🗑</button></div>`).join("")}`:""}`}
 box.addEventListener("click",e=>{const x=e.target.closest("[data-mpx]");
   if(x){const k=x.dataset.mpx;if(k==="gps"){showView("mapa");gps()}else if(k==="cross")cross();else if(k==="gpx")dl("mis-puntos.gpx",toGPX(),"application/gpx+xml");else if(k==="kml")dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml");else if(k==="imp"){fin.value="";fin.click()}return}
