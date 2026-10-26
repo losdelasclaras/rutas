@@ -51,9 +51,14 @@ function drawMP(){MPL.clearLayers();
     m.on("add",()=>{const el=m.getElement();if(el)el.classList.toggle("sel",MPSEL===p.id)});
     MPL.addLayer(m)}
   syncMP()}
-function drawMT(){MTL.clearLayers();
-  for(const t of MT){MTL.addLayer(L.polyline(t.pts,{color:"#fff",weight:6,opacity:.8,interactive:false}));
-    MTL.addLayer(L.polyline(t.pts,{color:"#e8711a",weight:3.5,opacity:.95}).bindTooltip(esc(t.n),{sticky:true}))}
+// los tracks del blog guardados no copian los puntos: se cogen de la ruta
+const ptsOf=t=>t.pts&&t.pts.length?t.pts:(t.src==="blog"?(((R.find(r=>r.u===t.u)||{}).gx)||{}).ln||null:null);
+let MTLOAD=false;
+function drawMT(){MTL.clearLayers();let falta=false;
+  for(const t of MT){const p=ptsOf(t);if(!p){falta=true;continue}const ll=p.map(x=>[x[0],x[1]]);
+    MTL.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.8,interactive:false}));
+    MTL.addLayer(L.polyline(ll,{color:"#e8711a",weight:3.5,opacity:.95}).bindTooltip(esc(t.n),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);if(window.MISTRACKS)MISTRACKS.open(t.id)}))}
+  if(falta&&!MTLOAD&&window.loadTracks){MTLOAD=true;loadTracks().then(ok=>{MTLOAD=false;if(ok)drawMT()})}
   syncMP()}
 function syncMP(){const a=LAY.mp&&MP.length&&!window.FOLONLY,b=LAY.mt&&MT.length&&!window.FOLONLY;
   if(a&&!map.hasLayer(MPL))MPL.addTo(map);else if(!a&&map.hasLayer(MPL))MPL.remove();
@@ -131,14 +136,13 @@ function renderBox(){const ps=MP.slice().sort((a,b)=>(b.f||"").localeCompare(a.f
   box.innerHTML=`<h2>📍 Mis puntos <small style="font-weight:500;color:#666">(${MP.length})</small></h2>
   ${MP.length?"":`<p class="note">Guarda fuentes, aparcamientos, refugios o cualquier sitio. En el mapa: <b>Capas › Guardar dónde estoy</b> o <b>Marcar en el mapa</b>, o mantén pulsado sobre el mapa.</p>`}
   <div class="mpacts" style="margin:6px 0 8px"><button class="mpb" data-mpx="gps">🎯 Dónde estoy</button><button class="mpb" data-mpx="cross">✛ En el mapa</button>
-  ${MP.length?`<button class="mpb" data-mpx="gpx">⬇️ GPX</button><button class="mpb" data-mpx="kml">⬇️ KML</button>`:""}<button class="mpb" data-mpx="imp">⬆️ Importar GPX/KML</button></div>
+  ${MP.length?`<button class="mpb" data-mpx="gpx">⬇️ GPX</button><button class="mpb" data-mpx="kml">⬇️ KML</button>`:""}<button class="mpb" data-mpx="imp">⬆️ Importar puntos (GPX/KML)</button></div>
   ${ps.map(p=>`<div class="mprow" data-mpgo="${p.id}"><span class="e">${EMO(p.ic)}</span><span><b>${esc(p.n)}</b><small>${esc(ICO(p.ic)[2])}${p.a!=null?" · "+p.a.toLocaleString("es-ES")+" m":""}${p.f?" · "+fmtF(p.f):""}</small></span></div>`).join("")}
-  ${MT.length?`<h2 style="margin-top:14px">🧵 Mis tracks <small style="font-weight:500;color:#666">(${MT.length})</small></h2>${MT.map(t=>`<div class="mprow" data-mtgo="${t.id}"><span class="e">〰️</span><span><b>${esc(t.n)}</b><small>${t.km} km</small></span><button class="mpb dan del" data-mtdel="${t.id}">🗑</button></div>`).join("")}`:""}`}
+`;if(window.MISTRACKS)MISTRACKS.render()}
 box.addEventListener("click",e=>{const x=e.target.closest("[data-mpx]");
   if(x){const k=x.dataset.mpx;if(k==="gps"){showView("mapa");gps()}else if(k==="cross")cross();else if(k==="gpx")dl("mis-puntos.gpx",toGPX(),"application/gpx+xml");else if(k==="kml")dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml");else if(k==="imp"){fin.value="";fin.click()}return}
-  const td=e.target.closest("[data-mtdel]");if(td){if(td.dataset.sure!=="1"){td.dataset.sure="1";td.textContent="¿Seguro?";return}MT=MT.filter(t=>t.id!==td.dataset.mtdel);saveMT();drawMT();renderBox();return}
   const g=e.target.closest("[data-mpgo]");if(g){const p=MP.find(x=>x.id===g.dataset.mpgo);if(!p)return;showView("mapa");if(!LAY.mp){LAY.mp=true;saveLay();syncMP()}map.flyTo([p.lat,p.lon],Math.max(map.getZoom(),15));openMP(p.id);return}
-  const t=e.target.closest("[data-mtgo]");if(t){const tr=MT.find(x=>x.id===t.dataset.mtgo);if(!tr)return;showView("mapa");if(!LAY.mt){LAY.mt=true;saveLay();syncMP()}setTimeout(()=>map.fitBounds(L.latLngBounds(tr.pts),{padding:[40,40]}),60)}});
+});
 const xe=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"}[c]));
 function toGPX(){return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n`+
   MP.map(p=>`<wpt lat="${p.lat}" lon="${p.lon}"><name>${xe(p.n)}</name>${p.nota?`<desc>${xe(p.nota)}</desc>`:""}<type>${xe(ICO(p.ic)[2])}</type>${p.f?`<time>${p.f}</time>`:""}</wpt>`).join("\n")+`\n</gpx>\n`}
@@ -146,25 +150,40 @@ function toKML(){return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="htt
   MP.map(p=>`<Placemark><name>${xe(p.n)}</name><description>${xe((ICO(p.ic)[2])+(p.nota?" – "+p.nota:""))}</description><Point><coordinates>${p.lon},${p.lat},0</coordinates></Point></Placemark>`).join("\n")+`\n</Document></kml>\n`}
 function dl(name,txt,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 function dist(a,b){const R=6371000,t=Math.PI/180,dl=(b[0]-a[0])*t,dn=(b[1]-a[1])*t,x=Math.sin(dl/2)**2+Math.cos(a[0]*t)*Math.cos(b[0]*t)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
-function thin(pts){if(pts.length<3)return pts;const out=[pts[0]];let acc=0;for(let i=1;i<pts.length;i++){acc+=dist(pts[i-1],pts[i]);if(acc>=15||i===pts.length-1){out.push(pts[i]);acc=0}}return out.map(p=>[c5(p[0]),c5(p[1])])}
+function thin(pts){if(pts.length<3)return pts;const out=[pts[0]];let acc=0;for(let i=1;i<pts.length;i++){acc+=dist(pts[i-1],pts[i]);if(acc>=15||i===pts.length-1){out.push(pts[i]);acc=0}}return out.map(p=>p[2]!=null&&isFinite(p[2])?[c5(p[0]),c5(p[1]),Math.round(p[2])]:[c5(p[0]),c5(p[1])])}
 fin.addEventListener("change",()=>{const f=fin.files&&fin.files[0];if(!f)return;if(/\.kmz$/i.test(f.name)){toast("Los .kmz no los leo: expórtalo como .kml");return}
   const rd=new FileReader();rd.onload=()=>{try{imp(String(rd.result),f.name)}catch(e){toast("No he podido leer ese archivo")}};rd.readAsText(f)});
 function imp(txt,fname){const doc=new DOMParser().parseFromString(txt,"application/xml");if(doc.getElementsByTagName("parsererror").length)throw 0;
   const tx=(el,tag)=>{const n=el.getElementsByTagName(tag)[0];return n?n.textContent.trim():""};
   const base=fname.replace(/\.[^.]+$/,"");let np=0,nt=0;const have=new Set(MP.map(p=>p.lat.toFixed(4)+","+p.lon.toFixed(4)+"|"+p.n));
   const addP=(lat,lon,n,nota)=>{if(!isFinite(lat)||!isFinite(lon))return;const k=lat.toFixed(4)+","+lon.toFixed(4)+"|"+n;if(have.has(k))return;have.add(k);MP.push({id:nid(),n:n||"Punto importado",ic:"otro",nota:nota||"",lat:c5(lat),lon:c5(lon),f:new Date().toISOString()});np++};
-  const addT=(pts,n)=>{if(pts.length<2)return;const t=thin(pts);let km=0;for(let i=1;i<t.length;i++)km+=dist(t[i-1],t[i]);MT.push({id:nid(),n:n||base,km:Math.round(km/100)/10,pts:t});nt++};
+  const addT=(pts,n)=>{if(pts.length<2)return;const t=thin(pts);let km=0;for(let i=1;i<t.length;i++)km+=dist(t[i-1],t[i]);const o={id:nid(),n:n||base,km:Math.round(km/100)/10,pts:t,src:"gpx",f:new Date().toISOString()};desn(o);MT.push(o);nuevos.push(o);nt++};const nuevos=[];
   if(doc.getElementsByTagName("gpx").length){
     for(const w of doc.getElementsByTagName("wpt"))addP(+w.getAttribute("lat"),+w.getAttribute("lon"),tx(w,"name"),tx(w,"desc")||tx(w,"cmt"));
-    for(const t of doc.getElementsByTagName("trk")){const pts=[...t.getElementsByTagName("trkpt")].map(p=>[+p.getAttribute("lat"),+p.getAttribute("lon")]);addT(pts,tx(t,"name"))}
+    for(const t of doc.getElementsByTagName("trk")){const pts=[...t.getElementsByTagName("trkpt")].map(p=>{const e=tx(p,"ele");return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});addT(pts,tx(t,"name"))}
     for(const r of doc.getElementsByTagName("rte")){const pts=[...r.getElementsByTagName("rtept")].map(p=>[+p.getAttribute("lat"),+p.getAttribute("lon")]);addT(pts,tx(r,"name"))}}
   else{for(const pm of doc.getElementsByTagName("Placemark")){const n=tx(pm,"name"),d=tx(pm,"description").replace(/<[^>]+>/g," ").trim();
       for(const pt of pm.getElementsByTagName("Point")){const c=tx(pt,"coordinates").split(",");addP(+c[1],+c[0],n,d)}
-      for(const ls of pm.getElementsByTagName("LineString")){const pts=tx(ls,"coordinates").split(/\s+/).filter(Boolean).map(s=>{const c=s.split(",");return[+c[1],+c[0]]});addT(pts,n)}}}
+      for(const ls of pm.getElementsByTagName("LineString")){const pts=tx(ls,"coordinates").split(/\s+/).filter(Boolean).map(s=>{const c=s.split(",");return c[2]!=null&&+c[2]!==0?[+c[1],+c[0],+c[2]]:[+c[1],+c[0]]});addT(pts,n)}}}
   if(!np&&!nt){toast("No he encontrado puntos ni tracks en ese archivo");return}
   saveMP();if(nt&&!saveMT()){MT=store.get(MTK,[])}
   LAY.mp=true;LAY.mt=true;saveLay();["mp","mt"].forEach(k=>{const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",true)});
-  drawMP();drawMT();renderBox();toast(`Importado: ${np} punto${np===1?"":"s"}${nt?` y ${nt} track${nt===1?"":"s"}`:""}`)}
+  drawMP();drawMT();renderBox();toast([np?`${np} punto${np===1?"":"s"}`:"",nt?`${nt} track${nt===1?"":"s"}`:""].filter(Boolean).join(" y ")+(np+nt===1?" cargado":" cargados")+(nt?" · están en Lugares › Mis tracks":""));
+  for(const o of nuevos)if(o.pts.some(p=>p[2]==null))demAlt(o.id);
+  if(nt===1&&!np&&window.MISTRACKS)MISTRACKS.open(nuevos[0].id,true)}
+// desnivel de un track (con margen de 4 m para que el ruido no sume)
+function desn(o){const p=o.pts;if(!p.length||p.some(x=>x[2]==null)){delete o.up;delete o.dn;return}let U=0,D=0,ref=p[0][2],mx=-1e9,mn=1e9;
+  for(const x of p){const d=x[2]-ref;if(d>=4){U+=d;ref=x[2]}else if(d<=-4){D-=d;ref=x[2]}if(x[2]>mx)mx=x[2];if(x[2]<mn)mn=x[2]}o.up=Math.round(U);o.dn=Math.round(D);o.mx=mx;o.mn=mn}
+// si el GPX no trae alturas, se sacan del modelo de relieve (hace falta conexión)
+async function demAlt(id){const o=MT.find(x=>x.id===id);if(!o||!navigator.onLine)return;const p=o.pts;
+  const idx=[];const step=Math.max(1,Math.ceil(p.length/1000));for(let i=0;i<p.length;i+=step)idx.push(i);if(idx[idx.length-1]!==p.length-1)idx.push(p.length-1);
+  const ele={};try{for(let k=0;k<idx.length;k+=100){const g=idx.slice(k,k+100);
+    const j=await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${g.map(i=>p[i][0]).join(",")}&longitude=${g.map(i=>p[i][1]).join(",")}`).then(r=>r.json());
+    g.forEach((i,n)=>{const v=j.elevation&&j.elevation[n];if(v!=null&&isFinite(v))ele[i]=v})}}catch(e){return}
+  const known=idx.filter(i=>ele[i]!=null);if(known.length<2)return;
+  const q=MT.find(x=>x.id===id);if(!q)return;let a=0;
+  q.pts=q.pts.map((x,i)=>{while(a<known.length-2&&known[a+1]<i)a++;const i0=known[a],i1=known[a+1];const t=i1>i0?Math.min(1,Math.max(0,(i-i0)/(i1-i0))):0;return[x[0],x[1],Math.round(ele[i0]+(ele[i1]-ele[i0])*t)]});
+  desn(q);saveMT();if(window.MISTRACKS)MISTRACKS.refresh(id)}
 
 
 /* ---------- copia de seguridad en archivo: marcas, mis puntos y mis tracks ---------- */
@@ -198,8 +217,10 @@ document.addEventListener("click",e=>{if(e.target.closest("[data-bkp]")){bkpSave
 window.ldcBkp=bkpButtons;if(typeof renderCols==="function")renderCols();
 /* "ver solo los míos" también deja ver mis puntos (van en su propia capa) */
 drawMP();drawMT();renderBox();
-window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,sync:()=>syncMP(),
+window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,sync:()=>syncMP(),ptsOf,desn,demAlt,dl,
+  saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
+  importar(){fin.value="";fin.click()},
   // la sincronización cambia lo guardado sin volver a avisar a la nube
   set(mp,mt){if(mp){MP.length=0;MP.push(...mp);store.set(MPK,MP)}if(mt){MT.length=0;MT.push(...mt);try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}}
-    drawMP();drawMT();renderBox();if(MPSEL&&!MP.some(p=>p.id===MPSEL)){MPSEL=null}}};
+    drawMP();drawMT();renderBox();if(window.MISTRACKS)MISTRACKS.render();if(MPSEL&&!MP.some(p=>p.id===MPSEL)){MPSEL=null}}};
 })();

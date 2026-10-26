@@ -128,6 +128,6 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-follow]");
 
 // si la app se cerró mientras seguías una ruta (hace menos de 12 h), se retoma sola
 const prev=store.get(FK,null);
-if(prev&&prev.u&&Date.now()-prev.t<12*3600e3){const r=R.find(x=>x.u===prev.u);if(r&&r.gx)setTimeout(()=>{start(r,prev.rev,prev);toast("Sigues con la ruta donde la dejaste")},900)}
+if(prev&&prev.u&&Date.now()-prev.t<12*3600e3){const r=R.find(x=>x.u===prev.u);if((r&&r.gx)||String(prev.u).startsWith("mt:"))setTimeout(()=>{const rr=r||(window.MISTRACKS&&MISTRACKS.route(String(prev.u).slice(3)));if(!rr){store.set(FK,null);return}start(rr,prev.rev,prev);toast("Sigues con la ruta donde la dejaste")},900)}
 window.SEGUIR={start,stop,get:()=>F};
 })();

@@ -10,7 +10,7 @@ const SK="ldc-sesion",PK="ldc-sync-pend",UK="ldc-sync-uid",TK="ldc-sync-hora";
 const MPI=window.MISPUNTOS;
 let FB=null,A=null,USER=null,READY=false,BUSY=false,ERR="",unsub=[];
 const T={};                       // esperas para no escribir en cada toque
-let CLOUDT=new Set();             // tracks que hay en la nube
+let CLOUDT=new Map();             // tracks que hay en la nube
 const pend=()=>store.get(PK,{}),setPend=(k,v)=>{const p=pend();if(v)p[k]=1;else delete p[k];store.set(PK,p)};
 
 /* --- botón de la cabecera --- */
@@ -91,8 +91,10 @@ const ref=k=>A.fs.doc(A.db,"usuarios",USER.uid,"datos",k);
 const tref=id=>A.fs.doc(A.db,"usuarios",USER.uid,"tracks",String(id));
 const tcol=()=>A.fs.collection(A.db,"usuarios",USER.uid,"tracks");
 const J=s=>{try{return JSON.parse(s)}catch(e){return null}};
-const tOut=t=>({n:t.n||"",km:t.km||0,j:JSON.stringify(t.pts||[])});   // la nube no admite listas dentro de listas: los puntos van como texto
-const tIn=(id,d)=>({id:isNaN(+id)?id:+id,n:d.n,km:d.km,pts:J(d.j)||[]});
+// la nube no admite listas dentro de listas: cada track va entero como texto (los antiguos solo llevaban los puntos)
+const tOut=t=>({n:t.n||"",km:t.km||0,j:JSON.stringify(t)});
+const tIn=(id,d)=>{const o=J(d.j);if(o&&!Array.isArray(o))return o;return{id:isNaN(+id)?id:+id,n:d.n,km:d.km,pts:o||[]}};
+const tKey=ts=>JSON.stringify(ts.slice().sort((a,b)=>String(a.id)<String(b.id)?-1:1));
 
 // juntar: una cumbre «subida» manda sobre «quiero»; puntos y tracks se suman (sin repetir)
 function joinMarks(a,b){const r=Object.assign({},b);for(const k in a){if(a[k]==="hecha"||!r[k])r[k]=a[k]}return r}
@@ -107,7 +109,7 @@ async function onUser(u){
   const fs=A.fs,first=store.get(UK,null)!==u.uid,p=pend();
   const [dm,dp,dt]=await Promise.all([fs.getDoc(ref("marcas")),fs.getDoc(ref("puntos")),fs.getDocs(tcol())]);
   const cm=dm.exists()?J(dm.data().j):null,cp=dp.exists()?J(dp.data().j):null;
-  const ct=[];dt.forEach(d=>ct.push(tIn(d.id,d.data())));CLOUDT=new Set(ct.map(t=>String(t.id)));
+  const ct=[];CLOUDT=new Map();dt.forEach(d=>{ct.push(tIn(d.id,d.data()));CLOUDT.set(d.id,d.data().j)});
   // la primera vez en este aparato, o si quedaron cambios sin subir, se junta todo; si no, manda lo de la nube
   const m=cm==null?MARKS:(first||p.marcas)?joinMarks(MARKS,cm):cm;
   const pts=cp==null?MPI.get():(first||p.puntos)?joinList(MPI.get(),cp,sameP):cp;
@@ -126,14 +128,14 @@ async function onUser(u){
   // a partir de aquí, lo que cambie en otro aparato llega solo
   unsub.push(fs.onSnapshot(ref("marcas"),s=>{if(s.metadata.hasPendingWrites||!s.exists())return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(MARKS)){applyMarks(v);done()}}));
   unsub.push(fs.onSnapshot(ref("puntos"),s=>{if(s.metadata.hasPendingWrites||!s.exists())return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(MPI.get())){MPI.set(v,null);done()}}));
-  unsub.push(fs.onSnapshot(tcol(),s=>{if(s.metadata.hasPendingWrites)return;const v=[];s.forEach(d=>v.push(tIn(d.id,d.data())));CLOUDT=new Set(v.map(t=>String(t.id)));
-    const loc=MPI.tracks();if(v.length!==loc.length||v.some(t=>!loc.some(q=>String(q.id)===String(t.id)))){MPI.set(null,v);done()}}));
+  unsub.push(fs.onSnapshot(tcol(),s=>{if(s.metadata.hasPendingWrites)return;const v=[];s.forEach(d=>{v.push(tIn(d.id,d.data()));CLOUDT.set(d.id,d.data().j)});for(const k of [...CLOUDT.keys()])if(!v.some(t=>String(t.id)===k))CLOUDT.delete(k);
+    if(tKey(v)!==tKey(MPI.tracks())){MPI.set(null,v);done()}}));
   repaint()}
 function done(){store.set(TK,new Date().toISOString());repaint()}
 async function pushTracks(){const fs=A.fs,loc=MPI.tracks(),ids=new Set(loc.map(t=>String(t.id))),w=[];
-  for(const t of loc)if(!CLOUDT.has(String(t.id)))w.push(fs.setDoc(tref(t.id),tOut(t)));
-  for(const id of CLOUDT)if(!ids.has(id))w.push(fs.deleteDoc(tref(id)));
-  CLOUDT=ids;await Promise.all(w)}
+  for(const t of loc){const o=tOut(t);if(CLOUDT.get(String(t.id))!==o.j){w.push(fs.setDoc(tref(t.id),o));CLOUDT.set(String(t.id),o.j)}}   // nuevos o cambiados (p. ej. de nombre)
+  for(const id of [...CLOUDT.keys()])if(!ids.has(id)){w.push(fs.deleteDoc(tref(id)));CLOUDT.delete(id)}
+  await Promise.all(w)}
 async function push(k){if(!USER||!READY){return}
   try{if(k==="marcas")await A.fs.setDoc(ref("marcas"),{j:JSON.stringify(MARKS),t:Date.now()});
     else if(k==="puntos")await A.fs.setDoc(ref("puntos"),{j:JSON.stringify(MPI.get()),t:Date.now()});
