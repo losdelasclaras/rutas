@@ -47,7 +47,7 @@ rep('</style>','''html,body{height:100%;margin:0}
 </style>
 </head><body>''')
 # cada módulo va protegido: si uno falla en un móvil concreto, los demás y la app siguen funcionando
-_mods=['mispuntos','capas','sync','seguir','mistracks','offline','pestanas','instalar','compartir']
+_mods=['mispuntos','capas','sync','seguir','mistracks','offline','resumen','pestanas','instalar','compartir','perfil']
 _w=lambda n:'try{\n'+open(f'/home/claude/pwa/{n}.js').read()+'\n}catch(e){console.error("módulo '+n+'",e);(window.__ERRS=window.__ERRS||[]).push("'+n+': "+(e&&e.message))}'
 i=t.rindex('</script>'); t=t[:i]+'\n'+'\n'.join(_w(n) for n in _mods)+'\n'+t[i:]
 i=t.rindex('</script>'); t=t[:i]+'</script>\n<script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>\n</body></html>\n'
@@ -131,6 +131,8 @@ rep('a.download=slug(r).replace(/^r-/,"")+".gpx";document.body.appendChild(a);a.
 # en la ficha a pantalla completa (desde Rutas/Cumbres): «Ver en mapa» en lugar de «Compartir», que baja al final
 rep('h=routeBody(r)+`<div class="actions"><button class="btn ghost" data-ovmap="${r.id}">🗺 Ver en el mapa</button></div>`','h=routeBody(r)+`<div class="actions"><button class="btn ghost" data-share="${r.id}">↗ Compartir esta ruta</button></div>`')
 rep('.fsbtn{','.topacts .ovonly{display:none}#ov .topacts .ovonly{display:flex}#ov .topacts [data-share]{display:none}\n.fsbtn{')
+# perfil interactivo: el svg lleva sus escalas
+rep('<svg class="prof" viewBox="0 0 ${W} ${H}"','<svg class="prof" data-x="${X}" data-lo="${lo}" data-hi="${hi}" viewBox="0 0 ${W} ${H}"')
 # seguir esta ruta (botón en la ficha) y «rutas cerca» medido desde el inicio del track
 rep('<button class="btn primary" data-gpx="${r.id}">⬇ Descargar GPX</button>','<button class="btn ghost" data-offr="${r.id}">${window.OFFLBL?OFFLBL(r.u):"📥 Mapa sin cobertura"}</button><button class="btn ghost" data-mtsave="${r.id}">${window.MTSAVED&&MTSAVED(r)?"★ En mis tracks":"☆ Guardar en mis tracks"}</button><button class="btn ghost" data-gpx="${r.id}">⬇ Descargar GPX</button>')
 rep('<button class="x" aria-label="Cerrar" data-close>×</button></div>\n  <div class="meta">${r.iv?','<button class="x" aria-label="Cerrar" data-close>×</button></div>\n  <div class="topacts">${r.gx?`<button class="btn primary" data-follow="${r.id}">▶ Seguir track</button>`:""}${r.u?`<a class="btn ${r.gx?"ghost":"primary"}" href="${esc(r.u)}" target="_blank" rel="noopener">Leer en el blog</a><button class="btn ghost" data-share="${r.id}">↗ Compartir</button>`:""}<button class="btn ghost ovonly" data-ovmap="${r.id}">🗺 Ver en mapa</button></div>\n  <div class="meta">${r.iv?')

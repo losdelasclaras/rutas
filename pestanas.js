@@ -23,16 +23,16 @@ nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Del grupo")+tab("mios","Mis cosas"
 /* «Mis cosas»: una vista nueva con mis puntos, mis tracks y los mapas descargados */
 const sec=document.createElement("section");sec.className="view pad";sec.id="v-mios";sec.hidden=true;
 sec.innerHTML=`<div class="inner"><h1 class="vt">Mis cosas</h1><p class="lead" style="margin-bottom:4px">Tus puntos, tus tracks y los mapas que has descargado. Con tu cuenta de Google los tienes en el móvil y en el ordenador.</p>
-<div class="subtabs" id="st-mios" role="tablist" style="grid-template-columns:repeat(3,1fr)"></div></div>`;
+<div class="subtabs" id="st-mios" role="tablist" style="grid-template-columns:repeat(4,1fr)"></div></div>`;
 main.appendChild(sec);const inner=sec.firstElementChild;
-const MS={mp:document.getElementById("mpbox"),mt:document.getElementById("mtbox"),off:document.getElementById("offbox")};
+const MS={mp:document.getElementById("mpbox"),mt:document.getElementById("mtbox"),off:document.getElementById("offbox"),res:window.RESUMEN?RESUMEN.box:null};
 for(const k in MS)if(MS[k]){MS[k].dataset.msec=k;inner.appendChild(MS[k])}
-const MN={mp:["📍","Mis puntos"],mt:["🧵","Mis tracks"],off:["📥","Mapas"]};
-const cuenta=k=>k==="mp"?MISPUNTOS.get().length:k==="mt"?MISPUNTOS.tracks().length:(window.OFFLINE?OFFLINE.list().length:0);
+const MN={mp:["📍","Puntos"],mt:["🧵","Tracks"],off:["📥","Mapas"],res:["🏆","Resumen"]};
+const cuenta=k=>k==="res"?(typeof PEAKS!=="undefined"?PEAKS.filter(p=>MARKS["c:"+norm(p.c)]==="hecha").length+" ⛰️":""):k==="mp"?MISPUNTOS.get().length:k==="mt"?MISPUNTOS.tracks().length:(window.OFFLINE?OFFLINE.list().length:0);
 let curM=store.get("ldc-mios","mp");if(!MN[curM])curM="mp";
 const barM=document.getElementById("st-mios");
 function pintaM(){barM.innerHTML=Object.keys(MN).map(k=>`<button role="tab" data-ms="${k}" aria-selected="${k===curM}"><span class="i">${MN[k][0]}</span><span>${MN[k][1]}</span><small>${cuenta(k)}</small></button>`).join("");
-  for(const k in MS)if(MS[k])MS[k].hidden=k!==curM}
+  for(const k in MS)if(MS[k])MS[k].hidden=k!==curM;if(curM==="res"&&window.RESUMEN)RESUMEN.render()}
 barM.addEventListener("click",e=>{const b=e.target.closest("[data-ms]");if(!b)return;curM=b.dataset.ms;store.set("ldc-mios",curM);pintaM();if(sec.scrollTop>barM.offsetTop)sec.scrollTop=barM.offsetTop});
 const mo=new MutationObserver(()=>barM.querySelectorAll("[data-ms]").forEach(b=>{const s=b.querySelector("small");if(s)s.textContent=cuenta(b.dataset.ms)}));
 for(const k in MS)if(MS[k])mo.observe(MS[k],{childList:true});
