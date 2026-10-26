@@ -889,7 +889,7 @@ addEventListener("appinstalled",()=>{ib.hidden=true});
 /* ---------- mis puntos: guardar dónde estoy, marcar en el mapa, exportar e importar ---------- */
 (function(){
 const MPK="ldc-mispuntos", MTK="ldc-mistracks";
-const ICOS=[["otro","📍","Punto"],["fuente","💧","Fuente"],["parking","🅿️","Aparcamiento"],["refugio","🏠","Refugio"],["cabana","🛖","Cabaña"],["cumbre","⛰️","Cumbre"],["collado","🥾","Collado / paso"],["vista","👀","Mirador"],["foto","📷","Foto"],["acampada","⛺","Acampada"],["peligro","⚠️","Peligro"],["agua","🏊","Baño / poza"]];
+const ICOS=[["otro","📍","Punto"],["fuente","💧","Fuente"],["parking","🅿️","Aparcamiento"],["refugio","🏠","Refugio"],["cabana","🛖","Cabaña"],["cumbre","⛰️","Cumbre"],["collado","🥾","Collado / paso"],["vista","👀","Mirador"],["foto","📷","Foto"],["peligro","⚠️","Peligro"],["agua","🏊","Baño / poza"]];
 const ICO=k=>(ICOS.find(x=>x[0]===k)||ICOS[0]);
 const EMO=k=>k==="cumbre"?'<svg viewBox="-12 -12 24 24" style="width:1.15em;height:1.15em;vertical-align:-.2em"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>':ICO(k)[1];
 let MP=store.get(MPK,[]), MT=store.get(MTK,[]);
