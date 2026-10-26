@@ -36,6 +36,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .laypanel .lay[hidden]{display:none}
 #map:not(.lbl-mp) .leaflet-tooltip.mpl{display:none}
 #map .leaflet-tooltip.lbl.mpl{color:#5a189a;font-weight:800}
+.bkn{font-size:13.5px;margin:6px 0 0;color:#8a4b00}.bkn.ok{color:var(--muted)}
 .lay .lico.mp{background:#fff;border:2px solid #7b2cbf;font-size:11px}
 </style>`);
 
@@ -132,7 +133,8 @@ function renderBox(){const ps=MP.slice().sort((a,b)=>(b.f||"").localeCompare(a.f
   <div class="mpacts" style="margin:6px 0 8px"><button class="mpb" data-mpx="gps">🎯 Dónde estoy</button><button class="mpb" data-mpx="cross">✛ En el mapa</button>
   ${MP.length?`<button class="mpb" data-mpx="gpx">⬇️ GPX</button><button class="mpb" data-mpx="kml">⬇️ KML</button>`:""}<button class="mpb" data-mpx="imp">⬆️ Importar GPX/KML</button></div>
   ${ps.map(p=>`<div class="mprow" data-mpgo="${p.id}"><span class="e">${EMO(p.ic)}</span><span><b>${esc(p.n)}</b><small>${esc(ICO(p.ic)[2])}${p.a!=null?" · "+p.a.toLocaleString("es-ES")+" m":""}${p.f?" · "+fmtF(p.f):""}</small></span></div>`).join("")}
-  ${MT.length?`<h2 style="margin-top:14px">🧵 Mis tracks <small style="font-weight:500;color:#666">(${MT.length})</small></h2>${MT.map(t=>`<div class="mprow" data-mtgo="${t.id}"><span class="e">〰️</span><span><b>${esc(t.n)}</b><small>${t.km} km</small></span><button class="mpb dan del" data-mtdel="${t.id}">🗑</button></div>`).join("")}`:""}`}
+  ${MT.length?`<h2 style="margin-top:14px">🧵 Mis tracks <small style="font-weight:500;color:#666">(${MT.length})</small></h2>${MT.map(t=>`<div class="mprow" data-mtgo="${t.id}"><span class="e">〰️</span><span><b>${esc(t.n)}</b><small>${t.km} km</small></span><button class="mpb dan del" data-mtdel="${t.id}">🗑</button></div>`).join("")}`:""}
+  <h2 style="margin-top:14px">💾 Copia de seguridad</h2><p class="note">Un archivo con tus marcas de cumbres y lugares, tus puntos y tus tracks. Sirve para pasarlos a otro móvil o al ordenador.</p>${bkpButtons()}`}
 box.addEventListener("click",e=>{const x=e.target.closest("[data-mpx]");
   if(x){const k=x.dataset.mpx;if(k==="gps"){showView("mapa");gps()}else if(k==="cross")cross();else if(k==="gpx")dl("mis-puntos.gpx",toGPX(),"application/gpx+xml");else if(k==="kml")dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml");else if(k==="imp"){fin.value="";fin.click()}return}
   const td=e.target.closest("[data-mtdel]");if(td){if(td.dataset.sure!=="1"){td.dataset.sure="1";td.textContent="¿Seguro?";return}MT=MT.filter(t=>t.id!==td.dataset.mtdel);saveMT();drawMT();renderBox();return}
@@ -165,6 +167,36 @@ function imp(txt,fname){const doc=new DOMParser().parseFromString(txt,"applicati
   LAY.mp=true;LAY.mt=true;saveLay();["mp","mt"].forEach(k=>{const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",true)});
   drawMP();drawMT();renderBox();toast(`Importado: ${np} punto${np===1?"":"s"}${nt?` y ${nt} track${nt===1?"":"s"}`:""}`)}
 
+
+/* ---------- copia de seguridad en archivo: marcas, mis puntos y mis tracks ---------- */
+const BKK="ldc-copia-fecha";
+const hayDatos=()=>Object.keys(MARKS).length+MP.length+MT.length>0;
+function bkpNote(){if(!hayDatos())return"";const f=store.get(BKK,null);const dias=f?(Date.now()-new Date(f))/864e5:1e9;
+  return dias>30?`<p class="bkn">${f?"Hace más de un mes que no guardas copia":"Aún no has guardado ninguna copia"} de tus marcas y puntos. Si pierdes el móvil, se pierden. <button class="linkbtn" data-bkp>Guardar copia ahora</button></p>`:`<p class="bkn ok">Última copia: ${fmtF(f)}</p>`}
+function bkpButtons(c){const k=c?"linkbtn":"mpb";return`<div class="sync"><button class="${k}" data-bkp>💾 Guardar copia</button><button class="${k}" data-rst>📂 Restaurar copia</button></div>${bkpNote()}`}
+function refreshBkp(){renderBox();if(typeof renderCols==="function")renderCols()}
+function bkpSave(){const d=new Date(),z=n=>String(n).padStart(2,"0");
+  const o={app:"losdelasclaras",tipo:"copia",v:2,fecha:d.toISOString(),marcas:MARKS,puntos:MP,tracks:MT};
+  const name=`copia-losdelasclaras-${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}.json`;
+  const txt=JSON.stringify(o);const file=typeof File==="function"?new File([txt],name,{type:"application/json"}):null;
+  const done=()=>{store.set(BKK,o.fecha);refreshBkp()};
+  // en el móvil, mejor el menú de compartir (guardar en Drive, enviarse por WhatsApp o correo…); si no, descarga normal
+  if(file&&matchMedia("(pointer:coarse)").matches&&navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:"Copia de Los de las Claras"}).then(()=>{done();toast("Copia guardada")},err=>{if(err&&err.name!=="AbortError"){dl(name,txt,"application/json");done();toast("Copia guardada en Descargas")}})}
+  else{dl(name,txt,"application/json");done();toast("Copia guardada en Descargas")}}
+const frs=document.createElement("input");frs.type="file";frs.accept=".json,application/json";frs.hidden=true;document.body.appendChild(frs);
+frs.addEventListener("change",()=>{const f=frs.files[0];frs.value="";if(!f)return;f.text().then(t=>{let o=null;try{o=JSON.parse(t)}catch(e){}
+  if(!o||o.app!=="losdelasclaras"){toast("Ese archivo no es una copia de esta app");return}
+  // se suma a lo que ya hay: no se borra nada
+  let nm=0,np=0,nt=0;const M=o.marcas||{};for(const k in M){if((M[k]==="hecha"||M[k]==="quiero")&&MARKS[k]!==M[k]&&MARKS[k]!=="hecha"){MARKS[k]=M[k];nm++}}
+  if(nm)saveMarks();
+  const same=(a,b)=>a.id===b.id||(a.n===b.n&&Math.abs(a.lat-b.lat)<1e-4&&Math.abs(a.lon-b.lon)<1e-4);
+  for(const p of o.puntos||[]){if(p&&isFinite(p.lat)&&isFinite(p.lon)&&!MP.some(q=>same(p,q))){MP.push(p);np++}}if(np)saveMP();
+  for(const tr of o.tracks||[]){if(tr&&tr.pts&&!MT.some(q=>q.id===tr.id)){MT.push(tr);nt++}}if(nt)saveMT();
+  drawMP();drawMT();if(typeof refreshMarks==="function")refreshMarks();refreshBkp();
+  toast(nm+np+nt?`Recuperado: ${nm} marca${nm===1?"":"s"}, ${np} punto${np===1?"":"s"}${nt?` y ${nt} track${nt===1?"":"s"}`:""}`:"Ya tenías todo lo de esa copia")})});
+document.addEventListener("click",e=>{if(e.target.closest("[data-bkp]")){bkpSave();e.preventDefault()}else if(e.target.closest("[data-rst]")){frs.click();e.preventDefault()}});
+window.ldcBkp=bkpButtons;if(typeof renderCols==="function")renderCols();
 /* "ver solo los míos" también deja ver mis puntos (van en su propia capa) */
 drawMP();drawMT();renderBox();
 window.MISPUNTOS={get:()=>MP,tracks:()=>MT};
