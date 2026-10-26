@@ -49,7 +49,7 @@ const hora=()=>{const h=store.get(TK,null);if(!h)return"";const d=new Date(h),ho
 const cuenta=()=>{const nm=Object.keys(MARKS).length,np=MPI.get().length,nt=MPI.tracks().length;
   return`${nm} marca${nm===1?"":"s"} de cumbres y lugares · ${np} punto${np===1?"":"s"}${nt?` · ${nt} track${nt===1?"":"s"}`:""}`};
 let OPEN=false,PEND=null,MOT=null;
-const MOTS={marcas:"Entra para guardar tus marcas",puntos:"Entra para guardar tus puntos",tracks:"Entra para guardar tus tracks"};
+const MOTS={marcas:"Entra para guardar tus marcas",puntos:"Entra para guardar tus puntos",tracks:"Entra para guardar tus tracks",proponer:"Entra para proponer al grupo"};
 // guardar algo tuyo pide haber entrado con Google; lo que pulsaste se hace solo después de entrar
 window.cuentaOk=(fn,motivo)=>{if(store.get(SK,"0")==="1")return true;PEND=fn;MOT=motivo||"marcas";panel();return false};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;
@@ -110,6 +110,7 @@ function joinList(loc,cl,same){const r=cl.slice();for(const p of loc)if(!r.some(
 function applyMarks(m){MARKS=m;store.set("ldc-marcas",MARKS);renderCols();if(typeof refreshMarks==="function")refreshMarks()}
 async function onUser(u){
   for(const f of unsub)f();unsub=[];READY=false;
+  setTimeout(()=>dispatchEvent(new Event("ldc-user")),0);
   if(!u){USER=null;store.set(SK,"0");repaint();return}
   USER=u;store.set(SK,"1");BUSY=true;repaint();
   const fs=A.fs,first=store.get(UK,null)!==u.uid,p=pend();
@@ -153,6 +154,8 @@ async function push(k){if(!USER||!READY){return}
     else if(k==="mapas"){if(window.OFFLINE)await A.fs.setDoc(ref("mapas"),{j:JSON.stringify(OFFLINE.wanted()),t:Date.now()})}
     else await pushTracks();
     setPend(k,0);done()}catch(e){console.warn("sync",k,e);repaint()}}
+// para otros módulos (Seguidores): Firebase y quién ha entrado
+window.LDCFB={load,user:()=>USER};
 // lo llaman saveMarks, saveMP y saveMT cada vez que cambias algo
 window.ldcSync=k=>{if(store.get(SK,"0")!=="1")return;setPend(k,1);paintBtn();clearTimeout(T[k]);T[k]=setTimeout(()=>push(k),800)};
 

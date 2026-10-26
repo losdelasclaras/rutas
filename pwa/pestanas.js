@@ -3,7 +3,7 @@
 (function(){
 const main=document.querySelector("main"),nav=document.querySelector("nav.tabs");if(!main||!nav)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
-nav.tabs{grid-template-columns:repeat(3,1fr)!important}
+nav.tabs{grid-template-columns:repeat(4,1fr)!important}
 .subtabs{position:sticky;top:0;z-index:5;background:var(--paper);display:grid;gap:6px;padding:8px 0 10px;margin:0 0 4px}
 .subtabs button{border:1px solid var(--edge);background:var(--card);color:var(--ink);border-radius:12px;padding:7px 2px 6px;font-weight:700;font-size:13px;line-height:1.15;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;white-space:nowrap}
 .subtabs button .i{font-size:19px;line-height:1}
@@ -16,9 +16,10 @@ nav.tabs{grid-template-columns:repeat(3,1fr)!important}
 </style>`);
 const ICO={mapa:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
   grupo:'<path d="M2 20l7-12 4 6 3-4 6 10z"/><circle cx="17.5" cy="5.5" r="2"/>',
-  mios:'<path d="M6 8h12l-1 12H7z"/><path d="M9 8V6a3 3 0 016 0v2"/>'};
+  mios:'<path d="M6 8h12l-1 12H7z"/><path d="M9 8V6a3 3 0 016 0v2"/>',
+  seg:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c3.2-.4 5.5 1.8 5.5 5.3"/>'};
 const tab=(v,t)=>`<button role="tab" data-v="${v}" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">${ICO[v]}</svg>${t}</button>`;
-nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Del grupo")+tab("mios","Mis cosas");
+nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Del grupo")+tab("mios","Mis cosas")+tab("seg","Seguidores");
 
 /* «Mis cosas»: una vista nueva con mis puntos, mis tracks y los mapas descargados */
 const sec=document.createElement("section");sec.className="view pad";sec.id="v-mios";sec.hidden=true;
@@ -47,7 +48,7 @@ for(const g in GN){const v=document.querySelector("#v-"+g+" .inner");if(!v)conti
 document.addEventListener("click",e=>{const b=e.target.closest("[data-gs]");if(b)showView(b.dataset.gs)});
 
 /* showView entiende las vistas nuevas; la pestaña «Del grupo» vuelve a la última que viste */
-const VIEWS=["mapa","rutas","cumbres","lugares","mios"];
+const VIEWS=["mapa","rutas","cumbres","lugares","mios","seg"];
 window.showView=showView=function(v){
   if(v==="grupo")v=curG;
   if(!VIEWS.includes(v))v="mapa";
@@ -60,5 +61,5 @@ window.showView=showView=function(v){
   store.set("ldc-tab",v)};
 window.LUGTAB=k=>{showView("mios");if(MN[k]){curM=k;store.set("ldc-mios",k);pintaM()}};
 const vis=VIEWS.find(n=>{const el=document.getElementById("v-"+n);return el&&!el.hidden})||"mapa";
-showView(vis==="mios"?"mios":vis);
+showView(vis);
 })();

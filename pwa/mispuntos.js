@@ -232,7 +232,8 @@ document.addEventListener("click",e=>{if(e.target.closest("[data-bkp]")){bkpSave
 window.ldcBkp=bkpButtons;if(typeof renderCols==="function")renderCols();
 /* "ver solo los míos" también deja ver mis puntos (van en su propia capa) */
 drawMP();drawMT();renderBox();
-window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,sync:()=>syncMP(),ptsOf,desn,demAlt,dl,
+window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,emo:EMO,ico:ICO,
+  addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),ptsOf,desn,demAlt,dl,
   saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
   importText(txt,n,prev){try{imp(String(txt),n||"track.gpx",prev)}catch(e){toast("No he podido leer ese archivo (solo GPX o KML)")}},
   importar(){if(window.cuentaOk&&!cuentaOk(()=>toast("Ya has entrado. Pulsa otra vez «Cargar GPX/KML» para elegir el archivo"),"tracks"))return;fin.value="";fin.click()},
