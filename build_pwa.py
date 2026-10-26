@@ -47,7 +47,7 @@ rep('</style>','''html,body{height:100%;margin:0}
 </style>
 </head><body>''')
 # cada módulo va protegido: si uno falla en un móvil concreto, los demás y la app siguen funcionando
-_mods=['mispuntos','capas','sync','seguir','mistracks','offline','resumen','pestanas','instalar','compartir','perfil','tiempo']
+_mods=['mispuntos','capas','sync','seguir','mistracks','offline','resumen','pestanas','novedades','instalar','compartir','perfil','tiempo']
 _w=lambda n:'try{\n'+open(f'/home/claude/pwa/{n}.js').read()+'\n}catch(e){console.error("módulo '+n+'",e);(window.__ERRS=window.__ERRS||[]).push("'+n+': "+(e&&e.message))}'
 i=t.rindex('</script>'); t=t[:i]+'\n'+'\n'.join(_w(n) for n in _mods)+'\n'+t[i:]
 i=t.rindex('</script>'); t=t[:i]+'</script>\n<script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>\n</body></html>\n'
@@ -139,6 +139,8 @@ rep('<div class="sec"><h3>El tiempo</h3><p class="note" style="margin-bottom:6px
 rep('.fsbtn{','#sheet .sheet-head .x,#ov .sheet-head .x{width:42px;height:42px;font-size:26px;font-weight:700;background:#c3262e;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25)}\n.fsbtn{')
 # el botón de Meteoblue sobra: el recuadro ya lleva a Meteoblue al tocarlo
 rep('<a class="btn ghost" href="https://www.meteoblue.com/es/tiempo/semana/${hi.lat.toFixed(3)}N${hi.lon.toFixed(3)}E${hi.a?Math.round(hi.a):""}_${encodeURIComponent((r.r==="Dolomitas"?"Europe/Rome":zoneOf(r.r)==="alp"?"Europe/Zurich":"Europe/Madrid"))}" target="_blank" rel="noopener">☁ Previsión en el punto (Meteoblue)</a>','')
+# lista de rutas en el móvil: los km y el desnivel en dos líneas para que el título tenga sitio
+rep('.fsbtn{','@media(max-width:560px){.row .alt{white-space:normal;text-align:right;width:74px;flex:none;font-size:12.5px;line-height:1.35}}\n.fsbtn{')
 # seguir esta ruta (botón en la ficha) y «rutas cerca» medido desde el inicio del track
 rep('<button class="btn primary" data-gpx="${r.id}">⬇ Descargar GPX</button>','${window.RESTBTN?RESTBTN(r):""}<button class="btn ghost" data-offr="${r.id}">${window.OFFLBL?OFFLBL(r.u):"📥 Mapa sin cobertura"}</button><button class="btn ghost" data-mtsave="${r.id}">${window.MTSAVED&&MTSAVED(r)?"★ En mis tracks":"☆ Guardar en mis tracks"}</button><button class="btn ghost" data-gpx="${r.id}">⬇ Descargar GPX</button>')
 rep('<button class="x" aria-label="Cerrar" data-close>×</button></div>\n  <div class="meta">${r.iv?','<button class="x" aria-label="Cerrar" data-close>×</button></div>\n  <div class="topacts">${r.gx?`<button class="btn primary" data-follow="${r.id}">▶ Seguir track</button>`:""}${r.u?`<a class="btn ${r.gx?"ghost":"primary"}" href="${esc(r.u)}" target="_blank" rel="noopener">Leer en el blog</a><button class="btn ghost" data-share="${r.id}">↗ Compartir</button>`:""}<button class="btn ghost ovonly" data-ovmap="${r.id}">🗺 Ver en mapa</button></div>\n  <div class="meta">${r.iv?')
