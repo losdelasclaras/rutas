@@ -3,6 +3,14 @@
 (function(){
 const MPI=window.MISPUNTOS;
 const T=()=>MPI.tracks();
+document.head.insertAdjacentHTML("beforeend",`<style>
+.mtfil,.mpfil{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.mtfil button{border:1px solid var(--edge);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 12px;font-weight:700;font-size:14px;cursor:pointer}
+.mtfil button[aria-pressed=true]{background:var(--ink);color:var(--card);border-color:var(--ink)}.mtfil small{opacity:.7}
+.mpq{width:100%;box-sizing:border-box;border:1px solid var(--edge);border-radius:10px;padding:10px 12px;font:inherit;font-size:16px;background:var(--card);color:var(--ink);margin:2px 0 4px}
+.est{display:inline-block;margin-top:3px;font-size:12px;font-weight:700;border-radius:999px;padding:2px 8px}.est.h{background:#e3f1e6;color:#1f6b32}.est.p{background:#fdf0d8;color:#8a4b00}
+.estbox{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 10px}.estbox .mpb.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.estbox input[type=date]{border:1px solid var(--edge);border-radius:8px;padding:6px;font:inherit;background:var(--card);color:var(--ink)}
+</style>`);
 const box=document.createElement("div");box.className="mpbox";box.id="mtbox";
 document.getElementById("mpbox").after(box);
 const routeOf=t=>t&&t.src==="blog"?R.find(r=>r.u===t.u):null;
@@ -12,12 +20,27 @@ const fmtF=f=>{try{return new Date(f).toLocaleDateString("es-ES",{day:"numeric",
 function datos(t){const r=routeOf(t),g=r&&r.gx;return{km:t.km||(g&&g.km)||0,up:t.up!=null?t.up:g?g.up:null,dn:t.dn!=null?t.dn:g?g.dn:null}}
 const kmTxt=v=>v?v.toLocaleString("es-ES",{maximumFractionDigits:1})+" km":"";
 
-function render(){const ts=T().slice().sort((a,b)=>(b.f||"").localeCompare(a.f||""));
-  box.innerHTML=`<h2>🧵 Mis tracks <small style="font-weight:500;color:#666">(${ts.length})</small></h2>
-  ${ts.length?"":`<p class="note">Guarda aquí tracks de otras personas (GPX o KML: de Wikiloc, de un amigo…) y los de las rutas del blog que te interesen, con <b>☆ Guardar en mis tracks</b> en la ficha de la ruta. Desde aquí puedes seguirlos con el GPS.</p>`}
-  <div class="mpacts" style="margin:6px 0 8px"><button class="mpb" data-mtx="imp">⬆️ Cargar GPX/KML</button></div>
-  ${ts.map(t=>{const d=datos(t);return`<div class="mprow" data-mtopen="${esc(t.id)}"><span class="e">${t.src==="blog"?"📘":"〰️"}</span><span><b>${esc(t.n)}</b><small>${[kmTxt(d.km),d.up!=null?"+"+d.up.toLocaleString("es-ES")+" m":"",t.src==="blog"?"Del blog":"Cargado",t.f?fmtF(t.f):""].filter(Boolean).join(" · ")}</small></span><span class="rbs"><button class="rb" data-mtred="${esc(t.id)}" aria-label="Cambiar nombre"><svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button><button class="rb dan" data-mtrdel="${esc(t.id)}" aria-label="Quitar"><svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button></span></div>`}).join("")}`}
+// filtro (todos / pendientes / hechos) y búsqueda: la lista se repinta sin tocar el buscador
+let FIL=store.get("ldc-mtfil","todos"),QT="";
+const nk2=v=>String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const estado=t=>t.est==="hecho"?`<span class="est h">✓ Hecho${t.fh?" "+fmtF(t.fh):""}</span>`:t.est==="pend"?`<span class="est p">★ Pendiente</span>`:"";
+function filas(){const all=T().slice().sort((a,b)=>(b.f||"").localeCompare(a.f||""));
+  const ts=all.filter(t=>(FIL==="todos"||(FIL==="hecho"?t.est==="hecho":t.est==="pend"))&&(!QT||nk2(t.n).includes(QT)));
+  if(!ts.length)return`<p class="note" style="margin:10px 2px">${all.length?"Ningún track con ese filtro o búsqueda.":""}</p>`;
+  return ts.map(t=>{const d=datos(t);return`<div class="mprow" data-mtopen="${esc(t.id)}"><span class="e">${t.src==="blog"?"📘":"〰️"}</span><span><b>${esc(t.n)}</b><small>${[kmTxt(d.km),d.up!=null?"+"+d.up.toLocaleString("es-ES")+" m":"",t.src==="blog"?"Del blog":"Cargado"].filter(Boolean).join(" · ")}</small>${estado(t)}</span><span class="rbs"><button class="rb" data-mtred="${esc(t.id)}" aria-label="Cambiar nombre"><svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button><button class="rb dan" data-mtrdel="${esc(t.id)}" aria-label="Quitar"><svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button></span></div>`}).join("")}
+function render(){const all=T(),nh=all.filter(t=>t.est==="hecho").length,np=all.filter(t=>t.est==="pend").length;
+  if(!box.querySelector("#mtlist")||box.dataset.n!==String(all.length>0)){
+    box.dataset.n=String(all.length>0);
+    box.innerHTML=`<h2>🧵 Mis tracks</h2>
+    ${all.length?"":`<p class="note">Guarda aquí tracks de otras personas (GPX o KML: de Wikiloc, de un amigo…) y los de las rutas del blog que te interesen, con <b>☆ Guardar en mis tracks</b> en la ficha de la ruta. Desde aquí puedes seguirlos con el GPS.</p>`}
+    <div class="mpacts" style="margin:6px 0 8px"><button class="mpb" data-mtx="imp">⬆️ Cargar GPX/KML</button></div>
+    ${all.length?`<div class="mtfil" id="mtfil"></div><input class="mpq" id="mtq" type="search" placeholder="Buscar en mis tracks…" autocomplete="off">`:""}
+    <div id="mtlist"></div>`;
+    const q=box.querySelector("#mtq");if(q){q.value=QT;q.addEventListener("input",()=>{QT=nk2(q.value.trim());box.querySelector("#mtlist").innerHTML=filas()})}}
+  const f=box.querySelector("#mtfil");if(f)f.innerHTML=[["todos","Todos",all.length],["pend","★ Pendientes",np],["hecho","✓ Hechos",nh]].map(([k,n,c])=>`<button data-mtf="${k}" aria-pressed="${FIL===k}">${n} <small>${c}</small></button>`).join("");
+  box.querySelector("#mtlist").innerHTML=filas()}
 box.addEventListener("click",e=>{if(e.target.closest('[data-mtx="imp"]')){MPI.importar();return}
+  const fb=e.target.closest("[data-mtf]");if(fb){FIL=fb.dataset.mtf;store.set("ldc-mtfil",FIL);render();return}
   const re=e.target.closest("[data-mtred]");if(re){renombrar(re.dataset.mtred);return}
   const rd=e.target.closest("[data-mtrdel]");if(rd){if(rd.dataset.sure!=="1"){rd.dataset.sure="1";rd.classList.add("sure");rd.innerHTML="¿Seguro?";setTimeout(()=>{if(rd.isConnected){rd.dataset.sure="";rd.classList.remove("sure");rd.innerHTML='<svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>'}},4000);return}
     MPI.saveTracks(T().filter(x=>String(x.id)!==rd.dataset.mtrdel));toast("Quitado de Mis tracks");return}
@@ -41,6 +64,7 @@ function open(id,fit){const t=T().find(x=>String(x.id)===String(id));if(!t)retur
   MPI.show(`<div class="sheet-head"><h2>${esc(t.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="topacts"><button class="btn primary" data-mtfol="${esc(t.id)}">▶ Seguir track</button><button class="btn ghost" data-mtshare="${esc(t.id)}">📤 Compartir</button>${r?`<button class="btn ghost" data-mtroute="${esc(t.id)}">📘 Ver la ruta</button>`:""}</div>
   <div class="meta"><span class="tag">${r?"Ruta del blog":"Track cargado"}</span>${d.km?`<span class="tag">${kmTxt(d.km)}</span>`:""}${d.up!=null?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}${t.f?`<span class="tag">Guardado el ${fmtF(t.f)}</span>`:""}</div>
+  <div class="estbox"><button class="mpb${t.est==="hecho"?" on":""}" data-mtest="hecho" data-id="${esc(t.id)}">✓ ${t.est==="hecho"?"Hecho":"Lo he hecho"}</button><button class="mpb${t.est==="pend"?" on":""}" data-mtest="pend" data-id="${esc(t.id)}">★ Pendiente</button>${t.est==="hecho"?`<label class="note" style="display:flex;align-items:center;gap:6px">el <input type="date" data-mtfh="${esc(t.id)}" value="${(t.fh||"").slice(0,10)}" max="${new Date().toISOString().slice(0,10)}"></label>`:""}</div>
   ${perfil(t)}
   ${!r&&t.pts&&t.pts.some(x=>x[2]==null)?`<p class="note">${navigator.onLine?"Calculando las alturas…":"Este track no trae alturas; se calcularán cuando haya conexión."}</p>`:""}
   ${window.OFFLINE&&!OFFLINE.has(r?r.u:"mt:"+t.id)&&p&&p[0][0]<44&&p[0][0]>35&&p[0][1]>-10&&p[0][1]<4.7?`<div class="offhint" style="margin:12px 0 4px;padding:10px 12px;border-radius:12px;background:#eef6ef;color:#1f4d2a;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="flex:1;min-width:180px">📥 <b>¿Vas a ir?</b> Descarga el mapa para verlo aunque no tengas cobertura.</span><button class="mpb pri" style="background:#2a7a3b;border-color:#2a7a3b" data-offt="${esc(t.id)}">Descargar mapa</button></div>`:""}
@@ -60,11 +84,16 @@ function renombrar(k){const t=T().find(x=>String(x.id)===String(k));if(!t)return
   sheet._mt=t.id;setTimeout(()=>{const i=document.getElementById("mtn");if(i){i.focus();i.select()}},50)}
 const comoRuta=t=>({u:"mt:"+t.id,ti:t.n,gx:{ln:t.pts,km:t.km}});
 
+sheet.addEventListener("change",e=>{const d=e.target.closest("[data-mtfh]");if(!d||!d.value)return;const k2=d.dataset.mtfh;
+  MPI.saveTracks(T().map(x=>String(x.id)===k2?{...x,fh:d.value}:x));toast("Fecha guardada")});
 sheet.addEventListener("click",e=>{
   const id=(s)=>{const b=e.target.closest(s);return b?b.getAttribute(s.slice(1,-1)):null};
   let k;
   if((k=id("[data-mtfol]"))!=null){const t=T().find(x=>String(x.id)===k);if(!t)return;const r=routeOf(t);if(r)SEGUIR.start(r,false);else SEGUIR.start(comoRuta(t),false);return}
   if((k=id("[data-mtgpx]"))!=null){const t=T().find(x=>String(x.id)===k);if(!t)return;const r=routeOf(t);if(r)dlGPX(r);else MPI.dl(t.n.replace(/[\\/:*?"<>|]+/g," ").trim()+".gpx",gpxDe(t),"application/gpx+xml");return}
+  const es=e.target.closest("[data-mtest]");if(es){const k2=es.dataset.id,v=es.dataset.mtest;
+    MPI.saveTracks(T().map(x=>{if(String(x.id)!==k2)return x;const y={...x};if(y.est===v){delete y.est;delete y.fh}else{y.est=v;if(v==="hecho")y.fh=new Date().toISOString().slice(0,10);else delete y.fh}return y}));
+    toast(v==="hecho"?"Marcado como hecho":"Apuntado como pendiente");open(k2,false);return}
   if((k=id("[data-mtshare]"))!=null){const t=T().find(x=>String(x.id)===k);if(t&&window.COMPARTIR)COMPARTIR.track(t);return}
   if((k=id("[data-mtroute]"))!=null){const t=T().find(x=>String(x.id)===k);const r=routeOf(t);if(r)openRoute(r.id);return}
   if((k=id("[data-mtren]"))!=null){renombrar(k);return}
