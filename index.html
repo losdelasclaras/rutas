@@ -1134,7 +1134,8 @@ document.addEventListener("click",e=>{if(e.target.closest("[data-bkp]")){bkpSave
 window.ldcBkp=bkpButtons;if(typeof renderCols==="function")renderCols();
 /* "ver solo los míos" también deja ver mis puntos (van en su propia capa) */
 drawMP();drawMT();renderBox();
-window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,sync:()=>syncMP(),ptsOf,desn,demAlt,dl,
+window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,emo:EMO,ico:ICO,
+  addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),ptsOf,desn,demAlt,dl,
   saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
   importText(txt,n,prev){try{imp(String(txt),n||"track.gpx",prev)}catch(e){toast("No he podido leer ese archivo (solo GPX o KML)")}},
   importar(){if(window.cuentaOk&&!cuentaOk(()=>toast("Ya has entrado. Pulsa otra vez «Cargar GPX/KML» para elegir el archivo"),"tracks"))return;fin.value="";fin.click()},
@@ -1228,7 +1229,7 @@ const hora=()=>{const h=store.get(TK,null);if(!h)return"";const d=new Date(h),ho
 const cuenta=()=>{const nm=Object.keys(MARKS).length,np=MPI.get().length,nt=MPI.tracks().length;
   return`${nm} marca${nm===1?"":"s"} de cumbres y lugares · ${np} punto${np===1?"":"s"}${nt?` · ${nt} track${nt===1?"":"s"}`:""}`};
 let OPEN=false,PEND=null,MOT=null;
-const MOTS={marcas:"Entra para guardar tus marcas",puntos:"Entra para guardar tus puntos",tracks:"Entra para guardar tus tracks"};
+const MOTS={marcas:"Entra para guardar tus marcas",puntos:"Entra para guardar tus puntos",tracks:"Entra para guardar tus tracks",proponer:"Entra para proponer al grupo"};
 // guardar algo tuyo pide haber entrado con Google; lo que pulsaste se hace solo después de entrar
 window.cuentaOk=(fn,motivo)=>{if(store.get(SK,"0")==="1")return true;PEND=fn;MOT=motivo||"marcas";panel();return false};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;
@@ -1289,6 +1290,7 @@ function joinList(loc,cl,same){const r=cl.slice();for(const p of loc)if(!r.some(
 function applyMarks(m){MARKS=m;store.set("ldc-marcas",MARKS);renderCols();if(typeof refreshMarks==="function")refreshMarks()}
 async function onUser(u){
   for(const f of unsub)f();unsub=[];READY=false;
+  setTimeout(()=>dispatchEvent(new Event("ldc-user")),0);
   if(!u){USER=null;store.set(SK,"0");repaint();return}
   USER=u;store.set(SK,"1");BUSY=true;repaint();
   const fs=A.fs,first=store.get(UK,null)!==u.uid,p=pend();
@@ -1332,6 +1334,8 @@ async function push(k){if(!USER||!READY){return}
     else if(k==="mapas"){if(window.OFFLINE)await A.fs.setDoc(ref("mapas"),{j:JSON.stringify(OFFLINE.wanted()),t:Date.now()})}
     else await pushTracks();
     setPend(k,0);done()}catch(e){console.warn("sync",k,e);repaint()}}
+// para otros módulos (Seguidores): Firebase y quién ha entrado
+window.LDCFB={load,user:()=>USER};
 // lo llaman saveMarks, saveMP y saveMT cada vez que cambias algo
 window.ldcSync=k=>{if(store.get(SK,"0")!=="1")return;setPend(k,1);paintBtn();clearTimeout(T[k]);T[k]=setTimeout(()=>push(k),800)};
 
@@ -1822,12 +1826,187 @@ window.RESUMEN={box,render};
 
 }catch(e){console.error("módulo resumen",e);(window.__ERRS=window.__ERRS||[]).push("resumen: "+(e&&e.message))}
 try{
+/* ---------- 👥 Seguidores: puntos y tracks que comparte la gente, revisados antes por Los de las Claras ----------
+   · En la ficha de un punto o un track tuyo: «👥 Proponer al grupo» (con comentario y enlaces: blog, fotos, Wikiloc…).
+   · La propuesta solo la ven quien la manda y el administrador. Al aceptarla se publica en la pestaña Seguidores.
+   · Firestore: propuestas/{id} (pendientes) y seguidores/{id} (publicadas, las ve todo el mundo). */
+(function(){
+const ADM=["losdelasclaras@gmail.com","jcrespopazos@gmail.com"];
+const MPI=window.MISPUNTOS,CK="ldc-seg";
+const esAdm=()=>{const u=window.LDCFB&&LDCFB.user();return!!(u&&u.email&&ADM.includes(u.email.toLowerCase()))};
+document.head.insertAdjacentHTML("beforeend",`<style>
+@media(max-width:430px){nav.tabs button{font-size:11.5px;letter-spacing:0;padding:8px 1px 10px}}
+.segbox{border:1px solid var(--edge);border-radius:14px;padding:10px 12px 6px;margin:0 0 14px;background:var(--card)}
+.segbox.adm{border:2px solid #c3262e}
+.segbox h2{margin:0 0 6px;font-size:17px}
+.segrow{display:flex;gap:10px;align-items:flex-start;padding:10px 2px;border-top:1px solid var(--edge);cursor:pointer}
+.segrow:first-of-type{border-top:0}
+.segrow .e{font-size:24px;line-height:1.1;flex:none;width:30px;text-align:center}
+.segrow .b{flex:1;min-width:0}.segrow .b b{display:block;font-size:16px}
+.segrow .b small{display:block;color:var(--muted);font-size:13px;line-height:1.3}
+.segrow .b .c{color:var(--ink);font-size:13.5px;margin-top:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.segacts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.seglinks{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
+.segform label{display:block;font-weight:700;margin:12px 0 4px}
+.segform input,.segform textarea{width:100%;box-sizing:border-box;border:1px solid var(--edge);border-radius:10px;padding:10px;font:inherit;font-size:16px;background:var(--paper);color:var(--ink)}
+.segform textarea{min-height:80px;resize:vertical}
+.segok{background:#2a7a3b!important;border-color:#2a7a3b!important;color:#fff!important}
+.segno{background:#fff!important;border-color:#c3262e!important;color:#c3262e!important}
+#seg-adm:empty,#seg-mias:empty{display:none}
+.segvacio{color:var(--muted);padding:6px 2px 10px}
+</style>`);
+
+/* --- la pestaña --- */
+const main=document.querySelector("main");
+const sec=document.createElement("section");sec.className="view pad";sec.id="v-seg";sec.hidden=true;
+sec.innerHTML=`<div class="inner"><h1 class="vt">Seguidores</h1>
+<p class="lead">Puntos y tracks que comparten los seguidores del blog: fuentes, variantes, rutas que han hecho… Lo revisa Los de las Claras antes de publicarlo.</p>
+<p class="note" style="margin:-4px 0 14px">¿Quieres compartir algo tuyo? Ábrelo en <b>Mis cosas</b> y pulsa <b>«👥 Proponer al grupo»</b>.</p>
+<div id="seg-adm"></div><div id="seg-mias"></div><div id="seg-pub"></div></div>`;
+main.appendChild(sec);
+const $=id=>document.getElementById(id);
+
+const J=s=>{try{return JSON.parse(s)}catch(e){return null}};
+const fecha=t=>t?new Date(t).toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"}):"";
+const kmT=k=>k?(Math.round(k*10)/10).toLocaleString("es-ES")+" km":"";
+function linkIco(u){const h=(u.match(/^https?:\/\/([^/]+)/i)||[,""])[1].toLowerCase();
+  return /photos\.google|photos\.app|flickr|500px|imgur|icloud/.test(h)?["📷","Ver fotos"]:/wikiloc/.test(h)?["🧭","Wikiloc"]:/youtu|vimeo/.test(h)?["🎬","Ver vídeo"]:
+    /instagram/.test(h)?["📸","Instagram"]:/facebook/.test(h)?["👍","Facebook"]:/blogspot|wordpress|blog/.test(h)?["📝","Leer la crónica"]:["🔗",h.replace(/^www\./,"")||"Enlace"]}
+const emo=x=>x.tipo==="track"?"🧵":(MPI.emo?MPI.emo((x.dd||{}).ic):"📍");
+function fila(x,modo){const d=x.dd||{};
+  return`<div class="segrow" data-seg="${esc(x.id)}" data-modo="${modo}"><span class="e">${emo(x)}</span><span class="b"><b>${esc(x.n)}</b>
+  <small>${x.tipo==="track"?"Track":"Punto"}${d.km?" · "+kmT(d.km):""}${d.up?" · +"+d.up.toLocaleString("es-ES")+" m":""}${d.a?" · "+d.a.toLocaleString("es-ES")+" m":""} · ${esc(x.quien||"")} · ${fecha(x.tp||x.t)}</small>
+  ${x.com?`<span class="c">${esc(x.com)}</span>`:""}
+  ${modo==="rev"?`<span class="segacts"><button class="mpb segok" data-segok="${esc(x.id)}">✓ Publicar</button><button class="mpb segno" data-segno="${esc(x.id)}">✕ Rechazar</button></span>`:""}</span></div>`}
+
+/* --- datos --- */
+let PUB=(J(localStorage.getItem(CK)||"null")||[]).map(x=>({...x,dd:J(x.d)||{}})),REV=[],MIAS=[],A=null;
+const conDatos=d=>{const x=d.data();return{...x,id:d.id,dd:J(x.d)||{}}};
+async function fb(){if(A)return A;if(!window.LDCFB)throw new Error("sin Firebase");A=await LDCFB.load();return A}
+async function cargarPub(){try{const a=await fb(),fs=a.fs;
+    const s=await fs.getDocs(fs.query(fs.collection(a.db,"seguidores"),fs.orderBy("tp","desc"),fs.limit(300)));
+    PUB=[];s.forEach(d=>PUB.push(conDatos(d)));
+    try{localStorage.setItem(CK,JSON.stringify(PUB.map(({dd,...x})=>x)))}catch(e){}
+  }catch(e){console.warn("seguidores",e)}pinta()}
+async function cargarRev(){REV=[];MIAS=[];const u=window.LDCFB&&LDCFB.user();if(!u){pinta();badge();return}
+  try{const a=await fb(),fs=a.fs,c=fs.collection(a.db,"propuestas");
+    const s=await fs.getDocs(esAdm()?fs.query(c,fs.orderBy("t","desc")):fs.query(c,fs.where("uid","==",u.uid)));
+    s.forEach(d=>(esAdm()?REV:MIAS).push(conDatos(d)));
+  }catch(e){console.warn("propuestas",e)}pinta();badge()}
+function pinta(){
+  $("seg-adm").innerHTML=esAdm()?`<div class="segbox adm"><h2>🛡️ Propuestas por revisar (${REV.length})</h2>${REV.length?REV.map(x=>fila(x,"rev")).join(""):`<p class="segvacio">No hay nada pendiente.</p>`}
+    <p class="note">Esto solo lo ves tú. Toca una propuesta para verla en el mapa antes de decidir.</p></div>`:"";
+  $("seg-mias").innerHTML=MIAS.length?`<div class="segbox"><h2>⏳ Tus propuestas pendientes de revisar</h2>${MIAS.map(x=>fila(x,"mia")).join("")}</div>`:"";
+  $("seg-pub").innerHTML=`<div class="segbox"><h2>👥 Compartido por los seguidores</h2>${PUB.length?PUB.map(x=>fila(x,"pub")).join(""):`<p class="segvacio">${navigator.onLine?"Todavía no hay nada publicado. ¡Sé el primero en proponer algo!":"Sin conexión."}</p>`}</div>`}
+let BADGE=null;
+function badge(){const tab=document.querySelector('nav.tabs [data-v="seg"]');if(!tab)return;
+  if(BADGE){BADGE.remove();BADGE=null}
+  if(esAdm()&&REV.length){BADGE=document.createElement("span");BADGE.className="nbadge";BADGE.textContent=REV.length;tab.appendChild(BADGE)}}
+if(!document.querySelector("style[data-nbadge]"))document.head.insertAdjacentHTML("beforeend",`<style data-nbadge>nav.tabs button{position:relative}nav.tabs .nbadge{position:absolute;top:4px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#c3262e;color:#fff;font:800 11.5px/18px system-ui;letter-spacing:0;box-shadow:0 0 0 2px var(--paper)}</style>`);
+pinta();
+// al entrar en la pestaña se actualiza; al entrar con la cuenta se miran las propuestas
+new MutationObserver(()=>{if(!sec.hidden){cargarPub();cargarRev()}}).observe(sec,{attributes:true,attributeFilter:["hidden"]});
+addEventListener("ldc-user",()=>setTimeout(cargarRev,500));
+
+/* --- ver una en el mapa --- */
+let TMP=null;
+const quitaTmp=()=>{if(TMP){TMP.remove();TMP=null}};
+function ver(x,modo){const d=x.dd||{};if(typeof showView==="function")showView("mapa");quitaTmp();
+  const pad={paddingTopLeft:[30,90],paddingBottomRight:innerWidth>=860?[480,30]:[30,Math.round(innerHeight*.5)],maxZoom:15};
+  let q=null;
+  if(x.tipo==="track"&&d.pts&&d.pts.length>1){TMP=L.layerGroup([L.polyline(d.pts,{color:"#fff",weight:8,opacity:.9}),L.polyline(d.pts,{color:"#d9480f",weight:5,opacity:.95})]).addTo(map);
+    map.fitBounds(L.latLngBounds(d.pts),pad);q=d.pts.reduce((b,p)=>p[2]!=null&&(b[2]==null||p[2]>b[2])?p:b,d.pts[0])}
+  else if(d.lat!=null){TMP=L.layerGroup([L.circleMarker([d.lat,d.lon],{radius:11,color:"#fff",weight:3,fillColor:"#d9480f",fillOpacity:1})]).addTo(map);
+    map.setView([d.lat,d.lon],Math.max(map.getZoom(),14));q=[d.lat,d.lon,d.a]}
+  const links=(x.links||[]).filter(u=>/^https?:\/\//i.test(u));
+  const yo=window.LDCFB&&LDCFB.user();
+  MPI.show(`<div class="sheet-head"><h2>${emo(x)} ${esc(x.n)}</h2><button class="x" aria-label="Cerrar" data-close data-segx>×</button></div>
+  ${modo==="rev"?`<div class="topacts"><button class="btn primary segok" data-segok="${esc(x.id)}">✓ Publicar</button><button class="btn ghost segno" data-segno="${esc(x.id)}">✕ Rechazar</button></div>`:
+    x.tipo==="track"?`<div class="topacts"><button class="btn primary" data-segfol>▶ Seguir</button><button class="btn ghost" data-segsave>☆ Guardar</button></div>`:
+    `<div class="topacts"><a class="btn primary" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lon}">🚗 Cómo llegar</a><button class="btn ghost" data-segsave>☆ Guardar</button></div>`}
+  <div class="meta"><span class="tag">👥 ${esc(x.quien||"Seguidor")}</span>${d.km?`<span class="tag">${kmT(d.km)}</span>`:""}${d.up?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}${d.a?`<span class="tag alt">${d.a.toLocaleString("es-ES")} m</span>`:""}<span class="tag">${modo==="rev"||modo==="mia"?"Enviado":"Publicado"} el ${fecha(x.tp||x.t)}</span></div>
+  ${modo==="rev"&&x.email?`<p class="note">Lo manda ${esc(x.email)}</p>`:""}
+  ${modo==="mia"?`<p class="note">⏳ Pendiente de revisar. Cuando se publique aparecerá en Seguidores.</p>`:""}
+  ${x.com?`<p class="desc" style="white-space:pre-wrap">${esc(x.com)}</p>`:""}
+  ${links.length?`<div class="seglinks">${links.map(u=>{const[i,t]=linkIco(u);return`<a class="mpb" target="_blank" rel="noopener nofollow" href="${esc(u)}">${i} ${esc(t)}</a>`}).join("")}</div>`:""}
+  ${(modo==="pub"&&(esAdm()||(yo&&yo.uid===x.uid)))||modo==="mia"?`<div class="mpacts"><button class="mpb dan" data-segdel="${esc(x.id)}" data-modo="${modo}">🗑 ${modo==="mia"?"Retirar mi propuesta":"Quitar de Seguidores"}</button></div>`:""}
+  ${q?`<h3 style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px">El tiempo</h3><div class="wx" data-lat="${q[0]}" data-lon="${q[1]}" data-alt="${q[2]!=null?Math.round(q[2]):""}"></div>`:""}`);
+  sheet._seg=x}
+const busca=(id,modo)=>(modo==="rev"?REV:modo==="mia"?MIAS:PUB).find(x=>x.id===id);
+sec.addEventListener("click",e=>{if(e.target.closest("button"))return;const r=e.target.closest("[data-seg]");if(!r)return;const x=busca(r.dataset.seg,r.dataset.modo);if(x)ver(x,r.dataset.modo)});
+
+/* --- publicar, rechazar, quitar (el administrador) --- */
+async function publicar(id){const x=REV.find(y=>y.id===id);if(!x)return;
+  try{const a=await fb(),fs=a.fs;const{dd,email,id:_i,...o}=x;
+    await fs.setDoc(fs.doc(a.db,"seguidores",id),{...o,tp:Date.now()});await fs.deleteDoc(fs.doc(a.db,"propuestas",id));
+    toast("Publicado en Seguidores ✓");fin()}catch(e){toast("No se ha podido publicar: "+(e.code||e.message))}}
+async function rechazar(id){if(!confirm("¿Rechazar esta propuesta? Se borrará."))return;
+  try{const a=await fb();await a.fs.deleteDoc(a.fs.doc(a.db,"propuestas",id));toast("Propuesta rechazada");fin()}catch(e){toast("No se ha podido borrar: "+(e.code||e.message))}}
+async function quitar(id,modo){if(!confirm(modo==="mia"?"¿Retirar tu propuesta?":"¿Quitarlo de Seguidores?"))return;
+  try{const a=await fb();await a.fs.deleteDoc(a.fs.doc(a.db,modo==="mia"?"propuestas":"seguidores",id));toast("Quitado");fin()}catch(e){toast("No se ha podido quitar: "+(e.code||e.message))}}
+function fin(){if(sheet._seg){sheet.hidden=true;sheet._seg=null;quitaTmp()}cargarPub();cargarRev()}
+document.addEventListener("click",e=>{let b;
+  if(b=e.target.closest("[data-segok]")){e.stopPropagation();publicar(b.dataset.segok);return}
+  if(b=e.target.closest("[data-segno]")){e.stopPropagation();rechazar(b.dataset.segno);return}
+  if(b=e.target.closest("[data-segdel]")){quitar(b.dataset.segdel,b.dataset.modo);return}});
+
+/* --- en la ficha: seguir, guardar, cerrar --- */
+sheet.addEventListener("click",e=>{const x=sheet._seg;
+  if(e.target.closest("[data-segx]"))quitaTmp();
+  if(!x)return;const d=x.dd||{};
+  if(e.target.closest("[data-segfol]")){quitaTmp();SEGUIR.start({u:"tmp",ti:x.n,gx:{ln:d.pts,km:d.km}},false);return}
+  if(e.target.closest("[data-segsave]")){const go=()=>{const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6),nota=[x.com,"Compartido por "+(x.quien||"un seguidor"),...(x.links||[])].filter(Boolean).join("\n");
+      if(x.tipo==="track"){const o={id,n:x.n,km:d.km,pts:d.pts,src:"gpx",f:new Date().toISOString()};MPI.desn(o);MPI.saveTracks([...MPI.tracks(),o]);toast("Guardado en Mis cosas › Tracks")}
+      else{MPI.addPoint({id,n:x.n,lat:d.lat,lon:d.lon,a:d.a,ic:d.ic||"otro",nota,f:new Date().toISOString()});toast("Guardado en Mis cosas › Puntos")}};
+    if(window.cuentaOk&&!cuentaOk(go,x.tipo==="track"?"tracks":"puntos"))return;go()}});
+addEventListener("keydown",e=>{if(e.key==="Escape")quitaTmp()});
+
+/* --- «👥 Proponer al grupo» en la ficha de un punto o un track tuyo --- */
+const r1=v=>Math.round(v*1e5)/1e5;
+function deMio(){const pb=sheet.querySelector("[data-mpshare]");
+  if(pb){const p=MPI.get().find(x=>String(x.id)===pb.dataset.mpshare);return p?{tipo:"punto",n:p.n,com:p.nota||"",dd:{lat:r1(p.lat),lon:r1(p.lon),a:p.a!=null?Math.round(p.a):null,ic:p.ic||"otro"}}:null}
+  if(sheet.querySelector("[data-mtfol]")&&!sheet.querySelector("[data-mtroute]")&&sheet._mt!=null){const t=MPI.tracks().find(x=>String(x.id)===String(sheet._mt));
+    if(!t||!t.pts||t.pts.length<2)return null;
+    const st=Math.max(1,Math.ceil(t.pts.length/3000)),pts=t.pts.filter((_,i)=>i%st===0||i===t.pts.length-1).map(p=>p[2]!=null?[r1(p[0]),r1(p[1]),Math.round(p[2])]:[r1(p[0]),r1(p[1])]);
+    return{tipo:"track",n:t.n,com:"",dd:{pts,km:t.km,up:t.up,dn:t.dn}}}
+  return null}
+new MutationObserver(()=>{if(sheet.hidden||sheet.querySelector("[data-segprop]")||sheet.querySelector(".segform"))return;
+  const acts=sheet.querySelector(".mpacts");if(!acts||!deMio())return;
+  acts.insertAdjacentHTML("afterbegin",`<button class="mpb" data-segprop style="border-color:#d9480f;color:#d9480f;font-weight:700">👥 Proponer al grupo</button>`)}).observe(sheet,{childList:true});
+let PROP=null;
+sheet.addEventListener("click",e=>{
+  if(e.target.closest("[data-segprop]")){const it=deMio();if(!it)return;
+    const go=()=>{PROP=it;const u=LDCFB.user()||{};
+      MPI.show(`<div class="sheet-head"><h2>👥 Proponer al grupo</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+      <p>${it.tipo==="track"?"🧵 Track":"📍 Punto"} <b>${esc(it.n)}</b>${it.dd.km?" · "+kmT(it.dd.km):""}</p>
+      <p class="note">Lo revisa Los de las Claras y, si encaja, se publica en la pestaña <b>Seguidores</b> para todo el mundo. Tu correo no se publica.</p>
+      <div class="segform"><label>Nombre con el que aparecerás</label><input data-segq maxlength="40" value="${esc((u.displayName||"").trim())}">
+      <label>Cuéntanos algo</label><textarea data-segc maxlength="1500" placeholder="${it.tipo==="track"?"Cuándo la hiciste, estado del camino, por dónde va…":"Qué hay aquí: fuente, paso, mirador…"}">${esc(it.com)}</textarea>
+      <label>Enlaces (opcional)</label><textarea data-segl style="min-height:60px" placeholder="Tu blog, álbum de fotos, Wikiloc, YouTube… uno por línea"></textarea></div>
+      <div class="mpacts"><button class="mpb pri" data-segsend>📨 Enviar propuesta</button><button class="mpb" data-close>Cancelar</button></div>`)};
+    if(window.cuentaOk&&!cuentaOk(go,"proponer"))return;go();return}
+  if(e.target.closest("[data-segsend]")&&PROP){enviar(e.target.closest("[data-segsend]"))}});
+async function enviar(b){const u=LDCFB.user();if(!u){toast("Entra con tu cuenta de Google");return}
+  const quien=(sheet.querySelector("[data-segq]").value||"").trim().slice(0,40)||"Un seguidor",com=(sheet.querySelector("[data-segc]").value||"").trim().slice(0,1500);
+  const links=(sheet.querySelector("[data-segl]").value||"").split(/\s+/).map(s=>s.trim()).filter(s=>/^https?:\/\/\S+\.\S+/i.test(s)).slice(0,5).map(s=>s.slice(0,300));
+  const bad=(sheet.querySelector("[data-segl]").value||"").split(/\s+/).filter(s=>s&&!/^https?:\/\//i.test(s));
+  if(bad.length&&!confirm("Algún enlace no empieza por http:// o https:// y no se enviará. ¿Seguir?"))return;
+  b.disabled=true;b.textContent="Enviando…";
+  try{const a=await fb(),fs=a.fs;
+    await fs.addDoc(fs.collection(a.db,"propuestas"),{tipo:PROP.tipo,n:PROP.n.slice(0,100),com,links,quien,uid:u.uid,email:u.email||"",t:Date.now(),d:JSON.stringify(PROP.dd)});
+    PROP=null;sheet.hidden=true;toast("¡Enviado! Cuando se revise aparecerá en Seguidores");cargarRev()}
+  catch(e){b.disabled=false;b.textContent="📨 Enviar propuesta";toast("No se ha podido enviar: "+(e.code||e.message))}}
+window.SEGUIDORES={recargar:()=>{cargarPub();cargarRev()}};
+})();
+
+}catch(e){console.error("módulo seguidores",e);(window.__ERRS=window.__ERRS||[]).push("seguidores: "+(e&&e.message))}
+try{
 /* ---------- pestañas de abajo: Mapa · Del grupo (Rutas, Cumbres, Lugares) · Mis cosas (Mis puntos, Mis tracks, Mapas) ----------
    Más adelante se añadirá «Seguidores» (rutas y puntos que publiquen otras personas). */
 (function(){
 const main=document.querySelector("main"),nav=document.querySelector("nav.tabs");if(!main||!nav)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
-nav.tabs{grid-template-columns:repeat(3,1fr)!important}
+nav.tabs{grid-template-columns:repeat(4,1fr)!important}
 .subtabs{position:sticky;top:0;z-index:5;background:var(--paper);display:grid;gap:6px;padding:8px 0 10px;margin:0 0 4px}
 .subtabs button{border:1px solid var(--edge);background:var(--card);color:var(--ink);border-radius:12px;padding:7px 2px 6px;font-weight:700;font-size:13px;line-height:1.15;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;white-space:nowrap}
 .subtabs button .i{font-size:19px;line-height:1}
@@ -1840,9 +2019,10 @@ nav.tabs{grid-template-columns:repeat(3,1fr)!important}
 </style>`);
 const ICO={mapa:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
   grupo:'<path d="M2 20l7-12 4 6 3-4 6 10z"/><circle cx="17.5" cy="5.5" r="2"/>',
-  mios:'<path d="M6 8h12l-1 12H7z"/><path d="M9 8V6a3 3 0 016 0v2"/>'};
+  mios:'<path d="M6 8h12l-1 12H7z"/><path d="M9 8V6a3 3 0 016 0v2"/>',
+  seg:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c3.2-.4 5.5 1.8 5.5 5.3"/>'};
 const tab=(v,t)=>`<button role="tab" data-v="${v}" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">${ICO[v]}</svg>${t}</button>`;
-nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Del grupo")+tab("mios","Mis cosas");
+nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Del grupo")+tab("mios","Mis cosas")+tab("seg","Seguidores");
 
 /* «Mis cosas»: una vista nueva con mis puntos, mis tracks y los mapas descargados */
 const sec=document.createElement("section");sec.className="view pad";sec.id="v-mios";sec.hidden=true;
@@ -1871,7 +2051,7 @@ for(const g in GN){const v=document.querySelector("#v-"+g+" .inner");if(!v)conti
 document.addEventListener("click",e=>{const b=e.target.closest("[data-gs]");if(b)showView(b.dataset.gs)});
 
 /* showView entiende las vistas nuevas; la pestaña «Del grupo» vuelve a la última que viste */
-const VIEWS=["mapa","rutas","cumbres","lugares","mios"];
+const VIEWS=["mapa","rutas","cumbres","lugares","mios","seg"];
 window.showView=showView=function(v){
   if(v==="grupo")v=curG;
   if(!VIEWS.includes(v))v="mapa";
@@ -1884,7 +2064,7 @@ window.showView=showView=function(v){
   store.set("ldc-tab",v)};
 window.LUGTAB=k=>{showView("mios");if(MN[k]){curM=k;store.set("ldc-mios",k);pintaM()}};
 const vis=VIEWS.find(n=>{const el=document.getElementById("v-"+n);return el&&!el.hidden})||"mapa";
-showView(vis==="mios"?"mios":vis);
+showView(vis);
 })();
 
 }catch(e){console.error("módulo pestanas",e);(window.__ERRS=window.__ERRS||[]).push("pestanas: "+(e&&e.message))}
