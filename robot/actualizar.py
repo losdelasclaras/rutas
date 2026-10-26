@@ -192,6 +192,15 @@ def kml2gpx(t, nombre):
     return ('<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="robot"><trk><name>' + html.escape(nombre) + '</name><trkseg>\n' +
             '\n'.join(f'<trkpt lat="{a}" lon="{b}">' + (f'<ele>{e}</ele>' if e is not None else '') + '</trkpt>' for a, b, e in pts) + '\n</trkseg></trk></gpx>\n')
 
+def quitar(reg, hay):
+    # los tracks que has borrado de Drive se quitan también de la app (vuelve el que hubiera antes)
+    for fid in [f for f in reg if f not in hay]:
+        fn = reg[fid].get('archivo')
+        if fn and os.path.exists(APP + 'gpx/raw/' + fn):
+            os.remove(APP + 'gpx/raw/' + fn); log(f'🗑 Track quitado de Drive: «{reg[fid]["n"]}» (lo quito de la app)')
+            CAMBIOS.append('drive: track quitado')
+        del reg[fid]
+
 def drive():
     reg_f = APP + 'gpx/drive.json'
     reg = json.load(open(reg_f)) if os.path.exists(reg_f) else {}
@@ -201,9 +210,11 @@ def drive():
         tit = re.search(r'<title>(.*?)</title>', h, re.S)
         if 'flip-list' in h or 'flip-entries' in h or (tit and 'drive' not in tit.group(1).lower() and 'sign' not in tit.group(1).lower()):
             log(f'Drive: la carpeta «{html.unescape(tit.group(1)).strip() if tit else ""}» está vacía.')
+            quitar(reg, set()); json.dump(reg, open(reg_f, 'w'), ensure_ascii=False, indent=1)
         else:
             log('⚠ No he podido leer la carpeta de Drive (¿sigue compartida con «Cualquier persona con el enlace»?). ' + (html.unescape(tit.group(1)).strip()[:80] if tit else h[:200].replace(chr(10), ' ')))
         return
+    quitar(reg, {fid for fid, _ in ent})
     nuevos = 0
     for fid, nombre in ent:
         nombre = html.unescape(nombre).strip()

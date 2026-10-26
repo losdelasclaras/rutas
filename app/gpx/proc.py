@@ -84,6 +84,7 @@ for f in sorted(glob.glob('raw/*.gpx')):
         pm=ym(x.get('d','')) ;dd=(pm-tm) if (pm and tm) else None
         dsc=0 if dd is None else (1.5 if 0<=dd<=3 else 0.7 if -1<=dd<=8 else -0.8 if abs(dd)>24 else 0)
         sc=near*2+nm*0.6+dsc
+        if fb.startswith('drive__') and near>=0.7:sc+=200   # lo que subes a Drive manda sobre el track que ya hubiera
         cs.append((sc,x['u'],f"recorrido (puntos cerca {near:.0%}, palabras {nm}, fecha {'cuadra' if dsc>=1 else 'parecida' if dsc>0 else 'lejana' if dsc<0 else 'no'})"))
     cs.sort(key=lambda c:-c[0]);CAND[fb]=cs
 # reparto: primero las parejas más seguras; cada ruta y cada archivo una sola vez
