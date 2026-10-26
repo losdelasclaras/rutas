@@ -888,6 +888,7 @@ addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;
 ib.addEventListener("click",async()=>{if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice.catch(()=>{});deferredInstall=null;ib.hidden=true});
 addEventListener("appinstalled",()=>{ib.hidden=true});
 
+try{
 /* ---------- mis puntos: guardar dónde estoy, marcar en el mapa, exportar e importar ---------- */
 (function(){
 const MPK="ldc-mispuntos", MTK="ldc-mistracks";
@@ -1115,6 +1116,8 @@ window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,sync:()=>syncMP(),ptsOf,desn,dem
     drawMP();drawMT();renderBox();if(window.MISTRACKS)MISTRACKS.render();if(MPSEL&&!MP.some(p=>p.id===MPSEL)){MPSEL=null}}};
 })();
 
+}catch(e){console.error("módulo mispuntos",e);(window.__ERRS=window.__ERRS||[]).push("mispuntos: "+(e&&e.message))}
+try{
 /* ---------- panel de Capas por apartados desplegables (solo uno abierto a la vez) ---------- */
 (function(){
 const pn=document.querySelector(".laypanel");if(!pn)return;
@@ -1145,6 +1148,8 @@ pn.addEventListener("click",e=>{const h=e.target.closest("button.laygh");if(h){c
 show();
 })();
 
+}catch(e){console.error("módulo capas",e);(window.__ERRS=window.__ERRS||[]).push("capas: "+(e&&e.message))}
+try{
 /* ---------- Entrar con Google: marcas, mis puntos y mis tracks guardados en tu cuenta (Firebase) ----------
    Sin entrar, la app funciona igual (todo se queda en este móvil). Al entrar, lo de aquí y lo de la nube se juntan
    y a partir de ahí cualquier cambio se copia solo a los demás aparatos donde hayas entrado.
@@ -1296,6 +1301,8 @@ if(store.get(SK,"0")==="1"){btn.classList.add("on","pend");setTimeout(()=>load()
 addEventListener("online",()=>{if(store.get(SK,"0")==="1"&&!FB)load().catch(()=>{})});
 })();
 
+}catch(e){console.error("módulo sync",e);(window.__ERRS=window.__ERRS||[]).push("sync: "+(e&&e.message))}
+try{
 /* ---------- Seguir esta ruta: dónde estás sobre el track, lo que falta y aviso si te sales ----------
    Funciona con la app abierta y la pantalla encendida (se pide que no se apague). */
 (function(){
@@ -1432,6 +1439,8 @@ if(prev&&prev.u&&Date.now()-prev.t<12*3600e3){const r=R.find(x=>x.u===prev.u);if
 window.SEGUIR={start,stop,get:()=>F};
 })();
 
+}catch(e){console.error("módulo seguir",e);(window.__ERRS=window.__ERRS||[]).push("seguir: "+(e&&e.message))}
+try{
 /* ---------- Mis tracks (pestaña Lugares): tracks cargados (GPX/KML) y tracks de rutas del blog guardados ----------
    Cada uno se puede seguir con el GPS, descargar en GPX, renombrar y quitar. Se sincronizan con «Entrar con Google». */
 (function(){
@@ -1514,6 +1523,8 @@ window.MISTRACKS={render,open,refresh,route:id=>{const t=T().find(x=>String(x.id
 render();
 })();
 
+}catch(e){console.error("módulo mistracks",e);(window.__ERRS=window.__ERRS||[]).push("mistracks: "+(e&&e.message))}
+try{
 /* ---------- Mapas sin cobertura: descargar el mapa del IGN de una ruta, de un track o de una zona ----------
    Las teselas se guardan en el móvil (caché «ldc-offline») y el service worker las sirve cuando no hay red.
    Solo el mapa del IGN (libre, CC BY 4.0) y solo España: OpenTopoMap no permite descargas masivas. */
@@ -1641,6 +1652,8 @@ window.OFFLINE={has,list,zona,rutaOffline};
 pintar();
 })();
 
+}catch(e){console.error("módulo offline",e);(window.__ERRS=window.__ERRS||[]).push("offline: "+(e&&e.message))}
+try{
 /* ---------- pestaña Lugares en apartados: Lugares del blog · Mis puntos · Mis tracks · Mapas descargados ----------
    Solo se ve uno cada vez, así una lista larga de puntos no deja los tracks muy abajo. */
 (function(){
@@ -1677,6 +1690,7 @@ window.LUGTAB=k=>{if(typeof showView==="function")showView("lugares");ir(k)};
 pinta();
 })();
 
+}catch(e){console.error("módulo lugtabs",e);(window.__ERRS=window.__ERRS||[]).push("lugtabs: "+(e&&e.message))}
 </script>
 <script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>
 <script>
