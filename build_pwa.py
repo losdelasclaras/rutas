@@ -162,7 +162,7 @@ window.__BUILD="__VER__";
  document.getElementById("updx").onclick=()=>{document.getElementById("upd").hidden=true};
  document.getElementById("updb").onclick=async()=>{const b=document.getElementById("updb");b.textContent="Actualizando…";b.disabled=true;
   try{const v=(await (await fetch("version.txt?"+Date.now(),{cache:"no-store"})).text()).trim();localStorage.setItem("ldc-upd",JSON.stringify({v,t:Date.now()}))}catch(e){}
-  try{await fetch("index.html?"+Date.now(),{cache:"no-store"});await new Promise(r=>setTimeout(r,600))}catch(e){}
+  try{const r=await fetch("index.html?"+Date.now(),{cache:"no-store"});await r.text();await new Promise(r=>setTimeout(r,1500))}catch(e){}
   location.reload()};
  setTimeout(check,4000);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")check()})})();
 </script>
