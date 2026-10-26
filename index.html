@@ -534,6 +534,7 @@ const BASES={topo:[OTM],
   orto:[OTM,L.tileLayer(wmts("pnoa-ma","OI.OrthoimageCoverage","jpeg"),{minZoom:4,maxNativeZoom:19,maxZoom:18,bounds:ESP,crossOrigin:true,attribution:"Ortofoto PNOA "+IGNATT})],
   none:[]};
 let BASE=store.get("ldc-base",store.get("ldc-ign","0")==="1"?"ign":"topo");if(!BASES[BASE])BASE="topo";
+window.__TL={};for(const k in BASES)for(const l of BASES[k]){if(l.__w)continue;l.__w=1;const h=(l._url||"").split("/")[2]||"?";l.on("tileload",()=>{(__TL[h]=__TL[h]||{ok:0,err:0}).ok++}).on("tileerror",()=>{(__TL[h]=__TL[h]||{ok:0,err:0}).err++})}
 function setBase(b){BASE=b;store.set("ldc-base",b);const want=new Set(BASES[b]);
   for(const k in BASES)for(const l of BASES[k])if(!want.has(l)&&map.hasLayer(l))l.remove();
   for(const l of BASES[b])if(!map.hasLayer(l))l.addTo(map);
@@ -886,6 +887,9 @@ addEventListener("appinstalled",()=>{ib.hidden=true});
 <script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>
 <script>
 addEventListener("DOMContentLoaded",()=>__mk("página leída"));
+function __extra(){const mk=document.querySelectorAll("#map .leaflet-marker-icon");const f=mk[0];let fi="ninguno";if(f){const cs=getComputedStyle(f),sv=f.querySelector("svg"),r=sv?sv.getBoundingClientRect():null,u=f.querySelector("use");fi="display "+cs.display+", opacidad "+cs.opacity+", visible "+cs.visibility+", svg "+(r?Math.round(r.width)+"x"+Math.round(r.height)+" en "+Math.round(r.left)+","+Math.round(r.top):"no")+", use "+(u?(u.getAttribute("href")+" existe "+!!document.getElementById((u.getAttribute("href")||"").slice(1))):"no")+", clases "+f.className}
+ const tl=Object.entries(window.__TL||{}).map(([h,o])=>h+": "+o.ok+" bien, "+o.err+" con error").join("<br>")||"ninguna";
+ return "<br><b>Puntos</b><br>en pantalla: "+mk.length+"<br>primero: "+fi+"<br>clases del mapa: "+document.getElementById("map").className+"<br>capas: "+localStorage.getItem("ldc-capas")+" · fondo "+localStorage.getItem("ldc-base")+"<br><b>Cuadritos del mapa</b><br>"+tl}
 addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requestAnimationFrame(()=>__mk("primer dibujo")));
  if(/[?&]diag/.test(location.search))setTimeout(()=>{const n=performance.getEntriesByType("navigation")[0]||{};const fp=(performance.getEntriesByType("paint").find(e=>e.name==="first-contentful-paint")||{}).startTime;
   const rows=[["respuesta del servidor",Math.round(n.responseStart||0)],["descarga terminada",Math.round(n.responseEnd||0)],...__M,["primer contenido",Math.round(fp||0)]];
@@ -893,6 +897,6 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const res=performance.getEntriesByType("resource");const H={};res.forEach(e=>{let h;try{h=new URL(e.name).hostname.replace(/^[abc]\./,"")}catch(x){h="?"}const o=H[h]||(H[h]={n:0,fin:0,max:0});o.n++;o.fin=Math.max(o.fin,e.responseEnd);o.max=Math.max(o.max,e.duration)});
   const hs=Object.entries(H).sort((a,b)=>b[1].fin-a[1].fin).map(([h,o])=>h+": "+o.n+" archivos, el último a los <b>"+Math.round(o.fin)+"</b>, el más lento "+Math.round(o.max));
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
-  d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="90vh";d.style.overflow="auto";document.body.appendChild(d)},1500)});
+  d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
 </body></html>
