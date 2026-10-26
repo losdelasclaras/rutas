@@ -107,7 +107,8 @@ async function onUser(u){
   if(!u){USER=null;store.set(SK,"0");repaint();return}
   USER=u;store.set(SK,"1");BUSY=true;repaint();
   const fs=A.fs,first=store.get(UK,null)!==u.uid,p=pend();
-  const [dm,dp,dt]=await Promise.all([fs.getDoc(ref("marcas")),fs.getDoc(ref("puntos")),fs.getDocs(tcol())]);
+  const [dm,dp,dt,dz]=await Promise.all([fs.getDoc(ref("marcas")),fs.getDoc(ref("puntos")),fs.getDocs(tcol()),fs.getDoc(ref("mapas"))]);
+  const OFF=window.OFFLINE,lw=OFF?OFF.wanted():[],cz=dz.exists()?J(dz.data().j):null;
   const cm=dm.exists()?J(dm.data().j):null,cp=dp.exists()?J(dp.data().j):null;
   const ct=[];CLOUDT=new Map();dt.forEach(d=>{ct.push(tIn(d.id,d.data()));CLOUDT.set(d.id,d.data().j)});
   // la primera vez en este aparato, o si quedaron cambios sin subir, se junta todo; si no, manda lo de la nube
@@ -115,10 +116,12 @@ async function onUser(u){
   const pts=cp==null?MPI.get():(first||p.puntos)?joinList(MPI.get(),cp,sameP):cp;
   const trs=!dt.size?MPI.tracks():(first||p.tracks)?joinList(MPI.tracks(),ct,(a,b)=>String(a.id)===String(b.id)):ct;
   const nm=Object.keys(m).length-Object.keys(MARKS).length,np=pts.length-MPI.get().length,nt=trs.length-MPI.tracks().length;
-  applyMarks(m);MPI.set(pts,trs);
+  const zs=cz==null?lw:(first||p.mapas)?joinList(lw,cz,(a,b)=>a.id===b.id):cz;
+  applyMarks(m);MPI.set(pts,trs);if(OFF)OFF.setWanted(zs);
   const w=[];
   if(cm==null||JSON.stringify(m)!==JSON.stringify(cm))w.push(fs.setDoc(ref("marcas"),{j:JSON.stringify(m),t:Date.now()}));
   if(cp==null||JSON.stringify(pts)!==JSON.stringify(cp))w.push(fs.setDoc(ref("puntos"),{j:JSON.stringify(pts),t:Date.now()}));
+  if(cz==null?zs.length:JSON.stringify(zs)!==JSON.stringify(cz))w.push(fs.setDoc(ref("mapas"),{j:JSON.stringify(zs),t:Date.now()}));
   w.push(pushTracks());
   await Promise.all(w);
   store.set(UK,u.uid);store.set(PK,{});store.set(TK,new Date().toISOString());READY=true;BUSY=false;
@@ -128,6 +131,7 @@ async function onUser(u){
   // a partir de aquí, lo que cambie en otro aparato llega solo
   unsub.push(fs.onSnapshot(ref("marcas"),s=>{if(s.metadata.hasPendingWrites||!s.exists())return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(MARKS)){applyMarks(v);done()}}));
   unsub.push(fs.onSnapshot(ref("puntos"),s=>{if(s.metadata.hasPendingWrites||!s.exists())return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(MPI.get())){MPI.set(v,null);done()}}));
+  unsub.push(fs.onSnapshot(ref("mapas"),s=>{if(s.metadata.hasPendingWrites||!s.exists()||!window.OFFLINE)return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(OFFLINE.wanted())){OFFLINE.setWanted(v);done()}}));
   unsub.push(fs.onSnapshot(tcol(),s=>{if(s.metadata.hasPendingWrites)return;const v=[];s.forEach(d=>{v.push(tIn(d.id,d.data()));CLOUDT.set(d.id,d.data().j)});for(const k of [...CLOUDT.keys()])if(!v.some(t=>String(t.id)===k))CLOUDT.delete(k);
     if(tKey(v)!==tKey(MPI.tracks())){MPI.set(null,v);done()}}));
   repaint()}
@@ -139,6 +143,7 @@ async function pushTracks(){const fs=A.fs,loc=MPI.tracks(),ids=new Set(loc.map(t
 async function push(k){if(!USER||!READY){return}
   try{if(k==="marcas")await A.fs.setDoc(ref("marcas"),{j:JSON.stringify(MARKS),t:Date.now()});
     else if(k==="puntos")await A.fs.setDoc(ref("puntos"),{j:JSON.stringify(MPI.get()),t:Date.now()});
+    else if(k==="mapas"){if(window.OFFLINE)await A.fs.setDoc(ref("mapas"),{j:JSON.stringify(OFFLINE.wanted()),t:Date.now()})}
     else await pushTracks();
     setPend(k,0);done()}catch(e){console.warn("sync",k,e);repaint()}}
 // lo llaman saveMarks, saveMP y saveMT cada vez que cambias algo

@@ -7,6 +7,10 @@ const ESPB=L.latLngBounds([35.2,-9.6],[43.95,4.6]);
 const IGNURL=BASES.ign[1]._url;
 const tileUrl=(z,x,y)=>L.Util.template(IGNURL,{z,x,y});
 const list=()=>store.get(OK,[]);const saveList=a=>store.set(OK,a);
+// «mapas en tu cuenta»: los que has descargado en cualquier aparato (se sincroniza con Entrar con Google; sin las teselas)
+const WK="ldc-mapas";const wanted=()=>store.get(WK,[]);
+const saveWanted=(a,quiet)=>{store.set(WK,a);if(!quiet&&window.ldcSync)ldcSync("mapas")};
+const metaOf=m=>{const o={id:m.id,ref:m.ref||null,n:m.n,k:m.k,f:m.f||new Date().toISOString(),b:m.b||0};if(m.zb){o.zb=m.zb;o.z0=m.z0;o.zmax=m.zmax}return o};
 const fmtMB=b=>b>=1e9?(b/1e9).toLocaleString("es-ES",{maximumFractionDigits:1})+" GB":Math.max(1,Math.round(b/1e6))+" MB";
 const fmtF=f=>{try{return new Date(f).toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}catch(e){return""}};
 document.head.insertAdjacentHTML("beforeend",`<style>
@@ -33,7 +37,7 @@ function tilesTrack(ln,zmax){const set=new Set(),B=1000;
   return set}
 function tilesZone(b){let zmax=ZMAX,set;const z0=Math.max(8,Math.floor(map.getZoom())-3);
   do{set=new Set();for(let z=z0;z<=zmax;z++)tilesBox(b,z,set);if(set.size<=LIM)break;zmax--}while(zmax>=14);
-  return{set,zmax}}
+  return{set,zmax,z0}}
 
 /* descarga con barra de progreso */
 let RUN=null;
@@ -52,12 +56,19 @@ async function bajar(meta,set){if(RUN){toast("Ya hay una descarga en marcha");re
   bar.remove();RUN=null;
   if(run.stop&&done<keys.length){toast(navigator.onLine?"Descarga cancelada":"Se ha cortado la conexión: vuelve a intentarlo");await limpiar([],keys.slice(0,done));return}
   if(fail>keys.length*0.2){toast("El servidor del IGN no ha respondido bien. Prueba más tarde.");await limpiar([],keys);return}
-  const a=list().filter(m=>m.id!==meta.id);a.push({...meta,t:keys,b:bytes,f:new Date().toISOString()});saveList(a);
+  const a=list().filter(m=>m.id!==meta.id);const nm={...meta,t:keys,b:bytes,f:meta.f||new Date().toISOString()};a.push(nm);saveList(a);
+  saveWanted([...wanted().filter(m=>m.id!==meta.id),metaOf(nm)]);
   toast(`Mapa descargado (${fmtMB(bytes)}). Sin cobertura se verá el mapa del IGN.`);pintar()}
 // borra las teselas que ya no usa ningún otro mapa
 async function limpiar(rest,keys){const usados=new Set();for(const m of rest)for(const k of m.t)usados.add(k);
   const c=await caches.open(CN);for(const k of keys)if(!usados.has(k)){const[z,x,y]=k.split("/").map(Number);await c.delete(tileUrl(z,x,y))}}
-async function borrar(id){const a=list(),m=a.find(x=>x.id===id);if(!m)return;const rest=a.filter(x=>x.id!==id);saveList(rest);await limpiar(rest,m.t);toast("Mapa borrado");pintar()}
+async function borrar(id){const a=list(),m=a.find(x=>x.id===id);saveWanted(wanted().filter(x=>x.id!==id));if(!m){pintar();return}const rest=a.filter(x=>x.id!==id);saveList(rest);await limpiar(rest,m.t);toast("Mapa borrado");pintar()}
+// rehacer en este aparato un mapa descargado en otro
+function lnDe(m){if(m.k==="track"){const t=MISPUNTOS.tracks().find(x=>"mt:"+x.id===m.ref);return t&&t.pts}const r=R.find(x=>x.u===m.ref);return r&&r.gx&&r.gx.ln}
+function bajarAqui(id){const m=wanted().find(x=>x.id===id);if(!m)return;
+  if(m.k==="zona"){if(!m.zb)return;const b=L.latLngBounds([m.zb[0],m.zb[1]],[m.zb[2],m.zb[3]]),set=new Set();for(let z=m.z0||10;z<=(m.zmax||ZMAX);z++)tilesBox(b,z,set);bajar({...m},set);return}
+  const ln=lnDe(m);if(!ln){if(m.k!=="track"&&window.loadTracks){toast("Preparando el track…");loadTracks().then(ok=>{if(ok&&lnDe(m))bajarAqui(id);else toast("No encuentro ese track")})}else toast("No encuentro ese track");return}
+  bajar({...m},tilesTrack(ln,ZMAX))}
 
 /* qué hay descargado */
 const has=ref=>list().some(m=>m.ref===ref);
@@ -85,9 +96,9 @@ function zona(){if(typeof showView==="function")showView("mapa");sheet.hidden=tr
   b.innerHTML=`<span></span><button class="mpb pri" data-oz>📥 Descargar esta zona</button><button class="mpb" data-ozc>Cancelar</button>`;
   const fin=()=>{map.off("moveend",upd);fr.remove();b.remove();ZB=null};ZB=fin;map.on("moveend",upd);upd();
   b.addEventListener("click",e=>{if(e.target.closest("[data-ozc]")){fin();return}
-    if(e.target.closest("[data-oz]")){const bb=map.getBounds(),c=bb.getCenter();const{set}=tilesZone(bb);fin();
+    if(e.target.closest("[data-oz]")){const bb=map.getBounds(),c=bb.getCenter();const{set,zmax,z0}=tilesZone(bb);fin();
       let best=null,bd=1e9;for(const p of PLACES){const d=(p[2]-c.lat)**2+((p[3]-c.lng)*Math.cos(c.lat*Math.PI/180))**2;if(d<bd){bd=d;best=p[0]}}
-      bajar({id:"z:"+Date.now().toString(36),ref:null,n:"Zona de "+(best||"mapa"),k:"zona"},set)}})}
+      bajar({id:"z:"+Date.now().toString(36),ref:null,n:"Zona de "+(best||"mapa"),k:"zona",zb:[bb.getSouth(),bb.getWest(),bb.getNorth(),bb.getEast()].map(v=>Math.round(v*1e5)/1e5),z0,zmax},set)}})}
 
 /* recuadro en Lugares: lista de mapas descargados */
 const box=document.createElement("div");box.className="mpbox";box.id="offbox";document.getElementById("mtbox").after(box);
@@ -95,9 +106,16 @@ function pintar(){const a=list().slice().sort((x,y)=>(y.f||"").localeCompare(x.f
   box.innerHTML=`<h2>📥 Mapas sin cobertura <small style="font-weight:500;color:#666">(${a.length}${a.length?" · "+fmtMB(tot):""})</small></h2>
   <p class="note">Descarga el mapa del IGN de una ruta (en su ficha), de uno de tus tracks o de una zona, y lo verás aunque no tengas cobertura. Solo España.</p>
   <div class="mpacts" style="margin:6px 0 8px"><button class="mpb" data-ozone>🗺️ Descargar una zona del mapa</button></div>
+  ${(()=>{const aqui=new Set(a.map(m=>m.id)),fal=wanted().filter(m=>!aqui.has(m.id));if(!fal.length)return"";
+    return`<p class="note" style="margin:10px 0 4px"><b>Descargados en otro aparato</b> (tu cuenta). Bájalos aquí con wifi:</p>${fal.length>1?`<div class="mpacts" style="margin:4px 0 6px"><button class="mpb pri" data-oall>📥 Descargar todos aquí (≈ ${fmtMB(fal.reduce((s,m)=>s+(m.b||0),0))})</button></div>`:""}`+
+    fal.map(m=>`<div class="mprow"><span class="e" style="opacity:.55">${m.k==="zona"?"🗺️":m.k==="track"?"〰️":"📘"}</span><span><b>${esc(m.n)}</b><small>${m.b?"≈ "+fmtMB(m.b)+" · ":""}falta en este aparato</small></span><button class="mpb del" data-oget="${esc(m.id)}">📥</button></div>`).join("")+(a.length?`<p class="note" style="margin:12px 0 4px"><b>En este aparato</b></p>`:"")})()}
   ${a.map(m=>`<div class="mprow" data-ogoto="${esc(m.id)}"><span class="e">${m.k==="zona"?"🗺️":m.k==="track"?"〰️":"📘"}</span><span><b>${esc(m.n)}</b><small>${fmtMB(m.b||0)} · ${fmtF(m.f)}</small></span><button class="mpb dan del" data-odel="${esc(m.id)}">🗑</button></div>`).join("")}`;
   if(typeof window.OFFREFRESH==="function")window.OFFREFRESH()}
+let COLA=[];
+async function siguiente(){if(RUN||!COLA.length)return;bajarAqui(COLA.shift());const w=setInterval(()=>{if(!RUN){clearInterval(w);siguiente()}},800)}
 box.addEventListener("click",e=>{if(e.target.closest("[data-ozone]")){zona();return}
+  const g1=e.target.closest("[data-oget]");if(g1){bajarAqui(g1.dataset.oget);return}
+  if(e.target.closest("[data-oall]")){const aqui=new Set(list().map(m=>m.id));COLA=wanted().filter(m=>!aqui.has(m.id)).map(m=>m.id);siguiente();return}
   const d=e.target.closest("[data-odel]");if(d){if(d.dataset.sure!=="1"){d.dataset.sure="1";d.textContent="¿Seguro?";return}borrar(d.dataset.odel);return}
   const g=e.target.closest("[data-ogoto]");if(g){const m=list().find(x=>x.id===g.dataset.ogoto);if(!m||!m.t.length)return;
     // encuadra la zona descargada (con las teselas de más detalle)
@@ -121,6 +139,13 @@ document.querySelector(".legend").addEventListener("click",e=>{if(e.target.close
 // sin cobertura y con mapas descargados: se pone el mapa del IGN
 function sinRed(){if(!navigator.onLine&&list().length&&BASE!=="ign"){store.set("ldc-base-antes",BASE);setBase("ign");toast("Sin cobertura: te pongo el mapa del IGN descargado")}}
 addEventListener("offline",sinRed);setTimeout(sinRed,1500);
-window.OFFLINE={has,list,zona,rutaOffline};
+// los descargados antes de existir «mapas en tu cuenta» se apuntan también
+(function(){const w=wanted(),ids=new Set(w.map(m=>m.id));let ch=false;
+  for(const m of list())if(!ids.has(m.id)){const o=metaOf(m);if(m.k==="zona"&&m.t&&m.t.length){const zs=m.t.map(k=>+k.split("/")[0]),zz=Math.max(...zs);
+      const ks=m.t.filter(k=>+k.split("/")[0]===zz).map(k=>k.split("/").map(Number)),lon=x=>x/2**zz*360-180,lat=y=>{const n=Math.PI-2*Math.PI*y/2**zz;return 180/Math.PI*Math.atan(.5*(Math.exp(n)-Math.exp(-n)))};
+      o.zb=[Math.min(...ks.map(k=>lat(k[2]+1))),Math.min(...ks.map(k=>lon(k[1]))),Math.max(...ks.map(k=>lat(k[2]))),Math.max(...ks.map(k=>lon(k[1]+1)))];o.z0=Math.min(...zs);o.zmax=zz}
+    w.push(o);ch=true}
+  if(ch)saveWanted(w)})();
+window.OFFLINE={has,list,zona,rutaOffline,wanted,setWanted:a=>{saveWanted(a,true);pintar()}};
 pintar();
 })();
