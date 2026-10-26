@@ -1791,7 +1791,10 @@ try{
    Android/Chrome: botón que lanza la instalación directamente. iPhone: cómo añadirla (Apple no deja instalar con un botón).
    Si el enlace se abrió dentro de WhatsApp, Instagram o Facebook: botón para abrirlo en Chrome (ahí no se puede instalar). */
 (function(){
-const standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+// dentro de la app Android (TWA) no se ofrece instalar: ya está instalada
+try{if(document.referrer.startsWith("android-app://"))sessionStorage.setItem("ldc-twa","1")}catch(e){}
+const twa=(()=>{try{return sessionStorage.getItem("ldc-twa")==="1"}catch(e){return false}})();
+const standalone=twa||matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 if(standalone)return;
 const ua=navigator.userAgent,android=/Android/i.test(ua),ios=/iPhone|iPad|iPod/i.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
 const inapp=/FBAN|FBAV|FB_IAB|Instagram|WhatsApp|Line\/|; wv\)/i.test(ua);
