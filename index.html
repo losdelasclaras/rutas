@@ -674,7 +674,7 @@ function routeBody(r){
   <div class="sec"><h3>El tiempo</h3><p class="note" style="margin-bottom:6px">Previsión para ${esc(hi.c)}${hi.a?" ("+fmtA(hi.a)+")":""}.</p>
   <div class="actions" style="margin-top:0"><a class="btn ghost" href="https://www.meteoblue.com/es/tiempo/semana/${hi.lat.toFixed(3)}N${hi.lon.toFixed(3)}E${hi.a?Math.round(hi.a):""}_${encodeURIComponent((r.r==="Dolomitas"?"Europe/Rome":zoneOf(r.r)==="alp"?"Europe/Zurich":"Europe/Madrid"))}" target="_blank" rel="noopener">☁ Previsión en el punto (Meteoblue)</a>${aemetZone(hi.lat,hi.lon)?`<a class="btn ghost" href="https://www.aemet.es/es/eltiempo/prediccion/montana?w=&p=${aemetZone(hi.lat,hi.lon)[0]}" target="_blank" rel="noopener">AEMET montaña · ${aemetZone(hi.lat,hi.lon)[1]}</a>`:""}</div></div>
   ${r.gx?`<div class="sec"><h3>Perfil del recorrido</h3>${r.gx.pf.length?profSVG(r.gx):""}<p class="note" style="margin:4px 0 8px">Según el track: ${fmtKm(r.gx.km)} · +${r.gx.up.toLocaleString("es-ES")} m de subida${r.gx.mx?" · punto más alto "+r.gx.mx.toLocaleString("es-ES")+" m":""}.</p>
-  <div class="actions" style="margin-top:0"><button class="btn ghost" data-gpx="${r.id}">⬇ Descargar GPX</button><a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${r.gx.st[0]},${r.gx.st[1]}" target="_blank" rel="noopener">🚗 Cómo llegar al inicio</a></div></div>`:""}
+  <div class="actions" style="margin-top:0"><button class="btn ghost" data-mtsave="${r.id}">${window.MTSAVED&&MTSAVED(r)?"★ En mis tracks":"☆ Guardar en mis tracks"}</button><button class="btn ghost" data-gpx="${r.id}">⬇ Descargar GPX</button><a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${r.gx.st[0]},${r.gx.st[1]}" target="_blank" rel="noopener">🚗 Cómo llegar al inicio</a></div></div>`:""}
   ${r.tk?`<div class="sec"><h3>Recorrido</h3><p class="note">Track de tu mapa: ${fmtKm(r.tkm)} · punto más alto ${fmtA(r.a)}. Está dibujado en el mapa.</p></div>`:""}
   ${pts.some(p=>!p.x)?`<div class="sec"><h3>Lugares en el mapa</h3><ul class="plist">${pts.filter(p=>!p.x).map(p=>`<li>${ICO(p.cat)}<span class="n">${esc(p.c)}</span><span class="a">${fmtA(p.a)}</span>${mkBtns(p,true)}</li>`).join("")}</ul></div>`:""}
   ${near.length?`<div class="near"><h3>Otras rutas por la zona</h3><div class="rows">${near.map(x=>rowHTML(x.r,x.d.toFixed(0)+" km")).join("")}</div></div>`:""}`;
@@ -941,9 +941,14 @@ function drawMP(){MPL.clearLayers();
     m.on("add",()=>{const el=m.getElement();if(el)el.classList.toggle("sel",MPSEL===p.id)});
     MPL.addLayer(m)}
   syncMP()}
-function drawMT(){MTL.clearLayers();
-  for(const t of MT){MTL.addLayer(L.polyline(t.pts,{color:"#fff",weight:6,opacity:.8,interactive:false}));
-    MTL.addLayer(L.polyline(t.pts,{color:"#e8711a",weight:3.5,opacity:.95}).bindTooltip(esc(t.n),{sticky:true}))}
+// los tracks del blog guardados no copian los puntos: se cogen de la ruta
+const ptsOf=t=>t.pts&&t.pts.length?t.pts:(t.src==="blog"?(((R.find(r=>r.u===t.u)||{}).gx)||{}).ln||null:null);
+let MTLOAD=false;
+function drawMT(){MTL.clearLayers();let falta=false;
+  for(const t of MT){const p=ptsOf(t);if(!p){falta=true;continue}const ll=p.map(x=>[x[0],x[1]]);
+    MTL.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.8,interactive:false}));
+    MTL.addLayer(L.polyline(ll,{color:"#e8711a",weight:3.5,opacity:.95}).bindTooltip(esc(t.n),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);if(window.MISTRACKS)MISTRACKS.open(t.id)}))}
+  if(falta&&!MTLOAD&&window.loadTracks){MTLOAD=true;loadTracks().then(ok=>{MTLOAD=false;if(ok)drawMT()})}
   syncMP()}
 function syncMP(){const a=LAY.mp&&MP.length&&!window.FOLONLY,b=LAY.mt&&MT.length&&!window.FOLONLY;
   if(a&&!map.hasLayer(MPL))MPL.addTo(map);else if(!a&&map.hasLayer(MPL))MPL.remove();
@@ -1021,14 +1026,13 @@ function renderBox(){const ps=MP.slice().sort((a,b)=>(b.f||"").localeCompare(a.f
   box.innerHTML=`<h2>📍 Mis puntos <small style="font-weight:500;color:#666">(${MP.length})</small></h2>
   ${MP.length?"":`<p class="note">Guarda fuentes, aparcamientos, refugios o cualquier sitio. En el mapa: <b>Capas › Guardar dónde estoy</b> o <b>Marcar en el mapa</b>, o mantén pulsado sobre el mapa.</p>`}
   <div class="mpacts" style="margin:6px 0 8px"><button class="mpb" data-mpx="gps">🎯 Dónde estoy</button><button class="mpb" data-mpx="cross">✛ En el mapa</button>
-  ${MP.length?`<button class="mpb" data-mpx="gpx">⬇️ GPX</button><button class="mpb" data-mpx="kml">⬇️ KML</button>`:""}<button class="mpb" data-mpx="imp">⬆️ Importar GPX/KML</button></div>
+  ${MP.length?`<button class="mpb" data-mpx="gpx">⬇️ GPX</button><button class="mpb" data-mpx="kml">⬇️ KML</button>`:""}<button class="mpb" data-mpx="imp">⬆️ Importar puntos (GPX/KML)</button></div>
   ${ps.map(p=>`<div class="mprow" data-mpgo="${p.id}"><span class="e">${EMO(p.ic)}</span><span><b>${esc(p.n)}</b><small>${esc(ICO(p.ic)[2])}${p.a!=null?" · "+p.a.toLocaleString("es-ES")+" m":""}${p.f?" · "+fmtF(p.f):""}</small></span></div>`).join("")}
-  ${MT.length?`<h2 style="margin-top:14px">🧵 Mis tracks <small style="font-weight:500;color:#666">(${MT.length})</small></h2>${MT.map(t=>`<div class="mprow" data-mtgo="${t.id}"><span class="e">〰️</span><span><b>${esc(t.n)}</b><small>${t.km} km</small></span><button class="mpb dan del" data-mtdel="${t.id}">🗑</button></div>`).join("")}`:""}`}
+`;if(window.MISTRACKS)MISTRACKS.render()}
 box.addEventListener("click",e=>{const x=e.target.closest("[data-mpx]");
   if(x){const k=x.dataset.mpx;if(k==="gps"){showView("mapa");gps()}else if(k==="cross")cross();else if(k==="gpx")dl("mis-puntos.gpx",toGPX(),"application/gpx+xml");else if(k==="kml")dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml");else if(k==="imp"){fin.value="";fin.click()}return}
-  const td=e.target.closest("[data-mtdel]");if(td){if(td.dataset.sure!=="1"){td.dataset.sure="1";td.textContent="¿Seguro?";return}MT=MT.filter(t=>t.id!==td.dataset.mtdel);saveMT();drawMT();renderBox();return}
   const g=e.target.closest("[data-mpgo]");if(g){const p=MP.find(x=>x.id===g.dataset.mpgo);if(!p)return;showView("mapa");if(!LAY.mp){LAY.mp=true;saveLay();syncMP()}map.flyTo([p.lat,p.lon],Math.max(map.getZoom(),15));openMP(p.id);return}
-  const t=e.target.closest("[data-mtgo]");if(t){const tr=MT.find(x=>x.id===t.dataset.mtgo);if(!tr)return;showView("mapa");if(!LAY.mt){LAY.mt=true;saveLay();syncMP()}setTimeout(()=>map.fitBounds(L.latLngBounds(tr.pts),{padding:[40,40]}),60)}});
+});
 const xe=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"}[c]));
 function toGPX(){return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n`+
   MP.map(p=>`<wpt lat="${p.lat}" lon="${p.lon}"><name>${xe(p.n)}</name>${p.nota?`<desc>${xe(p.nota)}</desc>`:""}<type>${xe(ICO(p.ic)[2])}</type>${p.f?`<time>${p.f}</time>`:""}</wpt>`).join("\n")+`\n</gpx>\n`}
@@ -1036,25 +1040,40 @@ function toKML(){return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="htt
   MP.map(p=>`<Placemark><name>${xe(p.n)}</name><description>${xe((ICO(p.ic)[2])+(p.nota?" – "+p.nota:""))}</description><Point><coordinates>${p.lon},${p.lat},0</coordinates></Point></Placemark>`).join("\n")+`\n</Document></kml>\n`}
 function dl(name,txt,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 function dist(a,b){const R=6371000,t=Math.PI/180,dl=(b[0]-a[0])*t,dn=(b[1]-a[1])*t,x=Math.sin(dl/2)**2+Math.cos(a[0]*t)*Math.cos(b[0]*t)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
-function thin(pts){if(pts.length<3)return pts;const out=[pts[0]];let acc=0;for(let i=1;i<pts.length;i++){acc+=dist(pts[i-1],pts[i]);if(acc>=15||i===pts.length-1){out.push(pts[i]);acc=0}}return out.map(p=>[c5(p[0]),c5(p[1])])}
+function thin(pts){if(pts.length<3)return pts;const out=[pts[0]];let acc=0;for(let i=1;i<pts.length;i++){acc+=dist(pts[i-1],pts[i]);if(acc>=15||i===pts.length-1){out.push(pts[i]);acc=0}}return out.map(p=>p[2]!=null&&isFinite(p[2])?[c5(p[0]),c5(p[1]),Math.round(p[2])]:[c5(p[0]),c5(p[1])])}
 fin.addEventListener("change",()=>{const f=fin.files&&fin.files[0];if(!f)return;if(/\.kmz$/i.test(f.name)){toast("Los .kmz no los leo: expórtalo como .kml");return}
   const rd=new FileReader();rd.onload=()=>{try{imp(String(rd.result),f.name)}catch(e){toast("No he podido leer ese archivo")}};rd.readAsText(f)});
 function imp(txt,fname){const doc=new DOMParser().parseFromString(txt,"application/xml");if(doc.getElementsByTagName("parsererror").length)throw 0;
   const tx=(el,tag)=>{const n=el.getElementsByTagName(tag)[0];return n?n.textContent.trim():""};
   const base=fname.replace(/\.[^.]+$/,"");let np=0,nt=0;const have=new Set(MP.map(p=>p.lat.toFixed(4)+","+p.lon.toFixed(4)+"|"+p.n));
   const addP=(lat,lon,n,nota)=>{if(!isFinite(lat)||!isFinite(lon))return;const k=lat.toFixed(4)+","+lon.toFixed(4)+"|"+n;if(have.has(k))return;have.add(k);MP.push({id:nid(),n:n||"Punto importado",ic:"otro",nota:nota||"",lat:c5(lat),lon:c5(lon),f:new Date().toISOString()});np++};
-  const addT=(pts,n)=>{if(pts.length<2)return;const t=thin(pts);let km=0;for(let i=1;i<t.length;i++)km+=dist(t[i-1],t[i]);MT.push({id:nid(),n:n||base,km:Math.round(km/100)/10,pts:t});nt++};
+  const addT=(pts,n)=>{if(pts.length<2)return;const t=thin(pts);let km=0;for(let i=1;i<t.length;i++)km+=dist(t[i-1],t[i]);const o={id:nid(),n:n||base,km:Math.round(km/100)/10,pts:t,src:"gpx",f:new Date().toISOString()};desn(o);MT.push(o);nuevos.push(o);nt++};const nuevos=[];
   if(doc.getElementsByTagName("gpx").length){
     for(const w of doc.getElementsByTagName("wpt"))addP(+w.getAttribute("lat"),+w.getAttribute("lon"),tx(w,"name"),tx(w,"desc")||tx(w,"cmt"));
-    for(const t of doc.getElementsByTagName("trk")){const pts=[...t.getElementsByTagName("trkpt")].map(p=>[+p.getAttribute("lat"),+p.getAttribute("lon")]);addT(pts,tx(t,"name"))}
+    for(const t of doc.getElementsByTagName("trk")){const pts=[...t.getElementsByTagName("trkpt")].map(p=>{const e=tx(p,"ele");return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});addT(pts,tx(t,"name"))}
     for(const r of doc.getElementsByTagName("rte")){const pts=[...r.getElementsByTagName("rtept")].map(p=>[+p.getAttribute("lat"),+p.getAttribute("lon")]);addT(pts,tx(r,"name"))}}
   else{for(const pm of doc.getElementsByTagName("Placemark")){const n=tx(pm,"name"),d=tx(pm,"description").replace(/<[^>]+>/g," ").trim();
       for(const pt of pm.getElementsByTagName("Point")){const c=tx(pt,"coordinates").split(",");addP(+c[1],+c[0],n,d)}
-      for(const ls of pm.getElementsByTagName("LineString")){const pts=tx(ls,"coordinates").split(/\s+/).filter(Boolean).map(s=>{const c=s.split(",");return[+c[1],+c[0]]});addT(pts,n)}}}
+      for(const ls of pm.getElementsByTagName("LineString")){const pts=tx(ls,"coordinates").split(/\s+/).filter(Boolean).map(s=>{const c=s.split(",");return c[2]!=null&&+c[2]!==0?[+c[1],+c[0],+c[2]]:[+c[1],+c[0]]});addT(pts,n)}}}
   if(!np&&!nt){toast("No he encontrado puntos ni tracks en ese archivo");return}
   saveMP();if(nt&&!saveMT()){MT=store.get(MTK,[])}
   LAY.mp=true;LAY.mt=true;saveLay();["mp","mt"].forEach(k=>{const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",true)});
-  drawMP();drawMT();renderBox();toast(`Importado: ${np} punto${np===1?"":"s"}${nt?` y ${nt} track${nt===1?"":"s"}`:""}`)}
+  drawMP();drawMT();renderBox();toast([np?`${np} punto${np===1?"":"s"}`:"",nt?`${nt} track${nt===1?"":"s"}`:""].filter(Boolean).join(" y ")+(np+nt===1?" cargado":" cargados")+(nt?" · están en Lugares › Mis tracks":""));
+  for(const o of nuevos)if(o.pts.some(p=>p[2]==null))demAlt(o.id);
+  if(nt===1&&!np&&window.MISTRACKS)MISTRACKS.open(nuevos[0].id,true)}
+// desnivel de un track (con margen de 4 m para que el ruido no sume)
+function desn(o){const p=o.pts;if(!p.length||p.some(x=>x[2]==null)){delete o.up;delete o.dn;return}let U=0,D=0,ref=p[0][2],mx=-1e9,mn=1e9;
+  for(const x of p){const d=x[2]-ref;if(d>=4){U+=d;ref=x[2]}else if(d<=-4){D-=d;ref=x[2]}if(x[2]>mx)mx=x[2];if(x[2]<mn)mn=x[2]}o.up=Math.round(U);o.dn=Math.round(D);o.mx=mx;o.mn=mn}
+// si el GPX no trae alturas, se sacan del modelo de relieve (hace falta conexión)
+async function demAlt(id){const o=MT.find(x=>x.id===id);if(!o||!navigator.onLine)return;const p=o.pts;
+  const idx=[];const step=Math.max(1,Math.ceil(p.length/1000));for(let i=0;i<p.length;i+=step)idx.push(i);if(idx[idx.length-1]!==p.length-1)idx.push(p.length-1);
+  const ele={};try{for(let k=0;k<idx.length;k+=100){const g=idx.slice(k,k+100);
+    const j=await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${g.map(i=>p[i][0]).join(",")}&longitude=${g.map(i=>p[i][1]).join(",")}`).then(r=>r.json());
+    g.forEach((i,n)=>{const v=j.elevation&&j.elevation[n];if(v!=null&&isFinite(v))ele[i]=v})}}catch(e){return}
+  const known=idx.filter(i=>ele[i]!=null);if(known.length<2)return;
+  const q=MT.find(x=>x.id===id);if(!q)return;let a=0;
+  q.pts=q.pts.map((x,i)=>{while(a<known.length-2&&known[a+1]<i)a++;const i0=known[a],i1=known[a+1];const t=i1>i0?Math.min(1,Math.max(0,(i-i0)/(i1-i0))):0;return[x[0],x[1],Math.round(ele[i0]+(ele[i1]-ele[i0])*t)]});
+  desn(q);saveMT();if(window.MISTRACKS)MISTRACKS.refresh(id)}
 
 
 /* ---------- copia de seguridad en archivo: marcas, mis puntos y mis tracks ---------- */
@@ -1088,10 +1107,12 @@ document.addEventListener("click",e=>{if(e.target.closest("[data-bkp]")){bkpSave
 window.ldcBkp=bkpButtons;if(typeof renderCols==="function")renderCols();
 /* "ver solo los míos" también deja ver mis puntos (van en su propia capa) */
 drawMP();drawMT();renderBox();
-window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,sync:()=>syncMP(),
+window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,sync:()=>syncMP(),ptsOf,desn,demAlt,dl,
+  saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
+  importar(){fin.value="";fin.click()},
   // la sincronización cambia lo guardado sin volver a avisar a la nube
   set(mp,mt){if(mp){MP.length=0;MP.push(...mp);store.set(MPK,MP)}if(mt){MT.length=0;MT.push(...mt);try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}}
-    drawMP();drawMT();renderBox();if(MPSEL&&!MP.some(p=>p.id===MPSEL)){MPSEL=null}}};
+    drawMP();drawMT();renderBox();if(window.MISTRACKS)MISTRACKS.render();if(MPSEL&&!MP.some(p=>p.id===MPSEL)){MPSEL=null}}};
 })();
 
 /* ---------- panel de Capas por apartados desplegables (solo uno abierto a la vez) ---------- */
@@ -1136,7 +1157,7 @@ const SK="ldc-sesion",PK="ldc-sync-pend",UK="ldc-sync-uid",TK="ldc-sync-hora";
 const MPI=window.MISPUNTOS;
 let FB=null,A=null,USER=null,READY=false,BUSY=false,ERR="",unsub=[];
 const T={};                       // esperas para no escribir en cada toque
-let CLOUDT=new Set();             // tracks que hay en la nube
+let CLOUDT=new Map();             // tracks que hay en la nube
 const pend=()=>store.get(PK,{}),setPend=(k,v)=>{const p=pend();if(v)p[k]=1;else delete p[k];store.set(PK,p)};
 
 /* --- botón de la cabecera --- */
@@ -1217,8 +1238,10 @@ const ref=k=>A.fs.doc(A.db,"usuarios",USER.uid,"datos",k);
 const tref=id=>A.fs.doc(A.db,"usuarios",USER.uid,"tracks",String(id));
 const tcol=()=>A.fs.collection(A.db,"usuarios",USER.uid,"tracks");
 const J=s=>{try{return JSON.parse(s)}catch(e){return null}};
-const tOut=t=>({n:t.n||"",km:t.km||0,j:JSON.stringify(t.pts||[])});   // la nube no admite listas dentro de listas: los puntos van como texto
-const tIn=(id,d)=>({id:isNaN(+id)?id:+id,n:d.n,km:d.km,pts:J(d.j)||[]});
+// la nube no admite listas dentro de listas: cada track va entero como texto (los antiguos solo llevaban los puntos)
+const tOut=t=>({n:t.n||"",km:t.km||0,j:JSON.stringify(t)});
+const tIn=(id,d)=>{const o=J(d.j);if(o&&!Array.isArray(o))return o;return{id:isNaN(+id)?id:+id,n:d.n,km:d.km,pts:o||[]}};
+const tKey=ts=>JSON.stringify(ts.slice().sort((a,b)=>String(a.id)<String(b.id)?-1:1));
 
 // juntar: una cumbre «subida» manda sobre «quiero»; puntos y tracks se suman (sin repetir)
 function joinMarks(a,b){const r=Object.assign({},b);for(const k in a){if(a[k]==="hecha"||!r[k])r[k]=a[k]}return r}
@@ -1233,7 +1256,7 @@ async function onUser(u){
   const fs=A.fs,first=store.get(UK,null)!==u.uid,p=pend();
   const [dm,dp,dt]=await Promise.all([fs.getDoc(ref("marcas")),fs.getDoc(ref("puntos")),fs.getDocs(tcol())]);
   const cm=dm.exists()?J(dm.data().j):null,cp=dp.exists()?J(dp.data().j):null;
-  const ct=[];dt.forEach(d=>ct.push(tIn(d.id,d.data())));CLOUDT=new Set(ct.map(t=>String(t.id)));
+  const ct=[];CLOUDT=new Map();dt.forEach(d=>{ct.push(tIn(d.id,d.data()));CLOUDT.set(d.id,d.data().j)});
   // la primera vez en este aparato, o si quedaron cambios sin subir, se junta todo; si no, manda lo de la nube
   const m=cm==null?MARKS:(first||p.marcas)?joinMarks(MARKS,cm):cm;
   const pts=cp==null?MPI.get():(first||p.puntos)?joinList(MPI.get(),cp,sameP):cp;
@@ -1252,14 +1275,14 @@ async function onUser(u){
   // a partir de aquí, lo que cambie en otro aparato llega solo
   unsub.push(fs.onSnapshot(ref("marcas"),s=>{if(s.metadata.hasPendingWrites||!s.exists())return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(MARKS)){applyMarks(v);done()}}));
   unsub.push(fs.onSnapshot(ref("puntos"),s=>{if(s.metadata.hasPendingWrites||!s.exists())return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(MPI.get())){MPI.set(v,null);done()}}));
-  unsub.push(fs.onSnapshot(tcol(),s=>{if(s.metadata.hasPendingWrites)return;const v=[];s.forEach(d=>v.push(tIn(d.id,d.data())));CLOUDT=new Set(v.map(t=>String(t.id)));
-    const loc=MPI.tracks();if(v.length!==loc.length||v.some(t=>!loc.some(q=>String(q.id)===String(t.id)))){MPI.set(null,v);done()}}));
+  unsub.push(fs.onSnapshot(tcol(),s=>{if(s.metadata.hasPendingWrites)return;const v=[];s.forEach(d=>{v.push(tIn(d.id,d.data()));CLOUDT.set(d.id,d.data().j)});for(const k of [...CLOUDT.keys()])if(!v.some(t=>String(t.id)===k))CLOUDT.delete(k);
+    if(tKey(v)!==tKey(MPI.tracks())){MPI.set(null,v);done()}}));
   repaint()}
 function done(){store.set(TK,new Date().toISOString());repaint()}
 async function pushTracks(){const fs=A.fs,loc=MPI.tracks(),ids=new Set(loc.map(t=>String(t.id))),w=[];
-  for(const t of loc)if(!CLOUDT.has(String(t.id)))w.push(fs.setDoc(tref(t.id),tOut(t)));
-  for(const id of CLOUDT)if(!ids.has(id))w.push(fs.deleteDoc(tref(id)));
-  CLOUDT=ids;await Promise.all(w)}
+  for(const t of loc){const o=tOut(t);if(CLOUDT.get(String(t.id))!==o.j){w.push(fs.setDoc(tref(t.id),o));CLOUDT.set(String(t.id),o.j)}}   // nuevos o cambiados (p. ej. de nombre)
+  for(const id of [...CLOUDT.keys()])if(!ids.has(id)){w.push(fs.deleteDoc(tref(id)));CLOUDT.delete(id)}
+  await Promise.all(w)}
 async function push(k){if(!USER||!READY){return}
   try{if(k==="marcas")await A.fs.setDoc(ref("marcas"),{j:JSON.stringify(MARKS),t:Date.now()});
     else if(k==="puntos")await A.fs.setDoc(ref("puntos"),{j:JSON.stringify(MPI.get()),t:Date.now()});
@@ -1403,8 +1426,90 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-follow]");
 
 // si la app se cerró mientras seguías una ruta (hace menos de 12 h), se retoma sola
 const prev=store.get(FK,null);
-if(prev&&prev.u&&Date.now()-prev.t<12*3600e3){const r=R.find(x=>x.u===prev.u);if(r&&r.gx)setTimeout(()=>{start(r,prev.rev,prev);toast("Sigues con la ruta donde la dejaste")},900)}
+if(prev&&prev.u&&Date.now()-prev.t<12*3600e3){const r=R.find(x=>x.u===prev.u);if((r&&r.gx)||String(prev.u).startsWith("mt:"))setTimeout(()=>{const rr=r||(window.MISTRACKS&&MISTRACKS.route(String(prev.u).slice(3)));if(!rr){store.set(FK,null);return}start(rr,prev.rev,prev);toast("Sigues con la ruta donde la dejaste")},900)}
 window.SEGUIR={start,stop,get:()=>F};
+})();
+
+/* ---------- Mis tracks (pestaña Lugares): tracks cargados (GPX/KML) y tracks de rutas del blog guardados ----------
+   Cada uno se puede seguir con el GPS, descargar en GPX, renombrar y quitar. Se sincronizan con «Entrar con Google». */
+(function(){
+const MPI=window.MISPUNTOS;
+const T=()=>MPI.tracks();
+const box=document.createElement("div");box.className="mpbox";box.id="mtbox";
+document.getElementById("mpbox").after(box);
+const routeOf=t=>t&&t.src==="blog"?R.find(r=>r.u===t.u):null;
+const blogId=r=>"b-"+String(r.u).replace(/^https?:\/\/[^/]+\//,"").replace(/\.html$/,"").replace(/[^a-z0-9]+/gi,"-").slice(-90);
+const savedOf=r=>T().find(t=>t.src==="blog"&&t.u===r.u);
+const fmtF=f=>{try{return new Date(f).toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}catch(e){return""}};
+function datos(t){const r=routeOf(t),g=r&&r.gx;return{km:t.km||(g&&g.km)||0,up:t.up!=null?t.up:g?g.up:null,dn:t.dn!=null?t.dn:g?g.dn:null}}
+const kmTxt=v=>v?v.toLocaleString("es-ES",{maximumFractionDigits:1})+" km":"";
+
+function render(){const ts=T().slice().sort((a,b)=>(b.f||"").localeCompare(a.f||""));
+  box.innerHTML=`<h2>🧵 Mis tracks <small style="font-weight:500;color:#666">(${ts.length})</small></h2>
+  ${ts.length?"":`<p class="note">Guarda aquí tracks de otras personas (GPX o KML: de Wikiloc, de un amigo…) y los de las rutas del blog que te interesen, con <b>☆ Guardar en mis tracks</b> en la ficha de la ruta. Desde aquí puedes seguirlos con el GPS.</p>`}
+  <div class="mpacts" style="margin:6px 0 8px"><button class="mpb" data-mtx="imp">⬆️ Cargar GPX/KML</button></div>
+  ${ts.map(t=>{const d=datos(t);return`<div class="mprow" data-mtopen="${esc(t.id)}"><span class="e">${t.src==="blog"?"📘":"〰️"}</span><span><b>${esc(t.n)}</b><small>${[kmTxt(d.km),d.up!=null?"+"+d.up.toLocaleString("es-ES")+" m":"",t.src==="blog"?"Del blog":"Cargado",t.f?fmtF(t.f):""].filter(Boolean).join(" · ")}</small></span></div>`}).join("")}`}
+box.addEventListener("click",e=>{if(e.target.closest('[data-mtx="imp"]')){MPI.importar();return}
+  const o=e.target.closest("[data-mtopen]");if(o)open(o.dataset.mtopen,true)});
+
+/* perfil a partir de los puntos (para los cargados) */
+function perfil(t){const r=routeOf(t);if(r&&r.gx&&r.gx.pf&&r.gx.pf.length)return profSVG(r.gx);
+  const p=t.pts;if(!p||p.length<2||p.some(x=>x[2]==null))return"";
+  const dm=(a,b)=>{const R0=6371,k=Math.PI/180,dl=(b[0]-a[0])*k,dn=(b[1]-a[1])*k,h=Math.sin(dl/2)**2+Math.cos(a[0]*k)*Math.cos(b[0]*k)*Math.sin(dn/2)**2;return 2*R0*Math.asin(Math.sqrt(h))};
+  let c=0;const all=[[0,p[0][2]]];for(let i=1;i<p.length;i++){c+=dm(p[i-1],p[i]);all.push([c,p[i][2]])}
+  const f=t.km&&c?t.km/c:1,step=Math.max(1,Math.floor(all.length/120)),pf=[];for(let i=0;i<all.length;i+=step)pf.push([Math.round(all[i][0]*f*100)/100,all[i][1]]);pf.push([Math.round(c*f*100)/100,all[all.length-1][1]]);
+  return profSVG({pf,mn:t.mn!=null?t.mn:Math.min(...pf.map(x=>x[1])),mx:t.mx!=null?t.mx:Math.max(...pf.map(x=>x[1])),km:t.km})}
+
+function encuadra(t){const p=MPI.ptsOf(t);if(!p){if(window.loadTracks)loadTracks().then(ok=>{if(ok&&MPI.ptsOf(t))encuadra(t)});return}
+  const b=L.latLngBounds(p.map(x=>[x[0],x[1]]));const wide=innerWidth>=860;
+  map.fitBounds(b,{paddingTopLeft:[30,90],paddingBottomRight:wide?[480,30]:[30,Math.round(innerHeight*0.5)],maxZoom:15})}
+function open(id,fit){const t=T().find(x=>String(x.id)===String(id));if(!t)return;
+  if(typeof showView==="function")showView("mapa");
+  if(!LAY.mt){LAY.mt=true;saveLay();const b=document.querySelector('[data-lay="mt"]');if(b)b.setAttribute("aria-pressed",true);MPI.sync()}
+  const r=routeOf(t),d=datos(t),p=MPI.ptsOf(t)||(r&&r.gx&&r.gx.st?[r.gx.st]:null);
+  MPI.show(`<div class="sheet-head"><h2>${esc(t.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  <div class="topacts"><button class="btn primary" data-mtfol="${esc(t.id)}">▶ Seguir track</button><button class="btn ghost" data-mtgpx="${esc(t.id)}">⬇ GPX</button>${r?`<button class="btn ghost" data-mtroute="${esc(t.id)}">📘 Ver la ruta</button>`:""}</div>
+  <div class="meta"><span class="tag">${r?"Ruta del blog":"Track cargado"}</span>${d.km?`<span class="tag">${kmTxt(d.km)}</span>`:""}${d.up!=null?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}${t.f?`<span class="tag">Guardado el ${fmtF(t.f)}</span>`:""}</div>
+  ${perfil(t)}
+  ${!r&&t.pts&&t.pts.some(x=>x[2]==null)?`<p class="note">${navigator.onLine?"Calculando las alturas…":"Este track no trae alturas; se calcularán cuando haya conexión."}</p>`:""}
+  <div class="mpacts">${p?`<a class="mpb" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p[0][0]},${p[0][1]}">🚗 Cómo llegar al inicio</a>`:""}
+  <button class="mpb" data-mtren="${esc(t.id)}">✏️ Cambiar nombre</button><button class="mpb dan" data-mtdel="${esc(t.id)}">🗑 Quitar de mis tracks</button></div>`);
+  sheet._mt=t.id;
+  if(fit)setTimeout(()=>encuadra(t),60);
+  if(!r&&t.pts&&t.pts.some(x=>x[2]==null))MPI.demAlt(t.id)}
+function refresh(id){render();if(!sheet.hidden&&String(sheet._mt)===String(id)&&sheet.querySelector("[data-mtfol]"))open(id,false)}
+
+function gpxDe(t){const x=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  return`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<trk><name>${x(t.n)}</name><trkseg>\n`+
+    t.pts.map(p=>`<trkpt lat="${p[0]}" lon="${p[1]}">${p[2]!=null?`<ele>${p[2]}</ele>`:""}</trkpt>`).join("\n")+`\n</trkseg></trk>\n</gpx>\n`}
+const comoRuta=t=>({u:"mt:"+t.id,ti:t.n,gx:{ln:t.pts,km:t.km}});
+
+sheet.addEventListener("click",e=>{
+  const id=(s)=>{const b=e.target.closest(s);return b?b.getAttribute(s.slice(1,-1)):null};
+  let k;
+  if((k=id("[data-mtfol]"))!=null){const t=T().find(x=>String(x.id)===k);if(!t)return;const r=routeOf(t);if(r)SEGUIR.start(r,false);else SEGUIR.start(comoRuta(t),false);return}
+  if((k=id("[data-mtgpx]"))!=null){const t=T().find(x=>String(x.id)===k);if(!t)return;const r=routeOf(t);if(r)dlGPX(r);else MPI.dl(t.n.replace(/[\\/:*?"<>|]+/g," ").trim()+".gpx",gpxDe(t),"application/gpx+xml");return}
+  if((k=id("[data-mtroute]"))!=null){const t=T().find(x=>String(x.id)===k);const r=routeOf(t);if(r)openRoute(r.id);return}
+  if((k=id("[data-mtren]"))!=null){const t=T().find(x=>String(x.id)===k);if(!t)return;
+    MPI.show(`<div class="sheet-head"><h2>Cambiar nombre</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><div class="mpform"><label for="mtn">Nombre del track</label><input type="text" id="mtn" maxlength="100" value="${esc(t.n)}">
+    <div class="mpacts"><button class="mpb pri" data-mtrensave="${esc(t.id)}">💾 Guardar</button><button class="mpb" data-mtback="${esc(t.id)}">Cancelar</button></div></div>`);
+    sheet._mt=t.id;setTimeout(()=>{const i=document.getElementById("mtn");if(i){i.focus();i.select()}},50);return}
+  if((k=id("[data-mtrensave]"))!=null){const v=(document.getElementById("mtn").value||"").trim();if(!v)return;
+    const ts=T().map(x=>String(x.id)===k?{...x,n:v}:x);MPI.saveTracks(ts);toast("Nombre cambiado");open(k,false);return}
+  if((k=id("[data-mtback]"))!=null){open(k,false);return}
+  if((k=id("[data-mtdel]"))!=null){const b=e.target.closest("[data-mtdel]");if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="¿Seguro? Toca otra vez";return}
+    MPI.saveTracks(T().filter(x=>String(x.id)!==k));sheet.hidden=true;toast("Quitado de Mis tracks");return}});
+
+/* en la ficha de una ruta del blog: «☆ Guardar en mis tracks» */
+window.MTSAVED=r=>!!savedOf(r);
+document.addEventListener("click",e=>{const b=e.target.closest("[data-mtsave]");if(!b)return;e.preventDefault();e.stopPropagation();
+  const r=R[+b.dataset.mtsave];if(!r||!r.gx)return;const s=savedOf(r);
+  if(s){MPI.saveTracks(T().filter(x=>x!==s));b.textContent="☆ Guardar en mis tracks";toast("Quitado de Mis tracks")}
+  else{MPI.saveTracks([...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString()}]);
+    b.textContent="★ En mis tracks";toast("Guardado en Mis tracks (pestaña Lugares)")}},true);
+
+window.MISTRACKS={render,open,refresh,route:id=>{const t=T().find(x=>String(x.id)===String(id));return t&&t.pts?comoRuta(t):null}};
+render();
 })();
 
 </script>
