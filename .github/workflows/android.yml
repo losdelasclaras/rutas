@@ -1,0 +1,25 @@
+name: App Android
+on:
+  push: { branches: [android] }
+  workflow_dispatch: {}
+permissions: { contents: write }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.7' }
+      - name: Compilar
+        run: gradle :app:assembleRelease --no-daemon --stacktrace
+      - run: cp app/build/outputs/apk/release/app-release.apk LdC-Rutas.apk
+      - name: Publicar
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-${{ github.run_number }}
+          name: App Android ${{ github.run_number }}
+          files: LdC-Rutas.apk
+          make_latest: true
+          body: "App para Android de Los de las Claras. Descarga LdC-Rutas.apk e instálala."
