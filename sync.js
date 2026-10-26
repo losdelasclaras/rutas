@@ -36,7 +36,7 @@ const ICON=btn.innerHTML;
 const bg=document.createElement("div");bg.className="accbg";bg.hidden=true;bg.innerHTML=`<div class="accdlg" role="dialog" aria-label="Tu cuenta"></div>`;document.body.appendChild(bg);
 const dlg=bg.firstChild;
 function show(html){dlg.innerHTML=html;bg.hidden=false}
-const cerrar=()=>{bg.hidden=true;OPEN=false};
+const cerrar=()=>{bg.hidden=true;OPEN=false;PEND=null;MOT=null};
 bg.addEventListener("click",e=>{if(e.target===bg||e.target.closest("[data-close]"))cerrar()});
 addEventListener("keydown",e=>{if(e.key==="Escape"&&!bg.hidden)cerrar()});
 const ini=u=>esc(((u.displayName||u.email||"?").trim()[0]||"?").toUpperCase());
@@ -48,14 +48,20 @@ const hora=()=>{const h=store.get(TK,null);if(!h)return"";const d=new Date(h),ho
   return(hoy?"hoy":d.toLocaleDateString("es-ES",{day:"numeric",month:"short"}))+" a las "+d.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})};
 const cuenta=()=>{const nm=Object.keys(MARKS).length,np=MPI.get().length,nt=MPI.tracks().length;
   return`${nm} marca${nm===1?"":"s"} de cumbres y lugares · ${np} punto${np===1?"":"s"}${nt?` · ${nt} track${nt===1?"":"s"}`:""}`};
-let OPEN=false;
+let OPEN=false,PEND=null,MOT=null;
+const MOTS={marcas:"Entra para guardar tus marcas",puntos:"Entra para guardar tus puntos",tracks:"Entra para guardar tus tracks"};
+// guardar algo tuyo pide haber entrado con Google; lo que pulsaste se hace solo después de entrar
+window.cuentaOk=(fn,motivo)=>{if(store.get(SK,"0")==="1")return true;PEND=fn;MOT=motivo||"marcas";panel();return false};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;
+  e.preventDefault();e.stopPropagation();const k=b.parentElement.dataset.key,v=b.dataset.m;
+  cuentaOk(()=>{if(MARKS[k]!==v){MARKS[k]=v;saveMarks();renderCols();if(typeof refreshMarks==="function")refreshMarks()}toast(v==="hecha"?"Marcado ✓":"Apuntado en tu lista ★")},"marcas")},true);
 function panel(){OPEN=true;
   if(!USER){load().catch(()=>{});
-    show(`<div class="sheet-head"><h2>Tu cuenta</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
-    <p>Entra con tu cuenta de Google y tus <b>marcas de cumbres y lugares, tus puntos y tus tracks</b> se guardan en tu cuenta: los tendrás iguales en el móvil y en el ordenador, y no se pierden si cambias de móvil.</p>
-    <p class="note">No hace falta para usar la app. Solo se guarda lo tuyo y nadie más puede verlo.</p>
+    show(`<div class="sheet-head"><h2>${MOT?esc(MOTS[MOT]||"Entra con tu cuenta"):"Tu cuenta"}</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
+    <p>${MOT?"Para guardar algo tuyo hay que entrar con tu cuenta de Google. ":"Entra con tu cuenta de Google y "}Tus <b>marcas de cumbres y lugares, tus puntos y tus tracks</b> se guardan en tu cuenta: los tendrás en el móvil y en el ordenador, y no se pierden si cambias de móvil.</p>
+    <p class="note">Solo hace falta una vez: después la app entra sola. Para ver rutas y mapas no hace falta. Solo se guarda lo tuyo y nadie más puede verlo.</p>
     ${ERR?`<p class="syncst er">${esc(ERR)}</p>`:""}
-    <p style="margin:14px 0 6px"><button class="gbtn" data-gin>${GLOGO}Entrar con Google</button></p>`);return}
+    <p style="margin:14px 0 6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="gbtn" data-gin>${GLOGO}Entrar con Google</button>${MOT?`<button class="mpb" data-close>Ahora no</button>`:""}</p>`);return}
   const np=Object.keys(pend()).length;
   const st=BUSY?`<p class="syncst pe">Sincronizando…</p>`:!READY||np?`<p class="syncst pe">⏳ Hay cambios sin subir todavía${navigator.onLine?"":" (sin cobertura)"}. Se suben solos cuando haya conexión.</p>`
     :`<p class="syncst ok">✓ Todo guardado en tu cuenta${hora()?` · ${hora()}`:""}</p>`;
@@ -125,7 +131,8 @@ async function onUser(u){
   w.push(pushTracks());
   await Promise.all(w);
   store.set(UK,u.uid);store.set(PK,{});store.set(TK,new Date().toISOString());READY=true;BUSY=false;
-  if(OPEN)cerrar();
+  if(PEND){const f=PEND;PEND=null;MOT=null;setTimeout(()=>{try{f()}catch(e){}},300)}
+  if(OPEN){bg.hidden=true;OPEN=false}
   if(first){const tot=Object.keys(m).length+pts.length+trs.length;toast(tot?`Conectado: ${cuenta()} guardados en tu cuenta`:"Conectado con tu cuenta")}
   else if(nm>0||np>0||nt>0)toast("Recibidos los cambios de tu cuenta");
   // a partir de aquí, lo que cambie en otro aparato llega solo

@@ -84,7 +84,7 @@ function form(p,isNew){const ic=p.ic||"otro";
   <label for="mpt">Nota (opcional)</label><textarea id="mpt" rows="3" maxlength="1000" placeholder="Agua todo el año, sitio para aparcar 5 coches…">${esc(p.nota||"")}</textarea>
   <div class="mpacts"><button class="mpb pri" data-mpsave>💾 Guardar</button>${isNew?"":`<button class="mpb" data-mpmove="${p.id}">✥ Mover de sitio</button>`}<button class="mpb" data-close>Cancelar</button></div></div>`);
   sheet._mp={...p,ic,isNew};setTimeout(()=>{const i=document.getElementById("mpn");if(i&&isNew)i.focus()},50)}
-function newAt(lat,lon,acc){form({lat:c5(lat),lon:c5(lon),acc,n:"",ic:"otro"},true)}
+function newAt(lat,lon,acc){if(window.cuentaOk&&!cuentaOk(()=>newAt(lat,lon,acc),"puntos"))return;form({lat:c5(lat),lon:c5(lon),acc,n:"",ic:"otro"},true)}
 
 sheet.addEventListener("click",e=>{
   const ic=e.target.closest("[data-mpic]");if(ic){sheet.querySelectorAll("[data-mpic]").forEach(b=>b.setAttribute("aria-pressed",b===ic));if(sheet._mp)sheet._mp.ic=ic.dataset.mpic;return}
@@ -105,11 +105,11 @@ function shareMP(p){const url=`https://www.google.com/maps/search/?api=1&query=$
   else window.open("https://wa.me/?text="+encodeURIComponent(txt),"_blank")}
 
 /* marcar: dónde estoy, punto de mira, pulsación larga */
-function gps(){if(!navigator.geolocation){toast("Este aparato no da la ubicación");return}toast("Buscando dónde estás…");
+function gps(){if(window.cuentaOk&&!cuentaOk(gps,"puntos"))return;if(!navigator.geolocation){toast("Este aparato no da la ubicación");return}toast("Buscando dónde estás…");
   navigator.geolocation.getCurrentPosition(pos=>{const{latitude:la,longitude:lo,accuracy:ac}=pos.coords;if(window.showMe)showMe(la,lo);map.flyTo([la,lo],Math.max(map.getZoom(),15));newAt(la,lo,ac)},
     ()=>toast("No he podido saber dónde estás. Revisa el permiso de ubicación."),{enableHighAccuracy:true,timeout:15000,maximumAge:0})}
 let crossOn=false;
-function cross(moveId){if(typeof showView==="function")showView("mapa");if(crossOn)return;crossOn=true;closeLegend();sheet.hidden=true;
+function cross(moveId){if(!moveId&&window.cuentaOk&&!cuentaOk(()=>cross(),"puntos"))return;if(typeof showView==="function")showView("mapa");if(crossOn)return;crossOn=true;closeLegend();sheet.hidden=true;
   const v=document.getElementById("map"),c=document.createElement("div");c.className="mpcross";c.id="mpcross";v.appendChild(c);
   const b=document.createElement("div");b.className="mpbar";b.id="mpbar";b.innerHTML=`<span>${moveId?"Mueve el mapa hasta poner la cruz en el sitio correcto":"Mueve el mapa hasta poner la cruz encima del sitio"}</span><button class="mpb pri" data-mpok>${moveId?"Dejarlo aquí":"Guardar aquí"}</button><button class="mpb" data-mpcancel>Cancelar</button>`;v.appendChild(b);
   L.DomEvent.disableClickPropagation(b);
@@ -140,7 +140,7 @@ function renderBox(){const ps=MP.slice().sort((a,b)=>(b.f||"").localeCompare(a.f
   ${ps.map(p=>`<div class="mprow" data-mpgo="${p.id}"><span class="e">${EMO(p.ic)}</span><span><b>${esc(p.n)}</b><small>${esc(ICO(p.ic)[2])}${p.a!=null?" · "+p.a.toLocaleString("es-ES")+" m":""}${p.f?" · "+fmtF(p.f):""}</small></span></div>`).join("")}
 `;if(window.MISTRACKS)MISTRACKS.render()}
 box.addEventListener("click",e=>{const x=e.target.closest("[data-mpx]");
-  if(x){const k=x.dataset.mpx;if(k==="gps"){showView("mapa");gps()}else if(k==="cross")cross();else if(k==="gpx")dl("mis-puntos.gpx",toGPX(),"application/gpx+xml");else if(k==="kml")dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml");else if(k==="imp"){fin.value="";fin.click()}return}
+  if(x){const k=x.dataset.mpx;if(k==="gps"){showView("mapa");gps()}else if(k==="cross")cross();else if(k==="gpx")dl("mis-puntos.gpx",toGPX(),"application/gpx+xml");else if(k==="kml")dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml");else if(k==="imp"){if(window.cuentaOk&&!cuentaOk(()=>toast("Ya has entrado. Pulsa otra vez «Importar» para elegir el archivo"),"puntos"))return;fin.value="";fin.click()}return}
   const g=e.target.closest("[data-mpgo]");if(g){const p=MP.find(x=>x.id===g.dataset.mpgo);if(!p)return;showView("mapa");if(!LAY.mp){LAY.mp=true;saveLay();syncMP()}map.flyTo([p.lat,p.lon],Math.max(map.getZoom(),15));openMP(p.id);return}
 });
 const xe=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"}[c]));
@@ -219,7 +219,7 @@ window.ldcBkp=bkpButtons;if(typeof renderCols==="function")renderCols();
 drawMP();drawMT();renderBox();
 window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,sync:()=>syncMP(),ptsOf,desn,demAlt,dl,
   saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
-  importar(){fin.value="";fin.click()},
+  importar(){if(window.cuentaOk&&!cuentaOk(()=>toast("Ya has entrado. Pulsa otra vez «Cargar GPX/KML» para elegir el archivo"),"tracks"))return;fin.value="";fin.click()},
   // la sincronización cambia lo guardado sin volver a avisar a la nube
   set(mp,mt){if(mp){MP.length=0;MP.push(...mp);store.set(MPK,MP)}if(mt){MT.length=0;MT.push(...mt);try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}}
     drawMP();drawMT();renderBox();if(window.MISTRACKS)MISTRACKS.render();if(MPSEL&&!MP.some(p=>p.id===MPSEL)){MPSEL=null}}};
