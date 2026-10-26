@@ -6,7 +6,7 @@ const ICO=k=>(ICOS.find(x=>x[0]===k)||ICOS[0]);
 const EMO=k=>k==="cumbre"?'<svg viewBox="-12 -12 24 24" style="width:1.15em;height:1.15em;vertical-align:-.2em"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>':ICO(k)[1];
 let MP=store.get(MPK,[]), MT=store.get(MTK,[]);
 if(LAY.mp===undefined)LAY.mp=true; if(LAY.mt===undefined)LAY.mt=true;
-const saveMP=()=>store.set(MPK,MP), saveMT=()=>{try{localStorage.setItem(MTK,JSON.stringify(MT));return true}catch(e){toast("No queda sitio en el móvil para más tracks");return false}};
+const saveMP=()=>{store.set(MPK,MP);if(window.ldcSync)ldcSync("puntos")}, saveMT=()=>{try{localStorage.setItem(MTK,JSON.stringify(MT));if(window.ldcSync)ldcSync("tracks");return true}catch(e){toast("No queda sitio en el móvil para más tracks");return false}};
 const nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const fmtF=f=>{try{return new Date(f).toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}catch(e){return""}};
 const c5=x=>Math.round(x*1e5)/1e5;
@@ -198,5 +198,8 @@ document.addEventListener("click",e=>{if(e.target.closest("[data-bkp]")){bkpSave
 window.ldcBkp=bkpButtons;if(typeof renderCols==="function")renderCols();
 /* "ver solo los míos" también deja ver mis puntos (van en su propia capa) */
 drawMP();drawMT();renderBox();
-window.MISPUNTOS={get:()=>MP,tracks:()=>MT};
+window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,
+  // la sincronización cambia lo guardado sin volver a avisar a la nube
+  set(mp,mt){if(mp){MP.length=0;MP.push(...mp);store.set(MPK,MP)}if(mt){MT.length=0;MT.push(...mt);try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}}
+    drawMP();drawMT();renderBox();if(MPSEL&&!MP.some(p=>p.id===MPSEL)){MPSEL=null}}};
 })();
