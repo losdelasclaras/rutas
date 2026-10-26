@@ -46,7 +46,7 @@ rep('</style>','''html,body{height:100%;margin:0}
 .sync{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 0}
 </style>
 </head><body>''')
-i=t.rindex('</script>'); t=t[:i]+'\n'+open('/home/claude/pwa/mispuntos.js').read()+'\n'+open('/home/claude/pwa/capas.js').read()+'\n'+open('/home/claude/pwa/sync.js').read()+'\n'+t[i:]
+i=t.rindex('</script>'); t=t[:i]+'\n'+open('/home/claude/pwa/mispuntos.js').read()+'\n'+open('/home/claude/pwa/capas.js').read()+'\n'+open('/home/claude/pwa/sync.js').read()+'\n'+open('/home/claude/pwa/seguir.js').read()+'\n'+t[i:]
 i=t.rindex('</script>'); t=t[:i]+'</script>\n<script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>\n</body></html>\n'
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
@@ -114,6 +114,9 @@ ib.addEventListener("click",async()=>{if(!deferredInstall)return;deferredInstall
 addEventListener("appinstalled",()=>{ib.hidden=true});''')
 rep('function saveMarks(){store.set("ldc-marcas",MARKS);','function saveMarks(){store.set("ldc-marcas",MARKS);if(window.ldcSync)ldcSync("marcas");')
 rep('<button class="fsbtn" id="fsbtn" aria-label="Cambiar tamaño del texto">Aa</button>','<button class="fsbtn" id="fsbtn" aria-label="Cambiar tamaño del texto">Aa</button>\n    <button class="userbtn" id="userbtn" aria-label="Tu cuenta" title="Tu cuenta"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c1-4.5 4.5-6.5 8-6.5s7 2 8 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>')
+# seguir esta ruta (botón en la ficha) y «rutas cerca» medido desde el inicio del track
+rep('<button class="btn primary" data-gpx="${r.id}">⬇ Descargar GPX</button>','<button class="btn primary" data-follow="${r.id}">▶ Seguir esta ruta</button><button class="btn ghost" data-gpx="${r.id}">⬇ Descargar GPX</button>')
+rep('.map(r=>({r,d:km({lat,lon},r)}))','.map(r=>({r,d:km({lat,lon},r.gx&&r.gx.st?{lat:r.gx.st[0],lon:r.gx.st[1]}:r)}))')
 # marcas: copiar a otro móvil
 rep('''   <p class="note"><b>${nd}</b> de ${ZI.length}''','''      <p class="note"><b>${nd}</b> de ${ZI.length}''')
 rep('''  const m=e.target.closest("[data-m]");if(m){''','''  if(e.target.closest("[data-exp]")){const code="LDC1:"+btoa(unescape(encodeURIComponent(JSON.stringify(MARKS))));(navigator.clipboard?navigator.clipboard.writeText(code):Promise.reject()).then(()=>alert("Copiado. En el otro móvil, abre la app y pulsa «Pegar marcas de otro móvil»."),()=>prompt("Copia este código:",code));return}
