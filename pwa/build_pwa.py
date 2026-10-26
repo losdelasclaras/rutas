@@ -82,11 +82,17 @@ Number.prototype.toLocaleString=function(loc,opt){const k=(loc||"")+"|"+JSON.str
 '''+t[i:]
 t=t.replace('</body>','''<script>
 addEventListener("DOMContentLoaded",()=>__mk("página leída"));
+function __extra(){const mk=document.querySelectorAll("#map .leaflet-marker-icon");const f=mk[0];let fi="ninguno";if(f){const cs=getComputedStyle(f),sv=f.querySelector("svg"),r=sv?sv.getBoundingClientRect():null,u=f.querySelector("use");fi="display "+cs.display+", opacidad "+cs.opacity+", visible "+cs.visibility+", svg "+(r?Math.round(r.width)+"x"+Math.round(r.height)+" en "+Math.round(r.left)+","+Math.round(r.top):"no")+", use "+(u?(u.getAttribute("href")+" existe "+!!document.getElementById((u.getAttribute("href")||"").slice(1))):"no")+", clases "+f.className}
+ const tl=Object.entries(window.__TL||{}).map(([h,o])=>h+": "+o.ok+" bien, "+o.err+" con error").join("<br>")||"ninguna";
+ return "<br><b>Puntos</b><br>en pantalla: "+mk.length+"<br>primero: "+fi+"<br>clases del mapa: "+document.getElementById("map").className+"<br>capas: "+localStorage.getItem("ldc-capas")+" · fondo "+localStorage.getItem("ldc-base")+"<br><b>Cuadritos del mapa</b><br>"+tl}
 addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requestAnimationFrame(()=>__mk("primer dibujo")));
  if(/[?&]diag/.test(location.search))setTimeout(()=>{const n=performance.getEntriesByType("navigation")[0]||{};const fp=(performance.getEntriesByType("paint").find(e=>e.name==="first-contentful-paint")||{}).startTime;
   const rows=[["respuesta del servidor",Math.round(n.responseStart||0)],["descarga terminada",Math.round(n.responseEnd||0)],...__M,["primer contenido",Math.round(fp||0)]];
   const d=document.createElement("div");d.style.cssText="position:fixed;z-index:99999;left:8px;top:8px;background:#fff;color:#000;padding:12px 14px;border:2px solid #c00;border-radius:10px;font:14px/1.45 system-ui;max-width:92vw;box-shadow:0 4px 18px rgba(0,0,0,.3)";
-  d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";document.body.appendChild(d)},1500)});
+  const res=performance.getEntriesByType("resource");const H={};res.forEach(e=>{let h;try{h=new URL(e.name).hostname.replace(/^[abc]\\./,"")}catch(x){h="?"}const o=H[h]||(H[h]={n:0,fin:0,max:0});o.n++;o.fin=Math.max(o.fin,e.responseEnd);o.max=Math.max(o.max,e.duration)});
+  const hs=Object.entries(H).sort((a,b)=>b[1].fin-a[1].fin).map(([h,o])=>h+": "+o.n+" archivos, el último a los <b>"+Math.round(o.fin)+"</b>, el más lento "+Math.round(o.max));
+  const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
+  d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
 </body>''')
 rep('''requestAnimationFrame(()=>{fitHome(false);sizeMarks()});
