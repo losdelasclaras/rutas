@@ -71,6 +71,9 @@ rep('''  const fail=()=>{if(msg)msg.textContent="Este navegador no deja usar tu 
 rep('''navigator.geolocation.getCurrentPosition(p=>nearAt(p.coords.latitude,p.coords.longitude,"tu ubicación"),fail,{timeout:8000,maximumAge:600000})''','''navigator.geolocation.getCurrentPosition(p=>{showMe(p.coords.latitude,p.coords.longitude);nearAt(p.coords.latitude,p.coords.longitude,"tu ubicación")},fail,{enableHighAccuracy:true,timeout:12000,maximumAge:300000})''')
 # el mapa necesita recalcular tamaño al volver a la pestaña
 rep('''function showView(v){''','''function showView(v){if(v==="mapa")setTimeout(()=>map.invalidateSize(),0);''')
+# panel de capas: que nunca se salga por arriba en pantallas bajas (se desplaza dentro)
+rep('const o=lg.classList.toggle("open");tg.setAttribute("aria-expanded",o);return}','const o=lg.classList.toggle("open");tg.setAttribute("aria-expanded",o);if(o){const pn=lg.querySelector(".laypanel"),mr=document.getElementById("map").getBoundingClientRect();pn.style.maxHeight="none";let mh=Math.max(160,pn.getBoundingClientRect().bottom-mr.top-10);pn.style.maxHeight=mh+"px";const ov=mr.top+10-pn.getBoundingClientRect().top;if(ov>0)pn.style.maxHeight=Math.max(140,mh-ov)+"px"}return}')
+t=t.replace('</style>','.laypanel{overflow-y:auto;overscroll-behavior:contain}\n</style>',1)
 # init
 rep('''drawZone(ZONES[store.get("ldc-zona","cant")]?store.get("ldc-zona","cant"):"cant"); applyFilter(); renderCols();''','''__mk("antes del filtro"); applyFilter(); __mk("filtro"); renderCols(); __mk("listas"); fitHome(false); sizeMarks(); __mk("mapa colocado");''')
 # medidas de arranque (se ven con ?diag) y formateadores reutilizados (Firefox crea uno nuevo en cada llamada)
