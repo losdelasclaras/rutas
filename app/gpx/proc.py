@@ -56,7 +56,7 @@ MAN=json.load(open('asignar.json')) if os.path.exists('asignar.json') else {}   
 FILES=[];CAND={}
 for f in sorted(glob.glob('raw/*.gpx')):
     fb=os.path.basename(f)
-    t=open(f,encoding='utf-8').read();P,cut=trim(parse(t))
+    t=open(f,encoding='utf-8',errors='replace').read();P,cut=trim(parse(t))
     if len(P)<5:continue
     FILES.append((f,t,P,cut))
     if fb in MAN:
