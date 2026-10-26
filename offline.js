@@ -105,8 +105,7 @@ box.addEventListener("click",e=>{if(e.target.closest("[data-ozone]")){zona();ret
     const lon=x=>x/2**zz*360-180,lat=y=>{const n=Math.PI-2*Math.PI*y/2**zz;return 180/Math.PI*Math.atan(.5*(Math.exp(n)-Math.exp(-n)))};
     const b=L.latLngBounds(ks.map(([,x,y])=>[lat(y),lon(x)]).concat(ks.map(([,x,y])=>[lat(y+1),lon(x+1)])));
     showView("mapa");if(BASE!=="ign")setBase("ign");map.fitBounds(b,{padding:[10,10]})}});
-function abrirLista(){showView("lugares");setTimeout(()=>box.scrollIntoView({behavior:"smooth",block:"start"}),80)}
-function avisoZona(){showView("lugares");setTimeout(()=>{box.scrollIntoView({block:"start"})},50)}
+function abrirLista(){if(window.LUGTAB)LUGTAB("off");else showView("lugares")}
 
 /* botones en las fichas (ruta del blog y mis tracks) y en Capas › Mapa */
 window.OFFLBL=ref=>has(ref)?"✓ Mapa sin cobertura":"📥 Mapa sin cobertura";

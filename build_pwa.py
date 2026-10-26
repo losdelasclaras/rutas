@@ -46,7 +46,7 @@ rep('</style>','''html,body{height:100%;margin:0}
 .sync{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 0}
 </style>
 </head><body>''')
-i=t.rindex('</script>'); t=t[:i]+'\n'+open('/home/claude/pwa/mispuntos.js').read()+'\n'+open('/home/claude/pwa/capas.js').read()+'\n'+open('/home/claude/pwa/sync.js').read()+'\n'+open('/home/claude/pwa/seguir.js').read()+'\n'+open('/home/claude/pwa/mistracks.js').read()+'\n'+open('/home/claude/pwa/offline.js').read()+'\n'+t[i:]
+i=t.rindex('</script>'); t=t[:i]+'\n'+open('/home/claude/pwa/mispuntos.js').read()+'\n'+open('/home/claude/pwa/capas.js').read()+'\n'+open('/home/claude/pwa/sync.js').read()+'\n'+open('/home/claude/pwa/seguir.js').read()+'\n'+open('/home/claude/pwa/mistracks.js').read()+'\n'+open('/home/claude/pwa/offline.js').read()+'\n'+open('/home/claude/pwa/lugtabs.js').read()+'\n'+t[i:]
 i=t.rindex('</script>'); t=t[:i]+'</script>\n<script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>\n</body></html>\n'
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
