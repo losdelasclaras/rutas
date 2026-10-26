@@ -1881,6 +1881,8 @@ function fila(x,modo){const d=x.dd||{};
 
 /* --- datos --- */
 let PUB=(J(localStorage.getItem(CK)||"null")||[]).map(x=>({...x,dd:J(x.d)||{}})),REV=[],MIAS=[],A=null;
+const GRP=L.layerGroup();let DIB="";if(!map.getPane("segp")){map.createPane("segp").style.zIndex=640}
+if(LAY.seg===undefined)LAY.seg=true;
 const conDatos=d=>{const x=d.data();return{...x,id:d.id,dd:J(x.d)||{}}};
 async function fb(){if(A)return A;if(!window.LDCFB)throw new Error("sin Firebase");A=await LDCFB.load();return A}
 async function cargarPub(){try{const a=await fb(),fs=a.fs;
@@ -1893,7 +1895,7 @@ async function cargarRev(){REV=[];MIAS=[];const u=window.LDCFB&&LDCFB.user();if(
     const s=await fs.getDocs(esAdm()?fs.query(c,fs.orderBy("t","desc")):fs.query(c,fs.where("uid","==",u.uid)));
     s.forEach(d=>(esAdm()?REV:MIAS).push(conDatos(d)));
   }catch(e){console.warn("propuestas",e)}pinta();badge()}
-function pinta(){
+function pinta(){dibuja();
   $("seg-adm").innerHTML=esAdm()?`<div class="segbox adm"><h2>🛡️ Propuestas por revisar (${REV.length})</h2>${REV.length?REV.map(x=>fila(x,"rev")).join(""):`<p class="segvacio">No hay nada pendiente.</p>`}
     <p class="note">Esto solo lo ves tú. Toca una propuesta para verla en el mapa antes de decidir.</p></div>`:"";
   $("seg-mias").innerHTML=MIAS.length?`<div class="segbox"><h2>⏳ Tus propuestas pendientes de revisar</h2>${MIAS.map(x=>fila(x,"mia")).join("")}</div>`:"";
@@ -1996,6 +1998,27 @@ async function enviar(b){const u=LDCFB.user();if(!u){toast("Entra con tu cuenta 
     await fs.addDoc(fs.collection(a.db,"propuestas"),{tipo:PROP.tipo,n:PROP.n.slice(0,100),com,links,quien,uid:u.uid,email:u.email||"",t:Date.now(),d:JSON.stringify(PROP.dd)});
     PROP=null;sheet.hidden=true;toast("¡Enviado! Cuando se revise aparecerá en Seguidores");cargarRev()}
   catch(e){b.disabled=false;b.textContent="📨 Enviar propuesta";toast("No se ha podido enviar: "+(e.code||e.message))}}
+/* --- en el mapa: capa «Seguidores» (naranja), se enciende y apaga en Capas --- */
+if(LAY.seg===undefined)LAY.seg=true;
+document.head.insertAdjacentHTML("beforeend",`<style>.segmk{width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid #d9480f;display:grid;place-items:center;font-size:15px;box-shadow:0 1px 4px rgba(0,0,0,.35)}.segmk svg{width:18px;height:18px}.lico.seg{background:#d9480f}</style>`);
+function dibuja(){const on=LAY.seg&&!LAY.solo&&!window.FOLONLY&&PUB.length;
+  if(!on){if(map.hasLayer(GRP))GRP.remove();return}
+  const k=PUB.map(x=>x.id).join(",");
+  if(k!==DIB){GRP.clearLayers();DIB=k;
+    for(const x of PUB){const d=x.dd||{},abre=e=>{if(e&&e.originalEvent)L.DomEvent.stop(e);ver(x,"pub")};
+      if(x.tipo==="track"&&d.pts&&d.pts.length>1){
+        L.polyline(d.pts,{color:"#fff",weight:7,opacity:.85,interactive:false}).addTo(GRP);
+        L.polyline(d.pts,{color:"#d9480f",weight:4,opacity:.95,dashArray:"8 6",interactive:false}).addTo(GRP);
+        L.polyline(d.pts,{color:"#000",weight:18,opacity:0}).on("click",abre).bindTooltip("👥 "+x.n,{sticky:true}).addTo(GRP);
+        L.marker(d.pts[0],{icon:L.divIcon({className:"",html:'<div class="segmk">🧵</div>',iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:400,pane:"segp"}).on("click",abre).bindTooltip("👥 "+x.n).addTo(GRP)}
+      else if(d.lat!=null){L.marker([d.lat,d.lon],{icon:L.divIcon({className:"",html:`<div class="segmk">${emo(x)}</div>`,iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:400,pane:"segp"}).on("click",abre).bindTooltip("👥 "+x.n).addTo(GRP)}}}
+  if(!map.hasLayer(GRP))GRP.addTo(map)}
+const lp=document.querySelector(".laypanel"),solo=lp&&lp.querySelector('[data-lay="solo"]');
+if(solo)solo.insertAdjacentHTML("beforebegin",`<button class="lay" data-lay="seg" aria-pressed="${LAY.seg}"><span class="lico seg">👥</span>Seguidores</button>`);
+document.querySelector(".legend").addEventListener("click",e=>{if(e.target.closest("[data-lay]"))setTimeout(dibuja,0)});
+new MutationObserver(dibuja).observe(document.getElementById("map"),{attributes:true,attributeFilter:["class"]});
+dibuja();
+setTimeout(()=>{if(navigator.onLine)cargarPub()},4000);   // al abrir la app, lo último publicado
 window.SEGUIDORES={recargar:()=>{cargarPub();cargarRev()}};
 })();
 
