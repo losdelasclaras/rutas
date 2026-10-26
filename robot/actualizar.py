@@ -197,8 +197,13 @@ def drive():
     reg = json.load(open(reg_f)) if os.path.exists(reg_f) else {}
     h = get(f'https://drive.google.com/embeddedfolderview?id={CFG["drive_carpeta"]}')
     ent = re.findall(r'id="entry-([\w-]+)".*?class="flip-entry-title">(.*?)</div>', h, re.S)
-    if not ent and 'flip-entry' not in h:
-        log('⚠ No he podido leer la carpeta de Drive (¿sigue compartida con «Cualquier persona con el enlace»?).'); return
+    if not ent:
+        tit = re.search(r'<title>(.*?)</title>', h, re.S)
+        if 'flip-list' in h or 'flip-entries' in h or (tit and 'drive' not in tit.group(1).lower() and 'sign' not in tit.group(1).lower()):
+            log(f'Drive: la carpeta «{html.unescape(tit.group(1)).strip() if tit else ""}» está vacía.')
+        else:
+            log('⚠ No he podido leer la carpeta de Drive (¿sigue compartida con «Cualquier persona con el enlace»?). ' + (html.unescape(tit.group(1)).strip()[:80] if tit else h[:200].replace(chr(10), ' ')))
+        return
     nuevos = 0
     for fid, nombre in ent:
         nombre = html.unescape(nombre).strip()
