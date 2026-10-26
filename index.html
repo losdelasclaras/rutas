@@ -345,7 +345,7 @@ html,body{height:100%;margin:0}
 const __M=[];const __mk=n=>__M.push([n,Math.round(performance.now())]);__mk("inicio del programa");
 window.__ERRS=[];addEventListener("error",e=>{__ERRS.push((e.message||"error")+" @"+String(e.filename||"").split("/").pop()+":"+e.lineno)});addEventListener("unhandledrejection",e=>{__ERRS.push("promesa: "+(e.reason&&e.reason.message||e.reason))});
 // ?reset: quita la app guardada (no tus datos ni los mapas descargados) y la vuelve a cargar limpia
-if(/[?&]reset/.test(location.search)){(async()=>{try{for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister();for(const k of await caches.keys())if(k!=="ldc-offline")await caches.delete(k)}catch(e){}location.replace(location.pathname+"?diag")})()}
+if(/[?&]reset/.test(location.search)){try{window.stop()}catch(e){}document.documentElement.innerHTML="<body style='font:18px system-ui;padding:30px'>Limpiando la app guardada…";(async()=>{try{for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister();for(const k of await caches.keys())if(k!=="ldc-offline")await caches.delete(k)}catch(e){}location.replace(location.pathname+"?diag")})()}
 // ?diag: si la app no termina de arrancar, el informe sale igual a los 8 s
 if(/[?&]diag/.test(location.search))setTimeout(()=>{if(!document.getElementById("__diag")){const d=document.createElement("pre");d.id="__diag";d.style.cssText="position:fixed;z-index:999999;left:6px;top:6px;right:6px;max-height:90vh;overflow:auto;background:#fff;color:#000;border:2px solid #c00;padding:10px;font:12px/1.4 monospace;white-space:pre-wrap";
   let ls=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);ls.push(k+": "+(localStorage.getItem(k)||"").length)}}catch(e){ls.push("localStorage: "+e.message)}
@@ -952,12 +952,12 @@ function drawMP(){MPL.clearLayers();
   syncMP()}
 // los tracks del blog guardados no copian los puntos: se cogen de la ruta
 const ptsOf=t=>t.pts&&t.pts.length?t.pts:(t.src==="blog"?(((R.find(r=>r.u===t.u)||{}).gx)||{}).ln||null:null);
-let MTLOAD=false;
+let MTLOAD=false,MTTRY=false;
 function drawMT(){MTL.clearLayers();let falta=false;
   for(const t of MT){const p=ptsOf(t);if(!p){falta=true;continue}const ll=p.map(x=>[x[0],x[1]]);
     MTL.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.8,interactive:false}));
     MTL.addLayer(L.polyline(ll,{color:"#e8711a",weight:3.5,opacity:.95}).bindTooltip(esc(t.n),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);if(window.MISTRACKS)MISTRACKS.open(t.id)}))}
-  if(falta&&!MTLOAD&&window.loadTracks){MTLOAD=true;loadTracks().then(ok=>{MTLOAD=false;if(ok)drawMT()})}
+  if(falta&&!MTLOAD&&!MTTRY&&window.loadTracks){MTLOAD=true;MTTRY=true;loadTracks().then(ok=>{MTLOAD=false;if(ok)drawMT();else MTTRY=false})}   // solo un intento: si aun así falta alguno, no se repite en bucle
   syncMP()}
 function syncMP(){const a=LAY.mp&&MP.length&&!window.FOLONLY,b=LAY.mt&&MT.length&&!window.FOLONLY;
   if(a&&!map.hasLayer(MPL))MPL.addTo(map);else if(!a&&map.hasLayer(MPL))MPL.remove();
