@@ -53,12 +53,12 @@ function drawMP(){MPL.clearLayers();
   syncMP()}
 // los tracks del blog guardados no copian los puntos: se cogen de la ruta
 const ptsOf=t=>t.pts&&t.pts.length?t.pts:(t.src==="blog"?(((R.find(r=>r.u===t.u)||{}).gx)||{}).ln||null:null);
-let MTLOAD=false;
+let MTLOAD=false,MTTRY=false;
 function drawMT(){MTL.clearLayers();let falta=false;
   for(const t of MT){const p=ptsOf(t);if(!p){falta=true;continue}const ll=p.map(x=>[x[0],x[1]]);
     MTL.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.8,interactive:false}));
     MTL.addLayer(L.polyline(ll,{color:"#e8711a",weight:3.5,opacity:.95}).bindTooltip(esc(t.n),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);if(window.MISTRACKS)MISTRACKS.open(t.id)}))}
-  if(falta&&!MTLOAD&&window.loadTracks){MTLOAD=true;loadTracks().then(ok=>{MTLOAD=false;if(ok)drawMT()})}
+  if(falta&&!MTLOAD&&!MTTRY&&window.loadTracks){MTLOAD=true;MTTRY=true;loadTracks().then(ok=>{MTLOAD=false;if(ok)drawMT();else MTTRY=false})}   // solo un intento: si aun así falta alguno, no se repite en bucle
   syncMP()}
 function syncMP(){const a=LAY.mp&&MP.length&&!window.FOLONLY,b=LAY.mt&&MT.length&&!window.FOLONLY;
   if(a&&!map.hasLayer(MPL))MPL.addTo(map);else if(!a&&map.hasLayer(MPL))MPL.remove();
