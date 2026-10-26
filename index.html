@@ -244,6 +244,7 @@ h1.vt{font-family:var(--f-display);font-weight:700;font-size:30px;line-height:1;
 .mk button[data-mk="quiero"][aria-pressed="true"]{background:var(--mark);border-color:var(--mark);color:#fff}
 @media (max-width:520px){.mk button span{display:none}.crow .alt{font-size:12px}}
 header.top,nav.tabs,.view.pad>.inner,.sheet,.mapbar,.legend,.fabs,.hint,.attrib{zoom:var(--fs)}
+.followb{display:flex;width:100%;justify-content:center;margin:2px 0 10px;font-size:16.5px;padding:12px}
 .fsbtn{margin-left:auto;border:1px solid var(--edge);background:var(--card);border-radius:8px;padding:5px 10px;font-family:var(--f-display);font-weight:700;font-size:16px;cursor:pointer;color:var(--ink);flex:none}
 .row.compact{padding:9px 2px}
 .row.compact .t span{font-size:12.5px}
@@ -663,6 +664,7 @@ function routeBody(r){
   return `
   ${r.f!=null?`<div class="photo"><img src="fotos/${r.f}.jpg" alt=""></div>`:""}
   <div class="sheet-head"><h2>${esc(routeTitle(r))}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  ${r.gx?`<button class="btn primary followb" data-follow="${r.id}">▶ Seguir esta ruta con el GPS</button>`:""}
   <div class="meta">${r.iv?`<span class="tag iv">❄ Invernal</span>`:""}${r.nv?`<span class="tag new">Renovada</span>`:""}${r.y?`<span class="tag">${r.m?MESES[r.m]+" ":""}${r.y}</span>`:""}${(r.co&&r.co.length?r.co:r.grp?[r.r,r.grp]:[r.r]).map(c=>`<span class="tag">${esc(c)}</span>`).join("")}${r.a&&!r.tk?`<span class="tag alt">${fmtA(r.a)}</span>`:""}${techos.map(t=>`<span class="tag">Techo de ${esc(t.techo)}</span>`).join("")}</div>
   ${r.ds?`<p class="desc">${esc(r.ds.replace(/\s*📝.*$/,""))}</p>`:""}
   ${(r.km||r.de||r.tm||r.dif||r.dl)?`<div class="ficha">${r.km?`<div><b>${fmtKm(r.km)}</b><span>Distancia</span></div>`:""}${r.de?`<div><b>+${r.de.toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${r.tm?`<div><b>${esc(r.tm)}</b><span>Duración</span></div>`:""}${r.dl?`<div><b>${DIFN[r.dl]}</b><span>Dificultad</span></div>`:r.dif?`<div><b>${esc(r.dif)}</b><span>Dificultad</span></div>`:""}</div>`:""}
@@ -672,7 +674,7 @@ function routeBody(r){
   <div class="sec"><h3>El tiempo</h3><p class="note" style="margin-bottom:6px">Previsión para ${esc(hi.c)}${hi.a?" ("+fmtA(hi.a)+")":""}.</p>
   <div class="actions" style="margin-top:0"><a class="btn ghost" href="https://www.meteoblue.com/es/tiempo/semana/${hi.lat.toFixed(3)}N${hi.lon.toFixed(3)}E${hi.a?Math.round(hi.a):""}_${encodeURIComponent((r.r==="Dolomitas"?"Europe/Rome":zoneOf(r.r)==="alp"?"Europe/Zurich":"Europe/Madrid"))}" target="_blank" rel="noopener">☁ Previsión en el punto (Meteoblue)</a>${aemetZone(hi.lat,hi.lon)?`<a class="btn ghost" href="https://www.aemet.es/es/eltiempo/prediccion/montana?w=&p=${aemetZone(hi.lat,hi.lon)[0]}" target="_blank" rel="noopener">AEMET montaña · ${aemetZone(hi.lat,hi.lon)[1]}</a>`:""}</div></div>
   ${r.gx?`<div class="sec"><h3>Perfil del recorrido</h3>${r.gx.pf.length?profSVG(r.gx):""}<p class="note" style="margin:4px 0 8px">Según el track: ${fmtKm(r.gx.km)} · +${r.gx.up.toLocaleString("es-ES")} m de subida${r.gx.mx?" · punto más alto "+r.gx.mx.toLocaleString("es-ES")+" m":""}.</p>
-  <div class="actions" style="margin-top:0"><button class="btn primary" data-follow="${r.id}">▶ Seguir esta ruta</button><button class="btn ghost" data-gpx="${r.id}">⬇ Descargar GPX</button><a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${r.gx.st[0]},${r.gx.st[1]}" target="_blank" rel="noopener">🚗 Cómo llegar al inicio</a></div></div>`:""}
+  <div class="actions" style="margin-top:0"><button class="btn ghost" data-gpx="${r.id}">⬇ Descargar GPX</button><a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${r.gx.st[0]},${r.gx.st[1]}" target="_blank" rel="noopener">🚗 Cómo llegar al inicio</a></div></div>`:""}
   ${r.tk?`<div class="sec"><h3>Recorrido</h3><p class="note">Track de tu mapa: ${fmtKm(r.tkm)} · punto más alto ${fmtA(r.a)}. Está dibujado en el mapa.</p></div>`:""}
   ${pts.some(p=>!p.x)?`<div class="sec"><h3>Lugares en el mapa</h3><ul class="plist">${pts.filter(p=>!p.x).map(p=>`<li>${ICO(p.cat)}<span class="n">${esc(p.c)}</span><span class="a">${fmtA(p.a)}</span>${mkBtns(p,true)}</li>`).join("")}</ul></div>`:""}
   ${near.length?`<div class="near"><h3>Otras rutas por la zona</h3><div class="rows">${near.map(x=>rowHTML(x.r,x.d.toFixed(0)+" km")).join("")}</div></div>`:""}`;
