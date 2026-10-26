@@ -898,6 +898,7 @@ const saveMP=()=>store.set(MPK,MP), saveMT=()=>{try{localStorage.setItem(MTK,JSO
 const nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const fmtF=f=>{try{return new Date(f).toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}catch(e){return""}};
 const c5=x=>Math.round(x*1e5)/1e5;
+function alti(p){if(!navigator.onLine)return;fetch(`https://api.open-meteo.com/v1/elevation?latitude=${p.lat}&longitude=${p.lon}`).then(r=>r.json()).then(j=>{const a=j&&j.elevation&&j.elevation[0];if(a==null||!isFinite(a))return;const q=MP.find(x=>x.id===p.id);if(!q)return;q.a=Math.round(a);saveMP();drawMP();renderBox();if(MPSEL===q.id&&!sheet.hidden&&!sheet._mp)openMP(q.id)}).catch(()=>{})}
 
 document.head.insertAdjacentHTML("beforeend",`<style>
 .mpk{width:0;height:0}
@@ -921,15 +922,19 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .mprow .e{font-size:22px;width:30px;text-align:center}.mprow b{display:block}.mprow small{color:#666}
 .mprow .del{margin-left:auto}
 .laypanel .lay[hidden]{display:none}
+#map:not(.lbl-mp) .leaflet-tooltip.mpl{display:none}
+#map .leaflet-tooltip.lbl.mpl{color:#5a189a;font-weight:800}
 .lay .lico.mp{background:#fff;border:2px solid #7b2cbf;font-size:11px}
 </style>`);
 
-/* capa del mapa */
+/* capa del mapa (los nombres salen a partir del zoom 12) */
+const lblMP=()=>document.getElementById("map").classList.toggle("lbl-mp",map.getZoom()>=12);map.on("zoomend",lblMP);setTimeout(lblMP,0);
 const MPL=L.layerGroup(), MTL=L.layerGroup();
 let MPSEL=null;
 function drawMP(){MPL.clearLayers();
   for(const p of MP){const m=L.marker([p.lat,p.lon],{icon:L.divIcon({className:"mpk",html:`<span>${EMO(p.ic)}</span>`,iconSize:[0,0]}),title:p.n,zIndexOffset:900,riseOnHover:true});
     m.on("click",e=>{L.DomEvent.stopPropagation(e);openMP(p.id)});
+    m.bindTooltip(esc(p.n)+(p.a?` <span class="la">${p.a.toLocaleString("es-ES")} m</span>`:""),{permanent:true,direction:"right",offset:[12,0],className:"lbl mpl",interactive:false});
     m.on("add",()=>{const el=m.getElement();if(el)el.classList.toggle("sel",MPSEL===p.id)});
     MPL.addLayer(m)}
   syncMP()}
@@ -944,10 +949,10 @@ function syncMP(){const a=LAY.mp&&MP.length,b=LAY.mt&&MT.length;
 
 /* ficha y formulario en el panel */
 function show(html){sheet.classList.remove("full");sheet.innerHTML=`<div class="grab"></div>`+html;sheet.hidden=false;sheet.scrollTop=0}
-function openMP(id){const p=MP.find(x=>x.id===id);if(!p)return;MPSEL=id;drawMP();
+function openMP(id){const p=MP.find(x=>x.id===id);if(!p)return;MPSEL=id;sheet._mp=null;drawMP();if(p.a==null)alti(p);
   const ll=`${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}`;
   show(`<div class="sheet-head"><h2>${EMO(p.ic)} ${esc(p.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
-  <div class="meta"><span class="tag">Mi punto · ${esc(ICO(p.ic)[2])}</span>${p.f?`<span class="tag">${fmtF(p.f)}</span>`:""}</div>
+  <div class="meta"><span class="tag">Mi punto · ${esc(ICO(p.ic)[2])}</span>${p.a!=null?`<span class="tag alt">${p.a.toLocaleString("es-ES")} m</span>`:""}${p.f?`<span class="tag">${fmtF(p.f)}</span>`:""}</div>
   ${p.nota?`<p class="desc" style="white-space:pre-wrap">${esc(p.nota)}</p>`:""}
   <p class="note">${ll}${p.acc?` · precisión ±${Math.round(p.acc)} m`:""}</p>
   <div class="mpacts"><a class="mpb pri" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}">🚗 Cómo llegar</a>
@@ -959,16 +964,17 @@ function form(p,isNew){const ic=p.ic||"otro";
   <label for="mpn">Nombre</label><input type="text" id="mpn" maxlength="80" value="${esc(p.n||"")}" placeholder="Por ejemplo: Fuente de la braña">
   <label>Icono</label><div class="mpicos">${ICOS.map(x=>`<button type="button" data-mpic="${x[0]}" aria-pressed="${x[0]===ic}"><span>${EMO(x[0])}</span>${x[2]}</button>`).join("")}</div>
   <label for="mpt">Nota (opcional)</label><textarea id="mpt" rows="3" maxlength="1000" placeholder="Agua todo el año, sitio para aparcar 5 coches…">${esc(p.nota||"")}</textarea>
-  <div class="mpacts"><button class="mpb pri" data-mpsave>💾 Guardar</button><button class="mpb" data-close>Cancelar</button></div></div>`);
+  <div class="mpacts"><button class="mpb pri" data-mpsave>💾 Guardar</button>${isNew?"":`<button class="mpb" data-mpmove="${p.id}">✥ Mover de sitio</button>`}<button class="mpb" data-close>Cancelar</button></div></div>`);
   sheet._mp={...p,ic,isNew};setTimeout(()=>{const i=document.getElementById("mpn");if(i&&isNew)i.focus()},50)}
 function newAt(lat,lon,acc){form({lat:c5(lat),lon:c5(lon),acc,n:"",ic:"otro"},true)}
 
 sheet.addEventListener("click",e=>{
   const ic=e.target.closest("[data-mpic]");if(ic){sheet.querySelectorAll("[data-mpic]").forEach(b=>b.setAttribute("aria-pressed",b===ic));if(sheet._mp)sheet._mp.ic=ic.dataset.mpic;return}
   if(e.target.closest("[data-mpsave]")){const d=sheet._mp;if(!d)return;const n=(document.getElementById("mpn").value||"").trim()||ICO(d.ic)[2];const nota=(document.getElementById("mpt").value||"").trim();
-    if(d.isNew){const p={id:nid(),n,ic:d.ic,nota,lat:d.lat,lon:d.lon,f:new Date().toISOString()};if(d.acc)p.acc=Math.round(d.acc);MP.push(p);saveMP();toast("Punto guardado");if(!LAY.mp){LAY.mp=true;saveLay();const b=document.querySelector('[data-lay="mp"]');if(b)b.setAttribute("aria-pressed",true)}drawMP();renderBox();openMP(p.id)}
+    if(d.isNew){const p={id:nid(),n,ic:d.ic,nota,lat:d.lat,lon:d.lon,f:new Date().toISOString()};if(d.acc)p.acc=Math.round(d.acc);MP.push(p);saveMP();toast("Punto guardado");alti(p);if(!LAY.mp){LAY.mp=true;saveLay();const b=document.querySelector('[data-lay="mp"]');if(b)b.setAttribute("aria-pressed",true)}drawMP();renderBox();openMP(p.id)}
     else{const p=MP.find(x=>x.id===d.id);if(p){p.n=n;p.ic=d.ic;p.nota=nota;saveMP();drawMP();renderBox();openMP(p.id)}}
     return}
+  const mv=e.target.closest("[data-mpmove]");if(mv){const p=MP.find(x=>x.id===mv.dataset.mpmove);if(p){map.setView([p.lat,p.lon],Math.max(map.getZoom(),16),{animate:false});cross(p.id)}return}
   const ed=e.target.closest("[data-mpedit]");if(ed){const p=MP.find(x=>x.id===ed.dataset.mpedit);if(p)form(p,false);return}
   const dl=e.target.closest("[data-mpdel]");if(dl){if(dl.dataset.sure!=="1"){dl.dataset.sure="1";dl.textContent="¿Seguro? Toca otra vez";return}
     MP=MP.filter(x=>x.id!==dl.dataset.mpdel);saveMP();MPSEL=null;drawMP();renderBox();sheet.hidden=true;toast("Punto borrado");return}
@@ -985,11 +991,12 @@ function gps(){if(!navigator.geolocation){toast("Este aparato no da la ubicació
   navigator.geolocation.getCurrentPosition(pos=>{const{latitude:la,longitude:lo,accuracy:ac}=pos.coords;if(window.showMe)showMe(la,lo);map.flyTo([la,lo],Math.max(map.getZoom(),15));newAt(la,lo,ac)},
     ()=>toast("No he podido saber dónde estás. Revisa el permiso de ubicación."),{enableHighAccuracy:true,timeout:15000,maximumAge:0})}
 let crossOn=false;
-function cross(){if(typeof showView==="function")showView("mapa");if(crossOn)return;crossOn=true;closeLegend();sheet.hidden=true;
+function cross(moveId){if(typeof showView==="function")showView("mapa");if(crossOn)return;crossOn=true;closeLegend();sheet.hidden=true;
   const v=document.getElementById("map"),c=document.createElement("div");c.className="mpcross";c.id="mpcross";v.appendChild(c);
-  const b=document.createElement("div");b.className="mpbar";b.id="mpbar";b.innerHTML=`<span>Mueve el mapa hasta poner la cruz encima del sitio</span><button class="mpb pri" data-mpok>Guardar aquí</button><button class="mpb" data-mpcancel>Cancelar</button>`;v.appendChild(b);
+  const b=document.createElement("div");b.className="mpbar";b.id="mpbar";b.innerHTML=`<span>${moveId?"Mueve el mapa hasta poner la cruz en el sitio correcto":"Mueve el mapa hasta poner la cruz encima del sitio"}</span><button class="mpb pri" data-mpok>${moveId?"Dejarlo aquí":"Guardar aquí"}</button><button class="mpb" data-mpcancel>Cancelar</button>`;v.appendChild(b);
   L.DomEvent.disableClickPropagation(b);
-  b.addEventListener("click",e=>{if(e.target.closest("[data-mpok]")){const ce=map.getCenter();endCross();newAt(ce.lat,ce.lng)}else if(e.target.closest("[data-mpcancel]"))endCross()})}
+  b.addEventListener("click",e=>{if(e.target.closest("[data-mpok]")){const ce=map.getCenter();endCross();
+    if(moveId){const p=MP.find(x=>x.id===moveId);if(p){p.lat=c5(ce.lat);p.lon=c5(ce.lng);delete p.acc;delete p.a;saveMP();drawMP();renderBox();openMP(p.id);toast("Punto movido")}}else newAt(ce.lat,ce.lng)}else if(e.target.closest("[data-mpcancel]"))endCross()})}
 function endCross(){crossOn=false;["mpcross","mpbar"].forEach(i=>{const el=document.getElementById(i);if(el)el.remove()})}
 function closeLegend(){const lg=document.querySelector(".legend.open");if(lg){lg.classList.remove("open");const t=lg.querySelector(".laytog");if(t)t.setAttribute("aria-expanded",false)}}
 map.on("contextmenu",e=>{if(crossOn)return;closeLegend();newAt(e.latlng.lat,e.latlng.lng)});
@@ -1012,7 +1019,7 @@ function renderBox(){const ps=MP.slice().sort((a,b)=>(b.f||"").localeCompare(a.f
   ${MP.length?"":`<p class="note">Guarda fuentes, aparcamientos, refugios o cualquier sitio. En el mapa: <b>Capas › Guardar dónde estoy</b> o <b>Marcar en el mapa</b>, o mantén pulsado sobre el mapa.</p>`}
   <div class="mpacts" style="margin:6px 0 8px"><button class="mpb" data-mpx="gps">🎯 Dónde estoy</button><button class="mpb" data-mpx="cross">✛ En el mapa</button>
   ${MP.length?`<button class="mpb" data-mpx="gpx">⬇️ GPX</button><button class="mpb" data-mpx="kml">⬇️ KML</button>`:""}<button class="mpb" data-mpx="imp">⬆️ Importar GPX/KML</button></div>
-  ${ps.map(p=>`<div class="mprow" data-mpgo="${p.id}"><span class="e">${EMO(p.ic)}</span><span><b>${esc(p.n)}</b><small>${esc(ICO(p.ic)[2])}${p.f?" · "+fmtF(p.f):""}</small></span></div>`).join("")}
+  ${ps.map(p=>`<div class="mprow" data-mpgo="${p.id}"><span class="e">${EMO(p.ic)}</span><span><b>${esc(p.n)}</b><small>${esc(ICO(p.ic)[2])}${p.a!=null?" · "+p.a.toLocaleString("es-ES")+" m":""}${p.f?" · "+fmtF(p.f):""}</small></span></div>`).join("")}
   ${MT.length?`<h2 style="margin-top:14px">🧵 Mis tracks <small style="font-weight:500;color:#666">(${MT.length})</small></h2>${MT.map(t=>`<div class="mprow" data-mtgo="${t.id}"><span class="e">〰️</span><span><b>${esc(t.n)}</b><small>${t.km} km</small></span><button class="mpb dan del" data-mtdel="${t.id}">🗑</button></div>`).join("")}`:""}`}
 box.addEventListener("click",e=>{const x=e.target.closest("[data-mpx]");
   if(x){const k=x.dataset.mpx;if(k==="gps"){showView("mapa");gps()}else if(k==="cross")cross();else if(k==="gpx")dl("mis-puntos.gpx",toGPX(),"application/gpx+xml");else if(k==="kml")dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml");else if(k==="imp"){fin.value="";fin.click()}return}
