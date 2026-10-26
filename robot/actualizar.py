@@ -265,6 +265,9 @@ if __name__ == '__main__':
         try: paso()
         except Exception as e:
             log(f'⚠ Error en {paso.__name__}: {e}'); err = e
+    fz = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'forzar')
+    if os.path.exists(fz):   # robot/forzar: regenerar la app aunque no haya nada nuevo (tras cambiar los programas)
+        os.remove(fz); CAMBIOS.append('regeneración forzada')
     if CAMBIOS:
         try: regenerar()
         except Exception as e:
