@@ -1,9 +1,10 @@
 /* ---------- Seguir esta ruta: dónde estás sobre el track, lo que falta y aviso si te sales ----------
    Funciona con la app abierta y la pantalla encendida (se pide que no se apague). */
 (function(){
-const FK="ldc-siguiendo";
+const FK="ldc-siguiendo",MPI=window.MISPUNTOS;
 const vm=document.getElementById("v-mapa");
 document.head.insertAdjacentHTML("beforeend",`<style>
+#map.fol-only .leaflet-marker-pane>*:not(.folme),#map.fol-only .leaflet-tooltip-pane{display:none!important}
 #v-mapa.fol-on .fabs,#v-mapa.fol-on .legend,#v-mapa.fol-on .mapbar,#v-mapa.fol-on .rmenu{display:none!important}
 .fol{position:absolute;left:8px;right:8px;bottom:8px;z-index:1200;background:var(--card);color:var(--ink);border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.28);padding:10px 12px 12px;max-width:460px}
 @media(min-width:860px){.fol{left:12px;right:auto;width:420px;bottom:14px}}
@@ -104,6 +105,9 @@ function start(r,rev,resume){if(!r||!r.gx)return;
   if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");if(window.showTrack)showTrack(null);sheet.hidden=true;sheet.classList.remove("full");
   F={r,rev:!!rev,T:prep(r,!!rev),s:0,i:0,t:0,on:false,off:0,fin:false,fixes:0,follow:true};
   if(resume&&resume.rev===F.rev){F.s=resume.s||0;F.on=!!resume.on;F.i=resume.i||0;F.t=resume.tt||0}
+  // solo se ve la ruta: fuera puntos, nombres, tracks del blog, mis puntos y mis tracks (vuelven al terminar)
+  window.FOLONLY=true;document.getElementById("map").classList.add("fol-only");
+  if(probeC){probeC.remove();probeC=null}if(meDot){meDot.remove();meDot=null}if(typeof syncAllTracks==="function")syncAllTracks();MPI&&MPI.sync&&MPI.sync();
   F.el=document.createElement("div");F.el.className="fol";F.el.innerHTML=panelHTML();vm.appendChild(F.el);vm.classList.add("fol-on");
   L.DomEvent.disableClickPropagation(F.el);L.DomEvent.disableScrollPropagation(F.el);
   draw();map.fitBounds(L.polyline(F.T.ln.map(p=>[p[0],p[1]])).getBounds(),{padding:[30,30],paddingBottomRight:[30,F.el.offsetHeight+20]});
@@ -111,7 +115,8 @@ function start(r,rev,resume){if(!r||!r.gx)return;
   wake();save()}
 function stop(quiet){if(!F)return;try{navigator.geolocation.clearWatch(F.watch)}catch(e){}
   try{F.wl&&F.wl.release()}catch(e){}
-  [F.lay,F.me,F.acc].forEach(l=>l&&l.remove());F.el.remove();vm.classList.remove("fol-on");F=null;store.set(FK,null);if(!quiet)toast("Has dejado de seguir la ruta")}
+  [F.lay,F.me,F.acc].forEach(l=>l&&l.remove());F.el.remove();vm.classList.remove("fol-on");
+  window.FOLONLY=false;document.getElementById("map").classList.remove("fol-only");if(typeof cullMarks==="function")cullMarks();if(typeof refreshMarks==="function")refreshMarks();if(typeof syncAllTracks==="function")syncAllTracks();MPI&&MPI.sync&&MPI.sync();F=null;store.set(FK,null);if(!quiet)toast("Has dejado de seguir la ruta")}
 
 // si sigues el mapa con el dedo, deja de centrarse solo hasta que pulses «Centrar»
 map.on("dragstart",()=>{if(F&&F.follow){F.follow=false;const b=Q("[data-fc]");if(b)b.classList.remove("on")}});

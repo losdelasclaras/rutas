@@ -55,7 +55,7 @@ function drawMT(){MTL.clearLayers();
   for(const t of MT){MTL.addLayer(L.polyline(t.pts,{color:"#fff",weight:6,opacity:.8,interactive:false}));
     MTL.addLayer(L.polyline(t.pts,{color:"#e8711a",weight:3.5,opacity:.95}).bindTooltip(esc(t.n),{sticky:true}))}
   syncMP()}
-function syncMP(){const a=LAY.mp&&MP.length,b=LAY.mt&&MT.length;
+function syncMP(){const a=LAY.mp&&MP.length&&!window.FOLONLY,b=LAY.mt&&MT.length&&!window.FOLONLY;
   if(a&&!map.hasLayer(MPL))MPL.addTo(map);else if(!a&&map.hasLayer(MPL))MPL.remove();
   if(b&&!map.hasLayer(MTL))MTL.addTo(map);else if(!b&&map.hasLayer(MTL))MTL.remove();
   const bm=document.querySelector('[data-lay="mt"]');if(bm)bm.hidden=!MT.length}
@@ -198,7 +198,7 @@ document.addEventListener("click",e=>{if(e.target.closest("[data-bkp]")){bkpSave
 window.ldcBkp=bkpButtons;if(typeof renderCols==="function")renderCols();
 /* "ver solo los míos" también deja ver mis puntos (van en su propia capa) */
 drawMP();drawMT();renderBox();
-window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,
+window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,sync:()=>syncMP(),
   // la sincronización cambia lo guardado sin volver a avisar a la nube
   set(mp,mt){if(mp){MP.length=0;MP.push(...mp);store.set(MPK,MP)}if(mt){MT.length=0;MT.push(...mt);try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}}
     drawMP();drawMT();renderBox();if(MPSEL&&!MP.some(p=>p.id===MPSEL)){MPSEL=null}}};
