@@ -41,7 +41,7 @@ function open(id,fit){const t=T().find(x=>String(x.id)===String(id));if(!t)retur
   ${perfil(t)}
   ${!r&&t.pts&&t.pts.some(x=>x[2]==null)?`<p class="note">${navigator.onLine?"Calculando las alturas…":"Este track no trae alturas; se calcularán cuando haya conexión."}</p>`:""}
   <div class="mpacts">${p?`<a class="mpb" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p[0][0]},${p[0][1]}">🚗 Cómo llegar al inicio</a>`:""}
-  <button class="mpb" data-mtren="${esc(t.id)}">✏️ Cambiar nombre</button><button class="mpb dan" data-mtdel="${esc(t.id)}">🗑 Quitar de mis tracks</button></div>`);
+  <button class="mpb" data-offt="${esc(t.id)}">${window.OFFLBL?OFFLBL(r?r.u:"mt:"+t.id):"📥 Mapa sin cobertura"}</button><button class="mpb" data-mtren="${esc(t.id)}">✏️ Cambiar nombre</button><button class="mpb dan" data-mtdel="${esc(t.id)}">🗑 Quitar de mis tracks</button></div>`);
   sheet._mt=t.id;
   if(fit)setTimeout(()=>encuadra(t),60);
   if(!r&&t.pts&&t.pts.some(x=>x[2]==null))MPI.demAlt(t.id)}

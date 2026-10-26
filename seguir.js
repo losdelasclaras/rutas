@@ -108,6 +108,8 @@ function start(r,rev,resume){if(!r||!r.gx)return;
   // solo se ve la ruta: fuera puntos, nombres, tracks del blog, mis puntos y mis tracks (vuelven al terminar)
   window.FOLONLY=true;document.getElementById("map").classList.add("fol-only");
   if(probeC){probeC.remove();probeC=null}if(meDot){meDot.remove();meDot=null}if(typeof syncAllTracks==="function")syncAllTracks();MPI&&MPI.sync&&MPI.sync();
+  // si tiene el mapa descargado, se pone el del IGN (el que funciona sin cobertura)
+  if(window.OFFLINE&&OFFLINE.has(r.u)&&BASE!=="ign"){F.prevBase=BASE;setBase("ign")}
   F.el=document.createElement("div");F.el.className="fol";F.el.innerHTML=panelHTML();vm.appendChild(F.el);vm.classList.add("fol-on");
   L.DomEvent.disableClickPropagation(F.el);L.DomEvent.disableScrollPropagation(F.el);
   draw();map.fitBounds(L.polyline(F.T.ln.map(p=>[p[0],p[1]])).getBounds(),{padding:[30,30],paddingBottomRight:[30,F.el.offsetHeight+20]});
@@ -115,7 +117,7 @@ function start(r,rev,resume){if(!r||!r.gx)return;
   wake();save()}
 function stop(quiet){if(!F)return;try{navigator.geolocation.clearWatch(F.watch)}catch(e){}
   try{F.wl&&F.wl.release()}catch(e){}
-  [F.lay,F.me,F.acc].forEach(l=>l&&l.remove());F.el.remove();vm.classList.remove("fol-on");
+  [F.lay,F.me,F.acc].forEach(l=>l&&l.remove());F.el.remove();vm.classList.remove("fol-on");if(F.prevBase)setBase(F.prevBase);
   window.FOLONLY=false;document.getElementById("map").classList.remove("fol-only");if(typeof cullMarks==="function")cullMarks();if(typeof refreshMarks==="function")refreshMarks();if(typeof syncAllTracks==="function")syncAllTracks();MPI&&MPI.sync&&MPI.sync();F=null;store.set(FK,null);if(!quiet)toast("Has dejado de seguir la ruta")}
 
 // si sigues el mapa con el dedo, deja de centrarse solo hasta que pulses «Centrar»
