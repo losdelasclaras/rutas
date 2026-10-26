@@ -274,6 +274,7 @@ html,body{height:100%;margin:0}
 .instbtn{border:1px solid var(--edge);background:var(--mark);color:#fff;border-radius:8px;padding:5px 10px;font-weight:700;font-size:14px;cursor:pointer;flex:none}
 @media (min-width:860px){#v-mapa:has(.sheet:not([hidden])) .fabs{right:412px}}
 .sync{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 0}
+.laypanel{overflow-y:auto;overscroll-behavior:contain}
 </style>
 </head><body>
 
@@ -795,7 +796,7 @@ ov.addEventListener("click",e=>{
 let nearMode=false;
 const hint=document.getElementById("hint");
 function setNear(on){nearMode=on;hint.hidden=!on;document.getElementById("b-near").setAttribute("aria-pressed",on);mapEl.style.cursor=on?"crosshair":""}
-document.querySelector(".legend").addEventListener("click",e=>{const tg=e.target.closest(".laytog");if(tg){const lg=tg.parentElement;const o=lg.classList.toggle("open");tg.setAttribute("aria-expanded",o);return}const b=e.target.closest("[data-lay]");if(!b)return;const key=b.dataset.lay;LAY[key]=!LAY[key];b.setAttribute("aria-pressed",LAY[key]);
+document.querySelector(".legend").addEventListener("click",e=>{const tg=e.target.closest(".laytog");if(tg){const lg=tg.parentElement;const o=lg.classList.toggle("open");tg.setAttribute("aria-expanded",o);if(o){const pn=lg.querySelector(".laypanel"),mr=document.getElementById("map").getBoundingClientRect();pn.style.maxHeight="none";let mh=Math.max(160,pn.getBoundingClientRect().bottom-mr.top-10);pn.style.maxHeight=mh+"px";const ov=mr.top+10-pn.getBoundingClientRect().top;if(ov>0)pn.style.maxHeight=Math.max(140,mh-ov)+"px"}return}const b=e.target.closest("[data-lay]");if(!b)return;const key=b.dataset.lay;LAY[key]=!LAY[key];b.setAttribute("aria-pressed",LAY[key]);
   sizeMarks()});
 document.getElementById("fsbtn").addEventListener("click",()=>{FS=FSV[(FSV.indexOf(FS)+1)%FSV.length];store.set("ldc-fs",FS);document.documentElement.style.setProperty("--fs",FS);sizeMarks();
   const b=document.getElementById("fsbtn");b.textContent=["Aa","Aa+","Aa++","Aa+++"][FSV.indexOf(FS)]});
