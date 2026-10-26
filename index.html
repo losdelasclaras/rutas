@@ -649,7 +649,7 @@ function aemetZone(lat,lon){
   return null}
 function profSVG(g){const W=600,H=190,pl=70,pb=34,pt=12,pr=8,pf=g.pf,X=pf[pf.length-1][0]||1,lo=Math.floor((g.mn-30)/50)*50,hi=Math.ceil((g.mx+30)/50)*50;
   const x=d=>pl+(W-pl-pr)*d/X,y=e=>pt+(H-pt-pb)*(1-(e-lo)/(hi-lo));const pts=pf.map(([d,e])=>`${x(d).toFixed(1)},${y(e).toFixed(1)}`).join(" ");
-  return `<svg class="prof" viewBox="0 0 ${W} ${H}" role="img" aria-label="Perfil: de ${g.mn} a ${g.mx} metros en ${fmtKm(g.km)}"><polygon points="${x(0)},${H-pb} ${pts} ${x(X)},${H-pb}" fill="var(--mark)" fill-opacity=".14"/><polyline points="${pts}" fill="none" stroke="var(--mark)" stroke-width="2.5" stroke-linejoin="round"/>
+  return `<svg class="prof" data-x="${X}" data-lo="${lo}" data-hi="${hi}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Perfil: de ${g.mn} a ${g.mx} metros en ${fmtKm(g.km)}"><polygon points="${x(0)},${H-pb} ${pts} ${x(X)},${H-pb}" fill="var(--mark)" fill-opacity=".14"/><polyline points="${pts}" fill="none" stroke="var(--mark)" stroke-width="2.5" stroke-linejoin="round"/>
   <line x1="${pl}" x2="${W-pr}" y1="${H-pb}" y2="${H-pb}" stroke="var(--edge)"/><text x="${pl-6}" y="${y(hi)+4}" text-anchor="end">${hi.toLocaleString("es-ES")}</text><text x="${pl-6}" y="${y(lo)+4}" text-anchor="end">${lo.toLocaleString("es-ES")}</text>
   <text x="${pl}" y="${H-6}">0 km</text><text x="${W-pr}" y="${H-6}" text-anchor="end">${fmtKm(g.km)}</text></svg>`}
 function dlGPX(r){const g=r.gx,nm=routeTitle(r);if(!g.ln&&window.loadTracks){toast("Preparando el GPX…");loadTracks().then(ok=>{if(ok)dlGPX(r);else toast("Sin conexión: no puedo preparar el GPX ahora")});return}const x=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
@@ -1736,6 +1736,43 @@ pintar();
 
 }catch(e){console.error("módulo offline",e);(window.__ERRS=window.__ERRS||[]).push("offline: "+(e&&e.message))}
 try{
+/* ---------- Mis cosas › Resumen: cumbres subidas, por zonas y alturas, techos de concejo, lugares, mis puntos y tracks ---------- */
+(function(){
+const box=document.createElement("div");box.className="mpbox";box.id="resbox";box.hidden=true;document.body.appendChild(box);
+document.head.insertAdjacentHTML("beforeend",`<style>
+#resbox .big{display:flex;align-items:baseline;gap:8px;margin:2px 0 4px}#resbox .big b{font-size:40px;line-height:1;font-family:var(--f-display)}#resbox .big span{color:var(--muted);font-weight:600}
+#resbox .bar{height:9px;border-radius:5px;background:#e9ece6;overflow:hidden;margin:4px 0 2px}#resbox .bar i{display:block;height:100%;background:var(--moss,#2a7a3b)}
+#resbox h3{font-size:15px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+#resbox .rw{margin:8px 0}#resbox .rw .t{display:flex;justify-content:space-between;font-weight:600;font-size:14.5px}#resbox .rw .t small{color:var(--muted);font-weight:600}
+#resbox .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}#resbox .cards div{border:1px solid var(--edge);border-radius:12px;padding:10px 6px;text-align:center}
+#resbox .cards b{display:block;font-size:22px}#resbox .cards small{color:var(--muted);font-weight:600;font-size:12.5px}
+#resbox .chips2{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}#resbox .chips2 span{border:1px solid var(--edge);border-radius:999px;padding:4px 10px;font-size:13px;background:var(--card)}
+</style>`);
+const key=p=>"c:"+norm(p.c),lkey=p=>"l:"+norm(p.c);
+const fila=(t,a,b)=>`<div class="rw"><div class="t"><span>${t}</span><small>${a} de ${b}</small></div><div class="bar"><i style="width:${b?(a/b*100).toFixed(1):0}%"></i></div></div>`;
+function render(){if(box.hidden)return;
+  const C=PEAKS,hechas=C.filter(p=>MARKS[key(p)]==="hecha"),quiero=C.filter(p=>MARKS[key(p)]==="quiero");
+  const zona=p=>{const z=zoneOf(p.r);return z==="dol"?"alp":z};
+  const Z=[["cant","Cordillera Cantábrica"],["pir","Pirineos"],["alp","Alpes y Dolomitas"]].map(([z,n])=>{const all=C.filter(p=>zona(p)===z);return[n,all.filter(p=>MARKS[key(p)]==="hecha").length,all.length]}).filter(x=>x[2]);
+  const B=[["Más de 2.000 m",p=>p.a>=2000],["De 1.500 a 2.000 m",p=>p.a>=1500&&p.a<2000],["Menos de 1.500 m",p=>!(p.a>=1500)]].map(([n,f])=>{const all=C.filter(f);return[n,all.filter(p=>MARKS[key(p)]==="hecha").length,all.length]});
+  const techos=C.filter(p=>p.techo),th=techos.filter(p=>MARKS[key(p)]==="hecha");
+  const alta=hechas.slice().sort((a,b)=>(b.a||0)-(a.a||0))[0];
+  const L=SPOTS,lv=L.filter(p=>MARKS[lkey(p)]==="hecha").length,lq=L.filter(p=>MARKS[lkey(p)]==="quiero").length;
+  const MT=MISPUNTOS.tracks(),kmT=MT.reduce((s,t)=>s+(+t.km||0),0);
+  box.innerHTML=`<h2>🏆 Resumen</h2>
+  <p class="note" style="margin-top:0">Cuenta las cumbres y lugares que salen en las rutas del blog. Ve marcándolos en Del grupo › Cumbres y Lugares (o en el mapa).</p>
+  <div class="big"><b>${hechas.length}</b><span>cumbres subidas de ${C.length}</span></div><div class="bar"><i style="width:${(hechas.length/C.length*100).toFixed(1)}%"></i></div>
+  <p class="note">${quiero.length?`★ ${quiero.length} en tu lista de «quiero subir»`:"Aún no tienes cumbres en «quiero subir»"}${alta?` · La más alta: <b>${esc(alta.c)}</b> (${(alta.a||0).toLocaleString("es-ES")} m)`:""}</p>
+  <h3>Por zonas</h3>${Z.map(z=>fila(...z)).join("")}
+  <h3>Por altura</h3>${B.map(b=>fila(...b)).join("")}
+  ${techos.length?`<h3>Techos de concejo</h3>${fila("Techos subidos",th.length,techos.length)}${th.length?`<div class="chips2">${th.map(p=>`<span>⛰️ ${esc(p.techo)}</span>`).join("")}</div>`:""}`:""}
+  <h3>Lugares</h3>${fila("Lugares visitados",lv,L.length)}${lq?`<p class="note">★ ${lq} en «quiero ir»</p>`:""}
+  <h3>Lo tuyo</h3><div class="cards"><div><b>${MISPUNTOS.get().length}</b><small>puntos</small></div><div><b>${MT.length}</b><small>tracks${kmT?` · ${Math.round(kmT).toLocaleString("es-ES")} km`:""}</small></div><div><b>${window.OFFLINE?OFFLINE.list().length:0}</b><small>mapas</small></div></div>`}
+window.RESUMEN={box,render};
+})();
+
+}catch(e){console.error("módulo resumen",e);(window.__ERRS=window.__ERRS||[]).push("resumen: "+(e&&e.message))}
+try{
 /* ---------- pestañas de abajo: Mapa · Del grupo (Rutas, Cumbres, Lugares) · Mis cosas (Mis puntos, Mis tracks, Mapas) ----------
    Más adelante se añadirá «Seguidores» (rutas y puntos que publiquen otras personas). */
 (function(){
@@ -1761,16 +1798,16 @@ nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Del grupo")+tab("mios","Mis cosas"
 /* «Mis cosas»: una vista nueva con mis puntos, mis tracks y los mapas descargados */
 const sec=document.createElement("section");sec.className="view pad";sec.id="v-mios";sec.hidden=true;
 sec.innerHTML=`<div class="inner"><h1 class="vt">Mis cosas</h1><p class="lead" style="margin-bottom:4px">Tus puntos, tus tracks y los mapas que has descargado. Con tu cuenta de Google los tienes en el móvil y en el ordenador.</p>
-<div class="subtabs" id="st-mios" role="tablist" style="grid-template-columns:repeat(3,1fr)"></div></div>`;
+<div class="subtabs" id="st-mios" role="tablist" style="grid-template-columns:repeat(4,1fr)"></div></div>`;
 main.appendChild(sec);const inner=sec.firstElementChild;
-const MS={mp:document.getElementById("mpbox"),mt:document.getElementById("mtbox"),off:document.getElementById("offbox")};
+const MS={mp:document.getElementById("mpbox"),mt:document.getElementById("mtbox"),off:document.getElementById("offbox"),res:window.RESUMEN?RESUMEN.box:null};
 for(const k in MS)if(MS[k]){MS[k].dataset.msec=k;inner.appendChild(MS[k])}
-const MN={mp:["📍","Mis puntos"],mt:["🧵","Mis tracks"],off:["📥","Mapas"]};
-const cuenta=k=>k==="mp"?MISPUNTOS.get().length:k==="mt"?MISPUNTOS.tracks().length:(window.OFFLINE?OFFLINE.list().length:0);
+const MN={mp:["📍","Puntos"],mt:["🧵","Tracks"],off:["📥","Mapas"],res:["🏆","Resumen"]};
+const cuenta=k=>k==="res"?(typeof PEAKS!=="undefined"?PEAKS.filter(p=>MARKS["c:"+norm(p.c)]==="hecha").length+" ⛰️":""):k==="mp"?MISPUNTOS.get().length:k==="mt"?MISPUNTOS.tracks().length:(window.OFFLINE?OFFLINE.list().length:0);
 let curM=store.get("ldc-mios","mp");if(!MN[curM])curM="mp";
 const barM=document.getElementById("st-mios");
 function pintaM(){barM.innerHTML=Object.keys(MN).map(k=>`<button role="tab" data-ms="${k}" aria-selected="${k===curM}"><span class="i">${MN[k][0]}</span><span>${MN[k][1]}</span><small>${cuenta(k)}</small></button>`).join("");
-  for(const k in MS)if(MS[k])MS[k].hidden=k!==curM}
+  for(const k in MS)if(MS[k])MS[k].hidden=k!==curM;if(curM==="res"&&window.RESUMEN)RESUMEN.render()}
 barM.addEventListener("click",e=>{const b=e.target.closest("[data-ms]");if(!b)return;curM=b.dataset.ms;store.set("ldc-mios",curM);pintaM();if(sec.scrollTop>barM.offsetTop)sec.scrollTop=barM.offsetTop});
 const mo=new MutationObserver(()=>barM.querySelectorAll("[data-ms]").forEach(b=>{const s=b.querySelector("small");if(s)s.textContent=cuenta(b.dataset.ms)}));
 for(const k in MS)if(MS[k])mo.observe(MS[k],{childList:true});
@@ -1919,6 +1956,40 @@ window.COMPARTIR={track:compartir,enc,dec,preview:t=>mostrar(t,"archivo")};
 })();
 
 }catch(e){console.error("módulo compartir",e);(window.__ERRS=window.__ERRS||[]).push("compartir: "+(e&&e.message))}
+try{
+/* ---------- perfil interactivo: al pasar el dedo (o el ratón) por el perfil se ve el km y la altitud, y un punto en el mapa ---------- */
+(function(){
+document.head.insertAdjacentHTML("beforeend",`<style>svg.prof{touch-action:pan-y;cursor:crosshair}svg.prof .pg text.pt{font-weight:800;fill:var(--ink)}</style>`);
+const W=600,H=190,pl=70,pr=8,pt=12,pb=34;
+let MK=null,HT=null;
+function rutaDe(svg){const c=svg.closest("#sheet,#ov");if(!c)return null;
+  const g=c.querySelector("[data-gpx]");if(g){const r=R[+g.dataset.gpx];return r&&r.gx&&r.gx.ln?{ln:r.gx.ln,km:r.gx.km}:null}
+  const m=c.querySelector("[data-mtfol]");if(m&&window.MISPUNTOS){const t=MISPUNTOS.tracks().find(x=>String(x.id)===m.dataset.mtfol);const ln=t&&MISPUNTOS.ptsOf(t);return ln?{ln,km:t.km}:null}
+  return null}
+function puntoEn(rt,km){const ln=rt.ln;let tot=0;const cum=[0];for(let i=1;i<ln.length;i++){tot+=map.distance([ln[i-1][0],ln[i-1][1]],[ln[i][0],ln[i][1]]);cum.push(tot)}
+  const d=Math.min(tot,km*1000*(tot/((rt.km||tot/1000)*1000)));let i=1;while(i<cum.length-1&&cum[i]<d)i++;const f=cum[i]>cum[i-1]?(d-cum[i-1])/(cum[i]-cum[i-1]):0;
+  return[ln[i-1][0]+(ln[i][0]-ln[i-1][0])*f,ln[i-1][1]+(ln[i][1]-ln[i-1][1])*f]}
+function mover(svg,cx){const pl0=svg.querySelector("polyline");if(!pl0)return;const r=svg.getBoundingClientRect();if(!r.width)return;
+  const X=+svg.dataset.x||0,lo=+svg.dataset.lo,hi=+svg.dataset.hi;if(!X||!(hi>lo))return;
+  const vx=Math.max(pl,Math.min(W-pr,(cx-r.left)/r.width*W));const km=(vx-pl)/(W-pl-pr)*X;
+  const P=pl0.getAttribute("points").trim().split(/\s+/).map(s=>s.split(",").map(Number));let j=1;while(j<P.length-1&&P[j][0]<vx)j++;
+  const a=P[j-1],b=P[j],f=b[0]>a[0]?(vx-a[0])/(b[0]-a[0]):0,vy=a[1]+(b[1]-a[1])*f,ele=lo+(hi-lo)*(1-(vy-pt)/(H-pt-pb));
+  let g=svg.querySelector(".pg");if(!g){g=document.createElementNS("http://www.w3.org/2000/svg","g");g.setAttribute("class","pg");
+    g.innerHTML=`<line y1="${pt}" y2="${H-pb}" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="4 3"/><circle r="6" fill="var(--mark)" stroke="#fff" stroke-width="2"/><rect rx="6" height="26" fill="var(--card)" stroke="var(--edge)"/><text class="pt" font-size="15"></text>`;svg.appendChild(g)}
+  const tx=`${km.toLocaleString("es-ES",{minimumFractionDigits:1,maximumFractionDigits:1})} km · ${Math.round(ele).toLocaleString("es-ES")} m`;
+  const line=g.querySelector("line"),c=g.querySelector("circle"),rc=g.querySelector("rect"),t=g.querySelector("text");
+  line.setAttribute("x1",vx);line.setAttribute("x2",vx);c.setAttribute("cx",vx);c.setAttribute("cy",vy);t.textContent=tx;
+  const w=tx.length*8.2+14,lx=Math.max(pl,Math.min(W-pr-w,vx-w/2));rc.setAttribute("x",lx);rc.setAttribute("y",0);rc.setAttribute("width",w);t.setAttribute("x",lx+7);t.setAttribute("y",18);
+  g.style.display="";
+  // punto en el mapa (si se ve el mapa)
+  const rt=rutaDe(svg);if(rt&&!document.getElementById("v-mapa").hidden&&document.getElementById("ov").hidden){const ll=puntoEn(rt,km);
+    if(!MK)MK=L.circleMarker(ll,{radius:9,color:"#fff",weight:3,fillColor:"#c3262e",fillOpacity:1,interactive:false});MK.setLatLng(ll);if(!map.hasLayer(MK))MK.addTo(map)}
+  clearTimeout(HT);HT=setTimeout(()=>{g.style.display="none";if(MK)MK.remove()},4000)}
+document.addEventListener("pointermove",e=>{const s=e.target.closest&&e.target.closest("svg.prof");if(s)mover(s,e.clientX)});
+document.addEventListener("pointerdown",e=>{const s=e.target.closest&&e.target.closest("svg.prof");if(s)mover(s,e.clientX)});
+})();
+
+}catch(e){console.error("módulo perfil",e);(window.__ERRS=window.__ERRS||[]).push("perfil: "+(e&&e.message))}
 </script>
 <script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>
 <script>
