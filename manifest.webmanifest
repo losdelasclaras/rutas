@@ -25,5 +25,43 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "share_target": {
+    "action": "./recibir",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "f",
+          "accept": [
+            ".gpx",
+            ".kml",
+            "application/gpx+xml",
+            "application/vnd.google-earth.kml+xml",
+            "application/xml",
+            "text/xml",
+            "text/plain",
+            "application/octet-stream"
+          ]
+        }
+      ]
+    }
+  },
+  "file_handlers": [
+    {
+      "action": "./",
+      "accept": {
+        "application/gpx+xml": [
+          ".gpx"
+        ],
+        "application/vnd.google-earth.kml+xml": [
+          ".kml"
+        ]
+      }
+    }
   ]
 }

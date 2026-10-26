@@ -75,9 +75,9 @@ const has=ref=>list().some(m=>m.ref===ref);
 const lnRoute=r=>r&&r.gx&&r.gx.ln;
 function rutaOffline(r){if(!r||!r.gx)return;if(!lnRoute(r)){toast("Preparando el track…");loadTracks().then(ok=>{if(ok)rutaOffline(r);else toast("Sin conexión")});return}
   porTrack({id:"r:"+r.u,ref:r.u,n:routeTitle(r),k:"ruta"},r.gx.ln)}
-function porTrack(meta,ln){if(!ln.some(p=>ESPB.contains([p[0],p[1]]))){toast("El mapa descargable (IGN) solo cubre España");return}
+function porTrack(meta,ln,pre){if(!ln.some(p=>ESPB.contains([p[0],p[1]]))){toast("El mapa descargable (IGN) solo cubre España");return}
   if(has(meta.ref)){abrirLista();return}
-  const set=tilesTrack(ln,ZMAX);confirmar(meta,set,`Se descargará el mapa del IGN de una franja de 1 km a cada lado del track (≈ ${fmtMB(set.size*KB*1000)}).`)}
+  const set=tilesTrack(ln,ZMAX);confirmar(meta,set,(pre||"")+`Se descargará el mapa del IGN de una franja de 1 km a cada lado del track (≈ ${fmtMB(set.size*KB*1000)}).`)}
 function confirmar(meta,set,txt){MISPUNTOS.show(`<div class="sheet-head"><h2>📥 Mapa sin cobertura</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <p><b>${esc(meta.n)}</b></p><p>${txt}</p><p class="note">Hazlo con wifi. Después, aunque no tengas cobertura, verás el mapa en esa zona (ponlo en Capas › Mapa › IGN si no sale solo).</p>
   <div class="mpacts"><button class="mpb pri" data-ogo>📥 Descargar</button><button class="mpb" data-close>Cancelar</button></div>`);
@@ -110,7 +110,7 @@ function pintar(){const a=list().slice().sort((x,y)=>(y.f||"").localeCompare(x.f
     return`<p class="note" style="margin:10px 0 4px"><b>Descargados en otro aparato</b> (tu cuenta). Bájalos aquí con wifi:</p>${fal.length>1?`<div class="mpacts" style="margin:4px 0 6px"><button class="mpb pri" data-oall>📥 Descargar todos aquí (≈ ${fmtMB(fal.reduce((s,m)=>s+(m.b||0),0))})</button></div>`:""}`+
     fal.map(m=>`<div class="mprow"><span class="e" style="opacity:.55">${m.k==="zona"?"🗺️":m.k==="track"?"〰️":"📘"}</span><span><b>${esc(m.n)}</b><small>${m.b?"≈ "+fmtMB(m.b)+" · ":""}falta en este aparato</small></span><button class="mpb del" data-oget="${esc(m.id)}">📥</button></div>`).join("")+(a.length?`<p class="note" style="margin:12px 0 4px"><b>En este aparato</b></p>`:"")})()}
   ${a.map(m=>`<div class="mprow" data-ogoto="${esc(m.id)}"><span class="e">${m.k==="zona"?"🗺️":m.k==="track"?"〰️":"📘"}</span><span><b>${esc(m.n)}</b><small>${fmtMB(m.b||0)} · ${fmtF(m.f)}</small></span><button class="mpb dan del" data-odel="${esc(m.id)}">🗑</button></div>`).join("")}`;
-  if(typeof window.OFFREFRESH==="function")window.OFFREFRESH()}
+  if(typeof window.OFFREFRESH==="function")window.OFFREFRESH();if(typeof zonas==="function")try{zonas()}catch(e){}}
 let COLA=[];
 async function siguiente(){if(RUN||!COLA.length)return;bajarAqui(COLA.shift());const w=setInterval(()=>{if(!RUN){clearInterval(w);siguiente()}},800)}
 box.addEventListener("click",e=>{if(e.target.closest("[data-ozone]")){zona();return}
@@ -132,7 +132,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-offr],[dat
   const t=MISPUNTOS.tracks().find(x=>String(x.id)===b.dataset.offt);if(!t)return;
   if(t.src==="blog"){const r=R.find(x=>x.u===t.u);if(r){if(has(r.u)){abrirLista();return}rutaOffline(r)}return}
   const ref="mt:"+t.id;if(has(ref)){abrirLista();return}porTrack({id:"t:"+t.id,ref,n:t.n,k:"track"},t.pts)},true);
-const grp=[...document.querySelectorAll(".laypanel button.laygh")].find(x=>/^mapa$/i.test(x.textContent.trim()));
+const grp=[...document.querySelectorAll(".laypanel button.laygh")].find(x=>/^mapa$/i.test((x.querySelector(".tt")||x).textContent.trim()));
 if(grp&&grp.nextElementSibling)grp.nextElementSibling.insertAdjacentHTML("beforeend",`<button class="lay" data-offzone><span class="lico">📥</span>Descargar esta zona</button>`);
 document.querySelector(".legend").addEventListener("click",e=>{if(e.target.closest("[data-offzone]"))zona()});
 
@@ -146,6 +146,24 @@ addEventListener("offline",sinRed);setTimeout(sinRed,1500);
       o.zb=[Math.min(...ks.map(k=>lat(k[2]+1))),Math.min(...ks.map(k=>lon(k[1]))),Math.max(...ks.map(k=>lat(k[2]))),Math.max(...ks.map(k=>lon(k[1]+1)))];o.z0=Math.min(...zs);o.zmax=zz}
     w.push(o);ch=true}
   if(ch)saveWanted(w)})();
-window.OFFLINE={has,list,zona,rutaOffline,wanted,setWanted:a=>{saveWanted(a,true);pintar()}};
+// al guardar una ruta del blog en Mis tracks: «¿descargo también el mapa?»
+function ofrecer(r){if(!r||!r.gx||has(r.u))return;const go=()=>{if(!ESPB.contains(r.gx.st||[r.lat,r.lon]))return;
+  porTrack({id:"r:"+r.u,ref:r.u,n:routeTitle(r),k:"ruta"},r.gx.ln,"<b>✓ Guardado en Mis tracks.</b> ¿Descargo también el mapa para usarlo sin cobertura? ")};
+  if(r.gx.ln)go();else if(window.loadTracks)loadTracks().then(ok=>{if(ok&&r.gx.ln)go()})}
+/* capa «Zonas descargadas»: se ve en el mapa dónde tienes mapa sin cobertura */
+if(LAY.off===undefined)LAY.off=true;
+const ZL=L.layerGroup(),ZR=L.canvas({padding:.2});
+function zonas(){ZL.clearLayers();const st={stroke:false,fillColor:"#2a7a3b",fillOpacity:.13,interactive:false,renderer:ZR};
+  for(const m of list()){if(m.k==="zona"&&m.zb){ZL.addLayer(L.rectangle([[m.zb[0],m.zb[1]],[m.zb[2],m.zb[3]]],st));continue}
+    if(!m.t||!m.t.length)continue;const zz=Math.max(...m.t.map(k=>+k.split("/")[0]));
+    const lon=x=>x/2**zz*360-180,lat=y=>{const n=Math.PI-2*Math.PI*y/2**zz;return 180/Math.PI*Math.atan(.5*(Math.exp(n)-Math.exp(-n)))};
+    for(const k of m.t){const[z,x,y]=k.split("/").map(Number);if(z!==zz)continue;ZL.addLayer(L.rectangle([[lat(y+1),lon(x)],[lat(y),lon(x+1)]],st))}}
+  syncZ()}
+function syncZ(){const on=LAY.off&&list().length&&map.getZoom()>=9;if(on&&!map.hasLayer(ZL))ZL.addTo(map);else if(!on&&map.hasLayer(ZL))ZL.remove();
+  const b=document.querySelector('[data-lay="off"]');if(b){b.hidden=!list().length;b.setAttribute("aria-pressed",!!LAY.off)}}
+map.on("zoomend",syncZ);
+if(grp&&grp.nextElementSibling)grp.nextElementSibling.insertAdjacentHTML("beforeend",`<button class="lay" data-lay="off" aria-pressed="${!!LAY.off}" ${list().length?"":"hidden"}><span class="lico" style="background:rgba(42,122,59,.35)"></span>Zonas descargadas</button>`);
+document.querySelector(".legend").addEventListener("click",e=>{if(e.target.closest('[data-lay="off"]'))setTimeout(syncZ,0)});
+window.OFFLINE={has,list,zona,rutaOffline,ofrecer,wanted,setWanted:a=>{saveWanted(a,true);pintar()}};
 pintar();
 })();

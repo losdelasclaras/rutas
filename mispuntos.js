@@ -131,7 +131,7 @@ document.querySelector(".legend").addEventListener("click",e=>{const a=e.target.
 /* pestaña Lugares: lista, exportar e importar */
 const box=document.createElement("div");box.className="mpbox";box.id="mpbox";
 const anchor=document.getElementById("colh-lugares");anchor.parentNode.insertBefore(box,anchor);
-const fin=document.createElement("input");fin.type="file";fin.accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml";fin.hidden=true;document.body.appendChild(fin);
+const fin=document.createElement("input");fin.type="file";/* sin «accept»: en Android los .gpx suelen salir grises si se filtra por tipo */fin.hidden=true;document.body.appendChild(fin);
 function renderBox(){const ps=MP.slice().sort((a,b)=>(b.f||"").localeCompare(a.f||""));
   box.innerHTML=`<h2>📍 Mis puntos <small style="font-weight:500;color:#666">(${MP.length})</small></h2>
   ${MP.length?"":`<p class="note">Guarda fuentes, aparcamientos, refugios o cualquier sitio. En el mapa: <b>Capas › Guardar dónde estoy</b> o <b>Marcar en el mapa</b>, o mantén pulsado sobre el mapa.</p>`}
@@ -219,6 +219,7 @@ window.ldcBkp=bkpButtons;if(typeof renderCols==="function")renderCols();
 drawMP();drawMT();renderBox();
 window.MISPUNTOS={get:()=>MP,tracks:()=>MT,show,sync:()=>syncMP(),ptsOf,desn,demAlt,dl,
   saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
+  importText(txt,n){try{imp(String(txt),n||"track.gpx")}catch(e){toast("No he podido leer ese archivo (solo GPX o KML)")}},
   importar(){if(window.cuentaOk&&!cuentaOk(()=>toast("Ya has entrado. Pulsa otra vez «Cargar GPX/KML» para elegir el archivo"),"tracks"))return;fin.value="";fin.click()},
   // la sincronización cambia lo guardado sin volver a avisar a la nube
   set(mp,mt){if(mp){MP.length=0;MP.push(...mp);store.set(MPK,MP)}if(mt){MT.length=0;MT.push(...mt);try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}}
