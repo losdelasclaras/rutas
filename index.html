@@ -50,8 +50,6 @@ main{flex:1;min-height:0;position:relative}
 nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--edge);background:var(--paper);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 nav.tabs button{border:0;background:none;padding:8px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--f-display);font-weight:600;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);cursor:pointer}
 nav.tabs button svg{width:22px;height:22px}
-nav.tabs .tl2{display:flex;flex-direction:column;align-items:center;line-height:1.05;white-space:nowrap;font-size:12.5px;letter-spacing:.02em}nav.tabs .tl2 small{font-size:10.5px;letter-spacing:.03em;margin-top:1px}
-@media(min-width:700px){nav.tabs .tl2{flex-direction:row;gap:5px;font-size:14px;letter-spacing:.04em;line-height:inherit}nav.tabs .tl2 small{font-size:inherit;letter-spacing:inherit;margin:0}}
 nav.tabs button[aria-selected="true"]{color:var(--mark)}
 nav.tabs button:focus-visible,.chip:focus-visible,.btn:focus-visible,.row:focus-visible{outline:2px solid var(--mark);outline-offset:2px}
 /* map */
@@ -328,7 +326,7 @@ html,body{height:100%;margin:0}
       <div id="col-cumbres"></div>
     </div></section>
     <section class="view pad" id="v-lugares" hidden><div class="inner">
-      <h1 class="vt">Mis lugares y tracks</h1>
+      <h1 class="vt">Tus lugares</h1>
       <p class="lead">Brañas, foces, lagos, cascadas y otros rincones de tus rutas. Ve marcando dónde has estado y adónde quieres ir.</p>
       <div id="colh-lugares"></div>
       <input class="search" id="qs-lugares" type="search" placeholder="Busca un lugar: braña, lago, refugio…" autocomplete="off" style="margin:4px 0 6px">
@@ -339,7 +337,7 @@ html,body{height:100%;margin:0}
     <button role="tab" data-v="mapa" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg>Mapa</button>
     <button role="tab" data-v="rutas" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Rutas</button>
     <button role="tab" data-v="cumbres" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20l7-12 4 6 3-4 6 10z"/></svg>Cumbres</button>
-    <button role="tab" data-v="lugares" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"/></svg><span class="tl2">Mis lugares<small>y tracks</small></span></button>
+    <button role="tab" data-v="lugares" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"/></svg>Lugares</button>
   </nav>
 </div>
 
@@ -1069,7 +1067,7 @@ function imp(txt,fname){const doc=new DOMParser().parseFromString(txt,"applicati
   if(!np&&!nt){toast("No he encontrado puntos ni tracks en ese archivo");return}
   saveMP();if(nt&&!saveMT()){MT=store.get(MTK,[])}
   LAY.mp=true;LAY.mt=true;saveLay();["mp","mt"].forEach(k=>{const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",true)});
-  drawMP();drawMT();renderBox();toast([np?`${np} punto${np===1?"":"s"}`:"",nt?`${nt} track${nt===1?"":"s"}`:""].filter(Boolean).join(" y ")+(np+nt===1?" cargado":" cargados")+(nt?" · están en Lugares › Mis tracks":""));
+  drawMP();drawMT();renderBox();toast([np?`${np} punto${np===1?"":"s"}`:"",nt?`${nt} track${nt===1?"":"s"}`:""].filter(Boolean).join(" y ")+(np+nt===1?" cargado":" cargados")+(nt?" · están en Mis cosas › Mis tracks":""));
   for(const o of nuevos)if(o.pts.some(p=>p[2]==null))demAlt(o.id);
   if(nt===1&&!np&&window.MISTRACKS)MISTRACKS.open(nuevos[0].id,true)}
 // desnivel de un track (con margen de 4 m para que el ruido no sume)
@@ -1536,10 +1534,10 @@ sheet.addEventListener("click",e=>{
 /* en la ficha de una ruta del blog: «☆ Guardar en mis tracks» */
 window.MTSAVED=r=>!!savedOf(r);
 document.addEventListener("click",e=>{const b=e.target.closest("[data-mtsave]");if(!b)return;e.preventDefault();e.stopPropagation();
-  const r=R[+b.dataset.mtsave];if(!r||!r.gx)return;if(window.cuentaOk&&!cuentaOk(()=>{const bb=document.querySelector(`[data-mtsave="${r.id}"]`);if(bb&&!savedOf(r))bb.click();else if(!savedOf(r)){MPI.saveTracks([...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString()}]);toast("Guardado en Lugares › Mis tracks")}},"tracks"))return;const s=savedOf(r);
+  const r=R[+b.dataset.mtsave];if(!r||!r.gx)return;if(window.cuentaOk&&!cuentaOk(()=>{const bb=document.querySelector(`[data-mtsave="${r.id}"]`);if(bb&&!savedOf(r))bb.click();else if(!savedOf(r)){MPI.saveTracks([...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString()}]);toast("Guardado en Mis cosas › Mis tracks")}},"tracks"))return;const s=savedOf(r);
   if(s){MPI.saveTracks(T().filter(x=>x!==s));b.textContent="☆ Guardar en mis tracks";toast("Quitado de Mis tracks")}
   else{MPI.saveTracks([...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString()}]);
-    b.textContent="★ En mis tracks";toast("Guardado en Lugares › Mis tracks")}},true);
+    b.textContent="★ En mis tracks";toast("Guardado en Mis cosas › Mis tracks")}},true);
 
 window.MISTRACKS={render,open,refresh,route:id=>{const t=T().find(x=>String(x.id)===String(id));return t&&t.pts?comoRuta(t):null}};
 render();
@@ -1701,43 +1699,72 @@ pintar();
 
 }catch(e){console.error("módulo offline",e);(window.__ERRS=window.__ERRS||[]).push("offline: "+(e&&e.message))}
 try{
-/* ---------- pestaña Lugares en apartados: Lugares del blog · Mis puntos · Mis tracks · Mapas descargados ----------
-   Solo se ve uno cada vez, así una lista larga de puntos no deja los tracks muy abajo. */
+/* ---------- pestañas de abajo: Mapa · Del grupo (Rutas, Cumbres, Lugares) · Mis cosas (Mis puntos, Mis tracks, Mapas) ----------
+   Más adelante se añadirá «Seguidores» (rutas y puntos que publiquen otras personas). */
 (function(){
-const v=document.querySelector("#v-lugares .inner");if(!v)return;
-const KEY="ldc-lugtab";
+const main=document.querySelector("main"),nav=document.querySelector("nav.tabs");if(!main||!nav)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
-.lugtabs{position:sticky;top:0;z-index:5;background:var(--paper);display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 0 10px;margin:0 0 6px}
-.lugtabs button{border:1px solid var(--edge);background:var(--card);color:var(--ink);border-radius:12px;padding:7px 2px 6px;font-weight:700;font-size:12.5px;line-height:1.15;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;white-space:nowrap;letter-spacing:-.01em}
-.lugtabs button .i{font-size:20px;line-height:1}
-.lugtabs button small{font-weight:700;font-size:11.5px;color:var(--muted)}
-.lugtabs button[aria-selected=true]{background:var(--ink);color:var(--card);border-color:var(--ink)}
-.lugtabs button[aria-selected=true] small{color:inherit;opacity:.8}
-@media(min-width:700px){.lugtabs button{flex-direction:row;justify-content:center;gap:6px;font-size:14.5px;padding:9px 6px}}
-#v-lugares .mpbox>h2:first-child{display:none}
-#v-lugares [data-lsec][hidden]{display:none!important}
+nav.tabs{grid-template-columns:repeat(3,1fr)!important}
+.subtabs{position:sticky;top:0;z-index:5;background:var(--paper);display:grid;gap:6px;padding:8px 0 10px;margin:0 0 4px}
+.subtabs button{border:1px solid var(--edge);background:var(--card);color:var(--ink);border-radius:12px;padding:7px 2px 6px;font-weight:700;font-size:13px;line-height:1.15;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;white-space:nowrap}
+.subtabs button .i{font-size:19px;line-height:1}
+.subtabs button small{font-weight:700;font-size:11.5px;color:var(--muted)}
+.subtabs button[aria-selected=true]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.subtabs button[aria-selected=true] small{color:inherit;opacity:.8}
+@media(min-width:700px){.subtabs button{flex-direction:row;justify-content:center;gap:6px;font-size:14.5px;padding:9px 6px}}
+#v-mios .mpbox>h2:first-child{display:none}
+#v-mios [data-msec][hidden]{display:none!important}
 </style>`);
-const lead=v.querySelector(".lead"),bar=document.createElement("div");bar.className="lugtabs";bar.setAttribute("role","tablist");
-(lead||v.firstElementChild).before(bar);
-// qué va en cada apartado
-const S={lug:[lead,document.getElementById("colh-lugares"),document.getElementById("qs-lugares"),document.getElementById("col-lugares")],
-  mp:[document.getElementById("mpbox")],mt:[document.getElementById("mtbox")],off:[document.getElementById("offbox")]};
-for(const k in S)for(const el of S[k])if(el)el.dataset.lsec=k;
-const N={lug:["🏞️","Lugares"],mp:["📍","Mis puntos"],mt:["🧵","Mis tracks"],off:["📥","Mapas"]};
-const cuenta=k=>k==="mp"?MISPUNTOS.get().length:k==="mt"?MISPUNTOS.tracks().length:k==="off"?(window.OFFLINE?OFFLINE.list().length:0):null;
-let cur=store.get(KEY,"lug");if(!S[cur])cur="lug";
-function pinta(){bar.innerHTML=Object.keys(N).map(k=>{const n=cuenta(k);return`<button role="tab" data-lt="${k}" aria-selected="${k===cur}"><span class="i">${N[k][0]}</span><span>${N[k][1]}</span>${n!=null?`<small>${n}</small>`:"<small>&nbsp;</small>"}</button>`}).join("");
-  for(const k in S)for(const el of S[k])if(el)el.hidden=k!==cur}
-function ir(k){if(!S[k])return;cur=k;store.set(KEY,k);pinta();  const sc=document.getElementById("v-lugares");if(sc&&sc.scrollTop>bar.offsetTop)sc.scrollTop=bar.offsetTop}
-bar.addEventListener("click",e=>{const b=e.target.closest("[data-lt]");if(b)ir(b.dataset.lt)});
-// los números se actualizan cuando cambian las listas
-const mo=new MutationObserver(()=>{const sel=cur;bar.querySelectorAll("[data-lt]").forEach(b=>{const n=cuenta(b.dataset.lt);const s=b.querySelector("small");if(s&&n!=null)s.textContent=n});if(sel!==cur)pinta()});
-for(const k of ["mp","mt","off"])for(const el of S[k])if(el)mo.observe(el,{childList:true});
-window.LUGTAB=k=>{if(typeof showView==="function")showView("lugares");ir(k)};
-pinta();
+const ICO={mapa:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
+  grupo:'<path d="M2 20l7-12 4 6 3-4 6 10z"/><circle cx="17.5" cy="5.5" r="2"/>',
+  mios:'<path d="M6 8h12l-1 12H7z"/><path d="M9 8V6a3 3 0 016 0v2"/>'};
+const tab=(v,t)=>`<button role="tab" data-v="${v}" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">${ICO[v]}</svg>${t}</button>`;
+nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Del grupo")+tab("mios","Mis cosas");
+
+/* «Mis cosas»: una vista nueva con mis puntos, mis tracks y los mapas descargados */
+const sec=document.createElement("section");sec.className="view pad";sec.id="v-mios";sec.hidden=true;
+sec.innerHTML=`<div class="inner"><h1 class="vt">Mis cosas</h1><p class="lead" style="margin-bottom:4px">Tus puntos, tus tracks y los mapas que has descargado. Con tu cuenta de Google los tienes en el móvil y en el ordenador.</p>
+<div class="subtabs" id="st-mios" role="tablist" style="grid-template-columns:repeat(3,1fr)"></div></div>`;
+main.appendChild(sec);const inner=sec.firstElementChild;
+const MS={mp:document.getElementById("mpbox"),mt:document.getElementById("mtbox"),off:document.getElementById("offbox")};
+for(const k in MS)if(MS[k]){MS[k].dataset.msec=k;inner.appendChild(MS[k])}
+const MN={mp:["📍","Mis puntos"],mt:["🧵","Mis tracks"],off:["📥","Mapas"]};
+const cuenta=k=>k==="mp"?MISPUNTOS.get().length:k==="mt"?MISPUNTOS.tracks().length:(window.OFFLINE?OFFLINE.list().length:0);
+let curM=store.get("ldc-mios","mp");if(!MN[curM])curM="mp";
+const barM=document.getElementById("st-mios");
+function pintaM(){barM.innerHTML=Object.keys(MN).map(k=>`<button role="tab" data-ms="${k}" aria-selected="${k===curM}"><span class="i">${MN[k][0]}</span><span>${MN[k][1]}</span><small>${cuenta(k)}</small></button>`).join("");
+  for(const k in MS)if(MS[k])MS[k].hidden=k!==curM}
+barM.addEventListener("click",e=>{const b=e.target.closest("[data-ms]");if(!b)return;curM=b.dataset.ms;store.set("ldc-mios",curM);pintaM();if(sec.scrollTop>barM.offsetTop)sec.scrollTop=barM.offsetTop});
+const mo=new MutationObserver(()=>barM.querySelectorAll("[data-ms]").forEach(b=>{const s=b.querySelector("small");if(s)s.textContent=cuenta(b.dataset.ms)}));
+for(const k in MS)if(MS[k])mo.observe(MS[k],{childList:true});
+pintaM();
+
+/* «Del grupo»: Rutas, Cumbres y Lugares del blog con su barra arriba */
+const GN={rutas:["📘","Rutas"],cumbres:["⛰️","Cumbres"],lugares:["🏞️","Lugares"]};
+let curG=store.get("ldc-grupo","rutas");if(!GN[curG])curG="rutas";
+for(const g in GN){const v=document.querySelector("#v-"+g+" .inner");if(!v)continue;const b=document.createElement("div");b.className="subtabs";b.dataset.grp=g;b.style.gridTemplateColumns="repeat(3,1fr)";
+  b.innerHTML=Object.keys(GN).map(k=>`<button role="tab" data-gs="${k}" aria-selected="${k===g}"><span class="i">${GN[k][0]}</span><span>${GN[k][1]}</span></button>`).join("");
+  v.insertBefore(b,v.firstChild)}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-gs]");if(b)showView(b.dataset.gs)});
+
+/* showView entiende las vistas nuevas; la pestaña «Del grupo» vuelve a la última que viste */
+const VIEWS=["mapa","rutas","cumbres","lugares","mios"];
+window.showView=showView=function(v){
+  if(v==="grupo")v=curG;
+  if(!VIEWS.includes(v))v="mapa";
+  if(v!=="mapa"&&window.showTrack){showTrack(null);const tp=document.getElementById("trkpill");if(tp)tp.hidden=true}
+  if(v==="mapa")setTimeout(()=>map.invalidateSize(),0);
+  if(GN[v]){curG=v;store.set("ldc-grupo",v)}
+  const top=GN[v]?"grupo":v;
+  nav.querySelectorAll("[data-v]").forEach(x=>x.setAttribute("aria-selected",x.dataset.v===top));
+  VIEWS.forEach(n=>{const el=document.getElementById("v-"+n);if(el)el.hidden=n!==v});
+  store.set("ldc-tab",v)};
+window.LUGTAB=k=>{showView("mios");if(MN[k]){curM=k;store.set("ldc-mios",k);pintaM()}};
+const vis=VIEWS.find(n=>{const el=document.getElementById("v-"+n);return el&&!el.hidden})||"mapa";
+showView(vis==="mios"?"mios":vis);
 })();
 
-}catch(e){console.error("módulo lugtabs",e);(window.__ERRS=window.__ERRS||[]).push("lugtabs: "+(e&&e.message))}
+}catch(e){console.error("módulo pestanas",e);(window.__ERRS=window.__ERRS||[]).push("pestanas: "+(e&&e.message))}
 </script>
 <script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>
 <script>
