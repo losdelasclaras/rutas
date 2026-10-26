@@ -74,6 +74,9 @@ for f in sorted(glob.glob('raw/*.gpx')):
         if not x.get('u'):continue
         wk=(x.get('wk') or '').rstrip('/')
         if wid and re.search(r'-'+wid.group(1)+r'(\D|$)',wk):cs.append((100,x['u'],'enlace Wikiloc'));continue
+        if fb.startswith('drive__'):
+            ps=re.sub(r'\.html?$','',x['u'].rstrip('/').split('/')[-1]).lower()
+            if ps and re.sub(r'[^a-z0-9]+','-',stem[7:]).strip('-')==ps:cs.append((500,x['u'],'nombre del archivo = dirección de la entrada'));continue
         wslug=re.sub(r'-\d+$','',wk.split('/')[-1]).lower() if wk else ''
         ds=[min(dist((PT[i]['lat'],PT[i]['lon']),q) for q in S) for i in x['p']]
         if min(ds)>400:continue
@@ -84,16 +87,16 @@ for f in sorted(glob.glob('raw/*.gpx')):
         pm=ym(x.get('d','')) ;dd=(pm-tm) if (pm and tm) else None
         dsc=0 if dd is None else (1.5 if 0<=dd<=3 else 0.7 if -1<=dd<=8 else -0.8 if abs(dd)>24 else 0)
         sc=near*2+nm*0.6+dsc
-        if fb.startswith('drive__') and near>=0.7:sc+=200   # lo que subes a Drive manda sobre el track que ya hubiera
         cs.append((sc,x['u'],f"recorrido (puntos cerca {near:.0%}, palabras {nm}, fecha {'cuadra' if dsc>=1 else 'parecida' if dsc>0 else 'lejana' if dsc<0 else 'no'})"))
     cs.sort(key=lambda c:-c[0]);CAND[fb]=cs
 # reparto: primero las parejas más seguras; cada ruta y cada archivo una sola vez
 pairs=sorted(((c[0],fb,c[1],c[2],k) for fb,cs in CAND.items() for k,c in enumerate(cs)),key=lambda p:-p[0])
-ASG={};TAKEN=set()
+ASG={};TAKEN=set();SKIP=set()
 for sc,fb,u,how,k in pairs:
-    if fb in ASG or u in TAKEN or sc<1.2:continue
+    if fb in ASG or fb in SKIP or u in TAKEN or sc<1.2:continue
     cs=CAND[fb];alt=[c for c in cs if c[1]!=u and c[1] not in TAKEN]
     if k>0:how+=' · (era su 2.ª opción: la 1.ª ya tenía otro track)'
+    if fb.startswith('drive__') and sc<60 and alt and alt[0][0]>=sc-0.5:SKIP.add(fb);continue   # de Drive y con dudas: mejor no colocarlo
     if sc<60 and alt and alt[0][0]>=sc-0.5:how+=' · DUDA con: '+next((x.get('ti') for x in D if x['u']==alt[0][1]),alt[0][1])
     ASG[fb]=(u,how);TAKEN.add(u)
 UBY={x['u']:x for x in D}
