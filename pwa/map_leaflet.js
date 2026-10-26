@@ -26,6 +26,7 @@ P.forEach((p,i)=>{
   m.on("click",e=>{L.DomEvent.stopPropagation(e); if(nearMode){nearAt(p.lat,p.lon);return} pickRoute(i)});
   m.on("add",()=>{applyCls(i);if(map.getZoom()>=LBLZ)bindLbl(i)}); MK[i]=m;
 });
+__mk("puntos creados");
 // pequeñas ayudas con la misma forma que usaba el mapa anterior
 // las etiquetas de nombre solo existen cuando se ven (zoom 12 o más); así el mapa no arrastra cientos de rótulos ocultos
 const LBLZ=11.5;

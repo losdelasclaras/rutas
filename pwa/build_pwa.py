@@ -71,7 +71,24 @@ rep('''navigator.geolocation.getCurrentPosition(p=>nearAt(p.coords.latitude,p.co
 # el mapa necesita recalcular tamaño al volver a la pestaña
 rep('''function showView(v){''','''function showView(v){if(v==="mapa")setTimeout(()=>map.invalidateSize(),0);''')
 # init
-rep('''drawZone(ZONES[store.get("ldc-zona","cant")]?store.get("ldc-zona","cant"):"cant"); applyFilter(); renderCols();''','''applyFilter(); renderCols(); fitHome(false); sizeMarks();''')
+rep('''drawZone(ZONES[store.get("ldc-zona","cant")]?store.get("ldc-zona","cant"):"cant"); applyFilter(); renderCols();''','''__mk("antes del filtro"); applyFilter(); __mk("filtro"); renderCols(); __mk("listas"); fitHome(false); sizeMarks(); __mk("mapa colocado");''')
+# medidas de arranque (se ven con ?diag) y formateadores reutilizados (Firefox crea uno nuevo en cada llamada)
+i=t.index('<script>\n'); t=t[:i]+'''<script>
+const __M=[];const __mk=n=>__M.push([n,Math.round(performance.now())]);__mk("inicio del programa");
+(function(){const C={},N={},lc=String.prototype.localeCompare;
+String.prototype.localeCompare=function(b,loc,opt){if(opt)return lc.call(this,b,loc,opt);const k=loc||"";return (C[k]||(C[k]=new Intl.Collator(loc||undefined))).compare(String(this),String(b))};
+Number.prototype.toLocaleString=function(loc,opt){const k=(loc||"")+"|"+JSON.stringify(opt||{});return (N[k]||(N[k]=new Intl.NumberFormat(loc||undefined,opt))).format(Number(this))}})();
+</script>
+'''+t[i:]
+t=t.replace('</body>','''<script>
+addEventListener("DOMContentLoaded",()=>__mk("página leída"));
+addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requestAnimationFrame(()=>__mk("primer dibujo")));
+ if(/[?&]diag/.test(location.search))setTimeout(()=>{const n=performance.getEntriesByType("navigation")[0]||{};const fp=(performance.getEntriesByType("paint").find(e=>e.name==="first-contentful-paint")||{}).startTime;
+  const rows=[["respuesta del servidor",Math.round(n.responseStart||0)],["descarga terminada",Math.round(n.responseEnd||0)],...__M,["primer contenido",Math.round(fp||0)]];
+  const d=document.createElement("div");d.style.cssText="position:fixed;z-index:99999;left:8px;top:8px;background:#fff;color:#000;padding:12px 14px;border:2px solid #c00;border-radius:10px;font:14px/1.45 system-ui;max-width:92vw;box-shadow:0 4px 18px rgba(0,0,0,.3)";
+  d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";document.body.appendChild(d)},1500)});
+</script>
+</body>''')
 rep('''requestAnimationFrame(()=>{fitHome(false);sizeMarks()});
 addEventListener("resize",()=>{sizeMarks()});''','''addEventListener("resize",()=>{map.invalidateSize()});
 document.getElementById("b-me").addEventListener("click",()=>{if(!navigator.geolocation){toast("Este móvil no da la ubicación");return}toast("Buscando dónde estás…");sheet.hidden=true;sheet.classList.remove("full");setNear(false);navigator.geolocation.getCurrentPosition(p=>{const la=p.coords.latitude,lo=p.coords.longitude;showMe(la,lo);ensureZone(zoneAt(la,lo));map.flyTo([la,lo],Math.max(map.getZoom(),14),{duration:reduce()?0:.8})},()=>toast("No he podido saber dónde estás. Revisa que la ubicación esté activada y con permiso."),{enableHighAccuracy:true,timeout:12000,maximumAge:60000})});
