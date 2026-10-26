@@ -8,7 +8,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .mtfil button[aria-pressed=true]{background:var(--ink);color:var(--card);border-color:var(--ink)}.mtfil small{opacity:.7}
 .mpq{width:100%;box-sizing:border-box;border:1px solid var(--edge);border-radius:10px;padding:10px 12px;font:inherit;font-size:16px;background:var(--card);color:var(--ink);margin:2px 0 4px}
 .est{display:inline-block;margin-top:3px;font-size:12px;font-weight:700;border-radius:999px;padding:2px 8px}.est.h{background:#e3f1e6;color:#1f6b32}.est.p{background:#fdf0d8;color:#8a4b00}
-.estbox{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 10px}.estbox .mpb.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.estbox{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 10px}.rest{display:flex;gap:6px;flex-wrap:wrap;width:100%}.rest .btn.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.estbox .mpb.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
 .estbox input[type=date]{border:1px solid var(--edge);border-radius:8px;padding:6px;font:inherit;background:var(--card);color:var(--ink)}
 </style>`);
 const box=document.createElement("div");box.className="mpbox";box.id="mtbox";
@@ -105,6 +106,18 @@ sheet.addEventListener("click",e=>{
 
 /* en la ficha de una ruta del blog: «☆ Guardar en mis tracks» */
 window.MTSAVED=r=>!!savedOf(r);
+/* en la ficha de una ruta del blog: «✓ La he hecho» / «★ Pendiente» (se guarda en Mis tracks con esa marca) */
+window.RESTBTN=r=>{const s=savedOf(r),e=s&&s.est;return`<span class="rest" data-r="${r.id}"><button class="btn ghost${e==="hecho"?" on":""}" data-rest="hecho">✓ ${e==="hecho"?"Hecha"+(s.fh?" ("+fmtF(s.fh)+")":""):"La he hecho"}</button><button class="btn ghost${e==="pend"?" on":""}" data-rest="pend">★ ${e==="pend"?"Pendiente":"La quiero hacer"}</button></span>`};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-rest]");if(!b)return;e.preventDefault();e.stopPropagation();
+  const box2=b.closest(".rest"),r=R[+box2.dataset.r],v=b.dataset.rest;if(!r||!r.gx)return;
+  const go=()=>{const s=savedOf(r);let ts;
+    if(!s)ts=[...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString(),est:v,...(v==="hecho"?{fh:new Date().toISOString().slice(0,10)}:{})}];
+    else ts=T().map(x=>{if(x!==s)return x;const y={...x};if(y.est===v){delete y.est;delete y.fh}else{y.est=v;if(v==="hecho")y.fh=new Date().toISOString().slice(0,10);else delete y.fh}return y});
+    MPI.saveTracks(ts);const n=savedOf(r);
+    toast(n&&n.est?(n.est==="hecho"?"Marcada como hecha":"Apuntada como pendiente")+" · está en Mis cosas › Mis tracks":"Marca quitada");
+    document.querySelectorAll(`.rest[data-r="${r.id}"]`).forEach(x=>x.outerHTML=RESTBTN(r));
+    document.querySelectorAll(`[data-mtsave="${r.id}"]`).forEach(x=>x.textContent=savedOf(r)?"★ En mis tracks":"☆ Guardar en mis tracks")};
+  if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go()},true);
 document.addEventListener("click",e=>{const b=e.target.closest("[data-mtsave]");if(!b)return;e.preventDefault();e.stopPropagation();
   const r=R[+b.dataset.mtsave];if(!r||!r.gx)return;if(window.cuentaOk&&!cuentaOk(()=>{const bb=document.querySelector(`[data-mtsave="${r.id}"]`);if(bb&&!savedOf(r))bb.click();else if(!savedOf(r)){MPI.saveTracks([...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString()}]);toast("Guardado en Mis cosas › Mis tracks")}},"tracks"))return;const s=savedOf(r);
   if(s){MPI.saveTracks(T().filter(x=>x!==s));b.textContent="☆ Guardar en mis tracks";toast("Quitado de Mis tracks")}
