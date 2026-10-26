@@ -113,8 +113,7 @@ addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;
 ib.addEventListener("click",async()=>{if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice.catch(()=>{});deferredInstall=null;ib.hidden=true});
 addEventListener("appinstalled",()=>{ib.hidden=true});''')
 # marcas: copiar a otro móvil
-rep('''   <p class="note"><b>${nd}</b> de ${ZI.length}''','''   ${kind==="cumbres"&&window.ldcBkp?ldcBkp(1):""}
-   <p class="note"><b>${nd}</b> de ${ZI.length}''')
+rep('''   <p class="note"><b>${nd}</b> de ${ZI.length}''','''      <p class="note"><b>${nd}</b> de ${ZI.length}''')
 rep('''  const m=e.target.closest("[data-m]");if(m){''','''  if(e.target.closest("[data-exp]")){const code="LDC1:"+btoa(unescape(encodeURIComponent(JSON.stringify(MARKS))));(navigator.clipboard?navigator.clipboard.writeText(code):Promise.reject()).then(()=>alert("Copiado. En el otro móvil, abre la app y pulsa «Pegar marcas de otro móvil»."),()=>prompt("Copia este código:",code));return}
   if(e.target.closest("[data-imp]")){const code=prompt("Pega aquí el código de tus marcas:");if(!code)return;try{const v=JSON.parse(decodeURIComponent(escape(atob(code.trim().replace(/^LDC1:/,"")))));Object.assign(MARKS,v);saveMarks();renderCols();alert("Marcas añadidas.")}catch(err){alert("Ese código no es válido.")}return}
   const m=e.target.closest("[data-m]");if(m){''')
