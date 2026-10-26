@@ -22,7 +22,7 @@ function pinta(el){el.dataset.ok="1";
   const lat=(+el.dataset.lat).toFixed(3),lon=(+el.dataset.lon).toFixed(3),alt=el.dataset.alt?Math.round(+el.dataset.alt):"";
   const loc=`${lat}N${lon}E${alt}_Europe%2FMadrid`;
   const q="geoloc=fixed&days=5&tempunit=CELSIUS&windunit=KILOMETER_PER_HOUR&precipunit=MILLIMETER&coloured=coloured&pictoicon=1&maxtemperature=1&mintemperature=1&windspeed=1&windgust=1&winddirection=0&uv=0&humidity=0&precipitation=1&precipitationprobability=1&spot=0&pressure=0&layout=light";
-  el.outerHTML=`<div class="mbw"><iframe src="https://www.meteoblue.com/es/tiempo/widget/daily/${loc}?${q}" title="Previsión meteoblue" loading="lazy" scrolling="no" allowtransparency="true" sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox"></iframe>
+  el.outerHTML=`<div class="mbw"><iframe src="https://www.meteoblue.com/es/tiempo/widget/daily/${loc}?${q}" title="Previsión meteoblue" loading="lazy" scrolling="no" allowtransparency="true"></iframe>
   <div class="wxn"><a href="https://www.meteoblue.com/es/tiempo/semana/${loc}" target="_blank" rel="noopener">meteoblue</a> · previsión a ${alt?Number(alt).toLocaleString("es-ES")+" m":"la altura del punto"} · toca «Previsión en el punto» para verla completa</div></div>`}
 function busca(){document.querySelectorAll(".wx:not([data-ok])").forEach(pinta)}
 const mo=new MutationObserver(busca);for(const id of ["sheet","ov"]){const el=document.getElementById(id);if(el)mo.observe(el,{childList:true,subtree:true})}busca();
