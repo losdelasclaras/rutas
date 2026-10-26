@@ -8,9 +8,15 @@ def dist(p,q):
 T=lambda s:datetime.datetime.fromisoformat(s.replace('Z','+00:00')) if s else None
 def parse(t):
     out=[]
-    for m in re.finditer(r'<trkpt\s+lat="([\d.-]+)"\s+lon="([\d.-]+)"\s*/?>(.*?)(?:</trkpt>|(?=<trkpt)|$)',t,re.S):
-        body=m.group(3) or '';e=re.search(r'<ele>([\d.-]+)</ele>',body);tm=re.search(r'<time>([^<]+)</time>',body)
-        out.append([float(m.group(1)),float(m.group(2)),float(e.group(1)) if e else None,tm.group(1) if tm else None])
+    def grab(tag):
+        for m in re.finditer(r'<'+tag+r'\b([^>]*?)(/?)>(.*?)(?=</'+tag+r'>|<'+tag+r'\b|</trkseg>|</rte>|$)',t,re.S):
+            a=m.group(1);la=re.search(r'lat\s*=\s*["\']([\d.+-]+)',a);lo=re.search(r'lon\s*=\s*["\']([\d.+-]+)',a)
+            if not(la and lo):continue
+            body='' if m.group(2) else (m.group(3) or '')
+            e=re.search(r'<ele>\s*([\d.+-]+)\s*</ele>',body);tm=re.search(r'<time>\s*([^<\s]+)\s*</time>',body)
+            out.append([float(la.group(1)),float(lo.group(1)),float(e.group(1)) if e else None,tm.group(1) if tm else None])
+    grab('trkpt')
+    if len(out)<2:out.clear();grab('rtept')
     return out
 def trim(P):  # quita al principio y al final los tramos en coche (>12 km/h), aunque haya paradas cortas
     def sp(i):
@@ -54,7 +60,8 @@ for f in sorted(glob.glob('raw/*.gpx')):
     if len(P)<5:continue
     FILES.append((f,t,P,cut))
     if fb in MAN:
-        CAND[fb]=[(1000,MAN[fb],'asignado a mano')] if MAN[fb] else [];continue
+        mu=MAN[fb] if isinstance(MAN[fb],list) else ([MAN[fb]] if MAN[fb] else [])
+        CAND[fb]=[(1000,mu[0],'asignado a mano')] if mu else [];continue
     cs=[]
     link=re.search(r'<link href="([^"]+)"',t);link=link.group(1) if link else ''
     wid=re.search(r'-(\d+)$',link)
@@ -96,7 +103,13 @@ for f,t,P,cut in FILES:
     u,how=ASG[fb];r=UBY[u]
     cum=[0]
     for i in range(1,len(P)):cum.append(cum[-1]+dist(P[i-1],P[i]))
-    E=[p[2] for p in P];has=all(e is not None for e in E)
+    E=[p[2] for p in P];nE=sum(e is not None for e in E);has=nE>=0.8*len(E) and nE>1
+    if has and nE<len(E):  # rellena las altitudes que falten con la más cercana conocida
+        last=next(e for e in E if e is not None)
+        for i in range(len(E)):
+            if E[i] is None:E[i]=last
+            else:last=E[i]
+        for i in range(len(P)):P[i][2]=E[i]
     up=dn=0
     if has:
         sm=[sum(E[max(0,i-2):i+3])/len(E[max(0,i-2):i+3]) for i in range(len(E))];ref=sm[0]
@@ -111,5 +124,9 @@ for f,t,P,cut in FILES:
     res[r['u']]={'km':round(cum[-1]/1000,1),'up':round(up/10)*10,'dn':round(dn/10)*10,'mx':round(max(E)) if has else None,'mn':round(min(E)) if has else None,
       'st':[round(P[0][0],5),round(P[0][1],5)],'pf':prof,'ln':line,'nm':(r.get('ti') or r.get('t'))}
     log.append(f"{os.path.basename(f)} -> {r.get('ti') or r.get('t')} | {how} | {res[r['u']]['km']} km +{res[r['u']]['up']} m (blog {r.get('km')} km +{r.get('de')}) | coche {cut} pts | {len(line)} pts")
+for fb,v in MAN.items():  # un mismo track para varias entradas (p. ej. reportaje partido en dos)
+    if isinstance(v,list) and v and v[0] in res:
+        for u in v[1:]:
+            if u in UBY:res[u]=dict(res[v[0]],nm=(UBY[u].get('ti') or UBY[u].get('t')));log.append(f"{fb} -> también {res[u]['nm']}")
 json.dump(res,open('tracks.json','w'),ensure_ascii=False,separators=(',',':'))
 print('\n'.join(log))

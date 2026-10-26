@@ -11,6 +11,14 @@ const map=L.map(mapEl,{zoomControl:false,minZoom:5,maxZoom:18,zoomSnap:0.5,world
 const OTM=L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{subdomains:"abc",maxNativeZoom:17,maxZoom:18,crossOrigin:true,
   attribution:'Mapa © <a href="https://opentopomap.org" target="_blank" rel="noopener">OpenTopoMap</a> (CC-BY-SA) · datos © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'});
 map.attributionControl.setPrefix(false);
+// botones +/- de zoom: solo en pantallas grandes (en el móvil se pellizca)
+L.control.zoom({position:"topright",zoomInTitle:"Acercar",zoomOutTitle:"Alejar"}).addTo(map);
+document.head.insertAdjacentHTML("beforeend",`<style>
+.leaflet-control-zoom{display:none}
+@media (min-width:860px){.leaflet-top.leaflet-right{top:12px;right:12px}.leaflet-control-zoom{display:block;border:0!important;box-shadow:0 2px 8px rgba(0,0,0,.25)!important;border-radius:12px!important;overflow:hidden}
+.leaflet-control-zoom a{width:44px!important;height:44px!important;line-height:42px!important;font-size:26px!important;color:#222!important;background:#fff!important}
+.leaflet-control-zoom a:hover{background:#f1f1f1!important}}
+</style>`);
 const TRC=L.canvas({padding:.3,tolerance:6});const MK={};let RMT=0;
 P.forEach((p,i)=>{
   const cls="pt "+(p.t==="cumbre"?"cumbre":"spot")+(p.x?" ini":"");
