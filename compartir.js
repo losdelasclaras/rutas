@@ -30,21 +30,24 @@ function abrirCompartido(){const h=location.hash||"";if(!h.startsWith("#t="))ret
   try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
   if(pts.length<2){toast("Ese enlace de track no es válido");return true}
   const n=decodeURIComponent(nm||"Track compartido");let km=0;for(let i=1;i<pts.length;i++)km+=map.distance(pts[i-1],pts[i]);km=Math.round(km/100)/10;
+  mostrar({n,pts,km},"enlace");return true}
+// enseñar un track sin guardarlo: desde un enlace o desde un archivo compartido con la app
+function mostrar(t,origen){const n=t.n,pts=t.pts,km=t.km;
   if(typeof showView==="function")showView("mapa");
   if(TMP)TMP.remove();TMP=L.layerGroup([L.polyline(pts,{color:"#fff",weight:8,opacity:.9}),L.polyline(pts,{color:"#7b2cbf",weight:5,opacity:.95,dashArray:"10 6"})]).addTo(map);
   map.fitBounds(L.latLngBounds(pts),{paddingTopLeft:[30,90],paddingBottomRight:innerWidth>=860?[480,30]:[30,Math.round(innerHeight*.5)],maxZoom:15});
   const ya=MPI.tracks().find(t=>t.pts&&t.pts.length&&t.n===n&&Math.abs(t.pts[0][0]-pts[0][0])<1e-4);
   MPI.show(`<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-tmpx>×</button></div>
-    <div class="meta"><span class="tag">Track compartido</span><span class="tag">${km.toLocaleString("es-ES")} km</span></div>
-    <p class="note">Te lo han pasado por enlace. Guárdalo en Mis tracks para tenerlo siempre, seguirlo con el GPS o descargar su mapa.</p>
-    <div class="topacts"><button class="btn primary" data-tmpsave>${ya?"★ Ya está en mis tracks":"☆ Guardar en mis tracks"}</button><button class="btn ghost" data-tmpfol>▶ Seguir track</button></div>`);
-  sheet._tmp={n,pts,km};return true}
+    <div class="meta"><span class="tag">${origen==="archivo"?"Archivo GPX/KML":"Track compartido"}</span><span class="tag">${km.toLocaleString("es-ES")} km</span>${t.up!=null?`<span class="tag">+${t.up.toLocaleString("es-ES")} m</span>`:""}</div>
+    <p class="note">${origen==="archivo"?"Solo lo estás viendo: no se ha guardado.":"Te lo han pasado por enlace."} Guárdalo en Mis tracks si quieres tenerlo siempre, seguirlo otro día o descargar su mapa.</p>
+    <div class="topacts"><button class="btn primary" data-tmpsave>${ya?"★ Ya guardado":"☆ Guardar en Mis tracks"}</button><button class="btn ghost" data-tmpfol>▶ Seguir</button></div>`);
+  sheet._tmp={n,pts,km,up:t.up,dn:t.dn,mx:t.mx,mn:t.mn}}
 sheet.addEventListener("click",e=>{const d=sheet._tmp;
   if(e.target.closest("[data-tmpx]")&&TMP){TMP.remove();TMP=null}
   if(!d)return;
   if(e.target.closest("[data-tmpfol]")){if(TMP){TMP.remove();TMP=null}SEGUIR.start({u:"tmp",ti:d.n,gx:{ln:d.pts,km:d.km}},false);return}
   if(e.target.closest("[data-tmpsave]")){const go=()=>{const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-      MPI.saveTracks([...MPI.tracks(),{id,n:d.n,km:d.km,pts:d.pts,src:"gpx",f:new Date().toISOString()}]);MPI.demAlt(id);if(TMP){TMP.remove();TMP=null}
+      const o={id,n:d.n,km:d.km,pts:d.pts,src:"gpx",f:new Date().toISOString()};MPI.desn(o);MPI.saveTracks([...MPI.tracks(),o]);if(d.pts.some(p=>p[2]==null))MPI.demAlt(id);if(TMP){TMP.remove();TMP=null}
       sheet._tmp=null;toast("Guardado en Mis cosas › Mis tracks");if(window.MISTRACKS)MISTRACKS.open(id,false)};
     if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go()}});
 addEventListener("hashchange",abrirCompartido);setTimeout(abrirCompartido,600);
@@ -54,11 +57,10 @@ async function recibidos(){if(!/[?&]recibido/.test(location.search))return;
   try{history.replaceState(null,"",location.pathname)}catch(e){}
   let L0=[];try{const c=await caches.open("ldc-share");const r=await c.match("recibido");if(r)L0=await r.json();await c.delete("recibido")}catch(e){}
   if(!L0.length){toast("Solo puedo abrir archivos GPX o KML");return}
-  const go=()=>{for(const f of L0)MPI.importText(f.t,f.n||"track.gpx")};
-  if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go()}
+  for(const f of L0)MPI.importText(f.t,f.n||"track.gpx",true)}
 setTimeout(recibidos,700);
 if("launchQueue" in window)launchQueue.setConsumer(async p=>{if(!p.files||!p.files.length)return;const fs=[];for(const h of p.files){try{const f=await h.getFile();fs.push({n:f.name,t:await f.text()})}catch(e){}}
-  const go=()=>{for(const f of fs)MPI.importText(f.t,f.n)};if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go()});
+  for(const f of fs)MPI.importText(f.t,f.n,true)});
 
-window.COMPARTIR={track:compartir,enc,dec};
+window.COMPARTIR={track:compartir,enc,dec,preview:t=>mostrar(t,"archivo")};
 })();
