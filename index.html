@@ -244,6 +244,7 @@ h1.vt{font-family:var(--f-display);font-weight:700;font-size:30px;line-height:1;
 .mk button[data-mk="quiero"][aria-pressed="true"]{background:var(--mark);border-color:var(--mark);color:#fff}
 @media (max-width:520px){.mk button span{display:none}.crow .alt{font-size:12px}}
 header.top,nav.tabs,.view.pad>.inner,.sheet,.mapbar,.legend,.fabs,.hint,.attrib{zoom:var(--fs)}
+.topacts .ovonly{display:none}#ov .topacts .ovonly{display:flex}#ov .topacts [data-share]{display:none}
 .topacts{display:flex;gap:6px;margin:2px 0 10px}.topacts .btn{flex:1 1 0;min-width:0;justify-content:center;text-align:center;padding:11px 4px;font-size:14.5px;line-height:1.15;white-space:nowrap;gap:4px;overflow:hidden;text-overflow:ellipsis}@media(max-width:420px){.topacts .btn{font-size:13.5px}}
 .fsbtn{margin-left:auto;border:1px solid var(--edge);background:var(--card);border-radius:8px;padding:5px 10px;font-family:var(--f-display);font-weight:700;font-size:16px;cursor:pointer;color:var(--ink);flex:none}
 .row.compact{padding:9px 2px}
@@ -672,7 +673,7 @@ function routeBody(r){
   return `
   ${r.f!=null?`<div class="photo"><img src="fotos/${r.f}.jpg" alt=""></div>`:""}
   <div class="sheet-head"><h2>${esc(routeTitle(r))}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
-  <div class="topacts">${r.gx?`<button class="btn primary" data-follow="${r.id}">▶ Seguir track</button>`:""}${r.u?`<a class="btn ${r.gx?"ghost":"primary"}" href="${esc(r.u)}" target="_blank" rel="noopener">Leer en el blog</a><button class="btn ghost" data-share="${r.id}">↗ Compartir</button>`:""}</div>
+  <div class="topacts">${r.gx?`<button class="btn primary" data-follow="${r.id}">▶ Seguir track</button>`:""}${r.u?`<a class="btn ${r.gx?"ghost":"primary"}" href="${esc(r.u)}" target="_blank" rel="noopener">Leer en el blog</a><button class="btn ghost" data-share="${r.id}">↗ Compartir</button>`:""}<button class="btn ghost ovonly" data-ovmap="${r.id}">🗺 Ver en mapa</button></div>
   <div class="meta">${r.iv?`<span class="tag iv">❄ Invernal</span>`:""}${r.nv?`<span class="tag new">Renovada</span>`:""}${r.y?`<span class="tag">${r.m?MESES[r.m]+" ":""}${r.y}</span>`:""}${(r.co&&r.co.length?r.co:r.grp?[r.r,r.grp]:[r.r]).map(c=>`<span class="tag">${esc(c)}</span>`).join("")}${r.a&&!r.tk?`<span class="tag alt">${fmtA(r.a)}</span>`:""}${techos.map(t=>`<span class="tag">Techo de ${esc(t.techo)}</span>`).join("")}</div>
   ${r.ds?`<p class="desc">${esc(r.ds.replace(/\s*📝.*$/,""))}</p>`:""}
   ${(r.km||r.de||r.tm||r.dif||r.dl)?`<div class="ficha">${r.km?`<div><b>${fmtKm(r.km)}</b><span>Distancia</span></div>`:""}${r.de?`<div><b>+${r.de.toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${r.tm?`<div><b>${esc(r.tm)}</b><span>Duración</span></div>`:""}${r.dl?`<div><b>${DIFN[r.dl]}</b><span>Dificultad</span></div>`:r.dif?`<div><b>${esc(r.dif)}</b><span>Dificultad</span></div>`:""}</div>`:""}
@@ -780,7 +781,7 @@ function ovCloseAll(){if(!OVS.length)return;ovAll=true;try{history.go(-OVS.lengt
 addEventListener("popstate",()=>{if(!OVS.length)return;if(ovAll){OVS=[];ovAll=false}else OVS.pop();ovDraw()});
 function ovDraw(){const st=OVS[OVS.length-1];if(!st){ov.hidden=true;ov.innerHTML="";return}
   let h="";
-  if(st.t==="route"){const r=R[st.id];h=routeBody(r)+`<div class="actions"><button class="btn ghost" data-ovmap="${r.id}">🗺 Ver en el mapa</button></div>`}
+  if(st.t==="route"){const r=R[st.id];h=routeBody(r)+`<div class="actions"><button class="btn ghost" data-share="${r.id}">↗ Compartir esta ruta</button></div>`}
   else if(st.t==="pt"){const p=P[st.i],rs=(p.rs||[]).filter(ri=>R[ri].u).map(ri=>R[ri]).sort(byDate);h=`<h2 class="ovh">${esc(p.c)}</h2>${p.a?`<div class="meta"><span class="tag alt">${fmtA(p.a)}</span></div>`:""}<p class="note">Está en ${rs.length} rutas. Elige cuál ver:</p><div class="rows">${rs.map(r=>rowHTML(r)).join("")}</div>`}
   else if(st.t==="search"){h=`<h2 class="ovh">Rutas cerca de…</h2><label class="note" for="qpl2" style="display:block;margin:4px 0 8px">Escribe un pueblo, una villa o una cumbre:</label>
     <input class="search" id="qpl2" type="search" placeholder="Por ejemplo: Felechosa, Taranes, Tuiza, Ubiña…" autocomplete="off"><div class="rows" id="sugg2" style="margin-top:6px"></div>
