@@ -167,7 +167,7 @@ function pintaMP(){const l=box.querySelector("#mplist");if(!l)return;const q=nkP
   l.innerHTML=names.map(n=>{const all=fs[n],ps=all.filter(x=>x.lat!=null).sort((a,b)=>(a.f||"").localeCompare(b.f||"")),ts=all.filter(x=>x.lat==null),op=OPENF.has(n);
     const cnt=[ps.length?ps.length+" punto"+(ps.length===1?"":"s"):"",ts.length?ts.length+" track"+(ts.length===1?"":"s"):""].filter(Boolean).join(" · ");
     return`<div class="mpfold${op?" open":""}" data-mpf="${esc(n)}"><span class="e">📁</span><span><b>${esc(n)}</b><small>${cnt}${mx(all)?" · "+fmtF(mx(all)):""}</small></span><span class="chev">›</span></div>`+
-    (op?`<div class="mpfacts" data-fn="${esc(n)}"><button class="mpb" data-mpfa="ver">🗺 Ver en el mapa</button><button class="mpb pri" data-mpfa="share">📤 Compartir</button><button class="mpb" data-mpfa="gpx">⬇️ GPX</button><button class="mpb" data-mpfa="ren">✏️ Nombre</button><button class="mpb" data-mpfa="undo">📂 Deshacer carpeta</button></div>`+ts.map(rowT).join("")+ps.map(p=>rowP(p,1)).join(""):"")}).join("")+
+    (op?`<div class="mpfacts" data-fn="${esc(n)}"><button class="mpb" data-mpfa="ver">🗺 Ver en el mapa</button><button class="mpb pri" data-mpfa="share">📤 Compartir</button><button class="mpb" data-mpfa="gpx">⬇️ GPX</button><button class="mpb" data-mpfa="ren">✏️ Nombre</button><button class="mpb" data-mpfa="undo">📂 Deshacer carpeta</button><button class="mpb" data-mpfa="prop" style="border-color:#d9480f;color:#d9480f;font-weight:700">👥 Proponer al grupo</button></div>`+ts.map(rowT).join("")+ps.map(p=>rowP(p,1)).join(""):"")}).join("")+
     (names.length&&sueltos.length?`<p class="mpsep">Sin carpeta</p>`:"")+sueltos.map(p=>rowP(p,0)).join("")}
 box.addEventListener("click",e=>{
   const re=e.target.closest("[data-mpred]");if(re){const p=MP.find(x=>x.id===re.dataset.mpred);if(p){showView("mapa");map.setView([p.lat,p.lon],Math.max(map.getZoom(),15),{animate:false});MPSEL=p.id;drawMP();form(p,false)}return}
@@ -284,7 +284,13 @@ function carpetaAccion(n,a){const ps=enCarpeta(n),ts=tracksCarpeta(n);if(!ps.len
   const guardaT=()=>{if(ts.length){saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render()}};
   if(a==="ren"){const nn=(prompt("Nuevo nombre de la carpeta",n)||"").trim().slice(0,60);if(!nn||nn===n)return;for(const p of MP)if(p.c===n)p.c=nn;for(const t of ts)t.c=nn;OPENF.delete(n);OPENF.add(nn);saveMP();guardaT();renderBox();return}
   if(a==="undo"){if(!confirm(`¿Deshacer la carpeta «${n}»? No se borra nada: los puntos y tracks quedan sueltos.`))return;for(const p of MP)if(p.c===n)delete p.c;for(const t of ts)delete t.c;OPENF.delete(n);saveMP();guardaT();renderBox();return}
-  if(a==="share")compartirCarpeta(n,ps,ts)}
+  if(a==="share")compartirCarpeta(n,ps,ts);
+  if(a==="prop"){if(window.SEGUIDORES&&SEGUIDORES.proponerCarpeta)SEGUIDORES.proponerCarpeta(n,ps,ts)}}
+// guardar una carpeta que viene de otro (enlace o Seguidores)
+function guardarCarpeta(n0,ps,ts,nota){let n=n0||"Compartido";if(MP.some(p=>p.c===n)||MT.some(t=>t.c===n))n=n+" (compartido)";const have=new Set(MP.map(p=>p.lat.toFixed(4)+","+p.lon.toFixed(4)+"|"+p.n));let k=0;
+  for(const p of ps||[]){const h=(+p.lat).toFixed(4)+","+(+p.lon).toFixed(4)+"|"+p.n;if(have.has(h))continue;MP.push({id:nid(),n:p.n||"Punto",ic:p.ic||"otro",nota:[p.nota,nota].filter(Boolean).join("\n"),lat:c5(+p.lat),lon:c5(+p.lon),a:p.a!=null?p.a:undefined,c:n,f:new Date().toISOString()});k++}
+  for(const t of ts||[]){if(!t.pts||t.pts.length<2||MT.some(x=>x.n===t.n&&x.pts&&x.pts.length&&Math.abs(x.pts[0][0]-t.pts[0][0])<1e-4))continue;const o={id:nid(),n:t.n||"Track",km:t.km,pts:t.pts,src:"gpx",c:n,f:new Date().toISOString()};desn(o);MT.push(o);k++;if(t.pts.some(x=>x[2]==null))setTimeout(()=>demAlt(o.id),500)}
+  saveMP();if((ts||[]).length){saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render()}OPENF.add(n);LAY.mp=true;LAY.mt=true;saveLay();drawMP();renderBox();return k}
 // compartir: enlace corto (la carpeta se guarda en la nube) y, además, el archivo GPX
 const r5=v=>Math.round(v*1e5)/1e5;
 async function compartirCarpeta(n,ps,ts){ts=ts||[];const u=window.LDCFB&&LDCFB.user();let url=null;
@@ -351,7 +357,7 @@ sheet.addEventListener("click",e=>{if(sheet._ct==null)return;const t=MT.find(x=>
   const go=()=>{if(out)delete t.c;else t.c=n;saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();renderBox();sheet._ct=null;toast(out?"Sacado de la carpeta":`Metido en 📁 «${n}»`);if(window.MISTRACKS)MISTRACKS.open(t.id,false)};
   if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go()});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-mtcar]");if(b)carpetaTrack(b.dataset.mtcar)});
-window.MISPUNTOS={get:()=>MP,verCompartidos,carpetaTrack,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
+window.MISPUNTOS={get:()=>MP,verCompartidos,carpetaTrack,guardarCarpeta,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
   addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),ptsOf,desn,demAlt,dl,
   saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
   importText(txt,n,prev){try{imp(String(txt),n||"track.gpx",prev)}catch(e){toast("No he podido leer ese archivo (solo GPX o KML)")}},
