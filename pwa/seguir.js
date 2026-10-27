@@ -85,7 +85,12 @@ function fix(pos){if(!F)return;const c=pos.coords,la=c.latitude,lo=c.longitude,a
   Q("[data-fup]").textContent="+"+fm(T.up[T.up.length-1]-at(T.up,i,t));Q("[data-fdn]").textContent="−"+fm(T.dn[T.dn.length-1]-at(T.dn,i,t));
   Q("[data-fbar]").style.width=(T.tot?s/T.tot*100:0).toFixed(1)+"%";
   const dl=[];for(let k=0;k<=i;k++)dl.push([T.ln[k][0],T.ln[k][1]]);const lp=T.ln[i+1]?[T.ln[i][0]+(T.ln[i+1][0]-T.ln[i][0])*t,T.ln[i][1]+(T.ln[i+1][1]-T.ln[i][1])*t]:null;if(lp&&F.on)dl.push(lp);F.done.setLatLngs(F.on?dl:[]);
-  const alt=c.altitude!=null&&acc<60?` · ${fm(c.altitude)}`:(T.ln[i][2]!=null?` · ${fm(T.ln[i][2])}`:"");
+  // altura: en la ruta, la del track en ese punto; fuera, la del GPS corregida. El GPS de Android da la altura sobre el elipsoide
+  // (unos 50 m más que sobre el mar en España): se corrige con lo aprendido al ir por la ruta, o con 50 m de partida
+  const ta=T.ln[i][2]!=null?(T.ln[i+1]&&T.ln[i+1][2]!=null?T.ln[i][2]+(T.ln[i+1][2]-T.ln[i][2])*t:T.ln[i][2]):null;
+  if(ta!=null&&c.altitude!=null&&acc<30&&p.d<=thr){const d=c.altitude-ta;F.dz=F.dz==null?d:F.dz*.9+d*.1;F.nz=(F.nz||0)+1}
+  const corr=F.nz>=5?F.dz:(/iPhone|iPad|Macintosh/.test(navigator.userAgent)?0:50);
+  const alt=p.d<=thr&&ta!=null?` · ${fm(ta)}`:(c.altitude!=null&&acc<60?` · ${fm(c.altitude-corr)}`:(ta!=null?` · ${fm(ta)}`:""));
   if(p.d<=thr){
     if(!F.on){F.on=true;if(F.fixes>1)vib(120)}
     if(F.off){F.off=0;vib(120);toast("De nuevo en la ruta")}
