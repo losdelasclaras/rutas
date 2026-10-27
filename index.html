@@ -1069,7 +1069,7 @@ function pintaMP(){const l=box.querySelector("#mplist");if(!l)return;const q=nkP
   l.innerHTML=names.map(n=>{const all=fs[n],ps=all.filter(x=>x.lat!=null).sort((a,b)=>(a.f||"").localeCompare(b.f||"")),ts=all.filter(x=>x.lat==null),op=OPENF.has(n);
     const cnt=[ps.length?ps.length+" punto"+(ps.length===1?"":"s"):"",ts.length?ts.length+" track"+(ts.length===1?"":"s"):""].filter(Boolean).join(" · ");
     return`<div class="mpfold${op?" open":""}" data-mpf="${esc(n)}"><span class="e">📁</span><span><b>${esc(n)}</b><small>${cnt}${mx(all)?" · "+fmtF(mx(all)):""}</small></span><span class="chev">›</span></div>`+
-    (op?`<div class="mpfacts" data-fn="${esc(n)}"><button class="mpb" data-mpfa="ver">🗺 Ver en el mapa</button><button class="mpb pri" data-mpfa="share">📤 Compartir</button><button class="mpb" data-mpfa="gpx">⬇️ GPX</button><button class="mpb" data-mpfa="ren">✏️ Nombre</button><button class="mpb" data-mpfa="undo">📂 Deshacer carpeta</button></div>`+ts.map(rowT).join("")+ps.map(p=>rowP(p,1)).join(""):"")}).join("")+
+    (op?`<div class="mpfacts" data-fn="${esc(n)}"><button class="mpb" data-mpfa="ver">🗺 Ver en el mapa</button><button class="mpb pri" data-mpfa="share">📤 Compartir</button><button class="mpb" data-mpfa="gpx">⬇️ GPX</button><button class="mpb" data-mpfa="ren">✏️ Nombre</button><button class="mpb" data-mpfa="undo">📂 Deshacer carpeta</button><button class="mpb" data-mpfa="prop" style="border-color:#d9480f;color:#d9480f;font-weight:700">👥 Proponer al grupo</button></div>`+ts.map(rowT).join("")+ps.map(p=>rowP(p,1)).join(""):"")}).join("")+
     (names.length&&sueltos.length?`<p class="mpsep">Sin carpeta</p>`:"")+sueltos.map(p=>rowP(p,0)).join("")}
 box.addEventListener("click",e=>{
   const re=e.target.closest("[data-mpred]");if(re){const p=MP.find(x=>x.id===re.dataset.mpred);if(p){showView("mapa");map.setView([p.lat,p.lon],Math.max(map.getZoom(),15),{animate:false});MPSEL=p.id;drawMP();form(p,false)}return}
@@ -1186,7 +1186,13 @@ function carpetaAccion(n,a){const ps=enCarpeta(n),ts=tracksCarpeta(n);if(!ps.len
   const guardaT=()=>{if(ts.length){saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render()}};
   if(a==="ren"){const nn=(prompt("Nuevo nombre de la carpeta",n)||"").trim().slice(0,60);if(!nn||nn===n)return;for(const p of MP)if(p.c===n)p.c=nn;for(const t of ts)t.c=nn;OPENF.delete(n);OPENF.add(nn);saveMP();guardaT();renderBox();return}
   if(a==="undo"){if(!confirm(`¿Deshacer la carpeta «${n}»? No se borra nada: los puntos y tracks quedan sueltos.`))return;for(const p of MP)if(p.c===n)delete p.c;for(const t of ts)delete t.c;OPENF.delete(n);saveMP();guardaT();renderBox();return}
-  if(a==="share")compartirCarpeta(n,ps,ts)}
+  if(a==="share")compartirCarpeta(n,ps,ts);
+  if(a==="prop"){if(window.SEGUIDORES&&SEGUIDORES.proponerCarpeta)SEGUIDORES.proponerCarpeta(n,ps,ts)}}
+// guardar una carpeta que viene de otro (enlace o Seguidores)
+function guardarCarpeta(n0,ps,ts,nota){let n=n0||"Compartido";if(MP.some(p=>p.c===n)||MT.some(t=>t.c===n))n=n+" (compartido)";const have=new Set(MP.map(p=>p.lat.toFixed(4)+","+p.lon.toFixed(4)+"|"+p.n));let k=0;
+  for(const p of ps||[]){const h=(+p.lat).toFixed(4)+","+(+p.lon).toFixed(4)+"|"+p.n;if(have.has(h))continue;MP.push({id:nid(),n:p.n||"Punto",ic:p.ic||"otro",nota:[p.nota,nota].filter(Boolean).join("\n"),lat:c5(+p.lat),lon:c5(+p.lon),a:p.a!=null?p.a:undefined,c:n,f:new Date().toISOString()});k++}
+  for(const t of ts||[]){if(!t.pts||t.pts.length<2||MT.some(x=>x.n===t.n&&x.pts&&x.pts.length&&Math.abs(x.pts[0][0]-t.pts[0][0])<1e-4))continue;const o={id:nid(),n:t.n||"Track",km:t.km,pts:t.pts,src:"gpx",c:n,f:new Date().toISOString()};desn(o);MT.push(o);k++;if(t.pts.some(x=>x[2]==null))setTimeout(()=>demAlt(o.id),500)}
+  saveMP();if((ts||[]).length){saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render()}OPENF.add(n);LAY.mp=true;LAY.mt=true;saveLay();drawMP();renderBox();return k}
 // compartir: enlace corto (la carpeta se guarda en la nube) y, además, el archivo GPX
 const r5=v=>Math.round(v*1e5)/1e5;
 async function compartirCarpeta(n,ps,ts){ts=ts||[];const u=window.LDCFB&&LDCFB.user();let url=null;
@@ -1253,7 +1259,7 @@ sheet.addEventListener("click",e=>{if(sheet._ct==null)return;const t=MT.find(x=>
   const go=()=>{if(out)delete t.c;else t.c=n;saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();renderBox();sheet._ct=null;toast(out?"Sacado de la carpeta":`Metido en 📁 «${n}»`);if(window.MISTRACKS)MISTRACKS.open(t.id,false)};
   if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go()});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-mtcar]");if(b)carpetaTrack(b.dataset.mtcar)});
-window.MISPUNTOS={get:()=>MP,verCompartidos,carpetaTrack,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
+window.MISPUNTOS={get:()=>MP,verCompartidos,carpetaTrack,guardarCarpeta,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
   addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),ptsOf,desn,demAlt,dl,
   saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
   importText(txt,n,prev){try{imp(String(txt),n||"track.gpx",prev)}catch(e){toast("No he podido leer ese archivo (solo GPX o KML)")}},
@@ -2048,10 +2054,11 @@ const kmT=k=>k?(Math.round(k*10)/10).toLocaleString("es-ES")+" km":"";
 function linkIco(u){const h=(u.match(/^https?:\/\/([^/]+)/i)||[,""])[1].toLowerCase();
   return /photos\.google|photos\.app|flickr|500px|imgur|icloud/.test(h)?["📷","Ver fotos"]:/wikiloc/.test(h)?["🧭","Wikiloc"]:/youtu|vimeo/.test(h)?["🎬","Ver vídeo"]:
     /instagram/.test(h)?["📸","Instagram"]:/facebook/.test(h)?["👍","Facebook"]:/blogspot|wordpress|blog/.test(h)?["📝","Leer la crónica"]:["🔗",h.replace(/^www\./,"")||"Enlace"]}
-const emo=x=>x.tipo==="track"?"🧵":(MPI.emo?MPI.emo((x.dd||{}).ic):"📍");
+const emo=x=>x.tipo==="carpeta"?"📁":x.tipo==="track"?"🧵":(MPI.emo?MPI.emo((x.dd||{}).ic):"📍");
+const cuentaC=d=>{const a=(d.ps||[]).length,b=(d.ts||[]).length;return" · "+[a?a+" punto"+(a===1?"":"s"):"",b?b+" track"+(b===1?"":"s"):""].filter(Boolean).join(" y ")};
 function fila(x,modo){const d=x.dd||{};
   return`<div class="segrow" data-seg="${esc(x.id)}" data-modo="${modo}"><span class="e">${emo(x)}</span><span class="b"><b>${esc(x.n)}</b>
-  <small>${x.tipo==="track"?"Track":"Punto"}${d.km?" · "+kmT(d.km):""}${d.up?" · +"+d.up.toLocaleString("es-ES")+" m":""}${d.a?" · "+d.a.toLocaleString("es-ES")+" m":""} · ${esc(x.quien||"")} · ${fecha(x.tp||x.t)}</small>
+  <small>${x.tipo==="carpeta"?"Carpeta"+cuentaC(d):x.tipo==="track"?"Track":"Punto"}${d.km?" · "+kmT(d.km):""}${d.up?" · +"+d.up.toLocaleString("es-ES")+" m":""}${d.a?" · "+d.a.toLocaleString("es-ES")+" m":""} · ${esc(x.quien||"")} · ${fecha(x.tp||x.t)}</small>
   ${x.com?`<span class="c">${esc(x.com)}</span>`:""}
   ${modo==="rev"?`<span class="segacts"><button class="mpb segok" data-segok="${esc(x.id)}">✓ Publicar</button><button class="mpb segno" data-segno="${esc(x.id)}">✕ Rechazar</button></span>`:""}</span></div>`}
 
@@ -2094,18 +2101,25 @@ function ver(x,modo){const d=x.dd||{};if(typeof showView==="function")showView("
   let q=null;
   if(x.tipo==="track"&&d.pts&&d.pts.length>1){TMP=L.layerGroup([L.polyline(d.pts,{color:"#fff",weight:8,opacity:.9}),L.polyline(d.pts,{color:"#d9480f",weight:5,opacity:.95})]).addTo(map);
     map.fitBounds(L.latLngBounds(d.pts),pad);q=d.pts.reduce((b,p)=>p[2]!=null&&(b[2]==null||p[2]>b[2])?p:b,d.pts[0])}
+  else if(x.tipo==="carpeta"){const ts=(d.ts||[]).filter(t=>t.pts&&t.pts.length>1),ps=d.ps||[];
+    TMP=L.layerGroup([...ts.flatMap(t=>[L.polyline(t.pts,{color:"#fff",weight:8,opacity:.9}),L.polyline(t.pts,{color:"#d9480f",weight:5,opacity:.95})]),
+      ...ps.map(p=>L.marker([p.lat,p.lon],{icon:L.divIcon({className:"",html:`<div class="segmk">${MPI.emo?MPI.emo(p.ic):"📍"}</div>`,iconSize:[30,30],iconAnchor:[15,15]}),pane:"segp"}).bindTooltip(esc(p.n)))]).addTo(map);
+    const ll=[...ps.map(p=>[p.lat,p.lon]),...ts.flatMap(t=>t.pts.map(q=>[q[0],q[1]]))];if(ll.length===1)map.setView(ll[0],15);else if(ll.length)map.fitBounds(L.latLngBounds(ll),pad);
+    const all=[...ps.map(p=>[p.lat,p.lon,p.a]),...ts.flatMap(t=>t.pts)];q=all.reduce((b,p)=>p[2]!=null&&(b[2]==null||p[2]>b[2])?p:b,all[0])}
   else if(d.lat!=null){TMP=L.layerGroup([L.circleMarker([d.lat,d.lon],{radius:11,color:"#fff",weight:3,fillColor:"#d9480f",fillOpacity:1})]).addTo(map);
     map.setView([d.lat,d.lon],Math.max(map.getZoom(),14));q=[d.lat,d.lon,d.a]}
   const links=(x.links||[]).filter(u=>/^https?:\/\//i.test(u));
   const yo=window.LDCFB&&LDCFB.user();
   MPI.show(`<div class="sheet-head"><h2>${emo(x)} ${esc(x.n)}</h2><button class="x" aria-label="Cerrar" data-close data-segx>×</button></div>
   ${modo==="rev"?`<div class="topacts"><button class="btn primary segok" data-segok="${esc(x.id)}">✓ Publicar</button><button class="btn ghost segno" data-segno="${esc(x.id)}">✕ Rechazar</button></div>`:
+    x.tipo==="carpeta"?`<div class="topacts">${(d.ts||[]).length===1?`<button class="btn primary" data-segfol>▶ Seguir</button>`:""}<button class="btn ${(d.ts||[]).length===1?"ghost":"primary"}" data-segsave>☆ Guardar</button></div>`:
     x.tipo==="track"?`<div class="topacts"><button class="btn primary" data-segfol>▶ Seguir</button><button class="btn ghost" data-segsave>☆ Guardar</button></div>`:
     `<div class="topacts"><a class="btn primary" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lon}">🚗 Cómo llegar</a><button class="btn ghost" data-segsave>☆ Guardar</button></div>`}
   <div class="meta"><span class="tag">👥 ${esc(x.quien||"Seguidor")}</span>${d.km?`<span class="tag">${kmT(d.km)}</span>`:""}${d.up?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}${d.a?`<span class="tag alt">${d.a.toLocaleString("es-ES")} m</span>`:""}<span class="tag">${modo==="rev"||modo==="mia"?"Enviado":"Publicado"} el ${fecha(x.tp||x.t)}</span></div>
   ${modo==="rev"&&x.email?`<p class="note">Lo manda ${esc(x.email)}</p>`:""}
   ${modo==="mia"?`<p class="note">⏳ Pendiente de revisar. Cuando se publique aparecerá en Seguidores.</p>`:""}
   ${x.com?`<p class="desc" style="white-space:pre-wrap">${esc(x.com)}</p>`:""}
+  ${x.tipo==="carpeta"?`<div style="margin:8px 0">${(d.ts||[]).map(t=>`<div class="segrow" style="cursor:default"><span class="e">🧵</span><span class="b"><b>${esc(t.n)}</b><small>Track${t.km?" · "+kmT(t.km):""}${t.up?" · +"+t.up.toLocaleString("es-ES")+" m":""}</small></span></div>`).join("")}${(d.ps||[]).map(p=>`<div class="segrow" style="cursor:default"><span class="e">${MPI.emo?MPI.emo(p.ic):"📍"}</span><span class="b"><b>${esc(p.n)}</b><small>${p.a?p.a.toLocaleString("es-ES")+" m":""}${p.nota?" · "+esc(p.nota):""}</small></span></div>`).join("")}</div>`:""}
   ${links.length?`<div class="seglinks">${links.map(u=>{const[i,t]=linkIco(u);return`<a class="mpb" target="_blank" rel="noopener nofollow" href="${esc(u)}">${i} ${esc(t)}</a>`}).join("")}</div>`:""}
   ${(modo==="pub"&&(esAdm()||(yo&&yo.uid===x.uid)))||modo==="mia"?`<div class="mpacts"><button class="mpb dan" data-segdel="${esc(x.id)}" data-modo="${modo}">🗑 ${modo==="mia"?"Retirar mi propuesta":"Quitar de Seguidores"}</button></div>`:""}
   ${q?`<h3 style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px">El tiempo</h3><div class="wx" data-lat="${q[0]}" data-lon="${q[1]}" data-alt="${q[2]!=null?Math.round(q[2]):""}"></div>`:""}`);
@@ -2132,8 +2146,9 @@ document.addEventListener("click",e=>{let b;
 sheet.addEventListener("click",e=>{const x=sheet._seg;
   if(e.target.closest("[data-segx]"))quitaTmp();
   if(!x)return;const d=x.dd||{};
-  if(e.target.closest("[data-segfol]")){quitaTmp();SEGUIR.start({u:"tmp",ti:x.n,gx:{ln:d.pts,km:d.km}},false);return}
+  if(e.target.closest("[data-segfol]")){quitaTmp();const t=x.tipo==="carpeta"?(d.ts||[])[0]:d;if(t)SEGUIR.start({u:"tmp",ti:x.tipo==="carpeta"?t.n:x.n,gx:{ln:t.pts,km:t.km}},false);return}
   if(e.target.closest("[data-segsave]")){const go=()=>{const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6),nota=[x.com,"Compartido por "+(x.quien||"un seguidor"),...(x.links||[])].filter(Boolean).join("\n");
+      if(x.tipo==="carpeta"){const k=MPI.guardarCarpeta(x.n,d.ps||[],d.ts||[],nota);toast(k?`Guardado en la carpeta «${x.n}» (Mis cosas › Puntos)`:"Ya tenías todo eso");quitaTmp();sheet.hidden=true;return}
       if(x.tipo==="track"){const o={id,n:x.n,km:d.km,pts:d.pts,src:"gpx",f:new Date().toISOString()};MPI.desn(o);MPI.saveTracks([...MPI.tracks(),o]);toast("Guardado en Mis cosas › Tracks")}
       else{MPI.addPoint({id,n:x.n,lat:d.lat,lon:d.lon,a:d.a,ic:d.ic||"otro",nota,f:new Date().toISOString()});toast("Guardado en Mis cosas › Puntos")}};
     if(window.cuentaOk&&!cuentaOk(go,x.tipo==="track"?"tracks":"puntos"))return;go()}});
@@ -2153,17 +2168,22 @@ new MutationObserver(()=>{if(sheet.hidden||sheet.querySelector("[data-segprop]")
   acts.insertAdjacentHTML("afterbegin",`<button class="mpb" data-segprop style="border-color:#d9480f;color:#d9480f;font-weight:700">👥 Proponer al grupo</button>`)}).observe(sheet,{childList:true});
 let PROP=null;
 sheet.addEventListener("click",e=>{
-  if(e.target.closest("[data-segprop]")){const it=deMio();if(!it)return;
+  if(e.target.closest("[data-segprop]")){const it=deMio();if(!it)return;proponer(it);return}
+  if(e.target.closest("[data-segsend]")&&PROP){enviar(e.target.closest("[data-segsend]"))}});
+function proponer(it){
     const go=()=>{PROP=it;const u=LDCFB.user()||{};
       MPI.show(`<div class="sheet-head"><h2>👥 Proponer al grupo</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
-      <p>${it.tipo==="track"?"🧵 Track":"📍 Punto"} <b>${esc(it.n)}</b>${it.dd.km?" · "+kmT(it.dd.km):""}</p>
+      <p>${it.tipo==="carpeta"?"📁 Carpeta":it.tipo==="track"?"🧵 Track":"📍 Punto"} <b>${esc(it.n)}</b>${it.tipo==="carpeta"?cuentaC(it.dd):""}${it.dd.km?" · "+kmT(it.dd.km):""}</p>
       <p class="note">Lo revisa Los de las Claras y, si encaja, se publica en la pestaña <b>Seguidores</b> para todo el mundo. Tu correo no se publica.</p>
       <div class="segform"><label>Nombre con el que aparecerás</label><input data-segq maxlength="40" value="${esc((u.displayName||"").trim())}">
-      <label>Cuéntanos algo</label><textarea data-segc maxlength="1500" placeholder="${it.tipo==="track"?"Cuándo la hiciste, estado del camino, por dónde va…":"Qué hay aquí: fuente, paso, mirador…"}">${esc(it.com)}</textarea>
+      <label>Cuéntanos algo</label><textarea data-segc maxlength="1500" placeholder="${it.tipo!=="punto"?"Cuándo la hiciste, estado del camino, por dónde va…":"Qué hay aquí: fuente, paso, mirador…"}">${esc(it.com)}</textarea>
       <label>Enlaces (opcional)</label><textarea data-segl style="min-height:60px" placeholder="Tu blog, álbum de fotos, Wikiloc, YouTube… uno por línea"></textarea></div>
       <div class="mpacts"><button class="mpb pri" data-segsend>📨 Enviar propuesta</button><button class="mpb" data-close>Cancelar</button></div>`)};
-    if(window.cuentaOk&&!cuentaOk(go,"proponer"))return;go();return}
-  if(e.target.closest("[data-segsend]")&&PROP){enviar(e.target.closest("[data-segsend]"))}});
+    if(window.cuentaOk&&!cuentaOk(go,"proponer"))return;go()}
+function proponerCarpeta(n,ps,ts){const pts=q=>{const st=Math.max(1,Math.ceil(q.length/1500));return q.filter((_,i)=>i%st===0||i===q.length-1).map(p=>p[2]!=null?[r1(p[0]),r1(p[1]),Math.round(p[2])]:[r1(p[0]),r1(p[1])])};
+  const dd={ps:ps.map(p=>({n:p.n,lat:r1(p.lat),lon:r1(p.lon),a:p.a!=null?Math.round(p.a):null,ic:p.ic||"otro",nota:p.nota||""})),
+    ts:ts.map(t=>{const q=MPI.ptsOf(t)||[];return q.length>1?{n:t.n,km:t.km||null,up:t.up!=null?t.up:null,pts:pts(q)}:null}).filter(Boolean)};
+  if(typeof showView==="function")showView("mapa");proponer({tipo:"carpeta",n,com:"",dd})}
 async function enviar(b){const u=LDCFB.user();if(!u){toast("Entra con tu cuenta de Google");return}
   const quien=(sheet.querySelector("[data-segq]").value||"").trim().slice(0,40)||"Un seguidor",com=(sheet.querySelector("[data-segc]").value||"").trim().slice(0,1500);
   const links=(sheet.querySelector("[data-segl]").value||"").split(/\s+/).map(s=>s.trim()).filter(s=>/^https?:\/\/\S+\.\S+/i.test(s)).slice(0,5).map(s=>s.slice(0,300));
@@ -2187,6 +2207,10 @@ function dibuja(){const on=LAY.seg&&!LAY.solo&&!window.FOLONLY&&PUB.length;
         L.polyline(d.pts,{color:"#d9480f",weight:4,opacity:.95,dashArray:"8 6",interactive:false}).addTo(GRP);
         L.polyline(d.pts,{color:"#000",weight:18,opacity:0}).on("click",abre).bindTooltip("👥 "+x.n,{sticky:true}).addTo(GRP);
         L.marker(d.pts[0],{icon:L.divIcon({className:"",html:'<div class="segmk">🧵</div>',iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:400,pane:"segp"}).on("click",abre).bindTooltip("👥 "+x.n).addTo(GRP)}
+      else if(x.tipo==="carpeta"){for(const t of d.ts||[]){if(!t.pts||t.pts.length<2)continue;
+          L.polyline(t.pts,{color:"#fff",weight:7,opacity:.85,interactive:false}).addTo(GRP);L.polyline(t.pts,{color:"#d9480f",weight:4,opacity:.95,dashArray:"8 6",interactive:false}).addTo(GRP);
+          L.polyline(t.pts,{color:"#000",weight:18,opacity:0}).on("click",abre).bindTooltip("👥 "+x.n,{sticky:true}).addTo(GRP)}
+        for(const p of d.ps||[])L.marker([p.lat,p.lon],{icon:L.divIcon({className:"",html:`<div class="segmk">${MPI.emo?MPI.emo(p.ic):"📍"}</div>`,iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:400,pane:"segp"}).on("click",abre).bindTooltip("👥 "+esc(p.n)+" · "+esc(x.n)).addTo(GRP)}
       else if(d.lat!=null){L.marker([d.lat,d.lon],{icon:L.divIcon({className:"",html:`<div class="segmk">${emo(x)}</div>`,iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:400,pane:"segp"}).on("click",abre).bindTooltip("👥 "+x.n).addTo(GRP)}}}
   if(!map.hasLayer(GRP))GRP.addTo(map)}
 const lp=document.querySelector(".laypanel"),solo=lp&&lp.querySelector('[data-lay="solo"]');
@@ -2195,7 +2219,7 @@ document.querySelector(".legend").addEventListener("click",e=>{if(e.target.close
 new MutationObserver(dibuja).observe(document.getElementById("map"),{attributes:true,attributeFilter:["class"]});
 dibuja();
 setTimeout(()=>{if(navigator.onLine)cargarPub()},4000);   // al abrir la app, lo último publicado
-window.SEGUIDORES={recargar:()=>{cargarPub();cargarRev()}};
+window.SEGUIDORES={proponerCarpeta,recargar:()=>{cargarPub();cargarRev()}};
 })();
 
 }catch(e){console.error("módulo seguidores",e);(window.__ERRS=window.__ERRS||[]).push("seguidores: "+(e&&e.message))}
@@ -2547,5 +2571,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="0ee72dd959";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="6db519a91e";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
