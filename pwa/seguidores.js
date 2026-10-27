@@ -93,10 +93,10 @@ function ver(x,modo){const d=x.dd||{};if(typeof showView==="function")showView("
     map.fitBounds(L.latLngBounds(d.pts),pad);q=d.pts.reduce((b,p)=>p[2]!=null&&(b[2]==null||p[2]>b[2])?p:b,d.pts[0])}
   else if(x.tipo==="carpeta"){const ts=(d.ts||[]).filter(t=>t.pts&&t.pts.length>1),ps=d.ps||[];
     TMP=L.layerGroup([...ts.flatMap(t=>[L.polyline(t.pts,{color:"#fff",weight:8,opacity:.9}),L.polyline(t.pts,{color:"#d9480f",weight:5,opacity:.95})]),
-      ...ps.map(p=>L.marker([p.lat,p.lon],{icon:L.divIcon({className:"",html:`<div class="segmk">${MPI.emo?MPI.emo(p.ic):"📍"}</div>`,iconSize:[30,30],iconAnchor:[15,15]}),pane:"segp"}).bindTooltip(esc(p.n)))]).addTo(map);
+      ...ps.map(p=>L.marker([p.lat,p.lon],{icon:L.divIcon({className:"",html:`<div class="segmk">${MPI.emo?MPI.emo(p.ic):"📍"}</div>`,iconSize:[30,30],iconAnchor:[15,15]}),pane:"segp"}).bindTooltip(esc(p.n)+(p.a?` <span class="la">${(p.a).toLocaleString("es-ES")} m</span>`:""),{permanent:true,direction:"right",offset:[14,0],className:"lbl mpl segl",interactive:false}))]).addTo(map);
     const ll=[...ps.map(p=>[p.lat,p.lon]),...ts.flatMap(t=>t.pts.map(q=>[q[0],q[1]]))];if(ll.length===1)map.setView(ll[0],15);else if(ll.length)map.fitBounds(L.latLngBounds(ll),pad);
     const all=[...ps.map(p=>[p.lat,p.lon,p.a]),...ts.flatMap(t=>t.pts)];q=all.reduce((b,p)=>p[2]!=null&&(b[2]==null||p[2]>b[2])?p:b,all[0])}
-  else if(d.lat!=null){TMP=L.layerGroup([L.circleMarker([d.lat,d.lon],{radius:11,color:"#fff",weight:3,fillColor:"#d9480f",fillOpacity:1})]).addTo(map);
+  else if(d.lat!=null){TMP=L.layerGroup([L.circleMarker([d.lat,d.lon],{radius:11,color:"#fff",weight:3,fillColor:"#d9480f",fillOpacity:1}).bindTooltip(esc(x.n)+(d.a?` <span class="la">${(d.a).toLocaleString("es-ES")} m</span>`:""),{permanent:true,direction:"right",offset:[14,0],className:"lbl mpl segl",interactive:false})]).addTo(map);
     map.setView([d.lat,d.lon],Math.max(map.getZoom(),14));q=[d.lat,d.lon,d.a]}
   const links=(x.links||[]).filter(u=>/^https?:\/\//i.test(u));
   const yo=window.LDCFB&&LDCFB.user();
@@ -186,7 +186,7 @@ async function enviar(b){const u=LDCFB.user();if(!u){toast("Entra con tu cuenta 
   catch(e){b.disabled=false;b.textContent="📨 Enviar propuesta";toast("No se ha podido enviar: "+(e.code||e.message))}}
 /* --- en el mapa: capa «Seguidores» (naranja), se enciende y apaga en Capas --- */
 if(LAY.seg===undefined)LAY.seg=true;
-document.head.insertAdjacentHTML("beforeend",`<style>.segmk{width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid #d9480f;display:grid;place-items:center;font-size:15px;box-shadow:0 1px 4px rgba(0,0,0,.35)}.segmk svg{width:18px;height:18px}.lico.seg{background:#d9480f}</style>`);
+document.head.insertAdjacentHTML("beforeend",`<style>.segmk{width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid #d9480f;display:grid;place-items:center;font-size:15px;box-shadow:0 1px 4px rgba(0,0,0,.35)}.segmk svg{width:18px;height:18px}.lico.seg{background:#d9480f}#map .leaflet-tooltip.lbl.segl{color:#b5400b;font-weight:800}</style>`);
 function dibuja(){const on=LAY.seg&&!LAY.solo&&!window.FOLONLY&&PUB.length;
   if(!on){if(map.hasLayer(GRP))GRP.remove();return}
   const k=PUB.map(x=>x.id).join(",");
@@ -196,12 +196,12 @@ function dibuja(){const on=LAY.seg&&!LAY.solo&&!window.FOLONLY&&PUB.length;
         L.polyline(d.pts,{color:"#fff",weight:7,opacity:.85,interactive:false}).addTo(GRP);
         L.polyline(d.pts,{color:"#d9480f",weight:4,opacity:.95,dashArray:"8 6",interactive:false}).addTo(GRP);
         L.polyline(d.pts,{color:"#000",weight:18,opacity:0}).on("click",abre).bindTooltip("👥 "+x.n,{sticky:true}).addTo(GRP);
-        L.marker(d.pts[0],{icon:L.divIcon({className:"",html:'<div class="segmk">🧵</div>',iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:400,pane:"segp"}).on("click",abre).bindTooltip("👥 "+x.n).addTo(GRP)}
+        L.marker(d.pts[0],{icon:L.divIcon({className:"",html:'<div class="segmk">🧵</div>',iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:400,pane:"segp"}).on("click",abre).bindTooltip(esc(x.n),{permanent:true,direction:"right",offset:[14,0],className:"lbl mpl segl",interactive:false}).addTo(GRP)}
       else if(x.tipo==="carpeta"){for(const t of d.ts||[]){if(!t.pts||t.pts.length<2)continue;
           L.polyline(t.pts,{color:"#fff",weight:7,opacity:.85,interactive:false}).addTo(GRP);L.polyline(t.pts,{color:"#d9480f",weight:4,opacity:.95,dashArray:"8 6",interactive:false}).addTo(GRP);
           L.polyline(t.pts,{color:"#000",weight:18,opacity:0}).on("click",abre).bindTooltip("👥 "+x.n,{sticky:true}).addTo(GRP)}
-        for(const p of d.ps||[])L.marker([p.lat,p.lon],{icon:L.divIcon({className:"",html:`<div class="segmk">${MPI.emo?MPI.emo(p.ic):"📍"}</div>`,iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:400,pane:"segp"}).on("click",abre).bindTooltip("👥 "+esc(p.n)+" · "+esc(x.n)).addTo(GRP)}
-      else if(d.lat!=null){L.marker([d.lat,d.lon],{icon:L.divIcon({className:"",html:`<div class="segmk">${emo(x)}</div>`,iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:400,pane:"segp"}).on("click",abre).bindTooltip("👥 "+x.n).addTo(GRP)}}}
+        for(const p of d.ps||[])L.marker([p.lat,p.lon],{icon:L.divIcon({className:"",html:`<div class="segmk">${MPI.emo?MPI.emo(p.ic):"📍"}</div>`,iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:400,pane:"segp"}).on("click",abre).bindTooltip(esc(p.n)+(p.a?` <span class="la">${(p.a).toLocaleString("es-ES")} m</span>`:""),{permanent:true,direction:"right",offset:[14,0],className:"lbl mpl segl",interactive:false}).addTo(GRP)}
+      else if(d.lat!=null){L.marker([d.lat,d.lon],{icon:L.divIcon({className:"",html:`<div class="segmk">${emo(x)}</div>`,iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:400,pane:"segp"}).on("click",abre).bindTooltip(esc(x.n)+(d.a?` <span class="la">${(d.a).toLocaleString("es-ES")} m</span>`:""),{permanent:true,direction:"right",offset:[14,0],className:"lbl mpl segl",interactive:false}).addTo(GRP)}}}
   if(!map.hasLayer(GRP))GRP.addTo(map)}
 const lp=document.querySelector(".laypanel"),solo=lp&&lp.querySelector('[data-lay="solo"]');
 if(solo)solo.insertAdjacentHTML("beforebegin",`<button class="lay" data-lay="seg" aria-pressed="${LAY.seg}"><span class="lico seg">👥</span>Seguidores</button>`);
