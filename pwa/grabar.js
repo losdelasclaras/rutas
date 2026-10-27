@@ -55,7 +55,7 @@ function empieza(){if(G){arranca();return}
   G={t0:Date.now(),pts:[],pau:0,pz:null};guarda();arranca();toast("⏺ Grabando. Deja la app abierta y la pantalla encendida")}
 function para(){if(W!=null){navigator.geolocation.clearWatch(W);W=null}try{WL&&WL.release()}catch(e){}WL=null;clearInterval(TICK);
   if(EL){EL.remove();EL=null}vm.classList.remove("grb-on");if(LINE){LINE.remove();LINE=null}if(ME){ME.remove();ME=null}}
-function pausa(){if(!G)return;if(G.pz){G.pau+=Date.now()-G.pz;G.pz=null}else G.pz=Date.now();guarda();panel()}
+function pausa(){if(!G)return;if(G.pz){G.pau+=Date.now()-G.pz;G.pz=null;arranca()}else G.pz=Date.now();guarda();panel()}
 function termina(){if(!G)return;if(!G.pz){G.pz=Date.now();guarda()}panel();
   const d=km(),f=new Date(G.t0);
   const nom="Recorrido del "+f.toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"});
@@ -93,6 +93,6 @@ if(imp)imp.insertAdjacentHTML("afterend",`<button class="mpb" data-rec style="bo
 
 // si la app se cerró grabando, sigue
 try{G=JSON.parse(localStorage.getItem(K)||"null")}catch(e){G=null}
-if(G&&G.t0){setTimeout(()=>{arranca();toast(G.pz?"Tienes una grabación en pausa":"Seguías grabando: continúo")},900)}else G=null;
+if(G&&G.t0){if(!G.pz){G.pz=Date.now();guarda()}setTimeout(()=>{panel();dibuja();toast("Tienes una grabación a medias: pulsa ▶ Seguir para continuar")},900)}else G=null;
 window.GRABAR={empieza,termina,get:()=>G};
 })();
