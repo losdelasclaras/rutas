@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Descargar GPX · Los de las Claras</title>
+<link rel="icon" href="icons/icon-192.png">
+<style>
+:root{--ink:#1f2a24;--paper:#f4f6f2;--card:#fff;--muted:#5d6b62;--mark:#c3262e}
+@media (prefers-color-scheme:dark){:root{--ink:#eef2ee;--paper:#151b17;--card:#1f2a24;--muted:#a9b6ad}}
+body{margin:0;background:var(--paper);color:var(--ink);font:18px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:520px;margin:0 auto;padding:28px 18px 40px;text-align:center}
+img{width:96px;height:96px;border-radius:20px}
+h1{font-size:24px;margin:14px 0 4px}
+p{color:var(--muted);margin:8px 0}
+.btn{display:inline-block;background:var(--mark);color:#fff;font-weight:800;font-size:20px;padding:15px 26px;border-radius:14px;text-decoration:none;margin:18px 0 8px;border:0;cursor:pointer}
+.btn2{display:inline-block;color:var(--ink);border:1px solid #c9d1cb;border-radius:12px;padding:11px 18px;text-decoration:none;font-weight:700;margin-top:6px}
+.err{color:var(--mark);font-weight:700}
+</style></head><body><main>
+<img src="icons/icon-192.png" alt="">
+<h1 id="t">Preparando el GPX…</h1>
+<p id="s"></p>
+<div id="b"></div>
+<p style="margin-top:22px;font-size:15px">El archivo se abre con Wikiloc, OruxMaps, Google Earth o con nuestra app.</p>
+<a class="btn2" id="app" href="./">⛰️ Verlo en la app de Los de las Claras</a>
+</main>
+<script type="module">
+const $=id=>document.getElementById(id);
+const x=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"}[c]));
+function dec(s){const out=[];let i=0,la=0,lo=0;const d=()=>{let r=0,sh=0,b;do{b=s.charCodeAt(i++)-63;r|=(b&0x1f)<<sh;sh+=5}while(b>=0x20&&i<=s.length);return r&1?~(r>>1):r>>1};while(i<s.length){la+=d();lo+=d();out.push([la/1e5,lo/1e5])}return out}
+const ICO={otro:"Punto",fuente:"Fuente",parking:"Aparcamiento",refugio:"Refugio",cabana:"Cabaña",cumbre:"Cumbre",collado:"Collado / paso",vista:"Mirador",foto:"Foto",peligro:"Peligro",agua:"Baño / poza"};
+function gpx(n,ps,ts){return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${x(n)}</name></metadata>\n`+
+  ps.map(p=>`<wpt lat="${p.lat}" lon="${p.lon}">${p.a!=null?`<ele>${p.a}</ele>`:""}<name>${x(p.n)}</name>${p.nota?`<desc>${x(p.nota)}</desc>`:""}<type>${x(ICO[p.ic]||"Punto")}</type></wpt>`).join("\n")+
+  ts.map(t=>`\n<trk><name>${x(t.n)}</name><trkseg>${t.pts.map(q=>`<trkpt lat="${q[0]}" lon="${q[1]}">${q[2]!=null?`<ele>${q[2]}</ele>`:""}</trkpt>`).join("")}</trkseg></trk>`).join("")+`\n</gpx>\n`}
+async function datos(){const h=location.hash;
+  $("app").href="./"+h;
+  if(h.startsWith("#f=")){const o=JSON.parse(decodeURIComponent(h.slice(3)));return{n:o.n,ps:(o.p||[]).map(q=>({n:q[0],lat:q[1],lon:q[2],ic:q[3],a:q[4]})),ts:(o.t||[]).map(q=>({n:q[0],pts:dec(q[1])}))}}
+  if(h.startsWith("#c=")){const G="https://www.gstatic.com/firebasejs/10.14.1/";
+    const [ap,fs]=await Promise.all([import(G+"firebase-app.js"),import(G+"firebase-firestore.js")]);
+    const app=ap.initializeApp({apiKey:"AIzaSyBzYlxsZhJVPJpCk0_EgxaplD7zWMOOg1I",authDomain:"losdelasclaras-rutas.firebaseapp.com",projectId:"losdelasclaras-rutas",appId:"1:115151504481:web:9338dae56b04b4d2989620"});
+    const d=await fs.getDoc(fs.doc(fs.getFirestore(app),"enlaces",h.slice(3)));if(!d.exists())throw new Error("Ese enlace ya no existe");
+    const v=d.data(),j=JSON.parse(v.d);
+    if(v.tipo==="puntos"){const o=Array.isArray(j)?{ps:j,ts:[]}:j;return{n:v.n,ps:o.ps||[],ts:o.ts||[]}}
+    return{n:v.n,ps:[],ts:[{n:v.n,pts:j}]}}
+  throw new Error("Este enlace no lleva ningún GPX")}
+try{const o=await datos(),txt=gpx(o.n||"Los de las Claras",o.ps,o.ts);
+  const nm=(o.n||"ruta").replace(/[^\w\sáéíóúñüÁÉÍÓÚÑÜ-]/g,"").trim().replace(/\s+/g,"-")+".gpx";
+  const url=URL.createObjectURL(new Blob([txt],{type:"application/gpx+xml"}));
+  $("t").textContent=o.n||"GPX";
+  $("s").textContent=[o.ps.length?o.ps.length+" punto"+(o.ps.length===1?"":"s"):"",o.ts.length?o.ts.length+" track"+(o.ts.length===1?"":"s"):""].filter(Boolean).join(" y ");
+  $("b").innerHTML=`<a class="btn" href="${url}" download="${x(nm)}">⬇️ Descargar ${x(nm)}</a>`;
+  setTimeout(()=>{try{$("b").querySelector("a").click()}catch(e){}},400);
+}catch(e){$("t").textContent="No he podido preparar el GPX";$("s").innerHTML=`<span class="err">${x(e.message||e)}</span>`}
+</script></body></html>
