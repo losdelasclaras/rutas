@@ -2195,16 +2195,52 @@ function simple(p,tol){if(p.length<3)return p;const c=Math.cos(p[0][0]*Math.PI/1
     for(let i=a+1;i<b;i++){const d=Math.abs(dy*X(p[i])-dx*Y(p[i])+bx*ay-by*ax)/l;if(d>mx){mx=d;ix=i}}if(mx>tol){keep[ix]=1;st.push([a,ix],[ix,b])}}
   return p.filter((_,i)=>keep[i])}
 const base=()=>(typeof APPURL!=="undefined"?APPURL:location.origin+location.pathname);
+/* enlace corto: el track se guarda en la nube (enlaces/{id}) y el enlace solo lleva el código: …/rutas/#c=Ab3kP9xq */
+const EK="ldc-enlaces";
+const r5=v=>Math.round(v*1e5)/1e5;
+async function corto(t){const u=window.LDCFB&&LDCFB.user();if(!u||!navigator.onLine)return null;
+  let mem={};try{mem=JSON.parse(localStorage.getItem(EK)||"{}")}catch(e){}
+  const huella=t.n+"|"+t.pts.length+"|"+t.pts[0][0]+"|"+t.pts[t.pts.length-1][1];
+  if(mem[t.id]&&mem[t.id].h===huella)return base()+"#c="+mem[t.id].c;
+  try{const a=await LDCFB.load(),fs=a.fs;
+    const st=Math.max(1,Math.ceil(t.pts.length/3000)),pts=t.pts.filter((_,i)=>i%st===0||i===t.pts.length-1).map(p=>p[2]!=null?[r5(p[0]),r5(p[1]),Math.round(p[2])]:[r5(p[0]),r5(p[1])]);
+    const A="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";let c="";const rnd=crypto.getRandomValues(new Uint8Array(8));for(const b of rnd)c+=A[b%A.length];
+    await Promise.race([fs.setDoc(fs.doc(a.db,"enlaces",c),{uid:u.uid,n:String(t.n).slice(0,100),km:t.km||null,up:t.up!=null?t.up:null,t:Date.now(),d:JSON.stringify(pts)}),new Promise((_,no)=>setTimeout(()=>no(new Error("tarda")),8000))]);
+    mem[t.id]={c,h:huella};try{localStorage.setItem(EK,JSON.stringify(mem))}catch(e){}
+    return base()+"#c="+c}catch(e){console.warn("enlace corto",e);return null}}
+async function abrirCorto(c){if(typeof toast==="function")toast("Abriendo el track compartido…");
+  try{const a=await LDCFB.load(),fs=a.fs,d=await fs.getDoc(fs.doc(a.db,"enlaces",c));
+    if(!d.exists()){toast("Ese enlace de track ya no existe");return}
+    const x=d.data(),pts=JSON.parse(x.d);let km=x.km;if(!km){km=0;for(let i=1;i<pts.length;i++)km+=map.distance(pts[i-1],pts[i]);km=Math.round(km/100)/10}
+    mostrar({n:x.n||"Track compartido",pts,km,up:x.up!=null?x.up:undefined},"enlace")}
+  catch(e){toast(navigator.onLine?"No he podido abrir ese track":"Sin conexión: abre el enlace cuando tengas cobertura")}}
+function cache(t){try{const m=JSON.parse(localStorage.getItem(EK)||"{}")[t.id],h=t.n+"|"+t.pts.length+"|"+t.pts[0][0]+"|"+t.pts[t.pts.length-1][1];return m&&m.h===h?base()+"#c="+m.c:null}catch(e){return null}}
 async function compartir(t){const r=t.src==="blog"?R.find(x=>x.u===t.u):null;if(r){shareRoute(r);return}
   if(!t.pts||t.pts.length<2)return;
-  const url=base()+"#t="+encodeURIComponent(enc(simple(t.pts,6)))+"!"+encodeURIComponent(t.n.slice(0,80));
+  let url=cache(t);
+  if(!url&&window.LDCFB&&LDCFB.user()&&navigator.onLine){
+    // crear el enlace corto tarda un momento: luego se pulsa «Enviar» (el móvil exige un toque para abrir WhatsApp)
+    if(typeof toast==="function")toast("Preparando el enlace…");
+    url=await corto(t);
+    if(url){MPI.show(`<div class="sheet-head"><h2>📤 Enlace listo</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+      <p>Track <b>${esc(t.n)}</b>. Quien abra el enlace lo verá en la app, aunque no tenga cuenta.</p>
+      <p class="note" style="word-break:break-all">${esc(url)}</p>
+      <div class="topacts"><button class="btn primary" data-shgo>📤 Enviar</button><button class="btn ghost" data-shcp>📋 Copiar</button></div>`);
+      sheet._sh={t,url};return}}
+  enviar(t,url||base()+"#t="+encodeURIComponent(enc(simple(t.pts,6)))+"!"+encodeURIComponent(t.n.slice(0,80)))}
+async function enviar(t,url){
   const title=t.n,text="🧵 Track «"+t.n+"»"+(t.km?" · "+t.km.toLocaleString("es-ES")+" km":"")+" · ábrelo en la app de Los de las Claras";
   try{if(navigator.share){await navigator.share({title,text,url});return}}catch(e){if(e&&e.name==="AbortError")return}
   try{await navigator.clipboard.writeText(text+"\n"+url);toast("Enlace copiado. Pégalo en WhatsApp.")}catch(e){window.open("https://wa.me/?text="+encodeURIComponent(text+"\n"+url),"_blank","noopener")}}
+sheet.addEventListener("click",async e=>{const d=sheet._sh;if(!d)return;
+  if(e.target.closest("[data-shgo]"))enviar(d.t,d.url);
+  else if(e.target.closest("[data-shcp]")){try{await navigator.clipboard.writeText(d.url);toast("Enlace copiado")}catch(er){toast("No he podido copiarlo")}}});
 
 /* abrir un enlace de track compartido */
 let TMP=null;
-function abrirCompartido(){const h=location.hash||"";if(!h.startsWith("#t="))return false;
+function abrirCompartido(){const h=location.hash||"";
+  if(/^#c=[A-Za-z0-9]{4,20}$/.test(h)){const c=h.slice(3);try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}if(window.LDCFB)abrirCorto(c);return true}
+  if(!h.startsWith("#t="))return false;
   const raw=h.slice(3),cut=raw.lastIndexOf("!"),code=decodeURIComponent(cut>=0?raw.slice(0,cut):raw),nm=cut>=0?raw.slice(cut+1):"";let pts=[];try{pts=dec(code)}catch(e){}
   try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
   if(pts.length<2){toast("Ese enlace de track no es válido");return true}
@@ -2332,5 +2368,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="0e06acc0da";let oc=Date.now();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<3e5||!navigator.onLine)return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="2ea1fd802a";let oc=Date.now();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<3e5||!navigator.onLine)return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
