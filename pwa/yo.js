@@ -29,5 +29,5 @@ b.addEventListener("click",()=>{
 map.on("dragstart",()=>{if(W!=null&&SIGUE){SIGUE=false;b.classList.add("suelto")}});
 // al irte de la app el móvil corta el GPS; al volver, sigue solo
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&W!=null){navigator.geolocation.clearWatch(W);W=navigator.geolocation.watchPosition(p=>{window.__meLL=[p.coords.latitude,p.coords.longitude];fix(p)},err,{enableHighAccuracy:true,maximumAge:3000,timeout:20000})}});
-window.YO={apaga};
+window.YO={apaga,activo:()=>W!=null};
 })();
