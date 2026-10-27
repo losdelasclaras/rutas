@@ -62,6 +62,8 @@ sheet.addEventListener("click",async e=>{const d=sheet._sh;if(!d)return;
 let TMP=null;
 function abrirCompartido(){const h=location.hash||"";
   if(/^#c=[A-Za-z0-9]{4,20}$/.test(h)){const c=h.slice(3);try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}if(window.LDCFB)abrirCorto(c);return true}
+  if(h.startsWith("#f=")){try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+    try{const o=JSON.parse(decodeURIComponent(h.slice(3)));MPI.verCompartidos({n:o.n,ps:{ps:(o.p||[]).map(x=>({n:x[0],lat:x[1],lon:x[2],ic:x[3],a:x[4]})),ts:(o.t||[]).map(x=>({n:x[0],pts:dec(x[1])}))}})}catch(e){toast("Ese enlace no es válido")}return true}
   if(!h.startsWith("#t="))return false;
   const raw=h.slice(3),cut=raw.lastIndexOf("!"),code=decodeURIComponent(cut>=0?raw.slice(0,cut):raw),nm=cut>=0?raw.slice(cut+1):"";let pts=[];try{pts=dec(code)}catch(e){}
   try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
@@ -99,5 +101,5 @@ setTimeout(recibidos,700);
 if("launchQueue" in window)launchQueue.setConsumer(async p=>{if(!p.files||!p.files.length)return;const fs=[];for(const h of p.files){try{const f=await h.getFile();fs.push({n:f.name,t:await f.text()})}catch(e){}}
   for(const f of fs)MPI.importText(f.t,f.n,true)});
 
-window.COMPARTIR={track:compartir,enc,dec,preview:t=>mostrar(t,"archivo")};
+window.COMPARTIR={track:compartir,enc,dec,simple,preview:t=>mostrar(t,"archivo")};
 })();

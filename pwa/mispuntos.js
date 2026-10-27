@@ -297,10 +297,14 @@ async function compartirCarpeta(n,ps,ts){ts=ts||[];const u=window.LDCFB&&LDCFB.u
     try{const A0=await LDCFB.load(),fs=A0.fs;const AB="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";let c="";for(const b of crypto.getRandomValues(new Uint8Array(8)))c+=AB[b%AB.length];
       await Promise.race([fs.setDoc(fs.doc(A0.db,"enlaces",c),{uid:u.uid,tipo:"puntos",n,t:Date.now(),d:huella}),new Promise((_,no)=>setTimeout(()=>no(new Error("tarda")),8000))]);
       mem[n]={c,h:huella.length+":"+huella.slice(0,200)};try{localStorage.setItem("ldc-enlaces-p",JSON.stringify(mem))}catch(e){}url=base+"#c="+c}catch(e){console.warn("enlace carpeta",e)}}
+  // sin enlace corto: enlace largo con todo dentro (puntos y tracks simplificados)
+  let largo=false;
+  if(!url&&window.COMPARTIR&&COMPARTIR.enc){try{const o={n,p:datos.map(p=>[p.n,p.lat,p.lon,p.ic,p.a]),t:tsd.map(t=>[t.n,COMPARTIR.enc(COMPARTIR.simple?COMPARTIR.simple(t.pts,12):t.pts)])};
+    url=base+"#f="+encodeURIComponent(JSON.stringify(o));largo=true}catch(e){}}
   showView("mapa");if(!LAY.mp||(ts.length&&!LAY.mt)){LAY.mp=true;LAY.mt=true;saveLay();syncMP()}const ll=[...ps.map(p=>[p.lat,p.lon]),...tsd.flatMap(t=>t.pts.map(x=>[x[0],x[1]]))];if(ll.length===1)map.setView(ll[0],15);else if(ll.length)map.fitBounds(L.latLngBounds(ll),{paddingTopLeft:[30,90],paddingBottomRight:[30,Math.round(innerHeight*.55)],maxZoom:15});
   show(`<div class="sheet-head"><h2>📤 Compartir «${esc(n)}»</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <p>${[ps.length?ps.length+" punto"+(ps.length===1?"":"s"):"",tsd.length?tsd.length+" track"+(tsd.length===1?"":"s"):""].filter(Boolean).join(" y ")}.</p>
-  ${url?`<p><b>Con un enlace</b>: quien lo abra ve los puntos en la app y los puede guardar en sus puntos.</p><p class="note" style="word-break:break-all">${esc(url)}</p>
+  ${url?`<p><b>Con un enlace</b>: quien lo abra lo ve en la app y lo puede guardar en sus cosas.</p>${largo?`<p class="note">El enlace sale largo porque lleva todo dentro, pero funciona igual.</p>`:`<p class="note" style="word-break:break-all">${esc(url)}</p>`}
   <div class="topacts"><button class="btn primary" data-fsh="url">📤 Enviar enlace</button><button class="btn ghost" data-fsh="copy">📋 Copiar</button></div>`:`<p class="note">${u?"Ahora no he podido crear el enlace (¿sin cobertura?).":"Para compartir con un enlace hay que entrar con tu cuenta de Google."} Puedes mandar el archivo GPX: se abre con la app (Compartir › LdC Rutas) o con Wikiloc, OruxMaps…</p>`}
   <div class="mpacts"><button class="mpb" data-fsh="file">🗂 Enviar como archivo GPX</button></div>`);
   sheet._fsh={n,ps,ts,url}}
@@ -310,7 +314,7 @@ sheet.addEventListener("click",async e=>{const d=sheet._fsh,b=e.target.closest("
   if(k==="copy"){try{await navigator.clipboard.writeText(d.url);toast("Enlace copiado")}catch(er){toast("No he podido copiarlo")}return}
   if(k==="file"){const nm=d.n.replace(/[^\w\sáéíóúñü-]/gi,"").trim().replace(/\s+/g,"-")+".gpx",txt=toGPX(d.ps,d.ts,d.n);
     try{const f=new File([txt],nm,{type:"application/gpx+xml"});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:d.n,text});return}}catch(er){if(er&&er.name==="AbortError")return}
-    dl(nm,txt,"application/gpx+xml")}});
+    dl(nm,txt,"application/gpx+xml");setTimeout(()=>toast("El móvil no deja enviar archivos GPX directamente: se ha guardado en Descargas. En WhatsApp: 📎 › Documento › Descargas"),2500)}});
 // abrir una carpeta que te han compartido
 let TMPC=null;
 function verCompartidos(o){if(o.ps&&!Array.isArray(o.ps)){o={n:o.n,ps:o.ps.ps||[],ts:o.ps.ts||[]}}
