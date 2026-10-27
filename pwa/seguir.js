@@ -19,6 +19,12 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .fol .fb button.on{background:#1a73e8;color:#fff;border-color:#1a73e8}.fol .fb button.end{color:#b3261e}
 .fol .bar{height:6px;border-radius:3px;background:#e6e6e6;margin:8px 0 2px;overflow:hidden}.fol .bar i{display:block;height:100%;background:#c3262e}
 .folme{width:20px;height:20px}
+.fol .fmin{flex:none;width:40px;height:36px;border:1px solid var(--edge);background:var(--card);color:var(--ink);border-radius:10px;font-size:20px;font-weight:800;cursor:pointer;line-height:1}
+.fol.min{top:64px;bottom:auto;right:8px;padding:8px 10px}
+@media(min-width:860px){.fol.min{right:auto}}
+.fol.min .fst,.fol.min .bar,.fol.min .fb,.fol.min .fg>div:nth-child(n+3){display:none}
+.fol.min .fg{grid-template-columns:repeat(2,auto);gap:14px;text-align:left;margin-top:4px}.fol.min .fg b{font-size:17px}
+.fol.min .fh b{font-size:14px;-webkit-line-clamp:1}
 .folme i{position:absolute;inset:0;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 2px 6px rgba(0,0,0,.35)}
 </style>`);
 let F=null;
@@ -48,12 +54,12 @@ function locate(lat,lon){const T=F.T,ln=T.ln,c=Math.cos(lat*toR),X=p=>(p[1]-lon)
   return{d:pick[0],i:pick[1],t:pick[2],s:at(T.cum,pick[1],pick[2])}}
 
 function panelHTML(){const r=F.r;
-  return`<div class="fh"><b>${esc(routeTitle(r))}</b></div>
+  return`<div class="fh"><b>${esc(routeTitle(r))}</b><button data-fmin class="fmin" aria-label="Minimizar">▾</button></div>
   <div class="fst wait" data-fst>📡 Buscando tu posición…</div>
   <div class="bar"><i data-fbar style="width:0"></i></div>
   <div class="fg"><div><small>Hecho</small><b data-fdone>—</b></div><div><small>Falta</small><b data-fleft>${fk(F.T.tot)}</b></div>
    <div><small>Subida que falta</small><b data-fup>+${fm(F.T.up[F.T.up.length-1])}</b></div><div><small>Bajada que falta</small><b data-fdn>−${fm(F.T.dn[F.T.dn.length-1])}</b></div></div>
-  <div class="fb"><button data-fc class="on">◎ Centrar</button><button data-fr title="Si haces la ruta desde el otro extremo">⇄ Al revés</button><button data-fx class="end">✕ Terminar</button></div>`}
+  <div class="fb"><button data-fc class="on">◎ Centrar</button><button data-fr title="Si haces la ruta desde el otro extremo">⇄ Al revés</button><button data-fpt>📍 Punto</button><button data-fx class="end">✕ Terminar</button></div>`}
 const Q=s=>F&&F.el.querySelector(s);
 function status(cls,html){const e=Q("[data-fst]");if(!e)return;e.className="fst "+cls;e.innerHTML=html}
 
@@ -120,10 +126,16 @@ function stop(quiet){if(!F)return;try{navigator.geolocation.clearWatch(F.watch)}
   [F.lay,F.me,F.acc].forEach(l=>l&&l.remove());F.el.remove();vm.classList.remove("fol-on");if(F.prevBase)setBase(F.prevBase);
   window.FOLONLY=false;document.getElementById("map").classList.remove("fol-only");if(typeof cullMarks==="function")cullMarks();if(typeof refreshMarks==="function")refreshMarks();if(typeof syncAllTracks==="function")syncAllTracks();MPI&&MPI.sync&&MPI.sync();F=null;store.set(FK,null);if(!quiet)toast("Has dejado de seguir la ruta")}
 
+// minimizar: el panel se queda en una tira pequeña y vuelve a verse todo el mapa (puntos, botones, capas)
+function minimiza(m){if(!F)return;F.min=!!m;F.el.classList.toggle("min",F.min);const b=Q("[data-fmin]");if(b){b.textContent=F.min?"▴":"▾";b.setAttribute("aria-label",F.min?"Abrir":"Minimizar")}
+  vm.classList.toggle("fol-on",!F.min);window.FOLONLY=!F.min;document.getElementById("map").classList.toggle("fol-only",!F.min);
+  if(typeof cullMarks==="function")cullMarks();if(typeof refreshMarks==="function")refreshMarks();if(typeof syncAllTracks==="function")syncAllTracks();MPI&&MPI.sync&&MPI.sync()}
 // si sigues el mapa con el dedo, deja de centrarse solo hasta que pulses «Centrar»
 map.on("dragstart",()=>{if(F&&F.follow){F.follow=false;const b=Q("[data-fc]");if(b)b.classList.remove("on")}});
 vm.addEventListener("click",e=>{if(!F||!F.el.contains(e.target))return;
   if(e.target.closest("[data-fx]")){stop();return}
+  if(e.target.closest("[data-fmin]")){minimiza(!F.min);return}
+  if(e.target.closest("[data-fpt]")){minimiza(true);if(MPI&&MPI.gps)MPI.gps();return}
   if(e.target.closest("[data-fc]")){F.follow=true;Q("[data-fc]").classList.add("on");const ll=F.me.getLatLng();if(map.hasLayer(F.me))map.setView(ll,Math.max(map.getZoom(),15));return}
   if(e.target.closest("[data-fr]")){const r=F.r,rv=!F.rev;start(r,rv);toast(rv?"Ruta al revés: empiezas por el final":"Ruta en el sentido normal");return}});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-follow]");if(!b)return;e.preventDefault();e.stopPropagation();start(R[+b.dataset.follow],false)},true);
@@ -131,5 +143,5 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-follow]");
 // si la app se cerró mientras seguías una ruta (hace menos de 12 h), se retoma sola
 const prev=store.get(FK,null);
 if(prev&&prev.u&&Date.now()-prev.t<12*3600e3){const r=R.find(x=>x.u===prev.u);if((r&&r.gx)||String(prev.u).startsWith("mt:"))setTimeout(()=>{const rr=r||(window.MISTRACKS&&MISTRACKS.route(String(prev.u).slice(3)));if(!rr){store.set(FK,null);return}start(rr,prev.rev,prev);toast("Sigues con la ruta donde la dejaste")},900)}
-window.SEGUIR={start,stop,get:()=>F};
+window.SEGUIR={start,stop,get:()=>F,minimiza};
 })();
