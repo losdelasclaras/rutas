@@ -1,5 +1,5 @@
 // Funciona sin cobertura: guarda la app, las fotos y las zonas del mapa que ya has visto.
-const V="ldc-v14", SHELL=["./","index.html","manifest.webmanifest","vendor/leaflet.js","vendor/leaflet.css","icons/icon-192.png","icons/icon-512.png"];
+const V="ldc-v15", SHELL=["./","index.html","manifest.webmanifest","vendor/leaflet.js","vendor/leaflet.css","icons/icon-192.png","icons/icon-512.png"];
 const TILES="ldc-tiles2", MAXT=2500, OFF="ldc-offline";   // OFF: mapas descargados a propósito (no se recortan)
 self.addEventListener("install",e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL.map(u=>new Request(u,{cache:"reload"})))).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V&&k!==TILES&&k!==OFF&&k!=="ldc-share").map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
@@ -24,14 +24,14 @@ self.addEventListener("fetch",e=>{
     if(/(version|build)\.txt$/.test(u.pathname)){e.respondWith(fetch(e.request,{cache:"no-store"}).catch(()=>new Response("")));return}
     if(u.pathname.endsWith(".apk")||(e.request.mode==="navigate"&&!u.pathname.endsWith("/")&&!u.pathname.endsWith("index.html")))return;   // el APK y otras páginas (android.html) van directas a la red
     if(e.request.mode==="navigate"||u.pathname.endsWith("index.html")){
-      // la página: primero la red (así siempre llega la versión nueva); si no hay cobertura o tarda más de 8 s, la guardada
-      let saved=Promise.resolve();
-      const net=fetch(u.origin+u.pathname,{cache:"no-cache"}).then(r=>{if(r.ok){const cp=r.clone();saved=caches.open(V).then(c=>c.put("index.html",cp))}return r});
-      e.waitUntil(net.then(()=>saved).catch(()=>{}));
-      e.respondWith(caches.match("index.html").then(hit=>{
-        if(!hit)return net;
-        const slow=new Promise(res=>setTimeout(()=>res(hit),8000));
-        return Promise.race([net.catch(()=>hit),slow])}));return}
+      // la página: la guardada al momento (arranca rápido aunque haya poca cobertura) y por detrás se baja la nueva;
+      // cuando está bajada se avisa a la app, que se recarga sola si acabas de abrirla o al volver a ella
+      const net=fetch(u.origin+u.pathname,{cache:"no-cache"}).then(async r=>{if(r.ok){const cp=r.clone(),c=await caches.open(V),old=await c.match("index.html");
+          const nt=await cp.clone().text(),ot=old?await old.text():"";
+          await c.put("index.html",cp);
+          if(old&&nt!==ot){const cl=await self.clients.matchAll({type:"window"});cl.forEach(x=>x.postMessage({t:"ldc-nueva"}))}}return r});
+      e.waitUntil(net.catch(()=>{}));
+      e.respondWith(caches.match("index.html").then(hit=>hit||net));return}
     e.respondWith(caches.match(e.request).then(hit=>hit||fetch(e.request).then(r=>{if(r.ok){const cp=r.clone();caches.open(V).then(c=>c.put(e.request,cp))}return r})));
   }
 });
