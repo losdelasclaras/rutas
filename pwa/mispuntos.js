@@ -307,13 +307,15 @@ async function compartirCarpeta(n,ps,ts){ts=ts||[];const u=window.LDCFB&&LDCFB.u
   ${url?`<p><b>Con un enlace</b>: quien lo abra lo ve en la app y lo puede guardar en sus cosas.</p>${largo?`<p class="note">El enlace sale largo porque lleva todo dentro, pero funciona igual.</p>`:`<p class="note" style="word-break:break-all">${esc(url)}</p>`}
   <div class="topacts"><button class="btn primary" data-fsh="url">📤 Enviar enlace</button><button class="btn ghost" data-fsh="copy">📋 Copiar</button></div>`:`<p class="note">${u?"Ahora no he podido crear el enlace (¿sin cobertura?).":"Para compartir con un enlace hay que entrar con tu cuenta de Google."} Puedes mandar el archivo GPX: se abre con la app (Compartir › LdC Rutas) o con Wikiloc, OruxMaps…</p>`}
   <div class="mpacts"><button class="mpb" data-fsh="file">🗂 Enviar como archivo GPX</button></div>`);
-  sheet._fsh={n,ps,ts,url}}
+  sheet._fsh={n,ps,ts,url,gpx:url?base+"gpx.html"+url.slice(base.length):null}}
 sheet.addEventListener("click",async e=>{const d=sheet._fsh,b=e.target.closest("[data-fsh]");if(!d||!b)return;const k=b.dataset.fsh,text=`📁 «${d.n}» · ábrelo en la app de Los de las Claras`;
   if(k==="url"){try{if(navigator.share){await navigator.share({title:d.n,text,url:d.url});return}}catch(er){if(er&&er.name==="AbortError")return}
     try{await navigator.clipboard.writeText(text+"\n"+d.url);toast("Enlace copiado. Pégalo en WhatsApp.")}catch(er){window.open("https://wa.me/?text="+encodeURIComponent(text+"\n"+d.url),"_blank","noopener")}return}
   if(k==="copy"){try{await navigator.clipboard.writeText(d.url);toast("Enlace copiado")}catch(er){toast("No he podido copiarlo")}return}
   if(k==="file"){const nm=d.n.replace(/[^\w\sáéíóúñü-]/gi,"").trim().replace(/\s+/g,"-")+".gpx",txt=toGPX(d.ps,d.ts,d.n);
     try{const f=new File([txt],nm,{type:"application/gpx+xml"});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:d.n,text});return}}catch(er){if(er&&er.name==="AbortError")return}
+    // Android no deja mandar archivos .gpx: se manda un enlace que descarga el GPX al abrirlo (sirve para Wikiloc, OruxMaps…)
+    if(d.gpx&&navigator.share){try{await navigator.share({title:d.n+" (GPX)",text:`🗂 GPX de «${d.n}»: toca el enlace para descargarlo`,url:d.gpx});return}catch(er){if(er&&er.name==="AbortError")return}}
     dl(nm,txt,"application/gpx+xml");setTimeout(()=>toast("El móvil no deja enviar archivos GPX directamente: se ha guardado en Descargas. En WhatsApp: 📎 › Documento › Descargas"),2500)}});
 // abrir una carpeta que te han compartido
 let TMPC=null;
