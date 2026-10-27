@@ -29,10 +29,11 @@ async function corto(t){const u=window.LDCFB&&LDCFB.user();if(!u||!navigator.onL
     await Promise.race([fs.setDoc(fs.doc(a.db,"enlaces",c),{uid:u.uid,n:String(t.n).slice(0,100),km:t.km||null,up:t.up!=null?t.up:null,t:Date.now(),d:JSON.stringify(pts)}),new Promise((_,no)=>setTimeout(()=>no(new Error("tarda")),8000))]);
     mem[t.id]={c,h:huella};try{localStorage.setItem(EK,JSON.stringify(mem))}catch(e){}
     return base()+"#c="+c}catch(e){console.warn("enlace corto",e);return null}}
-async function abrirCorto(c){if(typeof toast==="function")toast("Abriendo el track compartido…");
+async function abrirCorto(c){if(typeof toast==="function")toast("Abriendo lo que te han compartido…");
   try{const a=await LDCFB.load(),fs=a.fs,d=await fs.getDoc(fs.doc(a.db,"enlaces",c));
-    if(!d.exists()){toast("Ese enlace de track ya no existe");return}
-    const x=d.data(),pts=JSON.parse(x.d);let km=x.km;if(!km){km=0;for(let i=1;i<pts.length;i++)km+=map.distance(pts[i-1],pts[i]);km=Math.round(km/100)/10}
+    if(!d.exists()){toast("Ese enlace ya no existe");return}
+    const x=d.data();if(x.tipo==="puntos"){MPI.verCompartidos({n:x.n,ps:JSON.parse(x.d)});return}
+    const pts=JSON.parse(x.d);let km=x.km;if(!km){km=0;for(let i=1;i<pts.length;i++)km+=map.distance(pts[i-1],pts[i]);km=Math.round(km/100)/10}
     mostrar({n:x.n||"Track compartido",pts,km,up:x.up!=null?x.up:undefined},"enlace")}
   catch(e){toast(navigator.onLine?"No he podido abrir ese track":"Sin conexión: abre el enlace cuando tengas cobertura")}}
 function cache(t){try{const m=JSON.parse(localStorage.getItem(EK)||"{}")[t.id],h=t.n+"|"+t.pts.length+"|"+t.pts[0][0]+"|"+t.pts[t.pts.length-1][1];return m&&m.h===h?base()+"#c="+m.c:null}catch(e){return null}}
