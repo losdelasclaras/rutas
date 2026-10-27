@@ -1,7 +1,8 @@
-# Informe del robot · 27/10/2026 04:57
+# Informe del robot · 27/10/2026 06:15
 
-Sin cambios.
+**Cambios:** regeneración forzada
 
 - Blog: sin entradas nuevas.
 - Mapa: sin cambios.
 - Drive: la carpeta «track app losdelasclaras» está vacía.
+- App regenerada: 369 rutas, 154 con track.
