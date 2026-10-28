@@ -173,7 +173,11 @@ class GrabarActivity : Activity() {
         @JavascriptInterface fun terminar(nombre: String) = runOnUiThread {
             servicio("parar")
             val f = Grab.archivo(this@GrabarActivity); val pts = Grab.leer(f)
-            if (f.exists()) f.copyTo(Grab.ultima(this@GrabarActivity), true)
+            if (pts.size < 2) { Grab.prefs(this@GrabarActivity).edit().clear().apply(); f.delete()
+                web.evaluateJavascript("cierra();refresca();aviso('No había nada grabado todavía (el GPS no había dado ningún punto).')", null); return@runOnUiThread }
+            // copia de seguridad (solo si hay recorrido: así nunca se pisa la anterior con una vacía)
+            f.copyTo(Grab.ultima(this@GrabarActivity), true)
+            try { f.copyTo(File(filesDir, "grabacion-" + System.currentTimeMillis() + ".txt"), true) } catch (e: Exception) {}
             Grab.prefs(this@GrabarActivity).edit().clear().putString("nombre", nombre).apply(); f.delete()
             val donde = guardarGpx(this@GrabarActivity, pts, nombre)
             if (donde != null) android.widget.Toast.makeText(this@GrabarActivity, "Copia guardada en $donde", android.widget.Toast.LENGTH_LONG).show()

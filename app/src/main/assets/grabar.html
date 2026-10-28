@@ -48,7 +48,7 @@ const lineB=L.polyline([],{color:"#fff",weight:8,opacity:.9}).addTo(map),line=L.
 let me=null,sigue=true;map.on("dragstart",()=>sigue=false);
 function sube(){let up=0,ref=null;for(const p of PTS){if(p[2]==null)continue;if(ref==null){ref=p[2];continue}if(p[2]-ref>5){up+=p[2]-ref;ref=p[2]}else if(ref-p[2]>5)ref=p[2]}return Math.round(up)}
 const dur=()=>S.activo?Math.max(0,(S.pz||Date.now())-S.t0-S.pau):0;
-function aviso(t){$("av").textContent=t}
+function aviso(t){$("av").dataset.fijo="1";$("av").textContent=t;setTimeout(()=>{delete $("av").dataset.fijo;pinta()},6000)}
 function sinPermiso(){aviso("⛔ Sin permiso de ubicación no se puede grabar. Ábrelo en Ajustes › Aplicaciones › Los de las Claras › Permisos › Ubicación.")}
 function pinta(){
   $("tt").textContent=hms(dur());$("km").textContent=(D/1000).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2});$("up").textContent="+"+sube().toLocaleString("es-ES");
