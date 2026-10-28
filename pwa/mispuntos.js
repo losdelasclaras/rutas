@@ -215,7 +215,8 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
   const addT=(pts,n)=>{if(pts.length<2)return;const t=thin(pts);let km=0;for(let i=1;i<t.length;i++)km+=dist(t[i-1],t[i]);const o={id:nid(),n:n||base,km:Math.round(km/100)/10,pts:t,src:"gpx",f:new Date().toISOString()};desn(o);MT.push(o);nuevos.push(o);nt++};const nuevos=[];
   if(doc.getElementsByTagName("gpx").length){
     for(const w of doc.getElementsByTagName("wpt"))addP(+w.getAttribute("lat"),+w.getAttribute("lon"),tx(w,"name"),tx(w,"desc")||tx(w,"cmt"));
-    for(const t of doc.getElementsByTagName("trk")){const pts=[...t.getElementsByTagName("trkpt")].map(p=>{const e=tx(p,"ele");return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});addT(pts,tx(t,"name"))}
+    const gpsAlt=/Los de las Claras/.test((doc.documentElement.getAttribute("creator")||""));   // grabado con la app: altura del GPS, poco fiable
+    for(const t of doc.getElementsByTagName("trk")){const pts=[...t.getElementsByTagName("trkpt")].map(p=>{const e=gpsAlt?"":tx(p,"ele");return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});addT(pts,tx(t,"name"))}
     for(const r of doc.getElementsByTagName("rte")){const pts=[...r.getElementsByTagName("rtept")].map(p=>[+p.getAttribute("lat"),+p.getAttribute("lon")]);addT(pts,tx(r,"name"))}}
   else{for(const pm of doc.getElementsByTagName("Placemark")){const n=tx(pm,"name"),d=tx(pm,"description").replace(/<[^>]+>/g," ").trim();
       for(const pt of pm.getElementsByTagName("Point")){const c=tx(pt,"coordinates").split(",");addP(+c[1],+c[0],n,d)}

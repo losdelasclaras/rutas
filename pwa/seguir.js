@@ -88,9 +88,9 @@ function fix(pos){if(!F)return;const c=pos.coords,la=c.latitude,lo=c.longitude,a
   // altura: en la ruta, la del track en ese punto; fuera, la del GPS corregida. El GPS de Android da la altura sobre el elipsoide
   // (unos 50 m más que sobre el mar en España): se corrige con lo aprendido al ir por la ruta, o con 50 m de partida
   const ta=T.ln[i][2]!=null?(T.ln[i+1]&&T.ln[i+1][2]!=null?T.ln[i][2]+(T.ln[i+1][2]-T.ln[i][2])*t:T.ln[i][2]):null;
-  if(ta!=null&&c.altitude!=null&&acc<30&&p.d<=thr){const d=c.altitude-ta;F.dz=F.dz==null?d:F.dz*.9+d*.1;F.nz=(F.nz||0)+1}
-  const corr=F.nz>=5?F.dz:(/iPhone|iPad|Macintosh/.test(navigator.userAgent)?0:50);
-  const alt=p.d<=thr&&ta!=null?` · ${fm(ta)}`:(c.altitude!=null&&acc<60?` · ${fm(c.altitude-corr)}`:(ta!=null?` · ${fm(ta)}`:""));
+  // altura: la del modelo del terreno en tu posición (con cobertura); si no, la del track cuando vas por él; la del GPS no se enseña (no es fiable)
+  demPide(c.latitude,c.longitude);const dz=DEM&&dm([DEM.la,DEM.lo],[c.latitude,c.longitude])<60?DEM.v:null;
+  const alt=dz!=null?` · ${fm(dz)}`:(p.d<=thr&&ta!=null?` · ${fm(ta)}`:"");
   if(p.d<=thr){
     if(!F.on){F.on=true;if(F.fixes>1)vib(120)}
     if(F.off){F.off=0;vib(120);toast("De nuevo en la ruta")}
@@ -105,6 +105,9 @@ function fix(pos){if(!F)return;const c=pos.coords,la=c.latitude,lo=c.longitude,a
   save()}
 function err(e){if(!F)return;status("wait",e&&e.code===1?"⛔ La app no tiene permiso para usar tu ubicación. Actívalo en los ajustes del navegador.":"📡 Sin señal de GPS todavía…")}
 
+let DEM=null,DEMT=0;
+async function demPide(la,lo){if(!navigator.onLine||Date.now()-DEMT<15000)return;if(DEM&&dm([DEM.la,DEM.lo],[la,lo])<25)return;DEMT=Date.now();
+  try{const j=await(await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${la.toFixed(5)}&longitude=${lo.toFixed(5)}`)).json();const v=j&&j.elevation&&j.elevation[0];if(v!=null&&isFinite(v))DEM={la,lo,v:Math.round(v)}}catch(e){}}
 async function wake(){try{if(navigator.wakeLock&&document.visibilityState==="visible")F.wl=await navigator.wakeLock.request("screen")}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(F&&document.visibilityState==="visible")wake()});
 const save=()=>{if(F)store.set(FK,{u:F.r.u,rev:F.rev,s:F.s,i:F.i,tt:F.t,on:F.on,t:Date.now()})};
