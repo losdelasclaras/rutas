@@ -45,7 +45,7 @@
         </activity>
 
         <!-- grabar el recorrido con la pantalla apagada (la web lo abre con intent://grabar#Intent;scheme=ldcgrabar;…) -->
-        <activity android:name=".GrabarActivity" android:exported="true" android:label="Grabar recorrido" android:launchMode="singleTask"
+        <activity android:name=".GrabarActivity" android:exported="true" android:label="Grabar recorrido" android:launchMode="singleTask" android:taskAffinity="es.losdelasclaras.rutas.grabar"
             android:theme="@android:style/Theme.Material.Light.NoActionBar" android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/><category android:name="android.intent.category.DEFAULT"/><category android:name="android.intent.category.BROWSABLE"/>
