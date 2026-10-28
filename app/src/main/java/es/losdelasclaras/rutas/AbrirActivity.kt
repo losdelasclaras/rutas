@@ -78,8 +78,13 @@ class AbrirActivity : Activity() {
         return "https://losdelasclaras.github.io/rutas/#t=" + URLEncoder.encode(polilinea(s), "UTF-8") + "!" + URLEncoder.encode(t.nombre.take(80), "UTF-8").replace("+", "%20")
     }
 
+    private fun simplificar(p: List<DoubleArray>, tol: Double) = Poli.simplificar(p, tol)
+    private fun polilinea(p: List<DoubleArray>) = Poli.polilinea(p)
+}
+
+object Poli {
     /** Douglas-Peucker en metros (igual que la web), para que el enlace sea corto. */
-    private fun simplificar(p: List<DoubleArray>, tol: Double): List<DoubleArray> {
+    fun simplificar(p: List<DoubleArray>, tol: Double): List<DoubleArray> {
         if (p.size < 3) return p
         val c = cos(Math.toRadians(p[0][0]))
         fun x(q: DoubleArray) = q[1] * 111320 * c
@@ -98,7 +103,7 @@ class AbrirActivity : Activity() {
     }
 
     /** Polilínea codificada de Google (5 decimales). */
-    private fun polilinea(p: List<DoubleArray>): String {
+    fun polilinea(p: List<DoubleArray>): String {
         val sb = StringBuilder(); var pl = 0; var pn = 0
         fun enc(v0: Int) { var v = if (v0 < 0) (v0 shl 1).inv() else v0 shl 1
             while (v >= 0x20) { sb.append(((0x20 or (v and 0x1f)) + 63).toChar()); v = v shr 5 }

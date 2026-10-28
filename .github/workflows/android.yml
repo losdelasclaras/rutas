@@ -2,7 +2,7 @@ name: App Android
 on:
   push: { branches: [android] }
   workflow_dispatch: {}
-permissions: { contents: write }
+permissions: { contents: write, pages: write }
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,7 +13,14 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: '8.7' }
       - name: Compilar
-        run: gradle :app:assembleRelease --no-daemon --stacktrace
+        run: gradle :app:assembleRelease --no-daemon --stacktrace 2>&1 | tee compilar.log; test ${PIPESTATUS[0]} -eq 0
+      - name: Si falla, guardar el registro (rama android-log)
+        if: failure()
+        run: |
+          git config --global user.name "Los de las Claras"; git config --global user.email "losdelasclaras@users.noreply.github.com"
+          git clone -q --depth 1 https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} logrepo
+          cd logrepo && git checkout -q --orphan android-log && git rm -rqf . && grep -E "^e: |error:|FAILURE|What went wrong" -A3 ../compilar.log | head -150 > fallo.txt; tail -80 ../compilar.log >> fallo.txt
+          git add fallo.txt && git commit -qm "registro ${{ github.run_number }}" && git push -qf origin android-log
       - run: cp app/build/outputs/apk/release/app-release.apk LdC-Rutas.apk
       - name: Guardar el APK en la rama (para servirlo desde la web)
         if: "!contains(github.event.head_commit.message, '[apk]')"
@@ -21,6 +28,14 @@ jobs:
           mkdir -p apk && cp LdC-Rutas.apk apk/
           git config user.name "Los de las Claras"; git config user.email "losdelasclaras@users.noreply.github.com"
           git add -f apk/LdC-Rutas.apk && git commit -m "APK compilado ${{ github.run_number }} [apk] [skip ci]" && git push
+      - name: Publicar en la web (rutas/LdC-Rutas.apk)
+        if: "!contains(github.event.head_commit.message, '[apk]')"
+        run: |
+          git config --global user.name "Los de las Claras"; git config --global user.email "losdelasclaras@users.noreply.github.com"
+          git clone --depth 1 -b main https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} web
+          cp LdC-Rutas.apk web/LdC-Rutas.apk
+          cd web && git add LdC-Rutas.apk && git commit -qm "App Android: APK ${{ github.run_number }} [skip ci]" && git pull -q --rebase origin main && git push -q origin HEAD:main
+          curl -s -X POST -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github+json" https://api.github.com/repos/${{ github.repository }}/pages/builds || true
       - name: Publicar
         uses: softprops/action-gh-release@v2
         with:

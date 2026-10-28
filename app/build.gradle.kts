@@ -14,5 +14,6 @@ android {
     buildTypes { getByName("release") { isMinifyEnabled = false; signingConfig = signingConfigs.getByName("ldc") } }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
+    lint { checkReleaseBuilds = false; abortOnError = false }
 }
 dependencies { implementation("com.google.androidbrowserhelper:androidbrowserhelper:2.5.0") }

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grabar recorrido</title>
+<link rel="stylesheet" href="leaflet.css">
+<style>
+:root{--ink:#1f2a24;--paper:#f4f6f2;--card:#fff;--muted:#5d6b62;--edge:#d9dfd9}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font:18px/1.45 system-ui,-apple-system,Roboto,sans-serif}
+body{display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#c3262e;color:#fff}
+header img{width:38px;height:38px;border-radius:10px;background:#fff}header b{font-size:20px;flex:1}
+header button{border:0;background:rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:8px 12px;font-size:16px;font-weight:700}
+#map{flex:1;min-height:180px;background:#e8e6dc}
+.pan{background:var(--card);border-top:1px solid var(--edge);padding:12px 14px 16px}
+.st{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;gap:6px}
+.st b{display:block;font-size:30px;font-variant-numeric:tabular-nums;line-height:1.1}.st small{color:var(--muted);font-weight:700;font-size:14px}
+.est{margin:10px 0;padding:9px 12px;border-radius:12px;font-weight:700;font-size:16px;background:#f1f1f1}
+.est.rec{background:#c3262e;color:#fff}.est.pau{background:#fff1e0;color:#8a4b00}
+.bt{display:flex;gap:8px}.bt button{flex:1;border:0;border-radius:14px;padding:16px 8px;font-size:20px;font-weight:800}
+.go{background:#c3262e;color:#fff}.ps{background:#eceeea;color:var(--ink)}.fn{background:var(--ink);color:#fff}
+.aviso{margin:10px 0 0;font-size:15px;color:var(--muted)}.aviso button{border:1px solid var(--edge);background:#fff;border-radius:10px;padding:7px 10px;font-size:15px;font-weight:700;margin-top:6px}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;z-index:2000}.sheet[hidden]{display:none}
+.sh{background:var(--card);width:100%;max-height:88%;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px 22px}
+.sh h2{margin:0 0 8px;font-size:22px}
+.sh input{width:100%;font:inherit;font-size:18px;padding:12px;border:1px solid var(--edge);border-radius:12px;margin:6px 0 12px}
+.sh .b2{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:19px;font-weight:800;margin:8px 0}
+.me{width:20px;height:20px}.me i{position:absolute;inset:0;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 2px 6px rgba(0,0,0,.35)}
+</style></head><body>
+<header><img src="icono.png" alt=""><b>Grabar recorrido</b><button onclick="Nativo.volver()">← Mapa</button></header>
+<div id="map"></div>
+<div class="pan">
+  <div class="st"><span><b id="tt">0:00</b><small>tiempo</small></span><span><b id="km">0,00</b><small>km</small></span><span><b id="up">+0</b><small>m de subida</small></span></div>
+  <div class="est" id="est"></div>
+  <div class="bt" id="bt"></div>
+  <div class="aviso" id="av"></div>
+</div>
+<div class="sheet" id="sheet" hidden><div class="sh" id="sh"></div></div>
+<script src="leaflet.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const toR=Math.PI/180,dm=(a,b)=>{const dl=(b[0]-a[0])*toR,dn=(b[1]-a[1])*toR;const h=Math.sin(dl/2)**2+Math.cos(a[0]*toR)*Math.cos(b[0]*toR)*Math.sin(dn/2)**2;return 12742000*Math.asin(Math.min(1,Math.sqrt(h)))};
+const hms=ms=>{const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+":":"")+String(m).padStart(h?2:1,"0")+":"+String(x).padStart(2,"0")};
+let S={activo:false},PTS=[],D=0;
+const map=L.map("map",{zoomControl:false,attributionControl:false}).setView([43.1,-5.8],9);
+L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17,subdomains:"abc"}).addTo(map);
+const lineB=L.polyline([],{color:"#fff",weight:8,opacity:.9}).addTo(map),line=L.polyline([],{color:"#c3262e",weight:5}).addTo(map);
+let me=null,sigue=true;map.on("dragstart",()=>sigue=false);
+function sube(){let up=0,ref=null;for(const p of PTS){if(p[2]==null)continue;if(ref==null){ref=p[2];continue}if(p[2]-ref>5){up+=p[2]-ref;ref=p[2]}else if(ref-p[2]>5)ref=p[2]}return Math.round(up)}
+const dur=()=>S.activo?Math.max(0,(S.pz||Date.now())-S.t0-S.pau):0;
+function aviso(t){$("av").textContent=t}
+function sinPermiso(){aviso("⛔ Sin permiso de ubicación no se puede grabar. Ábrelo en Ajustes › Aplicaciones › Los de las Claras › Permisos › Ubicación.")}
+function pinta(){
+  $("tt").textContent=hms(dur());$("km").textContent=(D/1000).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2});$("up").textContent="+"+sube().toLocaleString("es-ES");
+  const e=$("est");
+  if(!S.activo){e.className="est";e.innerHTML="Pulsa <b>Grabar</b> para empezar. Puedes apagar la pantalla: sigue grabando."}
+  else if(S.pz){e.className="est pau";e.textContent="⏸ En pausa"}
+  else{e.className="est rec";e.textContent=PTS.length?"● Grabando · puedes apagar la pantalla":"● Grabando · esperando la señal del GPS…"}
+  $("bt").innerHTML=!S.activo?`<button class="go" onclick="Nativo.empezar()">⏺ Grabar</button>`:`<button class="ps" onclick="Nativo.pausa()">${S.pz?"▶ Seguir":"⏸ Pausa"}</button><button class="fn" onclick="fin()">■ Terminar</button>`;
+  let av="";
+  if(!Nativo.sinBateria())av=`Si con la pantalla apagada se corta la grabación: <br><button onclick="Nativo.bateria()">🔋 Dejar que grabe sin límite de batería</button>`;
+  if(!S.activo&&S.ultima)av+=`<br><button onclick="Nativo.recuperar()">↩ Volver a abrir la última grabación en el mapa</button>`;
+  if(!$("av").dataset.fijo)$("av").innerHTML=av}
+function nuevos(){const n=JSON.parse(Nativo.puntos(PTS.length));for(const p of n){if(PTS.length)D+=dm(PTS[PTS.length-1],p);PTS.push(p)}
+  if(n.length){const ll=PTS.map(p=>[p[0],p[1]]);line.setLatLngs(ll);lineB.setLatLngs(ll);const q=PTS[PTS.length-1];
+    if(!me)me=L.marker([q[0],q[1]],{icon:L.divIcon({className:"me",html:"<i></i>",iconSize:[20,20]})}).addTo(map);else me.setLatLng([q[0],q[1]]);
+    if(PTS.length===n.length)map.setView([q[0],q[1]],15);else if(sigue)map.panTo([q[0],q[1]])}}
+function refresca(){S=JSON.parse(Nativo.estado());if(!S.activo){PTS=[];D=0;line.setLatLngs([]);lineB.setLatLngs([])}nuevos();pinta()}
+function fin(){const d=new Date(S.t0);
+  $("sh").innerHTML=`<h2>■ Terminar la grabación</h2><p><b>${hms(dur())}</b> · <b>${(D/1000).toLocaleString("es-ES",{maximumFractionDigits:2})} km</b> · <b>+${sube()} m</b></p>
+  <label>Nombre</label><input id="nm" maxlength="80" value="Recorrido del ${d.toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}">
+  <button class="b2 go" onclick="Nativo.terminar(document.getElementById('nm').value.trim()||'Recorrido grabado')">✓ Terminar y verlo en la app</button>
+  <button class="b2 ps" onclick="cierra()">▶ Seguir grabando</button>
+  <button class="b2 ps" style="color:#b3261e" onclick="if(confirm('¿Tirar lo grabado? No se puede recuperar.')){cierra();Nativo.tirar()}">🗑 Tirar la grabación</button>`;
+  $("sheet").hidden=false}
+function cierra(){$("sheet").hidden=true}
+refresca();
+setInterval(()=>{if(document.visibilityState!=="visible")return;S=JSON.parse(Nativo.estado());nuevos();pinta()},2000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")refresca()});
+</script></body></html>
