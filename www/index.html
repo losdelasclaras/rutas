@@ -42,8 +42,10 @@ header button{border:1px solid var(--edge);background:var(--card);border-radius:
 <script src="vendor/leaflet.js"></script>
 <script>
 const K="grab-actual",H="grab-hechos";
-const C=window.Capacitor,P=n=>C&&(C.Plugins&&C.Plugins[n]||(C.registerPlugin&&C.registerPlugin(n)));
-const BG=P("BackgroundGeolocation"),FS=P("Filesystem"),SH=P("Share");
+// puente con Android (sin @capacitor/core: se llama directamente al puente nativo)
+const C=window.Capacitor,NAT=!!(C&&typeof C.nativeCallback==="function"&&typeof C.nativePromise==="function");
+const BG=NAT?{addWatcher:(o,cb)=>Promise.resolve(C.nativeCallback("BackgroundGeolocation","addWatcher",o,cb)),removeWatcher:o=>C.nativePromise("BackgroundGeolocation","removeWatcher",o),openSettings:()=>C.nativePromise("BackgroundGeolocation","openSettings",{})}:null;
+const FS=NAT?{writeFile:o=>C.nativePromise("Filesystem","writeFile",o)}:null,SH=NAT?{share:o=>C.nativePromise("Share","share",o)}:null;
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const toR=Math.PI/180,dm=(a,b)=>{const dl=(b[0]-a[0])*toR,dn=(b[1]-a[1])*toR;const h=Math.sin(dl/2)**2+Math.cos(a[0]*toR)*Math.cos(b[0]*toR)*Math.sin(dn/2)**2;return 12742000*Math.asin(Math.min(1,Math.sqrt(h)))};
@@ -97,6 +99,7 @@ function gpx(r){const x=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt
   r.pts.map(p=>`<trkpt lat="${p[0]}" lon="${p[1]}">${p[2]!=null?`<ele>${p[2]}</ele>`:""}<time>${new Date(p[3]).toISOString()}</time></trkpt>`).join("\n")+`\n</trkseg></trk>\n</gpx>\n`}
 async function envia(r){const nm=r.n.replace(/[^\wáéíóúñüÁÉÍÓÚÑÜ -]/g,"").trim().replace(/\s+/g,"-")+".gpx";
   abre(`<h2>📤 ${esc(r.n)}</h2><p>${r.km.toLocaleString("es-ES")} km · +${r.up} m</p><p class="nota">Para verlo en el mapa de <b>LdC Rutas</b>, elige <b>LdC Rutas</b> en la lista. También puedes mandarlo por WhatsApp o abrirlo con Wikiloc.</p><button class="b2 ps" data-a="x">Cerrar</button>`);
+  if(!FS){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([gpx(r)],{type:"application/gpx+xml"}));a.download=nm;a.click();return}
   try{const w=await FS.writeFile({path:nm,data:gpx(r),directory:"CACHE",encoding:"utf8"});await SH.share({title:r.n,text:r.n,files:[w.uri],dialogTitle:"Enviar el GPX"})}
   catch(e){if(!/cancel/i.test(String(e&&e.message||e)))alert("No he podido compartirlo: "+(e.message||e))}}
 function lista(){const h=load(H,[]);abre(`<h2>📂 Grabados</h2>${h.length?h.map((r,i)=>`<div class="row"><div><b>${esc(r.n)}</b><small>${new Date(r.t0).toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})} · ${r.km.toLocaleString("es-ES")} km · +${r.up} m</small></div><button data-a="ver" data-i="${i}">🗺</button><button data-a="sh" data-i="${i}">📤</button><button data-a="del" data-i="${i}">🗑</button></div>`).join(""):`<p class="nota">Todavía no has grabado nada.</p>`}
