@@ -61,7 +61,8 @@ function panel(){OPEN=true;
     <p>${MOT?"Para guardar algo tuyo hay que entrar con tu cuenta de Google. ":"Entra con tu cuenta de Google y "}Tus <b>marcas de cumbres y lugares, tus puntos y tus tracks</b> se guardan en tu cuenta: los tendrás en el móvil y en el ordenador, y no se pierden si cambias de móvil.</p>
     <p class="note">Solo hace falta una vez: después la app entra sola. Para ver rutas y mapas no hace falta. Solo se guarda lo tuyo y nadie más puede verlo.</p>
     ${ERR?`<p class="syncst er">${esc(ERR)}</p>`:""}
-    <p style="margin:14px 0 6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="gbtn" data-gin>${GLOGO}Entrar con Google</button>${MOT?`<button class="mpb" data-close>Ahora no</button>`:""}</p>`);return}
+    <p style="margin:14px 0 6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="gbtn" data-gin>${GLOGO}Entrar con Google</button>${MOT?`<button class="mpb" data-close>Ahora no</button>`:""}</p>
+    <p class="note" style="margin-top:12px"><a href="privacidad.html" target="_blank" rel="noopener">🔒 Qué datos se guardan (privacidad)</a></p>`);return}
   const np=Object.keys(pend()).length;
   const st=BUSY?`<p class="syncst pe">Sincronizando…</p>`:!READY||np?`<p class="syncst pe">⏳ Hay cambios sin subir todavía${navigator.onLine?"":" (sin cobertura)"}. Se suben solos cuando haya conexión.</p>`
     :`<p class="syncst ok">✓ Todo guardado en tu cuenta${hora()?` · ${hora()}`:""}</p>`;
@@ -70,7 +71,8 @@ function panel(){OPEN=true;
     ${st}<p class="note">${cuenta()}</p>
     <p class="note">Lo que marques o guardes aquí aparece solo en los demás aparatos donde hayas entrado con esta cuenta.</p>
     <div class="mpacts"><button class="mpb" data-gout>Salir</button></div>
-    <p class="note">Al salir, lo tuyo se queda en este aparato y en tu cuenta.</p>`)}
+    <p class="note">Al salir, lo tuyo se queda en este aparato y en tu cuenta.</p>
+    <p class="note"><a href="privacidad.html" target="_blank" rel="noopener">🔒 Privacidad</a> · para borrar tu cuenta y todos tus datos, escribe a <a href="mailto:losdelasclaras@gmail.com?subject=Borrar%20mi%20cuenta%20de%20LdC%20Rutas">losdelasclaras@gmail.com</a></p>`)}
 const repaint=()=>{paintBtn();if(OPEN&&!bg.hidden)panel()};
 btn.addEventListener("click",panel);
 document.addEventListener("click",e=>{
