@@ -61,7 +61,8 @@ async function fb(){if(A)return A;if(!window.LDCFB)throw new Error("sin Firebase
 async function cargarPub(){try{const a=await fb(),fs=a.fs;
     const s=await fs.getDocs(fs.query(fs.collection(a.db,"seguidores"),fs.orderBy("tp","desc"),fs.limit(300)));
     PUB=[];s.forEach(d=>PUB.push(conDatos(d)));
-    try{localStorage.setItem(CK,JSON.stringify(PUB.map(({dd,...x})=>x)))}catch(e){}
+    const sinF=dd=>{const o={...dd};delete o.foto;if(o.ps)o.ps=o.ps.map(({foto,...q})=>q);return o};
+    try{localStorage.setItem(CK,JSON.stringify(PUB.map(({dd,...x})=>({...x,d:JSON.stringify(sinF(dd))}))))}catch(e){}
   }catch(e){console.warn("seguidores",e)}pinta()}
 async function cargarRev(){REV=[];MIAS=[];const u=window.LDCFB&&LDCFB.user();if(!u){pinta();badge();return}
   try{const a=await fb(),fs=a.fs,c=fs.collection(a.db,"propuestas");
@@ -108,8 +109,9 @@ function ver(x,modo){const d=x.dd||{};if(typeof showView==="function")showView("
   <div class="meta"><span class="tag">👥 ${esc(x.quien||"Seguidor")}</span>${d.km?`<span class="tag">${kmT(d.km)}</span>`:""}${d.up?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}${d.a?`<span class="tag alt">${d.a.toLocaleString("es-ES")} m</span>`:""}<span class="tag">${modo==="rev"||modo==="mia"?"Enviado":"Publicado"} el ${fecha(x.tp||x.t)}</span></div>
   ${modo==="rev"&&x.email?`<p class="note">Lo manda ${esc(x.email)}</p>`:""}
   ${modo==="mia"?`<p class="note">⏳ Pendiente de revisar. Cuando se publique aparecerá en Seguidores.</p>`:""}
+  ${d.foto?`<img src="${d.foto}" alt="" data-fotobig style="width:100%;max-height:300px;object-fit:cover;border-radius:12px;display:block;margin:6px 0 10px;cursor:zoom-in">`:""}
   ${x.com?`<p class="desc" style="white-space:pre-wrap">${esc(x.com)}</p>`:""}
-  ${x.tipo==="carpeta"?`<div style="margin:8px 0">${(d.ts||[]).map(t=>`<div class="segrow" style="cursor:default"><span class="e">🧵</span><span class="b"><b>${esc(t.n)}</b><small>Track${t.km?" · "+kmT(t.km):""}${t.up?" · +"+t.up.toLocaleString("es-ES")+" m":""}</small></span></div>`).join("")}${(d.ps||[]).map(p=>`<div class="segrow" style="cursor:default"><span class="e">${MPI.emo?MPI.emo(p.ic):"📍"}</span><span class="b"><b>${esc(p.n)}</b><small>${p.a?p.a.toLocaleString("es-ES")+" m":""}${p.nota?" · "+esc(p.nota):""}</small></span></div>`).join("")}</div>`:""}
+  ${x.tipo==="carpeta"?`<div style="margin:8px 0">${(d.ts||[]).map(t=>`<div class="segrow" style="cursor:default"><span class="e">🧵</span><span class="b"><b>${esc(t.n)}</b><small>Track${t.km?" · "+kmT(t.km):""}${t.up?" · +"+t.up.toLocaleString("es-ES")+" m":""}</small></span></div>`).join("")}${(d.ps||[]).map(p=>`<div class="segrow" style="cursor:default"><span class="e">${MPI.emo?MPI.emo(p.ic):"📍"}</span><span class="b"><b>${esc(p.n)}</b><small>${p.a?p.a.toLocaleString("es-ES")+" m":""}${p.nota?" · "+esc(p.nota):""}</small></span>${p.foto?`<img src="${p.foto}" alt="" data-fotobig style="width:64px;height:64px;object-fit:cover;border-radius:10px;flex:none;cursor:zoom-in">`:""}</div>`).join("")}</div>`:""}
   ${links.length?`<div class="seglinks">${links.map(u=>{const[i,t]=linkIco(u);return`<a class="mpb" target="_blank" rel="noopener nofollow" href="${esc(u)}">${i} ${esc(t)}</a>`}).join("")}</div>`:""}
   ${(modo==="pub"&&(esAdm()||(yo&&yo.uid===x.uid)))||modo==="mia"?`<div class="mpacts"><button class="mpb dan" data-segdel="${esc(x.id)}" data-modo="${modo}">🗑 ${modo==="mia"?"Retirar mi propuesta":"Quitar de Seguidores"}</button></div>`:""}
   ${q?`<h3 style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px">El tiempo</h3><div class="wx" data-lat="${q[0]}" data-lon="${q[1]}" data-alt="${q[2]!=null?Math.round(q[2]):""}"></div>`:""}`);
@@ -140,14 +142,14 @@ sheet.addEventListener("click",e=>{const x=sheet._seg;
   if(e.target.closest("[data-segsave]")){const go=()=>{const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6),nota=[x.com,"Compartido por "+(x.quien||"un seguidor"),...(x.links||[])].filter(Boolean).join("\n");
       if(x.tipo==="carpeta"){const k=MPI.guardarCarpeta(x.n,d.ps||[],d.ts||[],nota);toast(k?`Guardado en la carpeta «${x.n}» (Mis cosas › Puntos)`:"Ya tenías todo eso");quitaTmp();sheet.hidden=true;return}
       if(x.tipo==="track"){const o={id,n:x.n,km:d.km,pts:d.pts,src:"gpx",f:new Date().toISOString()};MPI.desn(o);MPI.saveTracks([...MPI.tracks(),o]);toast("Guardado en Mis cosas › Tracks")}
-      else{MPI.addPoint({id,n:x.n,lat:d.lat,lon:d.lon,a:d.a,ic:d.ic||"otro",nota,f:new Date().toISOString()});toast("Guardado en Mis cosas › Puntos")}};
+      else{MPI.addPoint({id,n:x.n,lat:d.lat,lon:d.lon,a:d.a,ic:d.ic||"otro",nota,f:new Date().toISOString(),...(d.foto?{fo:1}:{})});if(d.foto&&MPI.fotoPut)MPI.fotoPut(id,d.foto);toast("Guardado en Mis cosas › Puntos")}};
     if(window.cuentaOk&&!cuentaOk(go,x.tipo==="track"?"tracks":"puntos"))return;go()}});
 addEventListener("keydown",e=>{if(e.key==="Escape")quitaTmp()});
 
 /* --- «👥 Proponer al grupo» en la ficha de un punto o un track tuyo --- */
 const r1=v=>Math.round(v*1e5)/1e5;
 function deMio(){const pb=sheet.querySelector("[data-mpshare]");
-  if(pb){const p=MPI.get().find(x=>String(x.id)===pb.dataset.mpshare);return p?{tipo:"punto",n:p.n,com:p.nota||"",dd:{lat:r1(p.lat),lon:r1(p.lon),a:p.a!=null?Math.round(p.a):null,ic:p.ic||"otro"}}:null}
+  if(pb){const p=MPI.get().find(x=>String(x.id)===pb.dataset.mpshare);return p?{tipo:"punto",n:p.n,com:p.nota||"",pid:p.fo?p.id:null,dd:{lat:r1(p.lat),lon:r1(p.lon),a:p.a!=null?Math.round(p.a):null,ic:p.ic||"otro"}}:null}
   if(sheet.querySelector("[data-mtfol]")&&!sheet.querySelector("[data-mtroute]")&&sheet._mt!=null){const t=MPI.tracks().find(x=>String(x.id)===String(sheet._mt));
     if(!t||!t.pts||t.pts.length<2)return null;
     const st=Math.max(1,Math.ceil(t.pts.length/3000)),pts=t.pts.filter((_,i)=>i%st===0||i===t.pts.length-1).map(p=>p[2]!=null?[r1(p[0]),r1(p[1]),Math.round(p[2])]:[r1(p[0]),r1(p[1])]);
@@ -171,7 +173,7 @@ function proponer(it){
       <div class="mpacts"><button class="mpb pri" data-segsend>📨 Enviar propuesta</button><button class="mpb" data-close>Cancelar</button></div>`)};
     if(window.cuentaOk&&!cuentaOk(go,"proponer"))return;go()}
 function proponerCarpeta(n,ps,ts){const pts=q=>{const st=Math.max(1,Math.ceil(q.length/1500));return q.filter((_,i)=>i%st===0||i===q.length-1).map(p=>p[2]!=null?[r1(p[0]),r1(p[1]),Math.round(p[2])]:[r1(p[0]),r1(p[1])])};
-  const dd={ps:ps.map(p=>({n:p.n,lat:r1(p.lat),lon:r1(p.lon),a:p.a!=null?Math.round(p.a):null,ic:p.ic||"otro",nota:p.nota||""})),
+  const dd={ps:ps.map(p=>({n:p.n,lat:r1(p.lat),lon:r1(p.lon),a:p.a!=null?Math.round(p.a):null,ic:p.ic||"otro",nota:p.nota||"",pid:p.fo?p.id:undefined})),
     ts:ts.map(t=>{const q=MPI.ptsOf(t)||[];return q.length>1?{n:t.n,km:t.km||null,up:t.up!=null?t.up:null,pts:pts(q)}:null}).filter(Boolean)};
   if(typeof showView==="function")showView("mapa");proponer({tipo:"carpeta",n,com:"",dd})}
 async function enviar(b){const u=LDCFB.user();if(!u){toast("Entra con tu cuenta de Google");return}
@@ -180,6 +182,10 @@ async function enviar(b){const u=LDCFB.user();if(!u){toast("Entra con tu cuenta 
   const bad=(sheet.querySelector("[data-segl]").value||"").split(/\s+/).filter(s=>s&&!/^https?:\/\//i.test(s));
   if(bad.length&&!confirm("Algún enlace no empieza por http:// o https:// y no se enviará. ¿Seguir?"))return;
   b.disabled=true;b.textContent="Enviando…";
+  // fotos: se mandan reducidas (el documento no puede pasar de 1 MB)
+  const peq=async j=>{try{const im=new Image();im.src=j;await im.decode();const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);return c.toDataURL("image/jpeg",.6)}catch(e){return null}};
+  if(PROP.tipo==="punto"&&PROP.pid&&MPI.fotoGet){const j=await MPI.fotoGet(PROP.pid);if(j)PROP.dd.foto=await peq(j)}
+  if(PROP.tipo==="carpeta"&&MPI.fotoGet){let tot=JSON.stringify(PROP.dd).length;for(const p of PROP.dd.ps){const id=p.pid;delete p.pid;if(!id)continue;const j=await MPI.fotoGet(id);const f=j&&await peq(j);if(f&&tot+f.length<850000){p.foto=f;tot+=f.length}}}
   try{const a=await fb(),fs=a.fs;
     await fs.addDoc(fs.collection(a.db,"propuestas"),{tipo:PROP.tipo,n:PROP.n.slice(0,100),com,links,quien,uid:u.uid,email:u.email||"",t:Date.now(),d:JSON.stringify(PROP.dd)});
     PROP=null;sheet.hidden=true;toast("¡Enviado! Cuando se revise aparecerá en Seguidores");cargarRev()}

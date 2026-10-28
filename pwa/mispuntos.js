@@ -80,36 +80,54 @@ function syncMP(){const a=LAY.mp&&MP.length&&!window.FOLONLY,b=LAY.mt&&MT.length
 
 /* ficha y formulario en el panel */
 function show(html){sheet.classList.remove("full");sheet.innerHTML=`<div class="grab"></div>`+html;sheet.hidden=false;sheet.scrollTop=0}
+/* fotos de mis puntos: en el móvil (caché «ldc-fotos») y en la cuenta (usuarios/{uid}/fotos/{id}) */
+const FC="ldc-fotos",fkey=id=>"/foto/"+id,FMEM={};
+async function fotoGet(id){if(FMEM[id])return FMEM[id];try{const c=await caches.open(FC),r=await c.match(fkey(id));if(r)return await r.text()}catch(e){}
+  const u=window.LDCFB&&LDCFB.user();if(!u||!navigator.onLine)return null;
+  try{const a=await LDCFB.load(),d=await a.fs.getDoc(a.fs.doc(a.db,"usuarios",u.uid,"fotos",String(id)));if(!d.exists())return null;const j=d.data().j;try{(await caches.open(FC)).put(fkey(id),new Response(j))}catch(e){}return j}catch(e){return null}}
+async function fotoPut(id,j){FMEM[id]=j;try{(await caches.open(FC)).put(fkey(id),new Response(j))}catch(e){}
+  const u=window.LDCFB&&LDCFB.user();if(!u)return;try{const a=await LDCFB.load();await a.fs.setDoc(a.fs.doc(a.db,"usuarios",u.uid,"fotos",String(id)),{j,t:Date.now()})}catch(e){console.warn("foto",e)}}
+async function fotoDel(id){delete FMEM[id];try{(await caches.open(FC)).delete(fkey(id))}catch(e){}const u=window.LDCFB&&LDCFB.user();if(!u)return;try{const a=await LDCFB.load();await a.fs.deleteDoc(a.fs.doc(a.db,"usuarios",u.uid,"fotos",String(id)))}catch(e){}}
+function reduce(file,max,q){return new Promise((ok,no)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);ok(c.toDataURL("image/jpeg",q))};img.onerror=()=>{URL.revokeObjectURL(url);no(new Error("imagen"))};img.src=url})}
+async function pintaFoto(el,id){const j=await fotoGet(id);if(j&&el.isConnected){el.innerHTML=`<img src="${j}" alt="" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;display:block;margin:4px 0 10px;cursor:zoom-in" data-fotobig>`}else if(el.isConnected)el.remove()}
+document.addEventListener("click",e=>{const im=e.target.closest("[data-fotobig]");if(!im)return;const v=document.createElement("div");v.style.cssText="position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.92);display:grid;place-items:center;cursor:zoom-out";v.innerHTML=`<img src="${im.src}" style="max-width:100%;max-height:100%">`;v.onclick=()=>v.remove();document.body.appendChild(v)});
 function openMP(id){const p=MP.find(x=>x.id===id);if(!p)return;MPSEL=id;sheet._mp=null;drawMP();if(p.a==null)alti(p);
   const ll=`${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}`;
   show(`<div class="sheet-head"><h2>${EMO(p.ic)} ${esc(p.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="meta"><span class="tag">Mi punto · ${esc(ICO(p.ic)[2])}</span>${p.a!=null?`<span class="tag alt">${p.a.toLocaleString("es-ES")} m</span>`:""}${p.f?`<span class="tag">${fmtF(p.f)}</span>`:""}</div>
+  ${p.fo?`<div data-fotov="${p.id}" style="min-height:40px"></div>`:""}
   ${p.nota?`<p class="desc" style="white-space:pre-wrap">${esc(p.nota)}</p>`:""}
   <p class="note">${ll}${p.acc?` · precisión ±${Math.round(p.acc)} m`:""}</p>
   <div class="mpacts"><a class="mpb pri" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}">🚗 Cómo llegar</a>
-  <button class="mpb" data-mpshare="${p.id}">📤 Compartir</button><button class="mpb" data-mpedit="${p.id}">✏️ Editar</button>
+  <button class="mpb" data-mpshare="${p.id}">📤 Compartir</button><button class="mpb" data-mpedit="${p.id}">✏️ Editar</button><button class="mpb" data-mtcar="${p.id}">📁 ${p.c?esc(p.c):"Carpeta"}</button>
   <button class="mpb" data-mpnear="${p.id}">🔎 Rutas cerca</button><button class="mpb dan" data-mpdel="${p.id}"><svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg> Borrar</button></div>
-  <h3 style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px">El tiempo</h3><div class="wx" data-lat="${p.lat}" data-lon="${p.lon}" data-alt="${p.a!=null?p.a:""}"></div>`)}
+  <h3 style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px">El tiempo</h3><div class="wx" data-lat="${p.lat}" data-lon="${p.lon}" data-alt="${p.a!=null?p.a:""}"></div>`);
+  const fv=sheet.querySelector("[data-fotov]");if(fv)pintaFoto(fv,p.id)}
 function form(p,isNew){const ic=p.ic||"otro";
   show(`<div class="sheet-head"><h2>${isNew?"Nuevo punto":"Editar punto"}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="mpform"><p class="note">${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}${p.acc?` · precisión ±${Math.round(p.acc)} m`:""}</p>
   <label for="mpn">Nombre</label><input type="text" id="mpn" maxlength="80" value="${esc(p.n||"")}" placeholder="Por ejemplo: Fuente de la braña">
   <label>Icono</label><div class="mpicos">${ICOS.map(x=>`<button type="button" data-mpic="${x[0]}" aria-pressed="${x[0]===ic}"><span>${EMO(x[0])}</span>${x[2]}</button>`).join("")}</div>
+  <label>Foto (opcional)</label><div class="mpfotof"><div data-fprev>${p.fo?`<div data-fotov2="${p.id}"></div>`:""}</div>
+  <div class="mpacts" style="margin:4px 0 10px"><label class="mpb" style="cursor:pointer">📷 <span data-fl>${p.fo?"Cambiar foto":"Añadir foto"}</span><input type="file" accept="image/*" data-mpfoto style="display:none"></label>${p.fo?`<button type="button" class="mpb dan" data-mpfotox>Quitar foto</button>`:""}</div></div>
   <label for="mpt">Nota (opcional)</label><textarea id="mpt" rows="3" maxlength="1000" placeholder="Agua todo el año, sitio para aparcar 5 coches…">${esc(p.nota||"")}</textarea>
   <div class="mpacts"><button class="mpb pri" data-mpsave>💾 Guardar</button>${isNew?"":`<button class="mpb" data-mpmove="${p.id}">✥ Mover de sitio</button>`}<button class="mpb" data-close>Cancelar</button></div></div>`);
-  sheet._mp={...p,ic,isNew};setTimeout(()=>{const i=document.getElementById("mpn");if(i&&isNew)i.focus()},50)}
+  sheet._mp={...p,ic,isNew};const f2=sheet.querySelector("[data-fotov2]");if(f2)pintaFoto(f2,p.id);setTimeout(()=>{const i=document.getElementById("mpn");if(i&&isNew)i.focus()},50)}
 function newAt(lat,lon,acc){if(window.cuentaOk&&!cuentaOk(()=>newAt(lat,lon,acc),"puntos"))return;form({lat:c5(lat),lon:c5(lon),acc,n:"",ic:"otro"},true)}
 
+sheet.addEventListener("change",async e=>{const i=e.target.closest("[data-mpfoto]");if(!i||!sheet._mp||!i.files||!i.files[0])return;
+  try{toast("Preparando la foto…");const j=await reduce(i.files[0],1280,.72);sheet._mp.foto=j;sheet._mp.fotoX=false;sheet.querySelector("[data-fprev]").innerHTML=`<img src="${j}" alt="" style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;display:block;margin:4px 0">`;sheet.querySelector("[data-fl]").textContent="Cambiar foto"}catch(er){toast("No he podido leer esa foto")}});
 sheet.addEventListener("click",e=>{
+  if(e.target.closest("[data-mpfotox]")&&sheet._mp){sheet._mp.foto=null;sheet._mp.fotoX=true;sheet.querySelector("[data-fprev]").innerHTML=`<p class="note">La foto se quitará al guardar.</p>`;return}
   const ic=e.target.closest("[data-mpic]");if(ic){sheet.querySelectorAll("[data-mpic]").forEach(b=>b.setAttribute("aria-pressed",b===ic));if(sheet._mp)sheet._mp.ic=ic.dataset.mpic;return}
   if(e.target.closest("[data-mpsave]")){const d=sheet._mp;if(!d)return;const n=(document.getElementById("mpn").value||"").trim()||ICO(d.ic)[2];const nota=(document.getElementById("mpt").value||"").trim();
-    if(d.isNew){const p={id:nid(),n,ic:d.ic,nota,lat:d.lat,lon:d.lon,f:new Date().toISOString()};if(d.acc)p.acc=Math.round(d.acc);MP.push(p);saveMP();toast("Punto guardado");alti(p);if(!LAY.mp){LAY.mp=true;saveLay();const b=document.querySelector('[data-lay="mp"]');if(b)b.setAttribute("aria-pressed",true)}drawMP();renderBox();openMP(p.id)}
-    else{const p=MP.find(x=>x.id===d.id);if(p){p.n=n;p.ic=d.ic;p.nota=nota;saveMP();drawMP();renderBox();openMP(p.id)}}
+    if(d.isNew){const p={id:nid(),n,ic:d.ic,nota,lat:d.lat,lon:d.lon,f:new Date().toISOString()};if(d.acc)p.acc=Math.round(d.acc);if(d.foto){p.fo=1;fotoPut(p.id,d.foto)}MP.push(p);saveMP();toast("Punto guardado");alti(p);if(!LAY.mp){LAY.mp=true;saveLay();const b=document.querySelector('[data-lay="mp"]');if(b)b.setAttribute("aria-pressed",true)}drawMP();renderBox();openMP(p.id)}
+    else{const p=MP.find(x=>x.id===d.id);if(p){p.n=n;p.ic=d.ic;p.nota=nota;if(d.foto){p.fo=1;fotoPut(p.id,d.foto)}else if(d.fotoX){delete p.fo;fotoDel(p.id)}saveMP();drawMP();renderBox();openMP(p.id)}}
     return}
   const mv=e.target.closest("[data-mpmove]");if(mv){const p=MP.find(x=>x.id===mv.dataset.mpmove);if(p){map.setView([p.lat,p.lon],Math.max(map.getZoom(),16),{animate:false});cross(p.id)}return}
   const ed=e.target.closest("[data-mpedit]");if(ed){const p=MP.find(x=>x.id===ed.dataset.mpedit);if(p)form(p,false);return}
   const dl=e.target.closest("[data-mpdel]");if(dl){if(dl.dataset.sure!=="1"){dl.dataset.sure="1";dl.textContent="¿Seguro? Toca otra vez";return}
-    MP=MP.filter(x=>x.id!==dl.dataset.mpdel);saveMP();MPSEL=null;drawMP();renderBox();sheet.hidden=true;toast("Punto borrado");return}
+    {const q=MP.find(x=>x.id===dl.dataset.mpdel);if(q&&q.fo)fotoDel(q.id)}MP=MP.filter(x=>x.id!==dl.dataset.mpdel);saveMP();MPSEL=null;drawMP();renderBox();sheet.hidden=true;toast("Punto borrado");return}
   const sh=e.target.closest("[data-mpshare]");if(sh){const p=MP.find(x=>x.id===sh.dataset.mpshare);if(p)shareMP(p);return}
   const nr=e.target.closest("[data-mpnear]");if(nr){const p=MP.find(x=>x.id===nr.dataset.mpnear);if(p&&window.nearAt)nearAt(p.lat,p.lon,p.n);return}
   if(e.target.closest("[data-close]")){MPSEL=null;drawMP()}
@@ -172,7 +190,7 @@ function pintaMP(){const l=box.querySelector("#mplist");if(!l)return;const q=nkP
 box.addEventListener("click",e=>{
   const re=e.target.closest("[data-mpred]");if(re){const p=MP.find(x=>x.id===re.dataset.mpred);if(p){showView("mapa");map.setView([p.lat,p.lon],Math.max(map.getZoom(),15),{animate:false});MPSEL=p.id;drawMP();form(p,false)}return}
   const rd=e.target.closest("[data-mprdel]");if(rd){if(rd.dataset.sure!=="1"){rd.dataset.sure="1";rd.classList.add("sure");rd.innerHTML="¿Seguro?";setTimeout(()=>{if(rd.isConnected){rd.dataset.sure="";rd.classList.remove("sure");rd.innerHTML='<svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>'}},4000);return}
-    MP=MP.filter(x=>x.id!==rd.dataset.mprdel);saveMP();drawMP();renderBox();toast("Punto borrado");return}
+    {const q=MP.find(x=>x.id===rd.dataset.mprdel);if(q&&q.fo)fotoDel(q.id)}MP=MP.filter(x=>x.id!==rd.dataset.mprdel);saveMP();drawMP();renderBox();toast("Punto borrado");return}
   const gt=e.target.closest("[data-mpgt]");if(gt){if(window.MISTRACKS)MISTRACKS.open(gt.dataset.mpgt,true);return}
   const fa=e.target.closest("[data-mpfa]");if(fa){carpetaAccion(fa.closest("[data-fn]").dataset.fn,fa.dataset.mpfa);return}
   const fo=e.target.closest("[data-mpf]");if(fo){const n=fo.dataset.mpf;if(OPENF.has(n))OPENF.delete(n);else OPENF.add(n);pintaMP();return}
@@ -288,7 +306,7 @@ function carpetaAccion(n,a){const ps=enCarpeta(n),ts=tracksCarpeta(n);if(!ps.len
   if(a==="prop"){if(window.SEGUIDORES&&SEGUIDORES.proponerCarpeta)SEGUIDORES.proponerCarpeta(n,ps,ts)}}
 // guardar una carpeta que viene de otro (enlace o Seguidores)
 function guardarCarpeta(n0,ps,ts,nota){let n=n0||"Compartido";if(MP.some(p=>p.c===n)||MT.some(t=>t.c===n))n=n+" (compartido)";const have=new Set(MP.map(p=>p.lat.toFixed(4)+","+p.lon.toFixed(4)+"|"+p.n));let k=0;
-  for(const p of ps||[]){const h=(+p.lat).toFixed(4)+","+(+p.lon).toFixed(4)+"|"+p.n;if(have.has(h))continue;MP.push({id:nid(),n:p.n||"Punto",ic:p.ic||"otro",nota:[p.nota,nota].filter(Boolean).join("\n"),lat:c5(+p.lat),lon:c5(+p.lon),a:p.a!=null?p.a:undefined,c:n,f:new Date().toISOString()});k++}
+  for(const p of ps||[]){const h=(+p.lat).toFixed(4)+","+(+p.lon).toFixed(4)+"|"+p.n;if(have.has(h))continue;const nq={id:nid(),n:p.n||"Punto",ic:p.ic||"otro",nota:[p.nota,nota].filter(Boolean).join("\n"),lat:c5(+p.lat),lon:c5(+p.lon),a:p.a!=null?p.a:undefined,c:n,f:new Date().toISOString()};if(p.foto){nq.fo=1;fotoPut(nq.id,p.foto)}MP.push(nq);k++}
   for(const t of ts||[]){if(!t.pts||t.pts.length<2||MT.some(x=>x.n===t.n&&x.pts&&x.pts.length&&Math.abs(x.pts[0][0]-t.pts[0][0])<1e-4))continue;const o={id:nid(),n:t.n||"Track",km:t.km,pts:t.pts,src:"gpx",c:n,f:new Date().toISOString()};desn(o);MT.push(o);k++;if(t.pts.some(x=>x[2]==null))setTimeout(()=>demAlt(o.id),500)}
   saveMP();if((ts||[]).length){saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render()}OPENF.add(n);LAY.mp=true;LAY.mt=true;saveLay();drawMP();renderBox();return k}
 // compartir: enlace corto (la carpeta se guarda en la nube) y, además, el archivo GPX
@@ -344,20 +362,20 @@ sheet.addEventListener("click",e=>{const d=sheet._tmpc;if(!d)return;
       for(const t of d.ts||[]){if(MT.some(x=>x.n===t.n&&x.pts&&x.pts.length&&Math.abs(x.pts[0][0]-t.pts[0][0])<1e-4))continue;const o={id:nid(),n:t.n||"Track",km:t.km,pts:t.pts,src:"gpx",c:n,f:new Date().toISOString()};desn(o);MT.push(o);k++;if(t.pts.some(x=>x[2]==null))setTimeout(()=>demAlt(o.id),500)}
       saveMP();if((d.ts||[]).length){saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render()}if(TMPC){TMPC.remove();TMPC=null}sheet._tmpc=null;OPENF.add(n);LAY.mp=true;LAY.mt=true;saveLay();drawMP();renderBox();sheet.hidden=true;toast(k?`Guardado en la carpeta «${n}» (Mis cosas › Puntos)`:"Ya tenías todo eso")};
     if(window.cuentaOk&&!cuentaOk(go,"puntos"))return;go()}});
-function carpetaTrack(id){const t=MT.find(x=>String(x.id)===String(id));if(!t)return;const ex=nombresCarpetas();
+function carpetaTrack(id){const t=MT.find(x=>String(x.id)===String(id))||MP.find(x=>String(x.id)===String(id));if(!t)return;const ex=nombresCarpetas(),esP=t.lat!=null;
   show(`<div class="sheet-head"><h2>📁 Meter en una carpeta</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
-  <p>Track <b>${esc(t.n)}</b>${t.c?` · ahora en <b>📁 ${esc(t.c)}</b>`:""}</p>
+  <p>${esP?"Punto":"Track"} <b>${esc(t.n)}</b>${t.c?` · ahora en <b>📁 ${esc(t.c)}</b>`:""}</p>
   ${ex.length?`<p style="font-weight:700;margin:12px 0 4px">En una que ya tienes</p><div class="mpacts" style="margin-top:0">${ex.map(n=>`<button class="mpb${n===t.c?" pri":""}" data-ctex="${esc(n)}">📁 ${esc(n)}</button>`).join("")}</div>`:""}
   <p style="font-weight:700;margin:14px 0 4px">En una nueva</p><input id="ctn" class="mpq" maxlength="60" placeholder="Nombre de la carpeta (p. ej. la ruta)">
   <div class="mpacts"><button class="mpb pri" data-ctnew>📁 Crear y meter</button>${t.c?`<button class="mpb" data-ctout>📂 Sacar de la carpeta</button>`:""}</div>`);sheet._ct=t.id}
-sheet.addEventListener("click",e=>{if(sheet._ct==null)return;const t=MT.find(x=>String(x.id)===String(sheet._ct));if(!t)return;let n=null;
+sheet.addEventListener("click",e=>{if(sheet._ct==null)return;const t=MT.find(x=>String(x.id)===String(sheet._ct))||MP.find(x=>String(x.id)===String(sheet._ct));if(!t)return;const esP=t.lat!=null;let n=null;
   const b=e.target.closest("[data-ctex]");if(b)n=b.dataset.ctex;
   if(e.target.closest("[data-ctnew]")){n=(sheet.querySelector("#ctn").value||"").trim().slice(0,60);if(!n){toast("Escribe el nombre de la carpeta");return}}
   const out=e.target.closest("[data-ctout]");if(!n&&!out)return;
-  const go=()=>{if(out)delete t.c;else t.c=n;saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();renderBox();sheet._ct=null;toast(out?"Sacado de la carpeta":`Metido en 📁 «${n}»`);if(window.MISTRACKS)MISTRACKS.open(t.id,false)};
-  if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go()});
+  const go=()=>{if(out)delete t.c;else t.c=n;if(esP){saveMP();drawMP()}else{saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render()}renderBox();sheet._ct=null;toast(out?"Sacado de la carpeta":`Metido en 📁 «${n}»`);if(esP)openMP(t.id);else if(window.MISTRACKS)MISTRACKS.open(t.id,false)};
+  if(window.cuentaOk&&!cuentaOk(go,esP?"puntos":"tracks"))return;go()});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-mtcar]");if(b)carpetaTrack(b.dataset.mtcar)});
-window.MISPUNTOS={get:()=>MP,verCompartidos,carpetaTrack,guardarCarpeta,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
+window.MISPUNTOS={get:()=>MP,verCompartidos,carpetaTrack,guardarCarpeta,fotoGet,fotoPut,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
   addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),ptsOf,desn,demAlt,dl,
   saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
   importText(txt,n,prev){try{imp(String(txt),n||"track.gpx",prev)}catch(e){toast("No he podido leer ese archivo (solo GPX o KML)")}},
