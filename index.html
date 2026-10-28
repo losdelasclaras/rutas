@@ -2548,12 +2548,12 @@ sheet.addEventListener("click",async e=>{const d=sheet._sh;if(!d)return;
 /* abrir un enlace de track compartido */
 let TMP=null;
 function abrirCompartido(){const h=location.hash||"";
-  if(/^#c=[A-Za-z0-9]{4,20}$/.test(h)){const c=h.slice(3);try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}if(window.LDCFB)abrirCorto(c);return true}
-  if(h.startsWith("#f=")){try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+  if(/^#c=[A-Za-z0-9]{4,20}$/.test(h)){const c=h.slice(3);try{history.replaceState(null,"",location.pathname+location.search.replace(/^\?g=\d+$/,""))}catch(e){}if(window.LDCFB)abrirCorto(c);return true}
+  if(h.startsWith("#f=")){try{history.replaceState(null,"",location.pathname+location.search.replace(/^\?g=\d+$/,""))}catch(e){}
     try{const o=JSON.parse(decodeURIComponent(h.slice(3)));MPI.verCompartidos({n:o.n,ps:{ps:(o.p||[]).map(x=>({n:x[0],lat:x[1],lon:x[2],ic:x[3],a:x[4]})),ts:(o.t||[]).map(x=>({n:x[0],pts:dec(x[1])}))}})}catch(e){toast("Ese enlace no es válido")}return true}
   if(!h.startsWith("#t="))return false;
   const raw=h.slice(3),cut=raw.lastIndexOf("!"),code=decodeURIComponent(cut>=0?raw.slice(0,cut):raw),nm=cut>=0?raw.slice(cut+1):"";let pts=[];try{pts=dec(code)}catch(e){}
-  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+  try{history.replaceState(null,"",location.pathname+location.search.replace(/^\?g=\d+$/,""))}catch(e){}
   if(pts.length<2){toast("Ese enlace de track no es válido");return true}
   const n=decodeURIComponent(nm||"Track compartido");let km=0;for(let i=1;i<pts.length;i++)km+=map.distance(pts[i-1],pts[i]);km=Math.round(km/100)/10;
   mostrar({n,pts,km},"enlace");return true}
@@ -2679,5 +2679,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="b364c2485c";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="0aea06d149";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
