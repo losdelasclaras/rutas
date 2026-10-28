@@ -250,10 +250,10 @@ class GrabarActivity : Activity() {
         val r = guardarGpx(this, pts, nombre)
         if (r == null) { web.evaluateJavascript("cierra();refresca();aviso('No he podido guardar el GPX en Descargas')", null); return }
         Grab.prefs(this).edit().putString("uri", r.second.toString()).putString("donde", r.first).putString("nombre", nombre).apply()
-        val js = "hecho(" + JSONObject.quote(nombre) + "," + JSONObject.quote(r.first) + ",%s)"
-        if (getSharedPreferences("buzon", MODE_PRIVATE).getString("b", null) == null) { web.evaluateJavascript(js.format("'sinbuzon'"), null); return }
-        web.evaluateJavascript(js.format("'enviando'"), null)
-        Buzon.enviar(this, pts, nombre) { ok -> runOnUiThread { web.evaluateJavascript(js.format(if (ok) "'ok'" else "'pendiente'"), null) } }
+        val js = "hecho(" + JSONObject.quote(nombre) + "," + JSONObject.quote(r.first) + ",\u0001EST\u0001)"
+        if (getSharedPreferences("buzon", MODE_PRIVATE).getString("b", null) == null) { web.evaluateJavascript(js.replace("\u0001EST\u0001", "'sinbuzon'"), null); return }
+        web.evaluateJavascript(js.replace("\u0001EST\u0001", "'enviando'"), null)
+        Buzon.enviar(this, pts, nombre) { ok -> runOnUiThread { web.evaluateJavascript(js.replace("\u0001EST\u0001", if (ok) "'ok'" else "'pendiente'"), null) } }
     }
 
     private fun abrir(pts: List<DoubleArray>, nombre: String) {
