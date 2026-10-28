@@ -1,0 +1,6 @@
+{
+  "appId": "es.losdelasclaras.grabar",
+  "appName": "LdC Grabar",
+  "webDir": "www",
+  "android": { "allowMixedContent": false }
+}

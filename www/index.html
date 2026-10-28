@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LdC Grabar</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+:root{--ink:#1f2a24;--paper:#f4f6f2;--card:#fff;--muted:#5d6b62;--mark:#c3262e;--edge:#d9dfd9}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font:18px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--edge)}
+header img{width:40px;height:40px;border-radius:10px}header b{font-size:20px;flex:1}
+header button{border:1px solid var(--edge);background:var(--card);border-radius:10px;padding:8px 12px;font-size:16px;font-weight:700}
+#map{flex:1;min-height:200px;background:#e8e6dc}
+.pan{background:var(--card);border-top:1px solid var(--edge);padding:12px 14px 14px}
+.st{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;gap:6px}
+.st b{display:block;font-size:30px;font-variant-numeric:tabular-nums;line-height:1.1}.st small{color:var(--muted);font-weight:700;font-size:14px}
+.est{margin:10px 0;padding:9px 12px;border-radius:12px;font-weight:700;font-size:16px;background:#f1f1f1}
+.est.rec{background:#c3262e;color:#fff}.est.pau{background:#fff1e0;color:#8a4b00}
+.bt{display:flex;gap:8px}.bt button{flex:1;border:0;border-radius:14px;padding:16px 8px;font-size:20px;font-weight:800}
+.go{background:#c3262e;color:#fff}.ps{background:#eceeea;color:var(--ink)}.fn{background:var(--ink);color:#fff}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;z-index:2000}
+.sheet[hidden]{display:none}
+.sh{background:var(--card);width:100%;max-height:88%;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
+.sh h2{margin:0 0 8px;font-size:22px}
+.sh input{width:100%;font:inherit;font-size:18px;padding:12px;border:1px solid var(--edge);border-radius:12px;margin:6px 0 12px}
+.sh .b2{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:19px;font-weight:800;margin:8px 0}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--edge)}
+.row div{flex:1}.row small{display:block;color:var(--muted);font-size:15px}
+.row button{border:1px solid var(--edge);background:var(--card);border-radius:10px;padding:9px 11px;font-size:17px}
+.nota{color:var(--muted);font-size:15px}
+.me{width:20px;height:20px}.me i{position:absolute;inset:0;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 2px 6px rgba(0,0,0,.35)}
+</style></head><body>
+<header><img src="icono.png" alt=""><b>Grabar recorrido</b><button id="bh">📂 Grabados</button></header>
+<div id="map"></div>
+<div class="pan">
+  <div class="st"><span><b id="tt">0:00</b><small>tiempo</small></span><span><b id="km">0,00</b><small>km</small></span><span><b id="up">+0</b><small>m de subida</small></span></div>
+  <div class="est" id="est">Pulsa <b>Grabar</b> para empezar. Puedes apagar la pantalla: sigue grabando.</div>
+  <div class="bt" id="bt"></div>
+</div>
+<div class="sheet" id="sheet" hidden><div class="sh" id="sh"></div></div>
+<script src="vendor/leaflet.js"></script>
+<script>
+const K="grab-actual",H="grab-hechos";
+const C=window.Capacitor,P=n=>C&&(C.Plugins&&C.Plugins[n]||(C.registerPlugin&&C.registerPlugin(n)));
+const BG=P("BackgroundGeolocation"),FS=P("Filesystem"),SH=P("Share");
+const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const toR=Math.PI/180,dm=(a,b)=>{const dl=(b[0]-a[0])*toR,dn=(b[1]-a[1])*toR;const h=Math.sin(dl/2)**2+Math.cos(a[0]*toR)*Math.cos(b[0]*toR)*Math.sin(dn/2)**2;return 12742000*Math.asin(Math.min(1,Math.sqrt(h)))};
+const hms=ms=>{const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+":":"")+String(m).padStart(h?2:1,"0")+":"+String(x).padStart(2,"0")};
+let G=load(K,null),WID=null,TICK=null;
+const map=L.map("map",{zoomControl:false,attributionControl:false}).setView([43.1,-5.8],9);
+L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17,subdomains:"abc"}).addTo(map);
+const lineB=L.polyline([],{color:"#fff",weight:8,opacity:.9}).addTo(map),line=L.polyline([],{color:"#c3262e",weight:5}).addTo(map);
+let me=null,sigue=true;map.on("dragstart",()=>sigue=false);
+function km(){let d=0;for(let i=1;i<G.pts.length;i++)d+=dm(G.pts[i-1],G.pts[i]);return d}
+function sube(){let up=0,ref=null;for(const p of G.pts){if(p[2]==null)continue;if(ref==null){ref=p[2];continue}if(p[2]-ref>5){up+=p[2]-ref;ref=p[2]}else if(ref-p[2]>5)ref=p[2]}return Math.round(up)}
+const dur=()=>G?Math.max(0,(G.pz||Date.now())-G.t0-G.pau):0;
+function pinta(){$("tt").textContent=hms(dur());$("km").textContent=G?(km()/1000).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2}):"0,00";$("up").textContent="+"+(G?sube():0).toLocaleString("es-ES");
+  const e=$("est");if(!G){e.className="est";e.innerHTML="Pulsa <b>Grabar</b> para empezar. Puedes apagar la pantalla: sigue grabando.";}
+  else if(G.pz){e.className="est pau";e.textContent="⏸ En pausa";}
+  else{e.className="est rec";e.textContent=G.pts.length?"● Grabando · puedes apagar la pantalla":"● Grabando · esperando la señal del GPS…";}
+  $("bt").innerHTML=!G?`<button class="go" data-a="go">⏺ Grabar</button>`:`<button class="ps" data-a="pz">${G.pz?"▶ Seguir":"⏸ Pausa"}</button><button class="fn" data-a="fin">■ Terminar</button>`;
+  const ll=G?G.pts.map(p=>[p[0],p[1]]):[];line.setLatLngs(ll);lineB.setLatLngs(ll)}
+function pos(l){if(!G||G.pz)return;if(l.accuracy>40)return;const p=[Math.round(l.latitude*1e6)/1e6,Math.round(l.longitude*1e6)/1e6,l.altitude!=null?Math.round(l.altitude):null,l.time||Date.now()],q=G.pts[G.pts.length-1];
+  if(!me)me=L.marker([p[0],p[1]],{icon:L.divIcon({className:"me",html:"<i></i>",iconSize:[20,20]})}).addTo(map);else me.setLatLng([p[0],p[1]]);
+  if(q){const d=dm(q,p),s=(p[3]-q[3])/1000;if(d<6)return;if(s>0&&d/s>50)return}
+  const first=!G.pts.length;G.pts.push(p);save(K,G);pinta();if(first)map.setView([p[0],p[1]],15);else if(sigue)map.panTo([p[0],p[1]])}
+async function mira(){if(WID!=null)return;
+  if(BG&&BG.addWatcher){try{WID=await BG.addWatcher({backgroundTitle:"LdC Grabar",backgroundMessage:"Grabando tu recorrido",requestPermissions:true,stale:false,distanceFilter:5},(l,e)=>{if(e){if(e.code==="NOT_AUTHORIZED"){alert("Para grabar, la app necesita permiso de ubicación. Ábrelo en Ajustes › Aplicaciones › LdC Grabar › Permisos › Ubicación.");try{BG.openSettings()}catch(x){}}return}if(l)pos(l)})}catch(e){alert("No he podido arrancar el GPS: "+(e.message||e))}}
+  else if(navigator.geolocation){WID="web:"+navigator.geolocation.watchPosition(p=>pos({latitude:p.coords.latitude,longitude:p.coords.longitude,altitude:p.coords.altitude,accuracy:p.coords.accuracy,time:p.timestamp}),()=>{},{enableHighAccuracy:true,maximumAge:0})}}
+async function para(){if(WID==null)return;try{if(String(WID).startsWith("web:"))navigator.geolocation.clearWatch(+String(WID).slice(4));else await BG.removeWatcher({id:WID})}catch(e){}WID=null}
+function tick(){clearInterval(TICK);TICK=setInterval(()=>{if(G&&!G.pz)$("tt").textContent=hms(dur())},1000)}
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a;
+  if(a==="go"){G={t0:Date.now(),pts:[],pau:0,pz:null};save(K,G);sigue=true;pinta();mira();tick()}
+  else if(a==="pz"){if(G.pz){G.pau+=Date.now()-G.pz;G.pz=null;mira()}else{G.pz=Date.now();para()}save(K,G);pinta()}
+  else if(a==="fin"){if(!G.pz){G.pz=Date.now();save(K,G)}await para();pinta();fin()}
+  else if(a==="guarda")guarda();
+  else if(a==="sigue"){cierra();G.pau+=Date.now()-G.pz;G.pz=null;save(K,G);pinta();mira()}
+  else if(a==="tira"){if(!confirm("¿Tirar lo grabado? No se puede recuperar."))return;G=null;localStorage.removeItem(K);cierra();pinta();line.setLatLngs([]);lineB.setLatLngs([])}
+  else if(a==="sh")envia(load(H,[])[+b.dataset.i]);
+  else if(a==="del"){const h=load(H,[]);if(!confirm("¿Borrar «"+h[+b.dataset.i].n+"»?"))return;h.splice(+b.dataset.i,1);save(H,h);lista()}
+  else if(a==="ver"){const r=load(H,[])[+b.dataset.i];cierra();line.setLatLngs(r.pts.map(p=>[p[0],p[1]]));lineB.setLatLngs(r.pts.map(p=>[p[0],p[1]]));map.fitBounds(line.getBounds(),{padding:[30,30]})}
+  else if(a==="x")cierra()});
+$("bh").onclick=lista;
+function abre(h){$("sh").innerHTML=h;$("sheet").hidden=false}function cierra(){$("sheet").hidden=true}
+$("sheet").addEventListener("click",e=>{if(e.target.id==="sheet")cierra()});
+function fin(){const d=new Date(G.t0);abre(`<h2>■ Grabación terminada</h2>
+  <p><b>${hms(dur())}</b> · <b>${(km()/1000).toLocaleString("es-ES",{maximumFractionDigits:2})} km</b> · <b>+${sube()} m</b></p>
+  ${G.pts.length<2?`<p class="nota">No ha dado tiempo a grabar nada.</p>`:`<label>Nombre</label><input id="nm" maxlength="80" value="Recorrido del ${d.toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}">
+  <button class="b2 go" data-a="guarda">💾 Guardar y enviar</button>`}
+  <button class="b2 ps" data-a="sigue">▶ Seguir grabando</button><button class="b2 ps" data-a="tira" style="color:#b3261e">🗑 Tirar la grabación</button>`)}
+function guarda(){const n=($("nm").value||"").trim()||"Recorrido";const h=load(H,[]);const r={n,t0:G.t0,dur:dur(),km:Math.round(km()/100)/10,up:sube(),pts:G.pts};h.unshift(r);save(H,h.slice(0,30));
+  G=null;localStorage.removeItem(K);pinta();envia(r)}
+function gpx(r){const x=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  return`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="LdC Grabar · Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${x(r.n)}</name><time>${new Date(r.t0).toISOString()}</time></metadata>\n<trk><name>${x(r.n)}</name><trkseg>\n`+
+  r.pts.map(p=>`<trkpt lat="${p[0]}" lon="${p[1]}">${p[2]!=null?`<ele>${p[2]}</ele>`:""}<time>${new Date(p[3]).toISOString()}</time></trkpt>`).join("\n")+`\n</trkseg></trk>\n</gpx>\n`}
+async function envia(r){const nm=r.n.replace(/[^\wáéíóúñüÁÉÍÓÚÑÜ -]/g,"").trim().replace(/\s+/g,"-")+".gpx";
+  abre(`<h2>📤 ${esc(r.n)}</h2><p>${r.km.toLocaleString("es-ES")} km · +${r.up} m</p><p class="nota">Para verlo en el mapa de <b>LdC Rutas</b>, elige <b>LdC Rutas</b> en la lista. También puedes mandarlo por WhatsApp o abrirlo con Wikiloc.</p><button class="b2 ps" data-a="x">Cerrar</button>`);
+  try{const w=await FS.writeFile({path:nm,data:gpx(r),directory:"CACHE",encoding:"utf8"});await SH.share({title:r.n,text:r.n,files:[w.uri],dialogTitle:"Enviar el GPX"})}
+  catch(e){if(!/cancel/i.test(String(e&&e.message||e)))alert("No he podido compartirlo: "+(e.message||e))}}
+function lista(){const h=load(H,[]);abre(`<h2>📂 Grabados</h2>${h.length?h.map((r,i)=>`<div class="row"><div><b>${esc(r.n)}</b><small>${new Date(r.t0).toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})} · ${r.km.toLocaleString("es-ES")} km · +${r.up} m</small></div><button data-a="ver" data-i="${i}">🗺</button><button data-a="sh" data-i="${i}">📤</button><button data-a="del" data-i="${i}">🗑</button></div>`).join(""):`<p class="nota">Todavía no has grabado nada.</p>`}
+  <p class="nota" style="margin-top:14px">Consejo: si el móvil corta la grabación con la pantalla apagada, ve a Ajustes › Aplicaciones › LdC Grabar › Batería y elige «Sin restricciones».</p><button class="b2 ps" data-a="x">Cerrar</button>`)}
+pinta();
+if(G){tick();if(!G.pz)mira();if(G.pts.length){map.fitBounds(L.polyline(G.pts.map(p=>[p[0],p[1]])).getBounds(),{padding:[30,30]})}}
+</script></body></html>

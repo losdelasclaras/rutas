@@ -1,0 +1,45 @@
+name: LdC Grabar (Android)
+on:
+  push: { branches: [grabadora] }
+  workflow_dispatch: {}
+permissions: { contents: write, pages: write }
+concurrency: { group: grabadora, cancel-in-progress: true }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - name: Instalar Capacitor
+        run: npm install --no-audit --no-fund
+      - name: Crear proyecto Android
+        run: |
+          npx cap add android
+          # iconos con el escudo
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          cp -r res/* android/app/src/main/res/
+          # permisos: ubicación en segundo plano mientras graba (servicio con notificación)
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's#<application#<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <uses-permission android:name="android.permission.WAKE_LOCK" />\n    <application#' $M
+          # versión
+          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+          npx cap sync android
+          cat $M
+      - name: Compilar
+        run: cd android && chmod +x gradlew && ./gradlew assembleRelease --no-daemon --stacktrace
+      - name: Firmar
+        run: |
+          BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          $BT/zipalign -f -p 4 android/app/build/outputs/apk/release/app-release-unsigned.apk alineado.apk
+          $BT/apksigner sign --ks ldc.keystore --ks-key-alias ldc --ks-pass pass:losdelasclaras --key-pass pass:losdelasclaras --out LdC-Grabar.apk alineado.apk
+          ls -la LdC-Grabar.apk
+      - name: Publicar en la web (rutas/LdC-Grabar.apk)
+        run: |
+          git config --global user.name "Los de las Claras"; git config --global user.email "losdelasclaras@users.noreply.github.com"
+          git clone --depth 1 -b main https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} web
+          cp LdC-Grabar.apk web/LdC-Grabar.apk
+          cd web && git add LdC-Grabar.apk && git commit -qm "LdC Grabar: APK ${{ github.run_number }} [skip ci]" && git push -q origin HEAD:main
+          curl -s -X POST -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github+json" https://api.github.com/repos/${{ github.repository }}/pages/builds || true
