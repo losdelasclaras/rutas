@@ -73,11 +73,15 @@ function fin(){const d=new Date(S.t0);
   <button class="b2 ps" onclick="cierra()">▶ Seguir grabando</button>
   <button class="b2 ps" style="color:#b3261e" onclick="if(confirm('¿Tirar lo grabado? No se puede recuperar.')){cierra();Nativo.tirar()}">🗑 Tirar la grabación</button>`;
   $("sheet").hidden=false}
-function hecho(n,donde){$("sh").innerHTML=`<h2>✓ Guardado</h2><p><b>${n.replace(/</g,"&lt;")}</b></p>
-  <p style="font-size:16px">Está en <b>${donde.replace(/</g,"&lt;")}</b> (archivo GPX).</p>
-  <button class="b2 go" onclick="Nativo.compartir()">📤 Compartir (WhatsApp, Wikiloc…)</button>
-  <p style="font-size:16px;margin:14px 0 6px"><b>Para tenerlo en Mis tracks:</b> en el mapa ve a <b>Mis cosas › Tracks › ⬆️ Cargar GPX/KML</b> y elige el archivo en <b>Descargas › Los de las Claras</b>.</p>
-  <button class="b2 ps" onclick="cierra();Nativo.volver()">← Volver al mapa</button>`;$("sheet").hidden=false;refresca()}
+function hecho(n,donde,est){const e=n.replace(/</g,"&lt;");
+  const msg=est==="ok"?`<p style="font-size:17px">✅ <b>Ya está en tu app</b>, en <b>Mis cosas › Tracks</b>. Vuelve al mapa y lo verás (desde ahí lo puedes ver, cambiar de nombre, borrar o compartir).</p>`:
+    est==="enviando"?`<p style="font-size:17px">⏳ Pasándolo a tu app…</p>`:
+    est==="pendiente"?`<p style="font-size:17px">📶 <b>Sin cobertura</b>: se pasará a tu app en cuanto haya conexión (vuelve a abrir esta pantalla con cobertura).</p>`:
+    `<p style="font-size:16px">Para tenerlo en Mis tracks: en el mapa ve a <b>Mis cosas › Tracks › ⬆️ Cargar GPX/KML</b> y elige el archivo en <b>Descargas › Los de las Claras</b>.</p>`;
+  $("sh").innerHTML=`<h2>✓ ${e}</h2>${msg}
+  <button class="b2 go" onclick="cierra();Nativo.volver()">← Volver al mapa</button>
+  <button class="b2 ps" onclick="Nativo.compartir()">📤 Compartir el GPX (WhatsApp, Wikiloc…)</button>
+  <p style="font-size:14px;color:#5d6b62">Copia de seguridad en ${donde.replace(/</g,"&lt;")}.</p>`;$("sheet").hidden=false;refresca()}
 function cierra(){$("sheet").hidden=true}
 refresca();
 setInterval(()=>{if(document.visibilityState!=="visible")return;S=JSON.parse(Nativo.estado());nuevos();pinta()},2000);

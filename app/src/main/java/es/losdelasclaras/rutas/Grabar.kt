@@ -64,6 +64,49 @@ fun guardarGpx(c: Context, pts: List<DoubleArray>, nombre: String): Pair<String,
     } catch (e: Exception) { null }
 }
 
+/** Buzón en Firestore (buzon/{código}): la grabadora deja ahí el recorrido y la web lo recoge y lo guarda en Mis tracks. */
+object Buzon {
+    private const val URL0 = "https://firestore.googleapis.com/v1/projects/losdelasclaras-rutas/databases/(default)/documents/buzon/"
+    private const val KEY = "AIzaSyBzYlxsZhJVPJpCk0_EgxaplD7zWMOOg1I"
+    private fun pend(c: Context) = File(c.filesDir, "pendientes.json")
+    private fun pedir(url: String, metodo: String, cuerpo: String?): Pair<Int, String> {
+        val k = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+        k.connectTimeout = 15000; k.readTimeout = 20000
+        if (metodo == "PATCH") { k.requestMethod = "POST"; k.setRequestProperty("X-HTTP-Method-Override", "PATCH") } else k.requestMethod = metodo
+        if (cuerpo != null) { k.doOutput = true; k.setRequestProperty("Content-Type", "application/json; charset=utf-8"); k.outputStream.use { it.write(cuerpo.toByteArray()) } }
+        val code = k.responseCode
+        val txt = try { (if (code < 400) k.inputStream else k.errorStream)?.bufferedReader()?.readText() ?: "" } catch (e: Exception) { "" }
+        k.disconnect(); return Pair(code, txt)
+    }
+    /** Añade los recorridos al buzón (lee lo que haya y lo junta). */
+    private fun subir(b: String, nuevos: JSONArray): Boolean {
+        val url = URL0 + b + "?key=" + KEY
+        val (c0, t0) = pedir(url, "GET", null)
+        val todos = JSONArray()
+        if (c0 == 200) try { val prev = JSONArray(JSONObject(t0).getJSONObject("fields").getJSONObject("j").getString("stringValue")); for (i in 0 until prev.length()) todos.put(prev.get(i)) } catch (e: Exception) {}
+        else if (c0 != 404) return false
+        for (i in 0 until nuevos.length()) todos.put(nuevos.get(i))
+        val cuerpo = JSONObject().put("fields", JSONObject().put("j", JSONObject().put("stringValue", todos.toString()))
+            .put("t", JSONObject().put("integerValue", System.currentTimeMillis().toString()))).toString()
+        return pedir(url, "PATCH", cuerpo).first == 200
+    }
+    fun enviar(c: Context, pts: List<DoubleArray>, nombre: String, fin: (Boolean) -> Unit) {
+        val a = JSONArray(); for (q in pts) a.put(JSONArray().put(q[0]).put(q[1]).put(q[3].toLong()))
+        val item = JSONObject().put("n", nombre).put("t0", if (pts.isNotEmpty()) pts[0][3].toLong() else System.currentTimeMillis()).put("p", a)
+        // primero a la lista de pendientes (por si no hay cobertura) y luego se intenta mandar todo
+        synchronized(this) { val l = try { JSONArray(pend(c).readText()) } catch (e: Exception) { JSONArray() }; l.put(item); pend(c).writeText(l.toString()) }
+        Thread { fin(mandar(c)) }.start()
+    }
+    @Synchronized private fun mandar(c: Context): Boolean {
+        val b = c.getSharedPreferences("buzon", Context.MODE_PRIVATE).getString("b", null) ?: return false
+        val f = pend(c); if (!f.exists()) return true
+        val l = try { JSONArray(f.readText()) } catch (e: Exception) { return true }
+        if (l.length() == 0) return true
+        return try { if (subir(b, l)) { f.delete(); true } else false } catch (e: Exception) { false }
+    }
+    fun reintentar(c: Context) { if (pend(c).exists()) Thread { mandar(c) }.start() }
+}
+
 /** Servicio en primer plano: sigue grabando con la pantalla apagada (con la notificación «Grabando tu recorrido»). */
 class GrabarService : Service(), LocationListener {
     private var lm: LocationManager? = null
@@ -129,7 +172,12 @@ class GrabarActivity : Activity() {
         web.addJavascriptInterface(Puente(), "Nativo")
         setContentView(web)
         web.loadUrl("file:///android_asset/grabar.html")
+        buzonDe(intent); Buzon.reintentar(this)
     }
+    override fun onNewIntent(i: Intent?) { super.onNewIntent(i); buzonDe(i) }
+    /** La web pasa su «buzón» (intent://grabar?b=CÓDIGO): ahí se deja la grabación para que la recoja la app. */
+    private fun buzonDe(i: Intent?) { val b = i?.data?.getQueryParameter("b") ?: return
+        if (Regex("[A-Za-z0-9]{12,40}").matches(b)) getSharedPreferences("buzon", MODE_PRIVATE).edit().putString("b", b).apply() }
 
     private fun permisos(): Boolean {
         val faltan = mutableListOf<String>()
@@ -202,7 +250,10 @@ class GrabarActivity : Activity() {
         val r = guardarGpx(this, pts, nombre)
         if (r == null) { web.evaluateJavascript("cierra();refresca();aviso('No he podido guardar el GPX en Descargas')", null); return }
         Grab.prefs(this).edit().putString("uri", r.second.toString()).putString("donde", r.first).putString("nombre", nombre).apply()
-        web.evaluateJavascript("hecho(" + JSONObject.quote(nombre) + "," + JSONObject.quote(r.first) + ")", null)
+        val js = "hecho(" + JSONObject.quote(nombre) + "," + JSONObject.quote(r.first) + ",%s)"
+        if (getSharedPreferences("buzon", MODE_PRIVATE).getString("b", null) == null) { web.evaluateJavascript(js.format("'sinbuzon'"), null); return }
+        web.evaluateJavascript(js.format("'enviando'"), null)
+        Buzon.enviar(this, pts, nombre) { ok -> runOnUiThread { web.evaluateJavascript(js.format(if (ok) "'ok'" else "'pendiente'"), null) } }
     }
 
     private fun abrir(pts: List<DoubleArray>, nombre: String) {
