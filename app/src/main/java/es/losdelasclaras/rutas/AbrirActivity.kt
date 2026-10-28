@@ -75,7 +75,7 @@ class AbrirActivity : Activity() {
     private fun enlace(t: Track): String? {
         if (t.pts.size < 2) return null
         val s = simplificar(t.pts, 6.0)
-        return "https://losdelasclaras.github.io/rutas/#t=" + URLEncoder.encode(polilinea(s), "UTF-8") + "!" + URLEncoder.encode(t.nombre.take(80), "UTF-8").replace("+", "%20")
+        return "https://losdelasclaras.github.io/rutas/?g=" + System.currentTimeMillis() + "#t=" + URLEncoder.encode(polilinea(s), "UTF-8") + "!" + URLEncoder.encode(t.nombre.take(80), "UTF-8").replace("+", "%20")
     }
 
     private fun simplificar(p: List<DoubleArray>, tol: Double) = Poli.simplificar(p, tol)

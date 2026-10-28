@@ -36,9 +36,31 @@ object Grab {
     fun enlace(pts: List<DoubleArray>, nombre: String): String? {
         if (pts.size < 2) return null
         val s = Poli.simplificar(pts.map { doubleArrayOf(it[0], it[1]) }, 5.0)
-        return "https://losdelasclaras.github.io/rutas/#t=" + URLEncoder.encode(Poli.polilinea(s), "UTF-8") + "!" +
+        return "https://losdelasclaras.github.io/rutas/?g=" + System.currentTimeMillis() + "#t=" + URLEncoder.encode(Poli.polilinea(s), "UTF-8") + "!" +
             URLEncoder.encode(nombre.take(80), "UTF-8").replace("+", "%20")
     }
+}
+
+/** Copia en Descargas › Los de las Claras (GPX), para no perder nunca un recorrido. */
+fun guardarGpx(c: Context, pts: List<DoubleArray>, nombre: String): String? {
+    if (pts.size < 2) return null
+    fun x(s: String) = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
+    val iso = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).apply { timeZone = java.util.TimeZone.getTimeZone("UTC") }
+    val sb = StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<gpx version=\"1.1\" creator=\"Los de las Claras\" xmlns=\"http://www.topografix.com/GPX/1/1\">\n<trk><name>${x(nombre)}</name><trkseg>\n")
+    for (q in pts) { sb.append("<trkpt lat=\"${q[0]}\" lon=\"${q[1]}\">"); if (!q[2].isNaN()) sb.append("<ele>${Math.round(q[2])}</ele>"); if (q[3] > 0) sb.append("<time>${iso.format(java.util.Date(q[3].toLong()))}</time>"); sb.append("</trkpt>\n") }
+    sb.append("</trkseg></trk>\n</gpx>\n")
+    val arch = nombre.replace(Regex("[^\\p{L}\\p{N} _-]"), "").trim().replace(Regex("\\s+"), "-").ifEmpty { "recorrido" } + ".gpx"
+    return try {
+        if (Build.VERSION.SDK_INT >= 29) {
+            val v = android.content.ContentValues().apply {
+                put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, arch)
+                put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "application/gpx+xml")
+                put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, "Download/Los de las Claras") }
+            val u = c.contentResolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, v) ?: return null
+            c.contentResolver.openOutputStream(u)?.use { it.write(sb.toString().toByteArray()) }; "Descargas › Los de las Claras › $arch"
+        } else {
+            val d = File(c.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS), arch); d.writeText(sb.toString()); d.absolutePath }
+    } catch (e: Exception) { null }
 }
 
 /** Servicio en primer plano: sigue grabando con la pantalla apagada (con la notificación «Grabando tu recorrido»). */
@@ -153,11 +175,13 @@ class GrabarActivity : Activity() {
             val f = Grab.archivo(this@GrabarActivity); val pts = Grab.leer(f)
             if (f.exists()) f.copyTo(Grab.ultima(this@GrabarActivity), true)
             Grab.prefs(this@GrabarActivity).edit().clear().putString("nombre", nombre).apply(); f.delete()
+            val donde = guardarGpx(this@GrabarActivity, pts, nombre)
+            if (donde != null) android.widget.Toast.makeText(this@GrabarActivity, "Copia guardada en $donde", android.widget.Toast.LENGTH_LONG).show()
             abrir(pts, nombre) }
         @JavascriptInterface fun tirar() = runOnUiThread { servicio("parar"); Grab.archivo(this@GrabarActivity).delete(); Grab.prefs(this@GrabarActivity).edit().clear().apply(); web.evaluateJavascript("refresca()", null) }
         @JavascriptInterface fun recuperar() = runOnUiThread {
             val n = Grab.prefs(this@GrabarActivity).getString("nombre", "Recorrido grabado") ?: "Recorrido grabado"
-            abrir(Grab.leer(Grab.ultima(this@GrabarActivity)), n) }
+            val pts = Grab.leer(Grab.ultima(this@GrabarActivity)); guardarGpx(this@GrabarActivity, pts, n); abrir(pts, n) }
         @JavascriptInterface fun bateria() = runOnUiThread {
             try { startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName"))) }
             catch (e: Exception) { try { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) } catch (x: Exception) {} } }
