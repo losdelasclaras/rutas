@@ -36,6 +36,23 @@ if(fabs)fabs.insertAdjacentHTML("afterbegin",`<button class="btn ghost" id="b-pt
 // dentro de la app Android (la del APK): botón «Grabar», que abre la grabadora nativa (graba con la pantalla apagada)
 const enApp=(()=>{try{if(document.referrer.startsWith("android-app://es.losdelasclaras.rutas"))sessionStorage.setItem("ldc-apk","1");return sessionStorage.getItem("ldc-apk")==="1"}catch(e){return false}})();
 if(enApp&&fabs){fabs.insertAdjacentHTML("afterbegin",`<button class="btn ghost" id="b-grab" data-short="Grabar" title="Grabar recorrido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4" fill="#c3262e" stroke="none"/></svg>Grabar</button>`);
-  document.getElementById("b-grab").addEventListener("click",()=>{location.href="intent://grabar#Intent;scheme=ldcgrabar;package=es.losdelasclaras.rutas;end"})}
+  document.getElementById("b-grab").addEventListener("click",()=>{location.href="intent://grabar?b="+buzon()+"#Intent;scheme=ldcgrabar;package=es.losdelasclaras.rutas;end"})}
+/* buzón: la grabadora del APK deja ahí lo grabado (Firestore buzon/{código}) y aquí se recoge y se guarda en Mis tracks */
+function buzon(){let b=null;try{b=localStorage.getItem("ldc-buzon")}catch(e){}
+  if(!b||!/^[A-Za-z0-9]{20,40}$/.test(b)){const A="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";b="";for(const x of crypto.getRandomValues(new Uint8Array(24)))b+=A[x%A.length];try{localStorage.setItem("ldc-buzon",b)}catch(e){}}return b}
+let RECOG=false;
+async function recoger(){let b=null;try{b=localStorage.getItem("ldc-buzon")}catch(e){}if(!b||RECOG||!navigator.onLine||!window.LDCFB||!window.MISPUNTOS)return;RECOG=true;
+  try{const a=await LDCFB.load(),fs=a.fs,ref=fs.doc(a.db,"buzon",b),d=await fs.getDoc(ref);
+    if(d.exists()){const l=JSON.parse(d.data().j||"[]"),MPI=window.MISPUNTOS,ts=MPI.tracks().slice();let ult=null,n=0;
+      for(const it of l){const pts=(it.p||[]).map(q=>[q[0],q[1]]);if(pts.length<2)continue;
+        if(ts.some(t=>t.src==="grab"&&t.f===new Date(it.t0).toISOString()))continue;   // ya estaba
+        let km=0;for(let i=1;i<pts.length;i++)km+=map.distance(pts[i-1],pts[i]);
+        const o={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),n:it.n||"Recorrido grabado",km:Math.round(km/100)/10,pts,src:"grab",f:new Date(it.t0).toISOString(),est:"hecho",fh:new Date(it.t0).toISOString()};
+        ts.push(o);ult=o;n++}
+      if(n){MPI.saveTracks(ts);for(const o of ts.slice(-n))MPI.demAlt(o.id)}
+      await fs.deleteDoc(ref);
+      if(ult){toast(n===1?`✅ «${ult.n}» guardado en Mis cosas › Tracks`:`✅ ${n} grabaciones guardadas en Mis cosas › Tracks`);if(window.MISTRACKS)setTimeout(()=>MISTRACKS.open(ult.id,true),600)}}
+  }catch(e){console.warn("buzón",e)}RECOG=false}
+if(enApp){setTimeout(recoger,2500);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")setTimeout(recoger,800)})}
 const bp=document.getElementById("b-pt");if(bp)bp.addEventListener("click",()=>{if(window.MISPUNTOS&&MISPUNTOS.gps)MISPUNTOS.gps()});
 })();
