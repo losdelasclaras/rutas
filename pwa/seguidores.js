@@ -54,6 +54,8 @@ function fila(x,modo){const d=x.dd||{};
 
 /* --- datos --- */
 let PUB=(J(localStorage.getItem(CK)||"null")||[]).map(x=>({...x,dd:J(x.d)||{}})),REV=[],MIAS=[],A=null;
+const OFI=L.layerGroup(),OFT=L.layerGroup();let ODIB="";
+const CATS={cumbre:"cumbre",fuente:"agua",agua:"agua",refugio:"refugio",cabana:"brana",collado:"collado",parking:"inicio"};
 const GRP=L.layerGroup();let DIB="";if(!map.getPane("segp")){map.createPane("segp").style.zIndex=640}
 if(LAY.seg===undefined)LAY.seg=true;
 const conDatos=d=>{const x=d.data();return{...x,id:d.id,dd:J(x.d)||{}}};
@@ -73,7 +75,8 @@ function pinta(){dibuja();
   $("seg-adm").innerHTML=esAdm()?`<div class="segbox adm"><h2>🛡️ Propuestas por revisar (${REV.length})</h2>${REV.length?REV.map(x=>fila(x,"rev")).join(""):`<p class="segvacio">No hay nada pendiente.</p>`}
     <p class="note">Esto solo lo ves tú. Toca una propuesta para verla en el mapa antes de decidir.</p></div>`:"";
   $("seg-mias").innerHTML=MIAS.length?`<div class="segbox"><h2>⏳ Tus propuestas pendientes de revisar</h2>${MIAS.map(x=>fila(x,"mia")).join("")}</div>`:"";
-  $("seg-pub").innerHTML=`<div class="segbox"><h2>👥 Compartido por los seguidores</h2>${PUB.length?PUB.map(x=>fila(x,"pub")).join(""):`<p class="segvacio">${navigator.onLine?"Todavía no hay nada publicado. ¡Sé el primero en proponer algo!":"Sin conexión."}</p>`}</div>`}
+  const SEG=PUB.filter(x=>!x.blog);
+  $("seg-pub").innerHTML=`<div class="segbox"><h2>👥 Compartido por los seguidores</h2>${SEG.length?SEG.map(x=>fila(x,"pub")).join(""):`<p class="segvacio">${navigator.onLine?"Todavía no hay nada publicado. ¡Sé el primero en proponer algo!":"Sin conexión."}</p>`}</div>`}
 let BADGE=null;
 function badge(){const tab=document.querySelector('nav.tabs [data-v="seg"]');if(!tab)return;
   if(BADGE){BADGE.remove();BADGE=null}
@@ -169,7 +172,7 @@ function proponer(it){
       if(esAdm()&&it.key){const ya=PUB.find(x=>x.id===pubId(it));
         MPI.show(`<div class="sheet-head"><h2>📢 ${ya?"Actualizar la publicación":"Publicar"}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
         <p>${it.tipo==="carpeta"?"📁 Carpeta":it.tipo==="track"?"🧵 Track":"📍 Punto"} <b>${esc(it.n)}</b>${it.tipo==="carpeta"?cuentaC(it.dd):""}${it.dd.km?" · "+kmT(it.dd.km):""}</p>
-        <p class="note">${ya?"Ya está publicado: se sustituye por lo que tienes ahora (con los puntos y tracks que hayas añadido).":"Se publica <b>al momento</b> en Seguidores y en el mapa, para todo el mundo."}</p>
+        <p class="note">${ya?"Ya está publicado: se sustituye por lo que tienes ahora (con los puntos y tracks que hayas añadido).":"Se publica <b>al momento</b> en el mapa para todo el mundo: las cumbres con las <b>Cumbres</b>, el resto con los <b>Lugares</b> y el track con los <b>Tracks</b>."}</p>
         <div class="segform"><label>Firmado como</label><input data-segq maxlength="40" value="${esc(ya?ya.quien:"Los de las Claras")}">
         <label>Cuéntanos algo</label><textarea data-segc maxlength="1500" placeholder="Cuándo la hicisteis, estado del camino, por dónde va…">${esc(ya?ya.com||"":it.com)}</textarea>
         <label>Enlaces: la entrada del blog, fotos, Wikiloc… (uno por línea)</label><textarea data-segl style="min-height:60px">${esc(ya?(ya.links||[]).join("\n"):"")}</textarea></div>
@@ -197,21 +200,36 @@ async function enviar(b){const u=LDCFB.user();if(!u){toast("Entra con tu cuenta 
   if(PROP.tipo==="punto"&&PROP.pid&&MPI.fotoGet){const j=await MPI.fotoGet(PROP.pid);if(j)PROP.dd.foto=await peq(j)}
   if(PROP.tipo==="carpeta"&&MPI.fotoGet){let tot=JSON.stringify(PROP.dd).length;for(const p of PROP.dd.ps){const id=p.pid;delete p.pid;if(!id)continue;const j=await MPI.fotoGet(id);const f=j&&await peq(j);if(f&&tot+f.length<850000){p.foto=f;tot+=f.length}}}
   if(esAdm()&&PROP.key){try{const a=await fb(),fs=a.fs,id=pubId(PROP),ya=PUB.find(x=>x.id===id);
-      await fs.setDoc(fs.doc(a.db,"seguidores",id),{tipo:PROP.tipo,n:PROP.n.slice(0,100),com,links,quien,uid:u.uid,t:ya?ya.t:Date.now(),tp:Date.now(),d:JSON.stringify(PROP.dd)});
-      PROP=null;sheet.hidden=true;toast(ya?"Publicación actualizada ✓":"Publicado en Seguidores ✓");cargarPub()}
+      await fs.setDoc(fs.doc(a.db,"seguidores",id),{tipo:PROP.tipo,n:PROP.n.slice(0,100),com,links,quien,blog:"Los de las Claras",uid:u.uid,t:ya?ya.t:Date.now(),tp:Date.now(),d:JSON.stringify(PROP.dd)});
+      PROP=null;sheet.hidden=true;toast(ya?"Publicación actualizada ✓":"Publicado en el mapa ✓ (Cumbres, Lugares y Tracks)");cargarPub()}
     catch(e){b.disabled=false;b.textContent="📢 Publicar";toast("No se ha podido publicar: "+(e.code||e.message))}return}
   try{const a=await fb(),fs=a.fs;
     await fs.addDoc(fs.collection(a.db,"propuestas"),{tipo:PROP.tipo,n:PROP.n.slice(0,100),com,links,quien,uid:u.uid,email:u.email||"",t:Date.now(),d:JSON.stringify(PROP.dd)});
     PROP=null;sheet.hidden=true;toast("¡Enviado! Cuando se revise aparecerá en Seguidores");cargarRev()}
   catch(e){b.disabled=false;b.textContent="📨 Enviar propuesta";toast("No se ha podido enviar: "+(e.code||e.message))}}
+/* --- lo publicado por Los de las Claras (y más adelante, blogs colaboradores): al mapa general, con las Cumbres, los Lugares y los Tracks --- */
+function oficial(){const O=PUB.filter(x=>x.blog),k=O.map(x=>x.id+x.tp).join(",");
+  if(k!==ODIB){ODIB=k;OFI.clearLayers();OFT.clearLayers();
+    for(const x of O){const d=x.dd||{},abre=e=>{if(e&&e.originalEvent)L.DomEvent.stop(e);ver(x,"pub")};
+      const ps=x.tipo==="carpeta"?(d.ps||[]):x.tipo==="punto"?[{n:x.n,lat:d.lat,lon:d.lon,a:d.a,ic:d.ic}]:[];
+      const ts=x.tipo==="carpeta"?(d.ts||[]):x.tipo==="track"?[{n:x.n,pts:d.pts}]:[];
+      for(const p of ps){if(p.lat==null)continue;const cu=p.ic==="cumbre";
+        L.marker([p.lat,p.lon],{icon:L.divIcon({className:"pt "+(cu?"cumbre":"spot"),html:`<svg viewBox="-12 -12 24 24"><use href="#ic-${CATS[p.ic]||"otros"}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:p.n,riseOnHover:true,zIndexOffset:cu?(p.a||0):0})
+          .bindTooltip(esc(p.n)+(p.a?` <span class="la">${p.a.toLocaleString("es-ES")} m</span>`:""),{permanent:true,direction:"right",offset:[10,0],className:"lbl "+(cu?"pk":"sp"),interactive:false}).on("click",abre).addTo(OFI)}
+      for(const t of ts){if(!t.pts||t.pts.length<2)continue;const ll=t.pts.map(q=>[q[0],q[1]]);
+        L.polyline(ll,{color:"#fff",weight:6,opacity:.85,interactive:false}).addTo(OFT);
+        L.polyline(ll,{color:"#6a2bd1",weight:3.5,opacity:.9}).bindTooltip(esc(t.n),{sticky:true}).on("click",abre).addTo(OFT)}}}
+  if(!map.hasLayer(OFI))OFI.addTo(map);   // se ocultan solas con Cumbres / Lugares apagados (mismas clases que los del blog)
+  const on=LAY.tracks&&!LAY.solo&&!window.FOLONLY;if(on&&!map.hasLayer(OFT))OFT.addTo(map);else if(!on&&map.hasLayer(OFT))OFT.remove()}
+
 /* --- en el mapa: capa «Seguidores» (naranja), se enciende y apaga en Capas --- */
 if(LAY.seg===undefined)LAY.seg=true;
 document.head.insertAdjacentHTML("beforeend",`<style>.segmk{width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid #d9480f;display:grid;place-items:center;font-size:15px;box-shadow:0 1px 4px rgba(0,0,0,.35)}.segmk svg{width:18px;height:18px}.lico.seg{background:#d9480f}#map .leaflet-tooltip.lbl.segl{color:#b5400b;font-weight:800}</style>`);
-function dibuja(){const on=LAY.seg&&!LAY.solo&&!window.FOLONLY&&PUB.length;
+function dibuja(){oficial();const SEG=PUB.filter(x=>!x.blog);const on=LAY.seg&&!LAY.solo&&!window.FOLONLY&&SEG.length;
   if(!on){if(map.hasLayer(GRP))GRP.remove();return}
-  const k=PUB.map(x=>x.id).join(",");
+  const k=SEG.map(x=>x.id).join(",");
   if(k!==DIB){GRP.clearLayers();DIB=k;
-    for(const x of PUB){const d=x.dd||{},abre=e=>{if(e&&e.originalEvent)L.DomEvent.stop(e);ver(x,"pub")};
+    for(const x of SEG){const d=x.dd||{},abre=e=>{if(e&&e.originalEvent)L.DomEvent.stop(e);ver(x,"pub")};
       if(x.tipo==="track"&&d.pts&&d.pts.length>1){
         L.polyline(d.pts,{color:"#fff",weight:7,opacity:.85,interactive:false}).addTo(GRP);
         L.polyline(d.pts,{color:"#d9480f",weight:4,opacity:.95,dashArray:"8 6",interactive:false}).addTo(GRP);
