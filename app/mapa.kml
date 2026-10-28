@@ -5745,6 +5745,56 @@
           </coordinates>
         </Point>
       </Placemark>
+      <Placemark>
+        <name>Pico Peña de la Laguna (1962 m.)</name>
+        <description>https://losdelasclaras.blogspot.com/2026/10/pico-la-laguna-desde-llananzanes-por.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.5803659,43.0321304,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Puerto de Piedrafita (1683 m.)</name>
+        <description>https://losdelasclaras.blogspot.com/2026/10/pico-la-laguna-desde-llananzanes-por.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.6180975,43.0349441,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Chomba los Chagos (1.877 m.)</name>
+        <description>https://losdelasclaras.blogspot.com/2026/10/pico-la-laguna-desde-llananzanes-por.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.60381,43.0357914,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Braña Campanal</name>
+        <description>https://losdelasclaras.blogspot.com/2026/10/pico-la-laguna-desde-llananzanes-por.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.6041428,43.0470722,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Braña la Carbazosa</name>
+        <description>https://losdelasclaras.blogspot.com/2026/10/pico-la-laguna-desde-llananzanes-por.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.5775823,43.0414661,0
+          </coordinates>
+        </Point>
+      </Placemark>
     </Folder>
     <Folder>
       <name>Capa sin nombre</name>
