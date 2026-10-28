@@ -42,7 +42,7 @@ object Grab {
 }
 
 /** Copia en Descargas › Los de las Claras (GPX), para no perder nunca un recorrido. */
-fun guardarGpx(c: Context, pts: List<DoubleArray>, nombre: String): String? {
+fun guardarGpx(c: Context, pts: List<DoubleArray>, nombre: String): Pair<String, Uri>? {
     if (pts.size < 2) return null
     fun x(s: String) = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
     val iso = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).apply { timeZone = java.util.TimeZone.getTimeZone("UTC") }
@@ -57,9 +57,10 @@ fun guardarGpx(c: Context, pts: List<DoubleArray>, nombre: String): String? {
                 put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "application/gpx+xml")
                 put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, "Download/Los de las Claras") }
             val u = c.contentResolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, v) ?: return null
-            c.contentResolver.openOutputStream(u)?.use { it.write(sb.toString().toByteArray()) }; "Descargas › Los de las Claras › $arch"
+            c.contentResolver.openOutputStream(u)?.use { it.write(sb.toString().toByteArray()) }; Pair("Descargas › Los de las Claras › $arch", u)
         } else {
-            val d = File(c.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS), arch); d.writeText(sb.toString()); d.absolutePath }
+            val d = File(c.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS), arch); d.writeText(sb.toString())
+            Pair(d.absolutePath, androidx.core.content.FileProvider.getUriForFile(c, "es.losdelasclaras.rutas.fileprovider", d)) }
     } catch (e: Exception) { null }
 }
 
@@ -179,18 +180,29 @@ class GrabarActivity : Activity() {
             f.copyTo(Grab.ultima(this@GrabarActivity), true)
             try { f.copyTo(File(filesDir, "grabacion-" + System.currentTimeMillis() + ".txt"), true) } catch (e: Exception) {}
             Grab.prefs(this@GrabarActivity).edit().clear().putString("nombre", nombre).apply(); f.delete()
-            val donde = guardarGpx(this@GrabarActivity, pts, nombre)
-            if (donde != null) android.widget.Toast.makeText(this@GrabarActivity, "Copia guardada en $donde", android.widget.Toast.LENGTH_LONG).show()
-            abrir(pts, nombre) }
+            hecho(pts, nombre) }
         @JavascriptInterface fun tirar() = runOnUiThread { servicio("parar"); Grab.archivo(this@GrabarActivity).delete(); Grab.prefs(this@GrabarActivity).edit().clear().apply(); web.evaluateJavascript("refresca()", null) }
         @JavascriptInterface fun recuperar() = runOnUiThread {
             val n = Grab.prefs(this@GrabarActivity).getString("nombre", "Recorrido grabado") ?: "Recorrido grabado"
-            val pts = Grab.leer(Grab.ultima(this@GrabarActivity)); guardarGpx(this@GrabarActivity, pts, n); abrir(pts, n) }
+            val pts = Grab.leer(Grab.ultima(this@GrabarActivity)); hecho(pts, n) }
+        /** Compartir el GPX guardado: WhatsApp, Wikiloc, correo… o «Los de las Claras» para meterlo en la app. */
+        @JavascriptInterface fun compartir() = runOnUiThread {
+            val u = Grab.prefs(this@GrabarActivity).getString("uri", null) ?: return@runOnUiThread
+            val i = Intent(Intent.ACTION_SEND).setType("application/gpx+xml").putExtra(Intent.EXTRA_STREAM, Uri.parse(u)).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            try { startActivity(Intent.createChooser(i, "Enviar el recorrido")) } catch (e: Exception) {} }
         @JavascriptInterface fun bateria() = runOnUiThread {
             try { startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName"))) }
             catch (e: Exception) { try { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) } catch (x: Exception) {} } }
         @JavascriptInterface fun sinBateria(): Boolean = if (Build.VERSION.SDK_INT >= 23) (getSystemService(POWER_SERVICE) as PowerManager).isIgnoringBatteryOptimizations(packageName) else true
         @JavascriptInterface fun volver() = runOnUiThread { finish() }
+    }
+
+    /** Guarda el GPX en Descargas y enseña el resumen (sin abrir la app: así no se queda colgada). */
+    private fun hecho(pts: List<DoubleArray>, nombre: String) {
+        val r = guardarGpx(this, pts, nombre)
+        if (r == null) { web.evaluateJavascript("cierra();refresca();aviso('No he podido guardar el GPX en Descargas')", null); return }
+        Grab.prefs(this).edit().putString("uri", r.second.toString()).putString("donde", r.first).putString("nombre", nombre).apply()
+        web.evaluateJavascript("hecho(" + JSONObject.quote(nombre) + "," + JSONObject.quote(r.first) + ")", null)
     }
 
     private fun abrir(pts: List<DoubleArray>, nombre: String) {

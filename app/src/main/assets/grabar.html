@@ -59,7 +59,7 @@ function pinta(){
   $("bt").innerHTML=!S.activo?`<button class="go" onclick="Nativo.empezar()">⏺ Grabar</button>`:`<button class="ps" onclick="Nativo.pausa()">${S.pz?"▶ Seguir":"⏸ Pausa"}</button><button class="fn" onclick="fin()">■ Terminar</button>`;
   let av="";
   if(!Nativo.sinBateria())av=`Si con la pantalla apagada se corta la grabación: <br><button onclick="Nativo.bateria()">🔋 Dejar que grabe sin límite de batería</button>`;
-  if(!S.activo&&S.ultima)av+=`<br><button onclick="Nativo.recuperar()">↩ Volver a abrir la última grabación en el mapa</button>`;
+  if(!S.activo&&S.ultima)av+=`<br><button onclick="Nativo.recuperar()">📂 La última grabación (guardar otra vez o compartir)</button>`;
   if(!$("av").dataset.fijo)$("av").innerHTML=av}
 function nuevos(){const n=JSON.parse(Nativo.puntos(PTS.length));for(const p of n){if(PTS.length)D+=dm(PTS[PTS.length-1],p);PTS.push(p)}
   if(n.length){const ll=PTS.map(p=>[p[0],p[1]]);line.setLatLngs(ll);lineB.setLatLngs(ll);const q=PTS[PTS.length-1];
@@ -69,10 +69,15 @@ function refresca(){S=JSON.parse(Nativo.estado());if(!S.activo){PTS=[];D=0;line.
 function fin(){const d=new Date(S.t0);
   $("sh").innerHTML=`<h2>■ Terminar la grabación</h2><p><b>${hms(dur())}</b> · <b>${(D/1000).toLocaleString("es-ES",{maximumFractionDigits:2})} km</b> · <b>+${sube()} m</b></p>
   <label>Nombre</label><input id="nm" maxlength="80" value="Recorrido del ${d.toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}">
-  <button class="b2 go" onclick="Nativo.terminar(document.getElementById('nm').value.trim()||'Recorrido grabado')">✓ Terminar y verlo en la app</button>
+  <button class="b2 go" onclick="Nativo.terminar(document.getElementById('nm').value.trim()||'Recorrido grabado')">✓ Terminar y guardar</button>
   <button class="b2 ps" onclick="cierra()">▶ Seguir grabando</button>
   <button class="b2 ps" style="color:#b3261e" onclick="if(confirm('¿Tirar lo grabado? No se puede recuperar.')){cierra();Nativo.tirar()}">🗑 Tirar la grabación</button>`;
   $("sheet").hidden=false}
+function hecho(n,donde){$("sh").innerHTML=`<h2>✓ Guardado</h2><p><b>${n.replace(/</g,"&lt;")}</b></p>
+  <p style="font-size:16px">Está en <b>${donde.replace(/</g,"&lt;")}</b> (archivo GPX).</p>
+  <button class="b2 go" onclick="Nativo.compartir()">📤 Compartir (WhatsApp, Wikiloc…)</button>
+  <p style="font-size:16px;margin:14px 0 6px"><b>Para tenerlo en Mis tracks:</b> en el mapa ve a <b>Mis cosas › Tracks › ⬆️ Cargar GPX/KML</b> y elige el archivo en <b>Descargas › Los de las Claras</b>.</p>
+  <button class="b2 ps" onclick="cierra();Nativo.volver()">← Volver al mapa</button>`;$("sheet").hidden=false;refresca()}
 function cierra(){$("sheet").hidden=true}
 refresca();
 setInterval(()=>{if(document.visibilityState!=="visible")return;S=JSON.parse(Nativo.estado());nuevos();pinta()},2000);
