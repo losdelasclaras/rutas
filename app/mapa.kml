@@ -71,42 +71,6 @@
         <styleUrl>#icon-1887-DB4436-highlight</styleUrl>
       </Pair>
     </StyleMap>
-    <Style id="icon-1899-0288D1-normal">
-      <IconStyle>
-        <color>ffd18802</color>
-        <scale>1</scale>
-        <Icon>
-          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
-        </Icon>
-        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
-      </IconStyle>
-      <LabelStyle>
-        <scale>0</scale>
-      </LabelStyle>
-    </Style>
-    <Style id="icon-1899-0288D1-highlight">
-      <IconStyle>
-        <color>ffd18802</color>
-        <scale>1</scale>
-        <Icon>
-          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
-        </Icon>
-        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
-      </IconStyle>
-      <LabelStyle>
-        <scale>1</scale>
-      </LabelStyle>
-    </Style>
-    <StyleMap id="icon-1899-0288D1">
-      <Pair>
-        <key>normal</key>
-        <styleUrl>#icon-1899-0288D1-normal</styleUrl>
-      </Pair>
-      <Pair>
-        <key>highlight</key>
-        <styleUrl>#icon-1899-0288D1-highlight</styleUrl>
-      </Pair>
-    </StyleMap>
     <Style id="icon-1899-DB4436-normal">
       <IconStyle>
         <color>ff3644db</color>
@@ -5917,8 +5881,13 @@
       </Placemark>
       <Placemark>
         <name>Valle la Muria</name>
-        <description>https://losdelasclaras.blogspot.com/2011/11/de-puente-raneiro-san-esteban-por-el.html</description>
-        <styleUrl>#icon-1899-0288D1</styleUrl>
+        <description><![CDATA[<img src="https://mymaps.usercontent.google.com/hostedimage/m/*/3ABkJAZiJijEh3G_SJSswZ4csoOGMQoKuTOmkuWHzam-bOmzCubbAiLOHlRNsIHes9WyPbRAT5IV2AskompQ-lywfiWTd3kDXocDBK7uCIbzAdM5PGw4uz3QL7FfnuxM4aLU5qaEWLLcDyYt1mOdNZ8-DhS0C1qvu7b4wJaN_4agMY0j8IHGSzjTd4E-Sc-YEHip-7qOHMJhzEWOyqztzPV5tt2ymlax_I2EyKcn_Lb2RZiDnKlZPSewK896ICeo?fife=s16383" height="200" width="auto" /><br><br>https://losdelasclaras.blogspot.com/2011/11/de-puente-raneiro-san-esteban-por-el.html]]></description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <ExtendedData>
+          <Data name="gx_media_links">
+            <value>https://mymaps.usercontent.google.com/hostedimage/m/*/3ABkJAZiJijEh3G_SJSswZ4csoOGMQoKuTOmkuWHzam-bOmzCubbAiLOHlRNsIHes9WyPbRAT5IV2AskompQ-lywfiWTd3kDXocDBK7uCIbzAdM5PGw4uz3QL7FfnuxM4aLU5qaEWLLcDyYt1mOdNZ8-DhS0C1qvu7b4wJaN_4agMY0j8IHGSzjTd4E-Sc-YEHip-7qOHMJhzEWOyqztzPV5tt2ymlax_I2EyKcn_Lb2RZiDnKlZPSewK896ICeo?fife=s16383</value>
+          </Data>
+        </ExtendedData>
         <Point>
           <coordinates>
             -6.2803724,43.2087214,0
