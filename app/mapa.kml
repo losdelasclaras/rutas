@@ -2876,7 +2876,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>La Muezca</name>
+        <name>Paso La Muezca</name>
         <description>https://losdelasclaras.blogspot.com/2016/11/llosa-viango-desde-la-torneria-travesia.html</description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
@@ -5718,7 +5718,7 @@
       <Placemark>
         <name>Braña Campos de Gobia</name>
         <description>https://losdelasclaras.blogspot.com/2015/01/camin-de-las-cabras-y-monte-redigobia.html</description>
-        <styleUrl>#icon-1899-0288D1</styleUrl>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
             -6.1879581,43.081434,0
@@ -5908,10 +5908,20 @@
       <Placemark>
         <name>Pico Alto Paso (1562 m.) Cordal de la Bolera</name>
         <description>https://losdelasclaras.blogspot.com/2011/11/travesia-de-ventaniella-sobrefoz-por.html</description>
-        <styleUrl>#icon-1899-0288D1</styleUrl>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
             -5.1960367,43.114988,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Valle la Muria</name>
+        <description>https://losdelasclaras.blogspot.com/2011/11/de-puente-raneiro-san-esteban-por-el.html</description>
+        <styleUrl>#icon-1899-0288D1</styleUrl>
+        <Point>
+          <coordinates>
+            -6.2803724,43.2087214,0
           </coordinates>
         </Point>
       </Placemark>
