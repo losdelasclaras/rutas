@@ -1,11 +1,10 @@
-# Informe del robot · 29/10/2026 04:35
+# Informe del robot · 29/10/2026 04:47
 
-**Cambios:** mapa: 1 puntos nuevos o cambiados; drive: 1 tracks nuevos
+**Cambios:** mapa: 1 puntos nuevos o cambiados
 
 - Blog: sin entradas nuevas.
-- 🗺️ Mapa: 636 puntos (1 nuevos o movidos, 0 quitados).
--    + Pico La Cabritera (1254 m.)
-- 🧵 Track nuevo en Drive: «cabeza-de-arco-desde-caleao-por-la-cabriterina.gpx»
-- ✅ Ruta nueva en la app: «Picu Cabeza l'Arcu · Pico La Cabritera» · con track · sin foto
+- 🗺️ Mapa: 637 puntos (1 nuevos o movidos, 0 quitados).
+-    + Majada de La Tabierna  ⚠ sin enlace a una entrada del blog
+- Drive: sin tracks nuevos.
 - ⚠ Track de Drive sin ruta: drive__cabeza-de-arco-desde-caleao-por-la-cabriterina.gpx · mejor opción:  (ya tenía track o poco segura)
-- App regenerada: 371 rutas, 156 con track.
+- App regenerada: 372 rutas, 156 con track.
