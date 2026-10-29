@@ -1707,7 +1707,7 @@
       </Placemark>
       <Placemark>
         <name>Canton del Texeu (1.165 m.)</name>
-        <description>https://losdelasclaras.blogspot.com/search/label/Texeu</description>
+        <description>https://losdelasclaras.blogspot.com/2011/06/canton-de-texeu-y-majadas-del-cornion.html</description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -1717,7 +1717,7 @@
       </Placemark>
       <Placemark>
         <name>Vega de Comeya</name>
-        <description>https://losdelasclaras.blogspot.com/search/label/Texeu</description>
+        <description>https://losdelasclaras.blogspot.com/2011/06/canton-de-texeu-y-majadas-del-cornion.html</description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -1916,12 +1916,12 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>La Camara</name>
+        <name>Cueva La Camara</name>
         <description>https://losdelasclaras.blogspot.com/2012/11/senderos-primitivos-del-cares.html</description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
-            -4.8942592,43.2193818,0
+            -4.8945596,43.2200386,0
           </coordinates>
         </Point>
       </Placemark>
@@ -1936,7 +1936,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Hierbas Altas</name>
+        <name>Sedo Hierbas Altas</name>
         <description>https://losdelasclaras.blogspot.com/2012/11/senderos-primitivos-del-cares.html</description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
@@ -2527,7 +2527,7 @@
       </Placemark>
       <Placemark>
         <name>MAYADA DE MACIÉDOME</name>
-        <description>https://losdelasclaras.blogspot.com/2011/08/circular-en-torno-al-maciedome-desde.html</description>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2011/08/circular-en-torno-al-maciedome-desde.html<br><br>https://losdelasclaras.blogspot.com/2011/11/travesia-de-ventaniella-sobrefoz-por.html]]></description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -5738,7 +5738,7 @@
       <Placemark>
         <name>La Tejeda del Sueve</name>
         <description>https://losdelasclaras.blogspot.com/2011/10/picu-pienzu-y-tejeda-del-sueve-desde-el.html</description>
-        <styleUrl>#icon-1899-0288D1</styleUrl>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
             -5.2494087,43.4368517,0
@@ -5882,6 +5882,36 @@
         <Point>
           <coordinates>
             -5.1925387,43.4388106,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Mina de Buferrera</name>
+        <description>https://losdelasclaras.blogspot.com/2017/06/majadas-del-cornion-y-canto-cenal.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -4.9806596,43.2739873,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Majada de Belbín</name>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2017/06/majadas-del-cornion-y-canto-cenal.html<br><br>https://losdelasclaras.blogspot.com/2024/04/pena-ruana-desde-el-lago-ercina.html<br><br>https://losdelasclaras.blogspot.com/2011/06/canton-de-texeu-y-majadas-del-cornion.html]]></description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -4.9610151,43.2712361,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Pico Alto Paso (1562 m.) Cordal de la Bolera</name>
+        <description>https://losdelasclaras.blogspot.com/2011/11/travesia-de-ventaniella-sobrefoz-por.html</description>
+        <styleUrl>#icon-1899-0288D1</styleUrl>
+        <Point>
+          <coordinates>
+            -5.1960367,43.114988,0
           </coordinates>
         </Point>
       </Placemark>
