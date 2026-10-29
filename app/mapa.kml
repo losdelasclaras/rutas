@@ -5795,6 +5795,16 @@
           </coordinates>
         </Point>
       </Placemark>
+      <Placemark>
+        <name>Pico La Cabritera (1254 m.)</name>
+        <description>https://losdelasclaras.blogspot.com/2012/01/cabeza-de-arco-desde-caleao-por-la.html?m=1</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.4314482,43.1401105,0
+          </coordinates>
+        </Point>
+      </Placemark>
     </Folder>
     <Folder>
       <name>Capa sin nombre</name>
@@ -6160,7 +6170,7 @@
       </Placemark>
       <Placemark>
         <name><![CDATA[Picu Cabeza l'Arcu (1598 m)]]></name>
-        <description><![CDATA[https://losdelasclaras.blogspot.com/2023/11/cabeza-l-arcu-desde-caleao.html<br><br><br>https://losdelasclaras.blogspot.com/2020/06/cabeza-de-arco-desde-caleao.html]]></description>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2023/11/cabeza-l-arcu-desde-caleao.html<br><br>https://losdelasclaras.blogspot.com/2012/01/cabeza-de-arco-desde-caleao-por-la.html?m=1<br>https://losdelasclaras.blogspot.com/2020/06/cabeza-de-arco-desde-caleao.html]]></description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
