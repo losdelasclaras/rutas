@@ -486,7 +486,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Picu Trigueru (1293 m.)</name>
+        <name>Picu Trigueru (1293 m.) Techo de Laviana</name>
         <description>https://losdelasclaras.blogspot.com/2023/06/integral-la-sierra-de-penamayor-desde.html</description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
@@ -5817,7 +5817,7 @@
       </Placemark>
       <Placemark>
         <name>Braña de Bustacu</name>
-        <description>https://losdelasclaras.blogspot.com/2022/05/pico-pienzu-y-mirueno-desde-cofino.html</description>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2022/05/pico-pienzu-y-mirueno-desde-cofino.html<br><br>https://losdelasclaras.blogspot.com/2014/10/hayedo-de-la-biescona-majada-bustaco.html<br><br>https://losdelasclaras.blogspot.com/2023/03/cueto-les-duernes-sellon-y-babu-por-la.html]]></description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -5862,6 +5862,26 @@
         <Point>
           <coordinates>
             -4.8690803,43.1729789,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Hayedo de la Biescona</name>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2014/10/hayedo-de-la-biescona-majada-bustaco.html<br><br>https://losdelasclaras.blogspot.com/2023/03/cueto-les-duernes-sellon-y-babu-por-la.html]]></description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.2175557,43.4346414,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Mirador del Fitu</name>
+        <description>https://losdelasclaras.blogspot.com/2014/10/hayedo-de-la-biescona-majada-bustaco.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.1925387,43.4388106,0
           </coordinates>
         </Point>
       </Placemark>
@@ -6199,7 +6219,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Pico Torres (2104 m.) </name>
+        <name>Pico Torres (2104 m.) Techo de Caso</name>
         <description><![CDATA[https://losdelasclaras.blogspot.com/2023/11/pico-torres-y-valmartin-desde-la-raya.html<br><br>https://losdelasclaras.blogspot.com/2010/09/torres.html]]></description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
@@ -6249,7 +6269,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Pico El Retriñón (1862 m.)</name>
+        <name>Pico El Retriñón (1862 m.) Techo de Sobrescobio</name>
         <description><![CDATA[https://losdelasclaras.blogspot.com/2023/11/retrinon-desde-felechosa.html<br><br>https://losdelasclaras.blogspot.com/2011/09/circuito-al-retrinon-desde-soto-de.html]]></description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
