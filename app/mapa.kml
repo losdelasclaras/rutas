@@ -1017,7 +1017,7 @@
       </Placemark>
       <Placemark>
         <name>Pico Pienzu (1165 m.) Techo de Colunga</name>
-        <description>https://losdelasclaras.blogspot.com/2022/05/pico-pienzu-y-mirueno-desde-cofino.html</description>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2022/05/pico-pienzu-y-mirueno-desde-cofino.html<br><br>https://losdelasclaras.blogspot.com/2021/04/pico-pienzu-por-maya-espineres.html]]></description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -1027,7 +1027,7 @@
       </Placemark>
       <Placemark>
         <name>Pico Mirueño (1137 m.)</name>
-        <description>https://losdelasclaras.blogspot.com/2022/05/pico-pienzu-y-mirueno-desde-cofino.html</description>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2022/05/pico-pienzu-y-mirueno-desde-cofino.html<br><br>https://losdelasclaras.blogspot.com/2014/11/pico-mirueno-y-mua-desde-el-alto-la.html]]></description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -1397,7 +1397,7 @@
       </Placemark>
       <Placemark>
         <name>Mayada de Espineres</name>
-        <description>https://losdelasclaras.blogspot.com/2021/04/pico-pienzu-por-maya-espineres.html</description>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2021/04/pico-pienzu-por-maya-espineres.html<br><br>https://losdelasclaras.blogspot.com/2014/11/pico-mirueno-y-mua-desde-el-alto-la.html]]></description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -1406,8 +1406,8 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>El Potril</name>
-        <description>https://losdelasclaras.blogspot.com/2021/04/pico-pienzu-por-maya-espineres.html</description>
+        <name>Refugio del Potril</name>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2021/04/pico-pienzu-por-maya-espineres.html<br><br>https://losdelasclaras.blogspot.com/2014/11/pico-mirueno-y-mua-desde-el-alto-la.html]]></description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -5812,6 +5812,56 @@
         <Point>
           <coordinates>
             -5.449716,43.1168092,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Braña de Bustacu</name>
+        <description>https://losdelasclaras.blogspot.com/2022/05/pico-pienzu-y-mirueno-desde-cofino.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.2251225,43.4266456,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Pico La Múa o Salgar (1021 m.)</name>
+        <description>https://losdelasclaras.blogspot.com/2014/11/pico-mirueno-y-mua-desde-el-alto-la.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.2667458,43.4181566,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Refugio Casetón de Ándara</name>
+        <description>https://losdelasclaras.blogspot.com/2012/12/por-el-macizo-oriental-morra-caballo.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -4.7121111,43.2140192,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Vega Asotin</name>
+        <description>https://losdelasclaras.blogspot.com/2021/08/la-palanca-y-bajada-de-jermoso.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -4.8770573,43.1682676,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Refugio Diego Mella / Collado Jermoso</name>
+        <description>https://losdelasclaras.blogspot.com/2021/08/collado-jermoso-y-pico-la-padiorna.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -4.8690803,43.1729789,0
           </coordinates>
         </Point>
       </Placemark>
