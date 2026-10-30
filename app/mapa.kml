@@ -1221,7 +1221,7 @@
       </Placemark>
       <Placemark>
         <name>Picu Michu (1766 m.)</name>
-        <description>https://losdelasclaras.blogspot.com/2021/10/pena-negra-y-michu-por-branas-de.html</description>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2021/10/pena-negra-y-michu-por-branas-de.html<br><br>https://losdelasclaras.blogspot.com/2026/03/pena-michu-desde-pto-san-lorenzo.html<br><br>https://losdelasclaras.blogspot.com/2012/06/pena-michu-y-branas-de-la-corra-y.html<br><br>https://losdelasclaras.blogspot.com/2015/04/el-michu-por-la-tcherona.html]]></description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -5881,16 +5881,21 @@
       </Placemark>
       <Placemark>
         <name>Valle la Muria</name>
-        <description><![CDATA[<img src="https://mymaps.usercontent.google.com/hostedimage/m/*/3ABkJAZiJijEh3G_SJSswZ4csoOGMQoKuTOmkuWHzam-bOmzCubbAiLOHlRNsIHes9WyPbRAT5IV2AskompQ-lywfiWTd3kDXocDBK7uCIbzAdM5PGw4uz3QL7FfnuxM4aLU5qaEWLLcDyYt1mOdNZ8-DhS0C1qvu7b4wJaN_4agMY0j8IHGSzjTd4E-Sc-YEHip-7qOHMJhzEWOyqztzPV5tt2ymlax_I2EyKcn_Lb2RZiDnKlZPSewK896ICeo?fife=s16383" height="200" width="auto" /><br><br>https://losdelasclaras.blogspot.com/2011/11/de-puente-raneiro-san-esteban-por-el.html]]></description>
+        <description>https://losdelasclaras.blogspot.com/2011/11/de-puente-raneiro-san-esteban-por-el.html</description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
-        <ExtendedData>
-          <Data name="gx_media_links">
-            <value>https://mymaps.usercontent.google.com/hostedimage/m/*/3ABkJAZiJijEh3G_SJSswZ4csoOGMQoKuTOmkuWHzam-bOmzCubbAiLOHlRNsIHes9WyPbRAT5IV2AskompQ-lywfiWTd3kDXocDBK7uCIbzAdM5PGw4uz3QL7FfnuxM4aLU5qaEWLLcDyYt1mOdNZ8-DhS0C1qvu7b4wJaN_4agMY0j8IHGSzjTd4E-Sc-YEHip-7qOHMJhzEWOyqztzPV5tt2ymlax_I2EyKcn_Lb2RZiDnKlZPSewK896ICeo?fife=s16383</value>
-          </Data>
-        </ExtendedData>
         <Point>
           <coordinates>
             -6.2803724,43.2087214,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Espacio histórico Frente del Nalón</name>
+        <description>https://losdelasclaras.blogspot.com/2012/06/espacio-historico-del-frente-del-nalon.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.9966868,43.4646236,0
           </coordinates>
         </Point>
       </Placemark>
@@ -6579,7 +6584,7 @@
       </Placemark>
       <Placemark>
         <name>Pico La Mostayal (1305 m)</name>
-        <description>https://losdelasclaras.blogspot.com/2014/03/la-mostayal-desde-la-vara.html</description>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2014/03/la-mostayal-desde-la-vara.html<br><br>https://losdelasclaras.blogspot.com/2010/05/la-mostayal.html]]></description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -6594,6 +6599,16 @@
         <Point>
           <coordinates>
             -6.0816507,43.563155,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Braña Vega Campo</name>
+        <description>https://losdelasclaras.blogspot.com/2010/05/la-mostayal.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.9459833,43.2712611,0
           </coordinates>
         </Point>
       </Placemark>
