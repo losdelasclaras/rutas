@@ -3550,7 +3550,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Busumerón</name>
+        <name>Majada Busumerón</name>
         <description>https://losdelasclaras.blogspot.com/2009/12/blog-post.html</description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
@@ -3570,7 +3570,7 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Ľ Ablanosa</name>
+        <name>Majada Ľ Ablanosa</name>
         <description>https://losdelasclaras.blogspot.com/2011/11/la-ablanosa-y-vega-pociellu.html</description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
@@ -3791,7 +3791,7 @@
       </Placemark>
       <Placemark>
         <name>La Cardosina (El Puerto Güeria)</name>
-        <description>https://losdelasclaras.blogspot.com/2019/05/pena-rueda-y-agueria-desde-lindes.html</description>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2019/05/pena-rueda-y-agueria-desde-lindes.html<br><br>https://losdelasclaras.blogspot.com/2019/05/pena-rueda-y-agueria-desde-lindes.html]]></description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -5111,7 +5111,7 @@
       </Placemark>
       <Placemark>
         <name>Foz Grande</name>
-        <description>https://losdelasclaras.blogspot.com/2010/11/pena-rueda-y-pena-arpin-desde-lindes.html</description>
+        <description>https://losdelasclaras.blogspot.com/2019/05/pena-rueda-y-agueria-desde-lindes.html</description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -5896,6 +5896,16 @@
         <Point>
           <coordinates>
             -5.9966868,43.4646236,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name><![CDATA[Braña de Manín d'Arriba]]></name>
+        <description>https://losdelasclaras.blogspot.com/2019/05/pena-rueda-y-agueria-desde-lindes.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.9140823,43.0745106,0
           </coordinates>
         </Point>
       </Placemark>
