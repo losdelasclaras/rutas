@@ -682,6 +682,7 @@ function routeBody(r){
   ${r.sal?`<p class="salida">Salida: ${esc(r.sal.replace(/\s*↗$/,""))}${r.zo?" · "+esc(r.zo):""}</p>`:""}
   <div class="actions">
   ${r.wk?`<a class="btn ghost" href="${esc(r.wk)}" target="_blank" rel="noopener">Track en Wikiloc</a>`:""}<a class="btn ghost" href="https://www.google.com/maps/search/?api=1&query=${hi.lat},${hi.lon}" target="_blank" rel="noopener">Google Maps</a></div>
+  ${window.COLX?COLX.also(r):""}
   <div class="sec"><h3>El tiempo</h3><p class="note" style="margin-bottom:6px">Previsión para ${esc(hi.c)}${hi.a?" ("+fmtA(hi.a)+")":""}.</p><div class="wx" data-lat="${hi.lat}" data-lon="${hi.lon}" data-alt="${hi.a||""}"></div>
   <div class="actions" style="margin-top:0">${aemetZone(hi.lat,hi.lon)?`<a class="btn ghost" href="https://www.aemet.es/es/eltiempo/prediccion/montana?w=&p=${aemetZone(hi.lat,hi.lon)[0]}" target="_blank" rel="noopener">AEMET montaña · ${aemetZone(hi.lat,hi.lon)[1]}</a>`:""}</div></div>
   ${r.gx?`<div class="sec"><h3>Perfil del recorrido</h3>${r.gx.pf.length?profSVG(r.gx):""}<p class="note" style="margin:4px 0 8px">Según el track: ${fmtKm(r.gx.km)} · +${r.gx.up.toLocaleString("es-ES")} m de subida${r.gx.mx?" · punto más alto "+r.gx.mx.toLocaleString("es-ES")+" m":""}.</p>
@@ -1360,6 +1361,8 @@ function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);
   ${F.sal?`<p class="salida">Salida: ${esc(F.sal)}</p>`:""}
   ${otros.length?`<p class="desc" style="font-size:.92em;opacity:.85">${otros.map(esc).join("<br>")}</p>`:""}
   <div class="actions">${u?`<a class="btn primary" href="${esc(u)}" target="_blank" rel="noopener">${/instagram\.com/i.test(u)?"Ver en Instagram":"Leer en "+esc(c.n)}</a>`:""}<a class="btn ghost" href="https://www.google.com/maps/search/?api=1&query=${la},${lo}" target="_blank" rel="noopener">Google Maps</a></div>`;
+  {const it=window.COLX&&COLX.byP(p);const rs=it&&it.par?(P[it.par.i].rs||[]).filter(ri=>R[ri].u):[];
+   if(rs.length)sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>También del grupo</h3><div class="rows">${rs.map(ri=>rowHTML(R[ri],"",true)).join("")}</div></div>`)}
   if(window.showTrack)showTrack(null);nodes.classed("sel",false);
   sheet.hidden=false;sheet.scrollTop=0;flyTo(la,lo)}
 for(const c of CO){for(const[k]of KS)if(LAY[`co_${c.id}_${k}`]===undefined)LAY[`co_${c.id}_${k}`]=LAY["co_"+c.id]!==false;delete LAY["co_"+c.id];
@@ -1393,7 +1396,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .chip .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 </style>`);
 const EXTRA=[["aloja","Alojamientos"],["pueblo","Pueblos con encanto"],["activo","Turismo activo"],["area","Áreas recreativas"]];
-const ALL=[];
+const ALL=[],PAR={};
 const regAt=(la,lo)=>{let b=null,bd=1e9;for(const q of P){const d=(q.lat-la)**2+((q.lon-lo)*.73)**2;if(d<bd){bd=d;b=q}}return b&&bd<.04?String(b.r).split(" / ")[0]:"Asturias"};
 const kmd=(a,b)=>Math.hypot(a.lat-b.lat,(a.lon-b.lon)*.73)*111;
 const sig=n=>new Set(nk(n).split(" ").filter(w=>w.length>=4&&!/^(pico|pena|picu|ruta|senda|desde|circular|braña|brana|playa|mirador|cascada|bosque|cueva)$/.test(w)));
@@ -1404,7 +1407,7 @@ for(const c of CO)for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
   // ¿lo tenéis también en el grupo? mismo nombre, o muy cerca y con una palabra del nombre en común
   const lista=cum?PEAKS:SPOTS,sw=sig(it.c);
   for(const g of lista){if(g.co)continue;const d=kmd(g,it);
-    if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))){it.both="grupo";it.par=g;g.both=g.both||c.n;if(!it.a&&g.a)it.a=g.a;break}}
+    if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))){it.both="grupo";it.par=g;g.both=g.both||c.n;(PAR[g.i]=PAR[g.i]||[]).push(it);if(!it.a&&g.a)it.a=g.a;break}}
   ALL.push(it);lista.push(it)}
 PEAKS.sort((a,b)=>(b.a||0)-(a.a||0));SPOTS.sort((a,b)=>a.c.localeCompare(b.c,"es"));
 // los que coinciden, juntos: el del colaborador justo debajo del vuestro
@@ -1429,6 +1432,11 @@ for(const it of ALL){const p=it.pp;if(!(/RUTA/i.test(p[7]||"")||/distancia\s*:/i
   const[F]=ficha(p[3]),dm=/\/(20\d\d)\/(\d\d)\//.exec(p[4]||"");
   RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:dm?+dm[1]:null,m:dm?+dm[2]:null,km:(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km||"")||[])[1]?(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km)[1].replace(".",",")+" km"):"",de:(/(\d[\d.]*)\s*m/i.exec(F.de||"")||[])[1]?"+"+(/(\d[\d.]*)\s*m/i.exec(F.de)[1])+" m":"",txt:norm(p[0]+" "+it.r+" "+limpia(p[3]))}))}
 COLX.rsrc="todas";
+COLX.byP=p=>ALL.find(x=>x.pp===p);
+// en la ficha de una ruta del grupo: «También en <colaborador>» con su tarjeta
+COLX.also=r=>{const v=[];for(const i of r.p||[])for(const it of PAR[i]||[])if(!v.includes(it))v.push(it);if(!v.length)return "";
+  const by={};for(const it of v)(by[it.co.n] ||= []).push(it);
+  return Object.entries(by).map(([n,l])=>`<div class="sec"><h3>También en ${esc(n)}</h3><div class="rows">${l.map(it=>COLX.rrow(RUT.find(x=>Object.getPrototypeOf(x)===it)||Object.assign(Object.create(it),{y:null,km:"",de:""}))).join("")}</div></div>`).join("")};
 COLX.rchips=()=>{const o=COLX.rsrc;const ops=[["todas","Todas",""],["grupo","Del grupo","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c])];
   return `<div class="chips rsrc">${ops.map(([v,l,col])=>`<button class="chip" data-rsrc="${v}" aria-pressed="${o===v}">${col?`<span class="dot" style="background:${col}"></span>`:""}${esc(l)}</button>`).join("")}</div>`};
 COLX.routes=(q,limpio)=>{const o=COLX.rsrc;
@@ -2886,5 +2894,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="dd5bd11a0a";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="798be996c3";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
