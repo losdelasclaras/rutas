@@ -1141,7 +1141,7 @@
       </Placemark>
       <Placemark>
         <name>Pico Peña La Xamoca (1283 m.)</name>
-        <description>https://losdelasclaras.blogspot.com/2022/02/la-xamoca-carba-y-les-llombes-desde.html</description>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2022/02/la-xamoca-carba-y-les-llombes-desde.html<br><br>https://losdelasclaras.blogspot.com/2012/04/la-xamoca-los-caspios-y-triguero-cresta.html]]></description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -5906,6 +5906,26 @@
         <Point>
           <coordinates>
             -5.9140823,43.0745106,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Pico Mediodia (1199 m.) Sierra de Peñamayor</name>
+        <description>https://losdelasclaras.blogspot.com/2012/04/la-xamoca-los-caspios-y-triguero-cresta.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.5021096,43.2710719,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Pico el Coton (1133 m.) Sierra de Peñamayor</name>
+        <description>https://losdelasclaras.blogspot.com/2012/04/la-xamoca-los-caspios-y-triguero-cresta.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.5013539,43.2680235,0
           </coordinates>
         </Point>
       </Placemark>
