@@ -77,6 +77,10 @@ rep('<div class="row crow${s?" is-"+s:""}">${ICO(kind==="cumbres"?"cumbre":p.cat
 rep('esc((CATS.find(c=>c[0]===p.cat)||[,"Otros"])[1])','esc(((window.COLX?COLX.cats():CATS).find(c=>c[0]===p.cat)||[,"Otros"])[1])')
 rep('${ri!=null?`<button data-go="${ri}"','${p.co?`<button data-cov="${p.ci}" title="Ver en el mapa">Ver</button>`:""}${ri!=null?`<button data-go="${ri}"')
 rep('const go=e.target.closest("[data-go]");if(go){','const cv=e.target.closest("[data-cov]");if(cv&&window.COLX){COLX.open(+cv.dataset.cov);return}\n  const go=e.target.closest("[data-go]");if(go){')
+# buscadores de Cumbres y Lugares arriba del todo (antes quedaban debajo de los botones y no se veían)
+for _k,_ph in (("cumbres","Busca una cumbre…"),("lugares","Busca un lugar: braña, lago, refugio…")):
+    rep(f'<div id="colh-{_k}"></div>\n      <input class="search" id="qs-{_k}" type="search" placeholder="{_ph}" autocomplete="off" style="margin:4px 0 6px">',
+        f'<input class="search" id="qs-{_k}" type="search" placeholder="🔍 {_ph}" autocomplete="off" style="margin:2px 0 12px;font-size:1.08em;padding:12px 14px">\n      <div id="colh-{_k}"></div>')
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
 t=re.sub(r'\s*<button class="lay" data-lay="towns".*?</button>','',t,count=1,flags=re.S)
