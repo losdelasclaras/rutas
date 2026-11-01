@@ -17,7 +17,6 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.google.androidbrowserhelper.trusted.LauncherActivity
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -254,12 +253,5 @@ class GrabarActivity : Activity() {
         if (getSharedPreferences("buzon", MODE_PRIVATE).getString("b", null) == null) { web.evaluateJavascript(js.replace("\u0001EST\u0001", "'sinbuzon'"), null); return }
         web.evaluateJavascript(js.replace("\u0001EST\u0001", "'enviando'"), null)
         Buzon.enviar(this, pts, nombre) { ok -> runOnUiThread { web.evaluateJavascript(js.replace("\u0001EST\u0001", if (ok) "'ok'" else "'pendiente'"), null) } }
-    }
-
-    private fun abrir(pts: List<DoubleArray>, nombre: String) {
-        val url = Grab.enlace(pts, nombre)
-        if (url == null) { web.evaluateJavascript("refresca();aviso('No ha dado tiempo a grabar nada')", null); return }
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).setClass(this, LauncherActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-        finish()
     }
 }

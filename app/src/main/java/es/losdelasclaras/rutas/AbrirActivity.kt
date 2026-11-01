@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
-import com.google.androidbrowserhelper.trusted.LauncherActivity
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.net.URLEncoder
@@ -32,8 +31,8 @@ class AbrirActivity : Activity() {
         if (url == null) {
             Toast.makeText(this, "No he encontrado ningún recorrido en ese archivo (solo GPX o KML)", Toast.LENGTH_LONG).show()
         } else {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).setClass(this, LauncherActivity::class.java)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).setClass(this, InicioActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
         }
         finish()
     }
