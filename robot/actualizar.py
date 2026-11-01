@@ -8,7 +8,7 @@ Cada noche (GitHub Actions) mira:
 Si algo ha cambiado, regenera la app (build.py, assemble.py, gpx/proc.py, pwa/build_pwa.py).
 Escribe un informe en robot/informe.md. Sale con código 0 si no hay cambios, 0 si los hay (lo indica en robot/hay-cambios).
 """
-import json, os, re, sys, io, html, math, subprocess, datetime, urllib.request, urllib.parse, xml.etree.ElementTree as ET
+import json, os, re, sys, io, html, math, subprocess, datetime, unicodedata, urllib.request, urllib.parse, xml.etree.ElementTree as ET
 
 APP = '/home/claude/app/'
 CFG = {
@@ -338,6 +338,40 @@ def quedar_colab(co, q):
     if co.get('quitar_nombres') and re.search(co['quitar_nombres'], q[0], re.I): return False
     return True
 
+def blog_colab(co, new):
+    # rutas del colaborador sin enlace a su blog: se busca su entrada en el índice (sitemap) del blog y se empareja por el nombre
+    web = co.get('blog_web'); rs = new.get('r')
+    if not web or not rs: return
+    rs = new['r'] = json.loads(json.dumps(rs))   # copia: así se nota el cambio y se guarda
+    urls = set()
+    for sm in ('/wp-sitemap.xml', '/sitemap_index.xml', '/sitemap.xml', '/post-sitemap.xml'):
+        try: x = get(web.rstrip('/') + sm)
+        except Exception: continue
+        locs = re.findall(r'<loc>\s*([^<\s]+)\s*</loc>', x)
+        for u in locs:
+            if re.search(r'sitemap.*\.xml', u):
+                if re.search(r'(post|entrad|article)', u, re.I) or 'wp-sitemap-posts-post' in u:
+                    try: urls |= set(re.findall(r'<loc>\s*([^<\s]+)\s*</loc>', get(u)))
+                    except Exception: pass
+            else: urls.add(u)
+        if urls: break
+    urls = {u for u in urls if not re.search(r'/(category|tag|categoria|etiqueta|page|author|wp-content)/|\.(jpg|png|webp)$', u)}
+    if not urls: log(f'⚠ No he podido leer el índice del blog de {co.get("nombre") or co["id"]} ({web}).'); return
+    STOP = {'de', 'del', 'la', 'las', 'el', 'los', 'y', 'e', 'desde', 'por', 'a', 'al', 'en', 'con', 'circular', 'ruta', 'invernal', 'invierno', 'nieve', 'subida', 'o', 'u', 'the'}
+    sin = lambda t: re.sub(r'[^a-z0-9ñ ]+', ' ', unicodedata.normalize('NFD', t.lower()).replace('ñ', 'ñ').encode('ascii', 'ignore').decode()).split()
+    toks = lambda t: {w for w in sin(t) if w not in STOP and len(w) > 1}
+    slugs = [(u, toks(u.rstrip('/').rsplit('/', 1)[-1].replace('-', ' '))) for u in urls]
+    n = 0
+    for r in rs:
+        if r[7]: continue
+        t = toks(re.sub(r'\(.*?\)', '', r[0].split('|')[-1]))
+        if len(t) < 2: continue
+        sc = sorted(((len(t & s) / len(t | s), len(t & s), u) for u, s in slugs if s), reverse=True)
+        if sc and sc[0][1] >= 2 and sc[0][0] >= 0.6 and (len(sc) < 2 or sc[1][0] < sc[0][0]):
+            r[7] = sc[0][2]; n += 1
+    con = sum(1 for r in rs if r[7])
+    if n: log(f'📝 Blog de {co.get("nombre") or co["id"]}: {n} rutas emparejadas con su entrada ({con} de {len(rs)} con enlace al blog; índice con {len(urls)} entradas).')
+
 def colaboradores():
     cf = APP + 'colaboradores.json'
     if not os.path.exists(cf): return
@@ -377,6 +411,7 @@ def colaboradores():
             except Exception as e:
                 log(f'⚠ Drive del colaborador {co["id"]}: {e}')
         fotos_colab(co['id'], new)
+        blog_colab(co, new)
         nom = co.get('nombre') or new.get('t') or co['id']
         if new != old:
             json.dump(new, open(fo, 'w'), ensure_ascii=False, separators=(',', ':'))
