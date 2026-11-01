@@ -15,6 +15,14 @@ function geo(cb){if(!navigator.geolocation){toast("Este aparato no da la ubicaci
 function buscar(){PICK=true;ovShow({t:"search"})}
 function yo(ir){geo((la,lo)=>ponNear({lat:la,lon:lo,label:"tu ubicación",rad:radAt(la,lo)},ir))}
 window.CERCA={yo,buscar,quitar:()=>ponNear(null)};
+// buscador de sitios más tolerante: «Ciñera León», «Ciñera, León», «Ciñera de Gordón» → Ciñera (la de León primero)
+{const FS0=window.findSites;if(typeof FS0==="function"){
+  const PROV=/\b(leon|asturias|cantabria|palencia|lugo|ourense|orense|zamora|burgos|galicia|huesca|lleida|lerida|navarra|aragon|espana)\b/;
+  window.findSites=function(q){let r=FS0(q);if(r.length)return r;
+    const n=nk(q),pm=n.match(PROV),q2=n.replace(PROV," ").replace(/\s+/g," ").trim();
+    const pon=l=>{if(!pm)return l;const w=pm[1]==="orense"?"ourense":pm[1]==="lerida"?"lleida":pm[1];const f=l.filter(s=>nk(s.reg||"").includes(w));return f.concat(l.filter(s=>!f.includes(s)))};
+    if(q2&&q2!==n){r=FS0(q2);if(r.length)return pon(r)}
+    const ws=(q2||n).split(" ");while(ws.length>1){ws.pop();r=FS0(ws.join(" "));if(r.length)return pon(r)}return[]}}}
 document.addEventListener("click",e=>{if(!e.target.closest("#v-rutas,#v-cumbres,#v-lugares"))return;
   if(e.target.closest("[data-cnear]")){e.stopPropagation();buscar();return}
   if(e.target.closest("[data-cme]")){e.stopPropagation();yo();return}
