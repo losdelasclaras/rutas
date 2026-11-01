@@ -36,14 +36,16 @@ function catCo(p){const n=p[0]||"",ic=p[6]||"",f=(p[7]||"").toUpperCase(),c=catO
   return c}
 // en Capas: un apartado «Colaboradores» con un botón por cada uno (encendidos la primera vez)
 const pn=document.querySelector(".laypanel");
+// cada colaborador, su propio apartado en Capas con «Cumbres» y «Lugares» (como «Ver» del grupo)
+const KS=[["c","Cumbres","cumbre"],["l","Lugares","otros"]];
 if(pn){const ml=[...pn.querySelectorAll("p.laygh")].find(p=>/mis lugares/i.test(p.textContent));
-  const h=`<p class="laygh">Colaboradores</p>`+CO.map(c=>`<button class="lay" data-lay="co_${c.id}" aria-pressed="true"><span class="lico co" style="border-color:${c.c}"></span>${esc(c.n)}</button>`).join("");
+  const h=CO.map(c=>`<p class="laygh">${esc(c.n)}</p>`+KS.map(([k,t,ic])=>`<button class="lay" data-lay="co_${c.id}_${k}" aria-pressed="true"><svg class="ico" viewBox="-12 -12 24 24" style="border-radius:50%;box-shadow:0 0 0 2.5px ${c.c}"><use href="#ic-${ic}" x="-12" y="-12" width="24" height="24"/></svg>${t}</button>`).join("")).join("");
   if(ml)ml.insertAdjacentHTML("beforebegin",h);else pn.insertAdjacentHTML("beforeend",h)}
 const G={},LBL=[];
 function pop(c,p){const[n,,,d,u,f]=p;
   return `<div class="cpop"><b>${esc(n)}</b><div class="q">${esc(c.n)}</div>`+(f?`<img src="${esc(f)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:"")+(d?`<div class="dd">${esc(d)}</div>`:"")+(u?`<a class="vm" href="${esc(u)}" target="_blank" rel="noopener">Ver más ›</a>`:"")+`</div>`}
-for(const c of CO){if(LAY["co_"+c.id]===undefined)LAY["co_"+c.id]=true;
-  const g=L.layerGroup();
+for(const c of CO){for(const[k]of KS)if(LAY[`co_${c.id}_${k}`]===undefined)LAY[`co_${c.id}_${k}`]=LAY["co_"+c.id]!==false;delete LAY["co_"+c.id];
+  const g=L.layerGroup(),gc=L.layerGroup();
   for(const ln of c.l){const ll=ln[1];
     g.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.85,interactive:false,renderer:TRC}));
     g.addLayer(L.polyline(ll,{color:c.c,weight:3.5,opacity:.95,renderer:TRC}).bindTooltip(esc(ln[0])+" · "+esc(c.n),{sticky:true}))}
@@ -51,13 +53,13 @@ for(const c of CO){if(LAY["co_"+c.id]===undefined)LAY["co_"+c.id]=true;
     const m=L.marker([p[1],p[2]],{icon:L.divIcon({className:"cpt"+(cum?" cum":""),html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:p[0]+" · "+c.n,riseOnHover:true,zIndexOffset:cum?-20:-50});
     m.bindPopup(()=>pop(c,p),{maxWidth:270});
     m.on("click",e=>{if(typeof nearMode!=="undefined"&&nearMode){L.DomEvent.stopPropagation(e);m.closePopup();nearAt(p[1],p[2])}});
-    m.__n=p[0];m.__c=c.c;LBL.push(m);g.addLayer(m)}
-  G[c.id]=g}
+    m.__n=p[0];m.__c=c.c;LBL.push(m);(cum?gc:g).addLayer(m)}
+  G[c.id+"_l"]=g;G[c.id+"_c"]=gc}
 // los nombres, como los del grupo: solo con el mapa cerca
 function lbls(){const on=map.getZoom()>=12;for(const m of LBL){if(on&&!m.getTooltip())m.bindTooltip(esc(m.__n),{permanent:true,direction:"right",offset:[10,0],className:"lbl co",interactive:false});const te=on&&m.getTooltip()&&m.getTooltip().getElement();if(te)te.style.setProperty("--cc",m.__c);else if(!on&&m.getTooltip())m.unbindTooltip()}}
-function sync(){for(const c of CO){const on=LAY["co_"+c.id]&&!LAY.solo&&!window.FOLONLY,g=G[c.id];
+function sync(){for(const c of CO)for(const[k]of KS){const key=`co_${c.id}_${k}`,on=LAY[key]&&!LAY.solo&&!window.FOLONLY,g=G[c.id+"_"+k];
     if(on&&!map.hasLayer(g))g.addTo(map);else if(!on&&map.hasLayer(g))g.remove();
-    const b=document.querySelector(`[data-lay="co_${c.id}"]`);if(b)b.setAttribute("aria-pressed",!!LAY["co_"+c.id])}
+    const b=document.querySelector(`[data-lay="${key}"]`);if(b)b.setAttribute("aria-pressed",!!LAY[key])}
   lbls()}
 map.on("zoomend",lbls);
 document.querySelector(".legend").addEventListener("click",()=>setTimeout(sync,0));
