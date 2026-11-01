@@ -4,6 +4,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>svg.prof{touch-action:pan-y
 const W=600,H=190,pl=70,pr=8,pt=12,pb=34;
 let MK=null,HT=null;
 function rutaDe(svg){const c=svg.closest("#sheet,#ov");if(!c)return null;
+  if(c.id==="sheet"&&sheet._cor&&window.COLX&&COLX.trkOf){const t=COLX.trkOf(sheet._cor);if(t)return t}
   const g=c.querySelector("[data-gpx]");if(g){const r=R[+g.dataset.gpx];return r&&r.gx&&r.gx.ln?{ln:r.gx.ln,km:r.gx.km}:null}
   const m=c.querySelector("[data-mtfol]");if(m&&window.MISPUNTOS){const t=MISPUNTOS.tracks().find(x=>String(x.id)===m.dataset.mtfol);const ln=t&&MISPUNTOS.ptsOf(t);return ln?{ln,km:t.km}:null}
   return null}
