@@ -87,6 +87,11 @@ rep('  rs.sort(byDate);const by={};rs.forEach(r=>{(by[r.y||"Sin fecha"] ||= []).
 rep('  const cnt=ban+`<p class="count">${rs.length} ${rs.length===1?"ruta":"rutas"}','  const cnt=ban+(window.COLX?COLX.rchips():"")+`<p class="count">${rs.length+CO_.c.length} ${rs.length+CO_.c.length===1?"ruta":"rutas"}')
 rep('<div class="rows">${by[y].map(r=>rowHTML(r)).join("")}</div>','<div class="rows">${by[y].map(r=>r.cox?COLX.rrow(r):rowHTML(r)).join("")}</div>')
 rep('document.getElementById("list").addEventListener("click",e=>{','document.getElementById("list").addEventListener("click",e=>{const cr=e.target.closest("[data-cor]");if(cr&&window.COLX){COLX.open(+cr.dataset.cor);return}const rc=e.target.closest("[data-rsrc]");if(rc&&window.COLX){COLX.rsrc=rc.dataset.rsrc;renderList();return}')
+# rutas cerca de un sitio: también las de los colaboradores
+rep('function nearSplit(lat,lon){RAD=radAt(lat,lon);const all=nearestRoutes(lat,lon,999);','function nearSplit(lat,lon){RAD=radAt(lat,lon);const all=nearestRoutes(lat,lon,999).concat(window.COLX?COLX.near(lat,lon):[]).sort((a,b)=>a.d-b.d);')
+rep('function nearListHTML(ns){const row=o=>rowHTML(o.r,(o.d<10?o.d.toFixed(1).replace(".",","):o.d.toFixed(0))+" km",true);','function nearListHTML(ns){const row=o=>{const dd=(o.d<10?o.d.toFixed(1).replace(".",","):o.d.toFixed(0))+" km";return o.r.cox?COLX.rrow(o.r,dd):rowHTML(o.r,dd,true)};')
+rep('  const row=e.target.closest("[data-r]"); if(row){const r=R[+row.dataset.r];openRoute(r.id);','  const cor=e.target.closest("[data-cor]"); if(cor&&window.COLX){COLX.open(+cor.dataset.cor);return}\n  const row=e.target.closest("[data-r]"); if(row){const r=R[+row.dataset.r];openRoute(r.id);')
+rep('  const row=e.target.closest("[data-r]");if(row){ovShow({t:"route",id:+row.dataset.r});return}});','  const cor=e.target.closest("[data-cor]");if(cor&&window.COLX){COLX.open(+cor.dataset.cor);return}\n  const row=e.target.closest("[data-r]");if(row){ovShow({t:"route",id:+row.dataset.r});return}});')
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
 t=re.sub(r'\s*<button class="lay" data-lay="towns".*?</button>','',t,count=1,flags=re.S)

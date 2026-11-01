@@ -120,7 +120,7 @@ window.COLX={
   cls:p=>(p.co?` src-co${p.both?" both":""}" style="--cc:${p.co.c}`:` src-g${p.both?" both":""}`),
   ico:(p,kind)=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true" style="border-radius:50%;box-shadow:0 0 0 2.5px ${p.co.c}"><use href="#ic-${p.k}" x="-12" y="-12" width="24" height="24"/></svg>`,
   src:p=>p.co?`<em class="cosrc" style="color:${p.co.c}">${esc(p.co.n)}</em>${p.both?` · <em class="cosrc dos">en los dos</em>`:""} · `:p.both?`<em class="cosrc dos">También en ${esc(p.both)}</em> · `:"",
-  open(ci){const it=ALL[ci];if(!it)return;if(typeof showView==="function")showView("mapa");setTimeout(()=>abrir(it.co,it.pp,it.k),80)}};
+  open(ci){const it=ALL[ci];if(!it)return;if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>abrir(it.co,it.pp,it.k),80)}};
 /* ---------- también en la pestaña Rutas: sus puntos que son rutas (capas de rutas o con «Distancia:») ---------- */
 document.head.insertAdjacentHTML("beforeend",`<style>
 #list .row.src-co{background:color-mix(in srgb,var(--cc) 16%,transparent);box-shadow:inset 5px 0 0 var(--cc)}
@@ -130,15 +130,16 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 const RUT=[];
 for(const it of ALL){const p=it.pp;if(!(/RUTA/i.test(p[7]||"")||/distancia\s*:/i.test(limpia(p[3]))))continue;
   const[F]=ficha(p[3]),dm=/\/(20\d\d)\/(\d\d)\//.exec(p[4]||"");
-  RUT.push(Object.assign(Object.create(it),{cox:1,y:dm?+dm[1]:null,m:dm?+dm[2]:null,km:(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km||"")||[])[1]?(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km)[1].replace(".",",")+" km"):"",de:(/(\d[\d.]*)\s*m/i.exec(F.de||"")||[])[1]?"+"+(/(\d[\d.]*)\s*m/i.exec(F.de)[1])+" m":"",txt:norm(p[0]+" "+it.r+" "+limpia(p[3]))}))}
+  RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:dm?+dm[1]:null,m:dm?+dm[2]:null,km:(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km||"")||[])[1]?(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km)[1].replace(".",",")+" km"):"",de:(/(\d[\d.]*)\s*m/i.exec(F.de||"")||[])[1]?"+"+(/(\d[\d.]*)\s*m/i.exec(F.de)[1])+" m":"",txt:norm(p[0]+" "+it.r+" "+limpia(p[3]))}))}
 COLX.rsrc="todas";
 COLX.rchips=()=>{const o=COLX.rsrc;const ops=[["todas","Todas",""],["grupo","Del grupo","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c])];
   return `<div class="chips rsrc">${ops.map(([v,l,col])=>`<button class="chip" data-rsrc="${v}" aria-pressed="${o===v}">${col?`<span class="dot" style="background:${col}"></span>`:""}${esc(l)}</button>`).join("")}</div>`};
 COLX.routes=(q,limpio)=>{const o=COLX.rsrc;
   const c=(o==="grupo"||!limpio)?[]:RUT.filter(x=>(o==="todas"||o==="co_"+x.co.id)&&(!q||x.txt.includes(q)));
   return {c,hideG:o!=="todas"&&o!=="grupo"}};
-COLX.rrow=x=>{const de=x.de?(/^\+/.test(x.de)?x.de:"+"+x.de):"",nums=[x.km,de].filter(Boolean).join(" · ");
-  return `<button class="row src-co" style="--cc:${x.co.c}" data-cor="${x.ci}">${x.pp[5]?`<img class="thumb" src="${esc(x.pp[5])}" alt="" loading="lazy">`:`<span class="thumb none" aria-hidden="true"></span>`}<div class="t"><b>${esc(x.c)}</b><span><em class="cosrc" style="color:${x.co.c}">${esc(x.co.n)}</em> · ${x.y?(x.m?MESES[x.m]+" ":"")+x.y:"Sin fecha"} · ${esc(x.r)}</span></div><span class="alt">${esc(nums)}</span></button>`};
+COLX.near=(lat,lon)=>F.reg==="todas"&&!nExtra()&&!F.wz?RUT.map(x=>({r:x,d:km({lat,lon},x)})):[];
+COLX.rrow=(x,extra)=>{const de=x.de?(/^\+/.test(x.de)?x.de:"+"+x.de):"",nums=[x.km,de].filter(Boolean).join(" · ");
+  return `<button class="row src-co" style="--cc:${x.co.c}" data-cor="${x.ci}">${x.pp[5]?`<img class="thumb" src="${esc(x.pp[5])}" alt="" loading="lazy">`:`<span class="thumb none" aria-hidden="true"></span>`}<div class="t"><b>${esc(x.c)}</b><span><em class="cosrc" style="color:${x.co.c}">${esc(x.co.n)}</em> · ${x.y?(x.m?MESES[x.m]+" ":"")+x.y:"Sin fecha"} · ${esc(x.r)}${extra?" · "+esc(extra):""}</span></div><span class="alt">${esc(nums)}</span></button>`};
 if(typeof renderList==="function")renderList();
 renderCols()}
 })();
