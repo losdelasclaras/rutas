@@ -2,22 +2,44 @@
 (function(){
 const CO=__COLAB__;if(!CO.length||typeof map==="undefined")return;
 document.head.insertAdjacentHTML("beforeend",`<style>
-#map .cpt i{position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:max(13px,calc(var(--ms)*.72));height:max(13px,calc(var(--ms)*.72));border-radius:50%;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5);box-sizing:border-box;display:block}
-#map .cpt.cum i{border-radius:3px;transform:translate(-50%,-50%) rotate(45deg)}
-#map .leaflet-tooltip.lbl.co{font-weight:700}
+#map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
+#map .cpt.cum svg{width:calc(var(--ms,24px)*1.02);height:calc(var(--ms,24px)*1.02)}
+#map .leaflet-tooltip.lbl.co{font-weight:700;text-decoration:underline;text-decoration-color:var(--cc);text-decoration-thickness:2px;text-underline-offset:2px}
 .cpop{max-width:250px;font-size:15px;line-height:1.35}.cpop b{font-size:16.5px;display:block}.cpop .q{font-size:13px;color:#666;margin:2px 0 4px}
 .cpop .dd{white-space:pre-line;max-height:38vh;overflow:auto}
 .cpop img{width:100%;max-height:170px;object-fit:cover;border-radius:8px;margin:6px 0 4px;display:block}
 .cpop a.vm{display:inline-block;margin-top:6px;font-weight:700}
-.lico.co{width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25);display:inline-block}
+.lico.co{width:16px;height:16px;border-radius:50%;border:3px solid;box-sizing:border-box;display:inline-block;background:#fff}
 </style>`);
+const SYM={aloja:["#b5532f",'<path d="M-7.5-5h2v4.2H6a1.8 1.8 0 0 1 1.8 1.8V5.5h-2V3.4H-5.5v2.1h-2Z" fill="#fff"/><circle cx="-2.7" cy="-2.6" r="1.8" fill="#fff"/><path d="M0.2-4.2H4.4a2 2 0 0 1 2 2v.6H0.2Z" fill="#fff"/>'],
+  pueblo:["#a8663a",'<path d="M-8.2 5.5V-.6L-4.6-4-1-.6V5.5Z M-.2 5.5V-2.8L3.9-6.8 8 -2.8V5.5Z" fill="#fff"/><path d="M2.8 5.5V2.6H5V5.5Z M-5.6 5.5V3H-3.6V5.5Z" fill="#a8663a"/>'],
+  activo:["#c2417e",'<path d="M-4.6-7.6h1.7V7.2h-1.7Z" fill="#fff"/><path d="M-2.9-7.6H6.6L3.9-4.1 6.6-.6H-2.9Z" fill="#fff"/>'],
+  area:["#4b8a3a",'<path d="M-7.4-3.4H7.4V-1.6H-7.4Z M-5.4-1.4h2l-2.4 6.8h-2Z M3.4-1.4h2l2.4 6.8h-2Z M-6.6 1.6H6.6v1.6H-6.6Z" fill="#fff"/>']};
+{const sv=document.querySelector("symbol#ic-cumbre");if(sv)sv.parentNode.insertAdjacentHTML("beforeend",Object.entries(SYM).map(([k,[c,d]])=>`<symbol id="ic-${k}" viewBox="-12 -12 24 24"><circle r="10.6" fill="${c}" stroke="#fff" stroke-width="1.8"/>${d}</symbol>`).join(""))}
+// nombres en MAYÚSCULAS → como los del grupo («Braña de las Cadenas»)
+const MIN=new Set(["de","del","la","las","el","los","y","a","al","por","en","e","o","u","con","sobre","desde"]);
+const capi=n=>n&&n===n.toUpperCase()&&/[A-ZÁÉÍÓÚÑ]{3}/.test(n)?n.toLowerCase().replace(/[^\s(/-]+/g,(w,i)=>i&&MIN.has(w)?w:/^(pr|gr|sl)\b|^as-?\d/i.test(w)?w.toUpperCase():w[0].toUpperCase()+w.slice(1)).replace(/\b(PR|GR|SL)([-. ]?)As\b/g,"$1$2AS"):n;
+for(const c of CO)for(const p of c.p)p[0]=capi(p[0]);
+// el icono sale de la capa de su My Maps, del icono que puso y del nombre (como en los puntos del grupo)
+function catCo(p){const n=p[0]||"",ic=p[6]||"",f=(p[7]||"").toUpperCase(),c=catOf(n);
+  if(/MONTA/.test(f))return /^(ruta|senda|camino|circular)\b/i.test(n)?(c==="otros"?"senda":c):"cumbre";
+  if(/SENDERISMO/.test(f))return c==="otros"?"senda":c;
+  if(/CASCADA|LAGO/.test(f))return ["agua","cascada","cueva"].includes(c)?c:"cascada";
+  if(/MIRADOR/.test(f))return "collado";
+  if(/ALOJAMIENTO|REFUGIO/.test(f))return /refugio/i.test(n)?"refugio":"aloja";
+  if(/TURISMO ACTIVO/.test(f))return "activo";
+  if(/BOSQUE|CUEVA/.test(f))return /cueva|covona|covarones|\bcova\b/i.test(n)?"cueva":"bosque";
+  if(/PLAYA|CABO|COSTA/.test(f))return "costa";
+  if(/PUEBLO/.test(f))return "pueblo";
+  if(/OTROS/.test(f)&&/rea recreativa|parque/i.test(n))return "area";
+  if(ic==="1634")return "cumbre";
+  return c}
 // en Capas: un apartado «Colaboradores» con un botón por cada uno (encendidos la primera vez)
 const pn=document.querySelector(".laypanel");
 if(pn){const ml=[...pn.querySelectorAll("p.laygh")].find(p=>/mis lugares/i.test(p.textContent));
-  const h=`<p class="laygh">Colaboradores</p>`+CO.map(c=>`<button class="lay" data-lay="co_${c.id}" aria-pressed="true"><span class="lico co" style="background:${c.c}"></span>${esc(c.n)}</button>`).join("");
+  const h=`<p class="laygh">Colaboradores</p>`+CO.map(c=>`<button class="lay" data-lay="co_${c.id}" aria-pressed="true"><span class="lico co" style="border-color:${c.c}"></span>${esc(c.n)}</button>`).join("");
   if(ml)ml.insertAdjacentHTML("beforebegin",h);else pn.insertAdjacentHTML("beforeend",h)}
 const G={},LBL=[];
-const alt=n=>{const m=/(\d[\d.]{2,5})\s*m\b/.exec(n||"");return m?+m[1].replace(/\./g,""):0};
 function pop(c,p){const[n,,,d,u,f]=p;
   return `<div class="cpop"><b>${esc(n)}</b><div class="q">${esc(c.n)}</div>`+(f?`<img src="${esc(f)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:"")+(d?`<div class="dd">${esc(d)}</div>`:"")+(u?`<a class="vm" href="${esc(u)}" target="_blank" rel="noopener">Ver más ›</a>`:"")+`</div>`}
 for(const c of CO){if(LAY["co_"+c.id]===undefined)LAY["co_"+c.id]=true;
@@ -25,14 +47,14 @@ for(const c of CO){if(LAY["co_"+c.id]===undefined)LAY["co_"+c.id]=true;
   for(const ln of c.l){const ll=ln[1];
     g.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.85,interactive:false,renderer:TRC}));
     g.addLayer(L.polyline(ll,{color:c.c,weight:3.5,opacity:.95,renderer:TRC}).bindTooltip(esc(ln[0])+" · "+esc(c.n),{sticky:true}))}
-  for(const p of c.p){const cum=alt(p[0])>0;
-    const m=L.marker([p[1],p[2]],{icon:L.divIcon({className:"cpt"+(cum?" cum":""),html:`<i style="background:${c.c}"></i>`,iconSize:[0,0]}),title:p[0]+" · "+c.n,riseOnHover:true,zIndexOffset:-50});
+  for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
+    const m=L.marker([p[1],p[2]],{icon:L.divIcon({className:"cpt"+(cum?" cum":""),html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:p[0]+" · "+c.n,riseOnHover:true,zIndexOffset:cum?-20:-50});
     m.bindPopup(()=>pop(c,p),{maxWidth:270});
     m.on("click",e=>{if(typeof nearMode!=="undefined"&&nearMode){L.DomEvent.stopPropagation(e);m.closePopup();nearAt(p[1],p[2])}});
-    m.__n=p[0];LBL.push(m);g.addLayer(m)}
+    m.__n=p[0];m.__c=c.c;LBL.push(m);g.addLayer(m)}
   G[c.id]=g}
 // los nombres, como los del grupo: solo con el mapa cerca
-function lbls(){const on=map.getZoom()>=12;for(const m of LBL){if(on&&!m.getTooltip())m.bindTooltip(esc(m.__n),{permanent:true,direction:"right",offset:[10,0],className:"lbl co",interactive:false});else if(!on&&m.getTooltip())m.unbindTooltip()}}
+function lbls(){const on=map.getZoom()>=12;for(const m of LBL){if(on&&!m.getTooltip())m.bindTooltip(esc(m.__n),{permanent:true,direction:"right",offset:[10,0],className:"lbl co",interactive:false});const te=on&&m.getTooltip()&&m.getTooltip().getElement();if(te)te.style.setProperty("--cc",m.__c);else if(!on&&m.getTooltip())m.unbindTooltip()}}
 function sync(){for(const c of CO){const on=LAY["co_"+c.id]&&!LAY.solo&&!window.FOLONLY,g=G[c.id];
     if(on&&!map.hasLayer(g))g.addTo(map);else if(!on&&map.hasLayer(g))g.remove();
     const b=document.querySelector(`[data-lay="co_${c.id}"]`);if(b)b.setAttribute("aria-pressed",!!LAY["co_"+c.id])}
