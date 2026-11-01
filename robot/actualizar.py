@@ -340,9 +340,15 @@ def colaboradores():
         if co.get('mapa_mid'):
             try:
                 tit, pts, lin = _kml_colab(get(f'https://www.google.com/maps/d/kml?mid={co["mapa_mid"]}&forcekml=1'))
-                if len(pts) < 0.9 * len(old.get('p', [])):
+                qc0 = [x.upper() for x in co.get('quitar_capas', [])]
+                if len([q for q in pts if (q[7] or '').upper() not in qc0]) < 0.9 * len(old.get('p', [])):
                     log(f'⚠ El mapa del colaborador «{old.get("t", co["id"])}» ha devuelto solo {len(pts)} puntos (había {len(old["p"])}): no lo toco.')
                 else:
+                    # capas de su My Maps que no queremos en la app (p. ej. publicidad de empresas)
+                    qc = [x.upper() for x in co.get('quitar_capas', [])]
+                    if qc:
+                        n0 = len(pts); pts = [q for q in pts if (q[7] or '').upper() not in qc]
+                        if n0 != len(pts): log(f'   (quitados {n0 - len(pts)} puntos de las capas {", ".join(co["quitar_capas"])})')
                     new.update(t=tit, p=pts, l=lin)
             except Exception as e:
                 log(f'⚠ No he podido leer el mapa del colaborador {co["id"]}: {e}')

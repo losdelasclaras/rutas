@@ -1,3 +1,12 @@
 [
- {"id": "c1", "nombre": "", "color": "#e8710a", "mapa_mid": "1okFP2h8I-hDwIQvAq-7DRDj7zxOojc0", "drive_carpeta": ""}
+ {
+  "id": "c1",
+  "nombre": "",
+  "color": "#e8710a",
+  "mapa_mid": "1okFP2h8I-hDwIQvAq-7DRDj7zxOojc0",
+  "drive_carpeta": "",
+  "quitar_capas": [
+   "TURISMO ACTIVO"
+  ]
+ }
 ]
