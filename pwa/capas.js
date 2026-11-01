@@ -17,7 +17,7 @@ for(const el of kids){if(el.matches("p.laygh")){const b=document.createElement("
     const g=document.createElement("div");g.className="laygrp";el.replaceWith(b);b.after(g);cur={b,g,name:el.textContent.trim()};groups.push(cur)}
   else if(cur)cur.g.appendChild(el)}
 const KEY="ldc-capas-abierta";let open;try{open=localStorage.getItem(KEY)}catch(e){}
-if(!groups.some(x=>x.name===open))open=(groups.find(x=>/^ver$/i.test(x.name))||groups[0]).name;
+if(!groups.some(x=>x.name===open))open=(groups.find(x=>/^(ver|los de las claras)$/i.test(x.name))||groups[0]).name;
 function sum(){for(const x of groups){let s="";
     if(/^mapa$/i.test(x.name)){const b=x.g.querySelector('[data-base][aria-pressed="true"]');s=b?b.textContent.trim():""}
     else{const on=[...x.g.querySelectorAll('[data-lay][aria-pressed="true"]:not([hidden])')].filter(b=>b.dataset.lay!=="solo").map(b=>b.textContent.trim());if(x.g.querySelector('[data-lay]'))s=on.length?on.join(", "):"nada"}
@@ -25,5 +25,7 @@ function sum(){for(const x of groups){let s="";
 function show(){for(const x of groups){const o=x.name===open;x.g.hidden=!o;x.b.setAttribute("aria-expanded",o)}sum()}
 pn.addEventListener("click",e=>{const h=e.target.closest("button.laygh");if(h){const x=groups.find(g=>g.b===h);open=(open===x.name)?"":x.name;try{localStorage.setItem(KEY,open)}catch(e){}show();e.stopPropagation();return}
   setTimeout(sum,0)});
-show();
+show();window.capasSum=sum;
+// al abrir el panel, el resumen de cada apartado al día
+document.addEventListener("click",e=>{if(e.target.closest(".laytog"))setTimeout(sum,0)});setTimeout(sum,800);
 })();

@@ -96,7 +96,7 @@ function lbls(){const on=map.getZoom()>=12;for(const m of LBL){if(!m._map){if(m.
 function sync(){for(const c of CO)for(const[k]of KS){const key=`co_${c.id}_${k}`,on=LAY[key]&&!window.FOLONLY,g=G[c.id+"_"+k];
     if(on&&!map.hasLayer(g))g.addTo(map);else if(!on&&map.hasLayer(g))g.remove();
     const b=document.querySelector(`[data-lay="${key}"]`);if(b)b.setAttribute("aria-pressed",!!LAY[key])}
-  cull()}
+  cull();if(window.capasSum)capasSum()}
 // como los puntos del grupo: solo se dibujan los que caen en pantalla (y un margen); el mapa va igual de fluido con más colaboradores
 function cull(){const b=map.getBounds().pad(.35);for(const gid in MKG){const g=G[gid];if(!map.hasLayer(g))continue;
   for(const m of MKG[gid]){const inb=b.contains(m.getLatLng());if(inb&&!g.hasLayer(m))g.addLayer(m);else if(!inb&&g.hasLayer(m))g.removeLayer(m)}}lbls()}
@@ -134,7 +134,7 @@ for(const L of [PEAKS,SPOTS]){const pares=L.filter(x=>x.par);for(const x of pare
 window.COLX={
   cats:()=>CATS.concat(EXTRA),
   ok(p,C){const o=C.o||"todas";return o==="todas"||(o==="grupo"&&!p.co)||(o==="dos"&&!!p.both)||(p.co&&o==="co_"+p.co.id)},
-  chips(kind,C){const o=C.o||"todas";const ops=[["todas","Todos",""],["grupo","Del grupo","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c]),["dos","En los dos","#7b5ea7"]];
+  chips(kind,C){const o=C.o||"todas";const ops=[["todas","Todos",""],["grupo","Los de las Claras","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c]),["dos","En los dos","#7b5ea7"]];
     return `<div class="chips" data-k="${kind}" data-grp="o">${ops.map(([v,l,col])=>`<button class="chip" data-v="${v}" aria-pressed="${o===v}">${col?`<span class="dot" style="background:${col}"></span>`:""}${esc(l)}</button>`).join("")}</div>`},
   cls:p=>(p.co?` src-co${p.both?" both":""}" style="--cc:${p.co.c}`:` src-g${p.both?" both":""}`),
   ico:(p,kind)=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true" style="border-radius:50%;box-shadow:0 0 0 2.5px ${p.co.c}"><use href="#ic-${p.k}" x="-12" y="-12" width="24" height="24"/></svg>`,
@@ -157,7 +157,7 @@ COLX.byP=p=>ALL.find(x=>x.pp===p);
 COLX.also=r=>{const v=[];for(const i of r.p||[])for(const it of PAR[i]||[])if(!v.includes(it))v.push(it);if(!v.length)return "";
   const by={};for(const it of v)(by[it.co.n] ||= []).push(it);
   return Object.entries(by).map(([n,l])=>`<div class="sec"><h3>También en ${esc(n)}</h3><div class="rows">${l.map(it=>COLX.rrow(RUT.find(x=>Object.getPrototypeOf(x)===it)||Object.assign(Object.create(it),{y:null,km:"",de:""}))).join("")}</div></div>`).join("")};
-COLX.rchips=()=>{const o=COLX.rsrc;const ops=[["todas","Todas",""],["grupo","Del grupo","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c])];
+COLX.rchips=()=>{const o=COLX.rsrc;const ops=[["todas","Todas",""],["grupo","Los de las Claras","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c])];
   return `<div class="chips rsrc">${ops.map(([v,l,col])=>`<button class="chip" data-rsrc="${v}" aria-pressed="${o===v}">${col?`<span class="dot" style="background:${col}"></span>`:""}${esc(l)}</button>`).join("")}</div>`};
 COLX.routes=(q,limpio)=>{const o=COLX.rsrc;
   const c=(o==="grupo"||!limpio)?[]:RUT.filter(x=>(o==="todas"||o==="co_"+x.co.id)&&(!q||x.txt.includes(q))&&(!window.RFOK||RFOK(x)));
