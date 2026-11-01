@@ -360,6 +360,8 @@ def blog_colab(co, new):
     STOP = {'de', 'del', 'la', 'las', 'el', 'los', 'y', 'e', 'desde', 'por', 'a', 'al', 'en', 'con', 'circular', 'ruta', 'invernal', 'invierno', 'nieve', 'subida', 'o', 'u', 'the'}
     sin = lambda t: re.sub(r'[^a-z0-9ñ ]+', ' ', unicodedata.normalize('NFD', t.lower()).replace('ñ', 'ñ').encode('ascii', 'ignore').decode()).split()
     toks = lambda t: {w for w in sin(t) if w not in STOP and len(w) > 1}
+    try: open(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'blog_{co["id"]}.txt'), 'w').write('\n'.join(sorted(urls)) + '\n')
+    except Exception: pass
     slugs = [(u, toks(u.rstrip('/').rsplit('/', 1)[-1].replace('-', ' '))) for u in urls]
     n = 0
     for r in rs:
