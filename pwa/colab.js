@@ -42,8 +42,29 @@ if(pn){const ml=[...pn.querySelectorAll("p.laygh")].find(p=>/mis lugares/i.test(
   const h=CO.map(c=>`<p class="laygh">${esc(c.n)}</p>`+KS.map(([k,t,ic])=>`<button class="lay" data-lay="co_${c.id}_${k}" aria-pressed="true"><svg class="ico" viewBox="-12 -12 24 24" style="border-radius:50%;box-shadow:0 0 0 2.5px ${c.c}"><use href="#ic-${ic}" x="-12" y="-12" width="24" height="24"/></svg>${t}</button>`).join("")).join("");
   if(ml)ml.insertAdjacentHTML("beforebegin",h);else pn.insertAdjacentHTML("beforeend",h)}
 const G={},LBL=[];
-function pop(c,p){const[n,,,d,u,f]=p;
-  return `<div class="cpop"><b>${esc(n)}</b><div class="q">${esc(c.n)}</div>`+(f?`<img src="${esc(f)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:"")+(d?`<div class="dd">${esc(d)}</div>`:"")+(u?`<a class="vm" href="${esc(u)}" target="_blank" rel="noopener">Ver más ›</a>`:"")+`</div>`}
+// al tocar un punto suyo se abre la misma ficha grande que en las rutas del grupo
+const CATN={cumbre:"Cumbre",aloja:"Alojamiento",pueblo:"Pueblo con encanto",activo:"Turismo activo",area:"Área recreativa",otros:"Lugar"};for(const[k,l]of CATS)CATN[k]=CATN[k]||l;
+const limpia=t=>(t||"").normalize("NFKC").replace(/[\u0332\u0333]/g,"");
+function ficha(d){const F={},resto=[];
+  for(let l of limpia(d).split("\n")){l=l.trim();if(!l||/^[.·•_\-–—\s]+$/.test(l)||/^(m[aá]s (info|datos)|datos t[eé]cnicos)/i.test(l.replace(/^\W+/u,"")))continue;
+    const m=/^\W*\s*(punto de (?:inicio|partida)|inicio|salida|distancia|desnivel|dificultad|duraci[oó]n|tiempo)\s*:\s*(.+)$/iu.exec(l);
+    if(m){const k=m[1].toLowerCase();F[/inicio|partida|salida/.test(k)?"sal":/dist/.test(k)?"km":/desn/.test(k)?"de":/dific/.test(k)?"dif":"tm"]=m[2].trim()}else resto.push(l)}
+  return [F,resto]}
+const cap1=s=>s?s[0].toUpperCase()+s.slice(1).toLowerCase():s;
+function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);
+  const a=(/(\d[\d.]{2,4})\s*m\b/i.exec(n+" "+limpia(d))||[])[1];
+  const desc=resto.filter(l=>!/^\W*\w[\w ]{1,20}:\s/u.test(l)),otros=resto.filter(l=>/^\W*\w[\w ]{1,20}:\s/u.test(l));
+  sheet.classList.remove("full");
+  sheet.innerHTML=`<div class="grab"></div>`+(f?`<div class="photo"><img src="${esc(f)}" alt="" onerror="this.parentNode.remove()"></div>`:"")+
+  `<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  <div class="meta"><span class="tag" style="background:${c.c};color:#fff;border-color:${c.c}">${esc(c.n)}</span><span class="tag">${esc(CATN[k]||"Lugar")}</span>${a&&k==="cumbre"?`<span class="tag alt">${(+a.replace(/\./g,"")).toLocaleString("es-ES")} m</span>`:""}</div>
+  ${desc.length?`<p class="desc">${desc.map(esc).join("<br>")}</p>`:""}
+  ${(F.km||F.de||F.tm||F.dif)?`<div class="ficha">${F.km?`<div><b>${esc(F.km)}</b><span>Distancia</span></div>`:""}${F.de?`<div><b>${esc(F.de)}</b><span>Desnivel</span></div>`:""}${F.tm?`<div><b>${esc(F.tm)}</b><span>Duración</span></div>`:""}${F.dif?`<div><b>${esc(cap1(F.dif))}</b><span>Dificultad</span></div>`:""}</div>`:""}
+  ${F.sal?`<p class="salida">Salida: ${esc(F.sal)}</p>`:""}
+  ${otros.length?`<p class="desc" style="font-size:.92em;opacity:.85">${otros.map(esc).join("<br>")}</p>`:""}
+  <div class="actions">${u?`<a class="btn primary" href="${esc(u)}" target="_blank" rel="noopener">Leer en ${esc(c.n)}</a>`:""}<a class="btn ghost" href="https://www.google.com/maps/search/?api=1&query=${la},${lo}" target="_blank" rel="noopener">Google Maps</a></div>`;
+  if(window.showTrack)showTrack(null);nodes.classed("sel",false);
+  sheet.hidden=false;sheet.scrollTop=0;flyTo(la,lo)}
 for(const c of CO){for(const[k]of KS)if(LAY[`co_${c.id}_${k}`]===undefined)LAY[`co_${c.id}_${k}`]=LAY["co_"+c.id]!==false;delete LAY["co_"+c.id];
   const g=L.layerGroup(),gc=L.layerGroup();
   for(const ln of c.l){const ll=ln[1];
@@ -51,8 +72,7 @@ for(const c of CO){for(const[k]of KS)if(LAY[`co_${c.id}_${k}`]===undefined)LAY[`
     g.addLayer(L.polyline(ll,{color:c.c,weight:3.5,opacity:.95,renderer:TRC}).bindTooltip(esc(ln[0])+" · "+esc(c.n),{sticky:true}))}
   for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
     const m=L.marker([p[1],p[2]],{icon:L.divIcon({className:"cpt"+(cum?" cum":""),html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:p[0]+" · "+c.n,riseOnHover:true,zIndexOffset:cum?-20:-50});
-    m.bindPopup(()=>pop(c,p),{maxWidth:270});
-    m.on("click",e=>{if(typeof nearMode!=="undefined"&&nearMode){L.DomEvent.stopPropagation(e);m.closePopup();nearAt(p[1],p[2])}});
+    m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(p[1],p[2]);return}abrir(c,p,k)});
     m.__n=p[0];m.__c=c.c;LBL.push(m);(cum?gc:g).addLayer(m)}
   G[c.id+"_l"]=g;G[c.id+"_c"]=gc}
 // los nombres, como los del grupo: solo con el mapa cerca
