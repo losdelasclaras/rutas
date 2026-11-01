@@ -1,6 +1,6 @@
-# Informe del robot · 01/11/2026 14:26
+# Informe del robot · 01/11/2026 14:41
 
-**Cambios:** colaborador Hiking Asturias
+**Cambios:** colaborador Hiking Asturias; regeneración forzada
 
 - Blog: sin entradas nuevas.
 - Mapa: sin cambios.
