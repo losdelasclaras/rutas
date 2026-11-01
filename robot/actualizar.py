@@ -427,14 +427,24 @@ def cumbres_osm(co, new):
     def igual(a, b): return bool(a) and bool(b) and (a == b or a <= b or b <= a)
     def dist(a, b): return math.hypot((a[0] - b[0]) * 111.2, (a[1] - b[1]) * 111.2 * math.cos(math.radians(a[0])))
     rs = new.get('r', [])
-    q = '[out:json][timeout:90];(' + ''.join(f'node(around:2500,{p[1]},{p[2]})[natural~"^(peak|volcano|hill)$"];' for p in ps) + ');out;'
-    osm = None
-    for srv in ('https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'):
-        try:
-            req = urllib.request.Request(srv, data=urllib.parse.urlencode({'data': q}).encode(), headers=UA)
-            with urllib.request.urlopen(req, timeout=120) as r: osm = json.loads(r.read().decode())['elements']; break
-        except Exception as e: last = e
-    if osm is None: log(f'⚠ OpenStreetMap no ha respondido: cumbres de {co.get("nombre") or co["id"]} con lo guardado de otras noches.')
+    # una sola caja que abarca todas sus cumbres por zona (más ligero para Overpass que 96 círculos)
+    import time
+    osm, err = [], ''
+    grupos = {}
+    for p in ps: grupos.setdefault((round(p[1]), round(p[2])), []).append(p)
+    hdr = {'User-Agent': 'LosDeLasClaras-Rutas/1.0 (losdelasclaras.github.io/rutas)', 'Content-Type': 'application/x-www-form-urlencoded'}
+    for g in grupos.values():
+        la0, la1 = min(p[1] for p in g) - .03, max(p[1] for p in g) + .03; lo0, lo1 = min(p[2] for p in g) - .04, max(p[2] for p in g) + .04
+        q = f'[out:json][timeout:60];node({la0:.4f},{lo0:.4f},{la1:.4f},{lo1:.4f})[natural~"^(peak|volcano|hill)$"];out;'
+        ok = False
+        for srv in ('https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter'):
+            try:
+                req = urllib.request.Request(srv, data=urllib.parse.urlencode({'data': q}).encode(), headers=hdr)
+                with urllib.request.urlopen(req, timeout=90) as r: osm += json.loads(r.read().decode())['elements']; ok = True; break
+            except Exception as e: err = f'{srv.split("/")[2]}: {e}'; time.sleep(3)
+        if not ok: osm = None; break
+        time.sleep(1)
+    if osm is None: log(f'⚠ OpenStreetMap no ha respondido ({err}): cumbres de {co.get("nombre") or co["id"]} con lo guardado de otras noches.')
     bien, fuera = 0, []
     for p in ps:
         k = p[0] + '|' + str(round(p[1], 2)) + '|' + str(round(p[2], 2))
