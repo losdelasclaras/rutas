@@ -29,6 +29,6 @@ const vr=document.getElementById("v-rutas");
 const mo=new MutationObserver(()=>{if(!vr.hidden){vistasYa();mo.disconnect()}});mo.observe(vr,{attributes:true,attributeFilter:["hidden"]});
 if(!vr.hidden)vistasYa();
 // aviso al abrir la app
-setTimeout(()=>{if(badge&&typeof toast==="function")toast(`🆕 ${NUEVAS.length===1?"Hay una ruta nueva":"Hay "+NUEVAS.length+" rutas nuevas"} en el blog · míralas en Del grupo › Rutas`)},2500);
+setTimeout(()=>{if(badge&&typeof toast==="function")toast(`🆕 ${NUEVAS.length===1?"Hay una ruta nueva":"Hay "+NUEVAS.length+" rutas nuevas"} en el blog · míralas en Explorar › Rutas`)},2500);
 window.NOVEDADES=NUEVAS;
 })();
