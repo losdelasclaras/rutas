@@ -119,7 +119,7 @@ function pintaCo(c,ls,noms,extra,nofit){if(TRCO){TRCO.remove();TRCO=null}const L
   map.fitBounds(b,{paddingTopLeft:[wide?60:24,110],paddingBottomRight:[wide?640:24,pb],maxZoom:15})}
 // si se abre una ruta o cumbre del grupo, se quita el track del colaborador
 {const st=window.showTrack;if(st)window.showTrack=function(r){if(TRCO&&!showTrack._co){TRCO.remove();TRCO=null;coPill(null)}return st.apply(this,arguments)}}
-function abrirR(c,i,nofit){coPill(null);const r=c.r[i],[n,z,act,km,de,dif,wl,blog,ini,fo]=r;
+function abrirR(c,i,nofit){coPill(null);const keep=!!(nofit&&TRCO&&TRCO.__i===c.id+":"+i);const r=c.r[i],[n,z,act,km,de,dif,wl,blog,ini,fo]=r;
   const key=rKeyCo(c,n),st=MARKS[key]||"",deN=(/(\d[\d.]*)/.exec(de)||[])[1];
   sheet.classList.remove("full");
   sheet.innerHTML=`<div class="grab"></div>${fo?`<div class="photo"><img src="${esc(fo)}" alt="" onerror="this.parentNode.remove()"></div>`:""}<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
@@ -131,7 +131,7 @@ function abrirR(c,i,nofit){coPill(null);const r=c.r[i],[n,z,act,km,de,dif,wl,blo
   sheet._cor={c,i};if(window.showTrack)showTrack(null);nodes.classed("sel",false);sheet.hidden=false;sheet.scrollTop=0;
   if(TRCO){TRCO.remove();TRCO=null}
   lineas().then(J=>{const ll=(J[c.id]||[])[i];if(!ll||ll.length<2){flyTo(ini[0],ini[1]);return}
-    pintaCo(c,[ll],[n],null,nofit&&TRCO&&TRCO.__i===c.id+":"+i);if(TRCO)TRCO.__i=c.id+":"+i;
+    pintaCo(c,[ll],[n],null,keep);if(TRCO)TRCO.__i=c.id+":"+i;
     if(sheet._cor&&sheet._cor.c===c&&sheet._cor.i===i)extraR(c,i,ll)})}
 /* desde las listas: al mapa con el track entero a la vista y una pastilla abajo para abrir la ficha (como «Ver en el mapa» de las del grupo) */
 function coPill(c,i){let el=document.getElementById("copill");if(!c){if(el)el.hidden=true;return}
@@ -143,7 +143,7 @@ function verR(c,i){const r=c.r[i];sheet.hidden=true;sheet.classList.remove("full
   if(TRCO){TRCO.remove();TRCO=null}coPill(c,i);map.invalidateSize();
   lineas().then(J=>{const ll=(J[c.id]||[])[i];if(!ll||ll.length<2){flyTo(r[8][0],r[8][1]);return}
     pintaCo(c,[ll],[r[0]],null,true);TRCO.__i=c.id+":"+i;
-    map.fitBounds(L.latLngBounds(ll.map(q=>[q[0],q[1]])),{paddingTopLeft:[24,110],paddingBottomRight:[24,90],maxZoom:15})})}
+    map.fitBounds(L.latLngBounds(ll.map(q=>[q[0],q[1]])),{paddingTopLeft:[24,110],paddingBottomRight:[24,90],maxZoom:15,animate:false})})}
 /* lo mismo que la ficha de una ruta del grupo: tiempo, perfil y GPX, sus cumbres y otras rutas por la zona */
 function gxDe(ll){const cum=[0];for(let j=1;j<ll.length;j++)cum.push(cum[j-1]+map.distance([ll[j-1][0],ll[j-1][1]],[ll[j][0],ll[j][1]]));
   const E=ll.map(q=>q[2]),has=E.filter(e=>e!=null).length>=.8*E.length;const g={km:Math.round(cum[cum.length-1]/100)/10,up:0,pf:[],mx:null,mn:null,st:[ll[0][0],ll[0][1]],ln:ll};
