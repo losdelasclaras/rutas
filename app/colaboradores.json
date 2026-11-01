@@ -7,6 +7,10 @@
   "drive_carpeta": "",
   "quitar_capas": [
    "TURISMO ACTIVO"
-  ]
+  ],
+  "quitar_capas_salvo": {
+   "ALOJAMIENTOS Y REFUGIOS": "refugio"
+  },
+  "quitar_nombres": "restaurante|sidrer[ií]a|\\bhotel|casa rural|casa de aldea|apartamentos|camping|hostal|posada|cafeter[ií]a|\\bbar\\b|tienda|multiaventura"
  }
 ]

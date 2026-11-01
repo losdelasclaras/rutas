@@ -39,7 +39,7 @@ function catCo(p){const n=p[0]||"",ic=p[6]||"",f=(p[7]||"").toUpperCase(),c=catO
   if(/OTROS/.test(f)&&/rea recreativa|parque/i.test(n))return "area";
   if(ic==="1634")return "cumbre";
   return c}
-// en Capas: un apartado «Colaboradores» con un botón por cada uno (encendidos la primera vez)
+// en Capas: un apartado por colaborador (apagados de entrada; cada uno enciende lo que quiera)
 const pn=document.querySelector(".laypanel");
 // cada colaborador, su propio apartado en Capas con «Cumbres» y «Lugares» (como «Ver» del grupo)
 const KS=[["c","Cumbres","cumbre"],["l","Lugares","otros"]];
@@ -78,7 +78,8 @@ function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);
    if(rs.length)sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>También del grupo</h3><div class="rows">${rs.map(ri=>rowHTML(R[ri],"",true)).join("")}</div></div>`)}
   if(window.showTrack)showTrack(null);nodes.classed("sel",false);
   sheet.hidden=false;sheet.scrollTop=0;flyTo(la,lo)}
-for(const c of CO){for(const[k]of KS)if(LAY[`co_${c.id}_${k}`]===undefined)LAY[`co_${c.id}_${k}`]=LAY["co_"+c.id]!==false;delete LAY["co_"+c.id];
+const nuevo2=store.get("ldc-capas2co","0")!=="1";store.set("ldc-capas2co","1");
+for(const c of CO){for(const[k]of KS)if(LAY[`co_${c.id}_${k}`]===undefined||nuevo2)LAY[`co_${c.id}_${k}`]=false;delete LAY["co_"+c.id];
   const g=L.layerGroup(),gc=L.layerGroup();
   for(const ln of c.l){const ll=ln[1];
     g.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.85,interactive:false,renderer:TRC}));

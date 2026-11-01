@@ -329,6 +329,15 @@ def fotos_colab(cid, new):
     for f in os.listdir(d):
         if f.startswith(cid + '-') and f not in usadas: os.remove(d + f)
 
+def quedar_colab(co, q):
+    # nada de publicidad: capas enteras fuera, capas de las que solo se queda lo que case (p. ej. refugios) y nombres de negocios
+    capa = (q[7] or '').upper()
+    if capa in [x.upper() for x in co.get('quitar_capas', [])]: return False
+    for c, salvo in co.get('quitar_capas_salvo', {}).items():
+        if capa == c.upper() and not re.search(salvo, q[0], re.I): return False
+    if co.get('quitar_nombres') and re.search(co['quitar_nombres'], q[0], re.I): return False
+    return True
+
 def colaboradores():
     cf = APP + 'colaboradores.json'
     if not os.path.exists(cf): return
@@ -340,15 +349,12 @@ def colaboradores():
         if co.get('mapa_mid'):
             try:
                 tit, pts, lin = _kml_colab(get(f'https://www.google.com/maps/d/kml?mid={co["mapa_mid"]}&forcekml=1'))
-                qc0 = [x.upper() for x in co.get('quitar_capas', [])]
-                if len([q for q in pts if (q[7] or '').upper() not in qc0]) < 0.9 * len(old.get('p', [])):
+                if len([q for q in pts if quedar_colab(co, q)]) < 0.9 * len(old.get('p', [])):
                     log(f'⚠ El mapa del colaborador «{old.get("t", co["id"])}» ha devuelto solo {len(pts)} puntos (había {len(old["p"])}): no lo toco.')
                 else:
                     # capas de su My Maps que no queremos en la app (p. ej. publicidad de empresas)
-                    qc = [x.upper() for x in co.get('quitar_capas', [])]
-                    if qc:
-                        n0 = len(pts); pts = [q for q in pts if (q[7] or '').upper() not in qc]
-                        if n0 != len(pts): log(f'   (quitados {n0 - len(pts)} puntos de las capas {", ".join(co["quitar_capas"])})')
+                    n0 = len(pts); pts = [q for q in pts if quedar_colab(co, q)]
+                    if n0 != len(pts): log(f'   (quitados {n0 - len(pts)} puntos de publicidad: capas o nombres que no queremos)')
                     new.update(t=tit, p=pts, l=lin)
             except Exception as e:
                 log(f'⚠ No he podido leer el mapa del colaborador {co["id"]}: {e}')
