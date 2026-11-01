@@ -245,7 +245,12 @@ def _kml_colab(k):
     doc = r.find(KNS + 'Document')
     tit = (doc.findtext(KNS + 'name') if doc is not None else '') or ''
     pts, lin = [], []
-    for pm in r.iter(KNS + 'Placemark'):
+    pms = []
+    for f in r.iter(KNS + 'Folder'):
+        fn = (f.findtext(KNS + 'name') or '').strip()
+        pms += [(pm, fn) for pm in f.findall(KNS + 'Placemark')]
+    if not pms: pms = [(pm, '') for pm in r.iter(KNS + 'Placemark')]
+    for pm, fol in pms:
         n = re.sub(r'\s+', ' ', (pm.findtext(KNS + 'name') or '')).strip()
         dh = pm.findtext(KNS + 'description') or ''
         fotos = []
@@ -261,7 +266,8 @@ def _kml_colab(k):
         pt = pm.find('.//' + KNS + 'Point/' + KNS + 'coordinates')
         if pt is not None:
             c = pt.text.strip().split(',')
-            pts.append([n, round(float(c[1]), 5), round(float(c[0]), 5), d, us[0] if us else '', fotos[0] if fotos else ''])
+            mi = re.search(r'icon-(\d+)', pm.findtext(KNS + 'styleUrl') or '')
+            pts.append([n, round(float(c[1]), 5), round(float(c[0]), 5), d, us[0] if us else '', fotos[0] if fotos else '', mi.group(1) if mi else '', fol])
             continue
         for ls in pm.iter(KNS + 'LineString'):
             cc = [s.split(',') for s in (ls.findtext(KNS + 'coordinates') or '').split()]
