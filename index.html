@@ -1430,7 +1430,36 @@ function abrirR(c,i){const r=c.r[i],[n,z,act,km,de,dif,wl,blog,ini,fo]=r;
     TRCO=L.layerGroup([L.polyline(ll,{color:"#fff",weight:8,opacity:.95,interactive:false}),L.polyline(ll,{color:c.c,weight:5,opacity:1,interactive:false}),
       L.circleMarker(ll[0],{radius:7,color:"#fff",weight:2,fillColor:"#2a7a3b",fillOpacity:1,interactive:false}).bindTooltip("Salida",{direction:"top"})]).addTo(map);
     const el=mapEl.getBoundingClientRect(),wide=el.width>=860,pb=!wide?Math.min(el.height*.62,sheet.offsetHeight)+16:24;
-    map.fitBounds(L.latLngBounds(ll),{paddingTopLeft:[wide?60:24,110],paddingBottomRight:[wide?640:24,pb],maxZoom:15})})}
+    map.fitBounds(L.latLngBounds(ll),{paddingTopLeft:[wide?60:24,110],paddingBottomRight:[wide?640:24,pb],maxZoom:15});
+    if(sheet._cor&&sheet._cor.c===c&&sheet._cor.i===i)extraR(c,i,ll)})}
+/* lo mismo que la ficha de una ruta del grupo: tiempo, perfil y GPX, sus cumbres y otras rutas por la zona */
+function gxDe(ll){const cum=[0];for(let j=1;j<ll.length;j++)cum.push(cum[j-1]+map.distance([ll[j-1][0],ll[j-1][1]],[ll[j][0],ll[j][1]]));
+  const E=ll.map(q=>q[2]),has=E.filter(e=>e!=null).length>=.8*E.length;const g={km:Math.round(cum[cum.length-1]/100)/10,up:0,pf:[],mx:null,mn:null,st:[ll[0][0],ll[0][1]],ln:ll};
+  if(!has)return g;let last=E.find(e=>e!=null);for(let j=0;j<E.length;j++){if(E[j]==null)E[j]=last;else last=E[j]}
+  const sm=E.map((e,j)=>{const w=E.slice(Math.max(0,j-2),j+3);return w.reduce((a,b)=>a+b,0)/w.length});let ref=sm[0],up=0;
+  for(const e of sm){if(e-ref>=4){up+=e-ref;ref=e}else if(ref-e>=4)ref=e}
+  g.up=Math.round(up/10)*10;g.mx=Math.round(Math.max(...E));g.mn=Math.round(Math.min(...E));
+  const T=cum[cum.length-1];let j=0;for(let k=0;k<=100;k++){const t=T*k/100;while(j<cum.length-1&&Math.abs(cum[j+1]-t)<=Math.abs(cum[j]-t))j++;g.pf.push([Math.round(cum[j]/10)/100,Math.round(E[j])])}
+  return g}
+let GXC=null;
+function extraR(c,i,ll){const r=c.r[i],g=gxDe(ll);GXC={c,i,g};
+  let hi=ll[0];if(g.mx!=null)for(const q of ll)if(q[2]!=null&&q[2]>(hi[2]??-1e9))hi=q;
+  const az=typeof aemetZone==="function"?aemetZone(hi[0],hi[1]):null,alt=g.mx!=null?Math.round(hi[2]):"";
+  const fmt=n=>Number(n).toLocaleString("es-ES");
+  const cum=(c.p||[]).filter(p=>p[9]&&p[9].includes(i)).map(p=>COLX.byP(p)).filter(Boolean);
+  const RU=COLX.rut?COLX.rut():[],me=COLX.rutaItem(c,i);
+  const ng=(typeof nearestRoutes==="function"?nearestRoutes(r[8][0],r[8][1],3,-1):[]).filter(x=>x.d<25);
+  const nc=RU.filter(x=>x!==me&&x.lat!=null).map(x=>({r:x,d:km({lat:r[8][0],lon:r[8][1]},x)})).filter(x=>x.d<25).sort((a,b)=>a.d-b.d).slice(0,3);
+  sheet.insertAdjacentHTML("beforeend",`
+  <div class="sec"><h3>El tiempo</h3><p class="note" style="margin-bottom:6px">Previsión para el punto más alto del track${alt?" ("+fmt(alt)+" m)":""}.</p>
+  <div class="actions" style="margin-top:0"><a class="btn ghost" href="https://www.meteoblue.com/es/tiempo/semana/${hi[0].toFixed(3)}N${hi[1].toFixed(3)}E${alt}_Europe%2FMadrid" target="_blank" rel="noopener">☁ Previsión en el punto (Meteoblue)</a>${az?`<a class="btn ghost" href="https://www.aemet.es/es/eltiempo/prediccion/montana?w=&p=${az[0]}" target="_blank" rel="noopener">AEMET montaña · ${az[1]}</a>`:""}</div></div>
+  <div class="sec"><h3>Perfil del recorrido</h3>${g.pf.length&&typeof profSVG==="function"?profSVG(g):""}<p class="note" style="margin:4px 0 8px">Según su track: ${fmtKm(g.km)}${g.pf.length?" · +"+fmt(g.up)+" m de subida · punto más alto "+fmt(g.mx)+" m":""}.</p>
+  <div class="actions" style="margin-top:0"><button class="btn primary" data-cogpx>⬇ Descargar GPX</button><a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${ll[0][0]},${ll[0][1]}" target="_blank" rel="noopener">🚗 Cómo llegar al inicio</a></div></div>
+  ${cum.length?`<div class="sec"><h3>${cum.length===1?"Cumbre":"Cumbres"} de esta ruta</h3><div class="rows">${cum.map(x=>COLX.rrow(x)).join("")}</div></div>`:""}
+  ${(ng.length||nc.length)?`<div class="near"><h3>Otras rutas por la zona</h3><div class="rows">${ng.map(x=>rowHTML(x.r,x.d.toFixed(0)+" km")).join("")}${nc.map(x=>COLX.rrow(x.r,x.d.toFixed(0)+" km")).join("")}</div></div>`:""}`)}
+sheet.addEventListener("click",e=>{if(!e.target.closest("[data-cogpx]")||!GXC)return;const{c,i,g}=GXC,n=c.r[i][0],x=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+  const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="${x(c.n)}" xmlns="http://www.topografix.com/GPX/1/1"><metadata><name>${x(n)}</name></metadata><trk><name>${x(n)}</name><trkseg>\n${g.ln.map(p=>`<trkpt lat="${p[0]}" lon="${p[1]}">${p[2]!=null?`<ele>${p[2]}</ele>`:""}</trkpt>`).join("\n")}\n</trkseg></trk></gpx>`;
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([gpx],{type:"application/gpx+xml"}));a.download=norm(n).replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60)+".gpx";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)});
 sheet.addEventListener("click",e=>{if(e.target.closest("[data-trcox]")){sheet._cor=null;if(TRCO){TRCO.remove();TRCO=null}}});
 // ▶ Seguir y ☆ Guardar en Mis tracks, como con las rutas del grupo
 sheet.addEventListener("click",e=>{const k=sheet._cor;if(!k)return;
@@ -1511,9 +1540,11 @@ for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exe
 COLX.rsrc="todas";
 COLX.isRuta=ci=>RUT.some(x=>x.ci===ci);
 COLX.rutasCo=()=>ALL.filter(x=>x.rr!=null);
+COLX.rut=()=>RUT;
 COLX.rutaItem=(c,i)=>RUT.find(x=>x.rr===i&&x.co===c);
 COLX.rKey=x=>rKeyCo(x.co,x.c);
 COLX.byP=p=>ALL.find(x=>x.pp===p);
+COLX.trkOf=k=>GXC&&GXC.c===k.c&&GXC.i===k.i?{ln:GXC.g.ln,km:GXC.g.km}:null;
 // en la ficha de una ruta del grupo: «También en <colaborador>» con su tarjeta
 COLX.also=r=>{const v=[];for(const i of r.p||[])for(const it of PAR[i]||[])if(!v.includes(it))v.push(it);if(!v.length)return "";
   const by={};for(const it of v)(by[it.co.n] ||= []).push(it);
@@ -3015,6 +3046,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>svg.prof{touch-action:pan-y
 const W=600,H=190,pl=70,pr=8,pt=12,pb=34;
 let MK=null,HT=null;
 function rutaDe(svg){const c=svg.closest("#sheet,#ov");if(!c)return null;
+  if(c.id==="sheet"&&sheet._cor&&window.COLX&&COLX.trkOf){const t=COLX.trkOf(sheet._cor);if(t)return t}
   const g=c.querySelector("[data-gpx]");if(g){const r=R[+g.dataset.gpx];return r&&r.gx&&r.gx.ln?{ln:r.gx.ln,km:r.gx.km}:null}
   const m=c.querySelector("[data-mtfol]");if(m&&window.MISPUNTOS){const t=MISPUNTOS.tracks().find(x=>String(x.id)===m.dataset.mtfol);const ln=t&&MISPUNTOS.ptsOf(t);return ln?{ln,km:t.km}:null}
   return null}
@@ -3243,5 +3275,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="52ee2fee88";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="b2a65c04c0";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
