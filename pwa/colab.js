@@ -43,6 +43,8 @@ function catCo(p){const n=p[0]||"",ic=p[6]||"",f=(p[7]||"").toUpperCase(),c=catO
 const pn=document.querySelector(".laypanel");
 // cada colaborador, su propio apartado en Capas con «Cumbres» y «Lugares» (como «Ver» del grupo)
 const KS=[["c","Cumbres","cumbre"],["l","Lugares","otros"]];
+const KR=[["r","Rutas","senda"],["t","Tracks","senda"]];
+const KC=c=>(c.p.length?KS:[]).concat(c.r&&c.r.length?KR:[]);
 if(pn&&!pn.querySelector('[data-lay^="co_"]')){const ml=[...pn.querySelectorAll("p.laygh")].find(p=>/mis lugares/i.test(p.textContent));
   const h=CO.map(c=>`<p class="laygh">${esc(c.n)}</p>`+KS.map(([k,t,ic])=>`<button class="lay" data-lay="co_${c.id}_${k}" aria-pressed="true"><svg class="ico" viewBox="-12 -12 24 24" style="border-radius:50%;box-shadow:0 0 0 2.5px ${c.c}"><use href="#ic-${ic}" x="-12" y="-12" width="24" height="24"/></svg>${t}</button>`).join("")).join("");
   if(ml)ml.insertAdjacentHTML("beforebegin",h);else pn.insertAdjacentHTML("beforeend",h)}
@@ -55,6 +57,8 @@ function ficha(d){const F={},resto=[];
     const m=/^\W*\s*(punto de (?:inicio|partida)|inicio|salida|distancia|desnivel|dificultad|duraci[oó]n|tiempo)\s*:\s*(.+)$/iu.exec(l);
     if(m){const k=m[1].toLowerCase();F[/inicio|partida|salida/.test(k)?"sal":/dist/.test(k)?"km":/desn/.test(k)?"de":/dific/.test(k)?"dif":"tm"]=m[2].trim()}else resto.push(l)}
   return [F,resto]}
+const rKeyCo=(c,n)=>"r:"+norm(n)+"@"+c.id;
+const icoR=r=>/raqueta|nieve|invern/i.test(r[2]+" "+r[0])?"invernal":"senda";
 const coKey=(c,n,k)=>(k==="cumbre"?"c:":"l:")+norm(n)+"@"+c.id;
 const altCo=(n,d)=>{let m=/\(?\s*(\d[\d.]{2,4})\s*m(?:ts|etros)?\s*\)?/i.exec(n||"");if(m){const v=+m[1].replace(/\./g,"");if(v>=300&&v<=4900)return v}
   for(const l of limpia(d).split("\n")){if(/desnivel|distancia|dificultad|km/i.test(l))continue;
@@ -79,7 +83,7 @@ function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);
   if(window.showTrack)showTrack(null);nodes.classed("sel",false);
   sheet.hidden=false;sheet.scrollTop=0;flyTo(la,lo)}
 const nuevo2=store.get("ldc-capas2co","0")!=="1";store.set("ldc-capas2co","1");
-for(const c of CO){for(const[k]of KS)if(LAY[`co_${c.id}_${k}`]===undefined||nuevo2)LAY[`co_${c.id}_${k}`]=false;delete LAY["co_"+c.id];
+for(const c of CO){for(const[k]of KC(c))if(LAY[`co_${c.id}_${k}`]===undefined||nuevo2)LAY[`co_${c.id}_${k}`]=false;delete LAY["co_"+c.id];
   const g=L.layerGroup(),gc=L.layerGroup();
   for(const ln of c.l){const ll=ln[1];
     g.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.85,interactive:false,renderer:TRC}));
@@ -88,12 +92,40 @@ for(const c of CO){for(const[k]of KS)if(LAY[`co_${c.id}_${k}`]===undefined||nuev
     const m=L.marker([p[1],p[2]],{icon:L.divIcon({className:"cpt"+(cum?" cum":""),html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:p[0]+" · "+c.n,riseOnHover:true,zIndexOffset:cum?-20:-50});
     m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(p[1],p[2]);return}abrir(c,p,k)});
     m.__n=p[0];m.__c=c.c;m.__k=coKey(c,p[0],k);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+(cum?"_c":"_l")] ||= []).push(m)}
-  G[c.id+"_l"]=g;G[c.id+"_c"]=gc}
+  G[c.id+"_l"]=g;G[c.id+"_c"]=gc;
+  if(c.r&&c.r.length){G[c.id+"_r"]=L.layerGroup();G[c.id+"_t"]=L.layerGroup();
+    c.r.forEach((r,i)=>{const k=icoR(r);const m=L.marker(r[8],{icon:L.divIcon({className:"cpt",html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:r[0]+" · "+c.n,riseOnHover:true,zIndexOffset:-60});
+      m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(r[8][0],r[8][1]);return}abrirR(c,i)});
+      m.__n=r[0];m.__c=c.c;m.__k=rKeyCo(c,r[0]);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+"_r"] ||= []).push(m)})}}
+/* ---------- rutas de colaboradores que solo traen el track (p. ej. Rutinas Varias, de Wikiloc) ---------- */
+let LNP=null;const lineas=()=>LNP||(LNP=CO0.ln?fetch(CO0.ln).then(r=>r.json()).catch(()=>{LNP=null;return{}}):Promise.resolve({}));
+function pintaTracks(c){const g=G[c.id+"_t"];if(!g||g.__ok)return;g.__ok=1;lineas().then(J=>{const ls=J[c.id]||[];
+  ls.forEach((ll,i)=>{if(!ll||ll.length<2)return;g.addLayer(L.polyline(ll,{color:"#fff",weight:5.5,opacity:.8,interactive:false,renderer:TRC}));
+    g.addLayer(L.polyline(ll,{color:c.c,weight:3,opacity:.9,renderer:TRC}).bindTooltip(esc(c.r[i][0]),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);abrirR(c,i)}))})})}
+let TRCO=null;
+function abrirR(c,i){const r=c.r[i],[n,z,act,km,de,dif,wl,blog,ini]=r;
+  const key=rKeyCo(c,n),st=MARKS[key]||"",deN=(/(\d[\d.]*)/.exec(de)||[])[1];
+  sheet.classList.remove("full");
+  sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
+  <div class="meta"><span class="tag" style="background:${c.c};color:#fff;border-color:${c.c}">${esc(c.n)}</span>${act?`<span class="tag">${esc(act)}</span>`:""}<span class="tag">${esc(z)}</span></div>
+  <div class="mkblock rmk"><span>Esta ruta</span><span class="mk" data-key="${esc(key)}"><button data-mk="hecha" aria-pressed="${st==="hecha"}" title="Hecha">✓ Hecha</button><button data-mk="quiero" aria-pressed="${st==="quiero"}" title="Quiero hacerla">★ Quiero hacerla</button></span></div>
+  ${(km||de||dif)?`<div class="ficha">${km?`<div><b>${esc(km)}</b><span>Distancia</span></div>`:""}${deN?`<div><b>+${esc(deN)} m</b><span>Desnivel</span></div>`:""}${dif?`<div><b>${esc(cap1(dif))}</b><span>Dificultad</span></div>`:""}</div>`:""}
+  <div class="actions">${blog?`<a class="btn primary" href="${esc(blog)}" target="_blank" rel="noopener">Leer en el blog</a>`:""}${wl?`<a class="btn ${blog?"ghost":"primary"}" href="${esc(wl)}" target="_blank" rel="noopener">Ver en Wikiloc</a>`:""}<a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${ini[0]},${ini[1]}" target="_blank" rel="noopener">Cómo llegar a la salida</a></div>`;
+  if(window.showTrack)showTrack(null);nodes.classed("sel",false);sheet.hidden=false;sheet.scrollTop=0;
+  if(TRCO){TRCO.remove();TRCO=null}
+  lineas().then(J=>{const ll=(J[c.id]||[])[i];if(!ll||ll.length<2){flyTo(ini[0],ini[1]);return}
+    TRCO=L.layerGroup([L.polyline(ll,{color:"#fff",weight:8,opacity:.95,interactive:false}),L.polyline(ll,{color:c.c,weight:5,opacity:1,interactive:false}),
+      L.circleMarker(ll[0],{radius:7,color:"#fff",weight:2,fillColor:"#2a7a3b",fillOpacity:1,interactive:false}).bindTooltip("Salida",{direction:"top"})]).addTo(map);
+    const el=mapEl.getBoundingClientRect(),wide=el.width>=860,pb=!wide?Math.min(el.height*.62,sheet.offsetHeight)+16:24;
+    map.fitBounds(L.latLngBounds(ll),{paddingTopLeft:[wide?60:24,110],paddingBottomRight:[wide?640:24,pb],maxZoom:15})})}
+sheet.addEventListener("click",e=>{if(e.target.closest("[data-trcox]")&&TRCO){TRCO.remove();TRCO=null}});
+map.on("click",()=>{});
 function coMarks(m){const el=m.getElement();if(!el)return;const v=MARKS[m.__k],on=(v==="hecha"&&LAY.mh)||(v==="quiero"&&LAY.mq);el.classList.toggle("mk-h",v==="hecha"&&LAY.mh);el.classList.toggle("mk-q",v==="quiero"&&LAY.mq);el.classList.toggle("co-off",!!LAY.solo&&!on);const tt=m.getTooltip();if(tt)tt.setOpacity(LAY.solo&&!on?0:1)}
 {const orig=window.refreshMarks;if(orig)window.refreshMarks=function(){orig.apply(this,arguments);for(const m of LBL)coMarks(m)}}
 // los nombres, como los del grupo: solo con el mapa cerca
 function lbls(){const on=map.getZoom()>=12;for(const m of LBL){if(!m._map){if(m.getTooltip())m.unbindTooltip();continue}if(on&&!m.getTooltip())m.bindTooltip(esc(m.__n),{permanent:true,direction:"right",offset:[10,0],className:"lbl co",interactive:false});const te=on&&m.getTooltip()&&m.getTooltip().getElement();if(te)te.style.setProperty("--cc",m.__c);else if(!on&&m.getTooltip())m.unbindTooltip()}}
-function sync(){for(const c of CO)for(const[k]of KS){const key=`co_${c.id}_${k}`,on=LAY[key]&&!window.FOLONLY,g=G[c.id+"_"+k];
+function sync(){for(const c of CO)for(const[k]of KC(c)){const key=`co_${c.id}_${k}`,on=LAY[key]&&!window.FOLONLY,g=G[c.id+"_"+k];
+    if(on&&k==="t")pintaTracks(c);
     if(on&&!map.hasLayer(g))g.addTo(map);else if(!on&&map.hasLayer(g))g.remove();
     const b=document.querySelector(`[data-lay="${key}"]`);if(b)b.setAttribute("aria-pressed",!!LAY[key])}
   cull();if(window.capasSum)capasSum()}
@@ -128,6 +160,7 @@ for(const c of CO)for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
   for(const g of lista){if(g.co)continue;const d=kmd(g,it);
     if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))){it.both="grupo";it.par=g;g.both=g.both||c.n;(PAR[g.i]=PAR[g.i]||[]).push(it);if(!it.a&&g.a)it.a=g.a;break}}
   ALL.push(it);lista.push(it)}
+for(const c of CO)(c.r||[]).forEach((r,i)=>{ALL.push({c:r[0],r:r[1],lat:r[8][0],lon:r[8][1],co:c,ci:ALL.length,rr:i,k:icoR(r),a:null})});
 PEAKS.sort((a,b)=>(b.a||0)-(a.a||0));SPOTS.sort((a,b)=>a.c.localeCompare(b.c,"es"));
 // los que coinciden, juntos: el del colaborador justo debajo del vuestro
 for(const L of [PEAKS,SPOTS]){const pares=L.filter(x=>x.par);for(const x of pares)L.splice(L.indexOf(x),1);for(const x of pares){const j=L.indexOf(x.par);L.splice(j<0?L.length:j+1,0,x)}}
@@ -139,7 +172,7 @@ window.COLX={
   cls:p=>(p.co?` src-co${p.both?" both":""}" style="--cc:${p.co.c}`:` src-g${p.both?" both":""}`),
   ico:(p,kind)=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true" style="border-radius:50%;box-shadow:0 0 0 2.5px ${p.co.c}"><use href="#ic-${p.k}" x="-12" y="-12" width="24" height="24"/></svg>`,
   src:p=>p.co?`<em class="cosrc" style="color:${p.co.c}">${esc(p.co.n)}</em>${p.both?` · <em class="cosrc dos">en los dos</em>`:""} · `:p.both?`<em class="cosrc dos">También en ${esc(p.both)}</em> · `:"",
-  open(ci){const it=ALL[ci];if(!it)return;if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>abrir(it.co,it.pp,it.k),80)}};
+  open(ci){const it=ALL[ci];if(!it)return;if(it.rr!=null){if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>abrirR(it.co,it.rr),80);return}if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>abrir(it.co,it.pp,it.k),80)}};
 /* ---------- también en la pestaña Rutas: sus puntos que son rutas (capas de rutas o con «Distancia:») ---------- */
 document.head.insertAdjacentHTML("beforeend",`<style>
 #list .row.src-co{background:color-mix(in srgb,var(--cc) 16%,transparent);box-shadow:inset 5px 0 0 var(--cc)}
@@ -147,11 +180,14 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .rsrc{margin:4px 0 10px}
 </style>`);
 const RUT=[];
-for(const it of ALL){const p=it.pp;if(!(/RUTA/i.test(p[7]||"")||/distancia\s*:/i.test(limpia(p[3]))))continue;
+for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exec(r[4])||[])[1];RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:null,m:null,gx:1,iv:/raqueta|nieve|invern/i.test(r[2]+" "+r[0])?1:0,km:r[3]?r[3].replace(/\s*km/i," km"):"",de:dm?"+"+dm+" m":"",txt:norm(r[0]+" "+r[1]+" "+r[2])}));continue}
+  const p=it.pp;if(!(/RUTA/i.test(p[7]||"")||/distancia\s*:/i.test(limpia(p[3]))))continue;
   const[F]=ficha(p[3]),dm=/\/(20\d\d)\/(\d\d)\//.exec(p[4]||"");
   RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:dm?+dm[1]:null,m:dm?+dm[2]:null,km:(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km||"")||[])[1]?(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km)[1].replace(".",",")+" km"):"",de:(/(\d[\d.]*)\s*m/i.exec(F.de||"")||[])[1]?"+"+(/(\d[\d.]*)\s*m/i.exec(F.de)[1])+" m":"",txt:norm(p[0]+" "+it.r+" "+limpia(p[3]))}))}
 COLX.rsrc="todas";
 COLX.isRuta=ci=>RUT.some(x=>x.ci===ci);
+COLX.rutasCo=()=>ALL.filter(x=>x.rr!=null);
+COLX.rKey=x=>rKeyCo(x.co,x.c);
 COLX.byP=p=>ALL.find(x=>x.pp===p);
 // en la ficha de una ruta del grupo: «También en <colaborador>» con su tarjeta
 COLX.also=r=>{const v=[];for(const i of r.p||[])for(const it of PAR[i]||[])if(!v.includes(it))v.push(it);if(!v.length)return "";
@@ -164,7 +200,7 @@ COLX.routes=(q,limpio)=>{const o=COLX.rsrc;
   return {c,hideG:o!=="todas"&&o!=="grupo"}};
 COLX.near=(lat,lon)=>F.reg==="todas"&&!nExtra()&&!F.wz?RUT.filter(x=>!window.RFOK||RFOK(x)).map(x=>({r:x,d:km({lat,lon},x)})):[];
 COLX.rrow=(x,extra)=>{const de=x.de?(/^\+/.test(x.de)?x.de:"+"+x.de):"",nums=[x.km,de].filter(Boolean).join(" · ");
-  return `<button class="row src-co" style="--cc:${x.co.c}" data-cor="${x.ci}">${x.pp[5]?`<img class="thumb" src="${esc(x.pp[5])}" alt="" loading="lazy">`:`<span class="thumb none" aria-hidden="true"></span>`}<div class="t"><b>${esc(x.c)}</b><span><em class="cosrc" style="color:${x.co.c}">${esc(x.co.n)}</em> · ${x.y?(x.m?MESES[x.m]+" ":"")+x.y:"Sin fecha"} · ${esc(x.r)}${extra?" · "+esc(extra):""}</span></div><span class="alt">${esc(nums)}</span></button>`};
+  return `<button class="row src-co" style="--cc:${x.co.c}" data-cor="${x.ci}">${x.pp&&x.pp[5]?`<img class="thumb" src="${esc(x.pp[5])}" alt="" loading="lazy">`:`<span class="thumb none" aria-hidden="true"></span>`}<div class="t"><b>${esc(x.c)}</b><span><em class="cosrc" style="color:${x.co.c}">${esc(x.co.n)}</em> · ${x.y?(x.m?MESES[x.m]+" ":"")+x.y:"Sin fecha"} · ${esc(x.r)}${extra?" · "+esc(extra):""}</span></div><span class="alt">${esc(nums)}</span></button>`};
 if(typeof renderList==="function")renderList();
 renderCols()}
 if(window.LISTAS)LISTAS.render();

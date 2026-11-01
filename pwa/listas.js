@@ -28,6 +28,7 @@ function items(){const out={cumbre:[],lugar:[],ruta:[]};
   const isR=p=>p.co&&window.COLX&&COLX.isRuta&&COLX.isRuta(p.ci);
   for(const p of (typeof PEAKS!=="undefined"?PEAKS:[])){const k="c:"+norm(p.c)+ckey(p);if(MARKS[k])out.cumbre.push({p,k,m:MARKS[k],t:"cumbre"})}
   for(const p of (typeof SPOTS!=="undefined"?SPOTS:[])){const k="l:"+norm(p.c)+ckey(p);if(MARKS[k])(isR(p)?out.ruta:out.lugar).push({p,k,m:MARKS[k],t:isR(p)?"cruta":"lugar"})}
+  if(window.COLX&&COLX.rutasCo)for(const p of COLX.rutasCo()){const k=COLX.rKey(p);if(MARKS[k])out.ruta.push({p,k,m:MARKS[k],t:"ruta"})}
   for(const r of R){if(!r.u)continue;const k=rKey(r);if(MARKS[k])out.ruta.push({r,k,m:MARKS[k],t:"ruta",lat:r.lat,lon:r.lon})}
   return out}
 const pend=()=>{const o=items();return o.cumbre.concat(o.lugar,o.ruta).filter(x=>x.m==="quiero").length};
