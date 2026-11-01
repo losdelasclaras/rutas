@@ -47,7 +47,7 @@ rep('</style>','''html,body{height:100%;margin:0}
 </style>
 </head><body>''')
 # cada módulo va protegido: si uno falla en un móvil concreto, los demás y la app siguen funcionando
-_mods=['mispuntos','colab','capas','sync','seguir','mistracks','offline','yo','sos','resumen','seguidores','pestanas','novedades','instalar','compartir','perfil','tiempo','cerca']
+_mods=['mispuntos','colab','capas','sync','seguir','mistracks','offline','yo','sos','resumen','listas','seguidores','pestanas','novedades','instalar','compartir','perfil','tiempo','cerca']
 _w=lambda n:'try{\n'+open(f'/home/claude/pwa/{n}.js').read()+'\n}catch(e){console.error("módulo '+n+'",e);(window.__ERRS=window.__ERRS||[]).push("'+n+': "+(e&&e.message))}'
 i=t.rindex('</script>'); t=t[:i]+'\n'+'\n'.join(_w(n) for n in _mods)+'\n'+t[i:]
 # colaboradores (app/colaboradores.json + app/colab/<id>.json, los rellena el robot): van dentro de la página, así se ven también sin cobertura
@@ -107,6 +107,8 @@ rep('  ${!C.near&&zc.filter(x=>x[1]).length>1?','  ${window.fpOpen?fpOpen(kind,C
 rep('.join("")}</div>\n  <div class="rows">${list.length?','.join("")}</div>${window.fpClose?fpClose(kind,C,list.length):""}\n  <div class="rows">${list.length?')
 rep('function routeOk(r){return','function routeOk(r){return (!window.RFOK||RFOK(r))&&')
 rep('function renderList(){','function renderList(){if(window.rfSync)setTimeout(rfSync,0);')
+# ficha de cada ruta: ✓ Hecha / ★ Quiero hacerla (pwa/listas.js)
+rep('${r.ds?`<p class="desc">','${window.rMk?rMk(r):""}\n  ${r.ds?`<p class="desc">')
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
 t=re.sub(r'\s*<button class="lay" data-lay="towns".*?</button>','',t,count=1,flags=re.S)

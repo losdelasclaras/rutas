@@ -11,6 +11,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .cpop a.vm{display:inline-block;margin-top:6px;font-weight:700}
 #map .cpt.mk-h::after,#map .cpt.mk-q::after{position:absolute;left:calc(var(--ms,24px)*.28);top:calc(var(--ms,24px)*-.78);width:15px;height:15px;border-radius:50%;font-size:10px;line-height:15px;text-align:center;font-weight:900;color:#fff;border:1.5px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.4);pointer-events:none;z-index:2}
 #map .cpt.mk-h::after{content:"✓";background:#2e7d4f}#map .cpt.mk-q::after{content:"★";background:#d9a400}
+#map .cpt.co-off{display:none}
 .lico.co{width:16px;height:16px;border-radius:50%;border:3px solid;box-sizing:border-box;display:inline-block;background:#fff}
 </style>`);
 const SYM={aloja:["#b5532f",'<path d="M-7.5-5h2v4.2H6a1.8 1.8 0 0 1 1.8 1.8V5.5h-2V3.4H-5.5v2.1h-2Z" fill="#fff"/><circle cx="-2.7" cy="-2.6" r="1.8" fill="#fff"/><path d="M0.2-4.2H4.4a2 2 0 0 1 2 2v.6H0.2Z" fill="#fff"/>'],
@@ -81,16 +82,16 @@ for(const c of CO){for(const[k]of KS)if(LAY[`co_${c.id}_${k}`]===undefined)LAY[`
     m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(p[1],p[2]);return}abrir(c,p,k)});
     m.__n=p[0];m.__c=c.c;m.__k=coKey(c,p[0],k);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(cum?gc:g).addLayer(m)}
   G[c.id+"_l"]=g;G[c.id+"_c"]=gc}
-function coMarks(m){const el=m.getElement();if(!el)return;const v=MARKS[m.__k];el.classList.toggle("mk-h",v==="hecha"&&LAY.mh);el.classList.toggle("mk-q",v==="quiero"&&LAY.mq)}
+function coMarks(m){const el=m.getElement();if(!el)return;const v=MARKS[m.__k],on=(v==="hecha"&&LAY.mh)||(v==="quiero"&&LAY.mq);el.classList.toggle("mk-h",v==="hecha"&&LAY.mh);el.classList.toggle("mk-q",v==="quiero"&&LAY.mq);el.classList.toggle("co-off",!!LAY.solo&&!on);const tt=m.getTooltip();if(tt)tt.setOpacity(LAY.solo&&!on?0:1)}
 {const orig=window.refreshMarks;if(orig)window.refreshMarks=function(){orig.apply(this,arguments);for(const m of LBL)coMarks(m)}}
 // los nombres, como los del grupo: solo con el mapa cerca
 function lbls(){const on=map.getZoom()>=12;for(const m of LBL){if(on&&!m.getTooltip())m.bindTooltip(esc(m.__n),{permanent:true,direction:"right",offset:[10,0],className:"lbl co",interactive:false});const te=on&&m.getTooltip()&&m.getTooltip().getElement();if(te)te.style.setProperty("--cc",m.__c);else if(!on&&m.getTooltip())m.unbindTooltip()}}
-function sync(){for(const c of CO)for(const[k]of KS){const key=`co_${c.id}_${k}`,on=LAY[key]&&!LAY.solo&&!window.FOLONLY,g=G[c.id+"_"+k];
+function sync(){for(const c of CO)for(const[k]of KS){const key=`co_${c.id}_${k}`,on=LAY[key]&&!window.FOLONLY,g=G[c.id+"_"+k];
     if(on&&!map.hasLayer(g))g.addTo(map);else if(!on&&map.hasLayer(g))g.remove();
     const b=document.querySelector(`[data-lay="${key}"]`);if(b)b.setAttribute("aria-pressed",!!LAY[key])}
   lbls()}
 map.on("zoomend",lbls);
-document.querySelector(".legend").addEventListener("click",()=>setTimeout(sync,0));
+document.querySelector(".legend").addEventListener("click",()=>setTimeout(()=>{sync();for(const m of LBL)coMarks(m)},0));
 setTimeout(sync,0);
 
 /* ---------- también en las pestañas Cumbres y Lugares (y en sus buscadores) ---------- */
@@ -140,6 +141,7 @@ for(const it of ALL){const p=it.pp;if(!(/RUTA/i.test(p[7]||"")||/distancia\s*:/i
   const[F]=ficha(p[3]),dm=/\/(20\d\d)\/(\d\d)\//.exec(p[4]||"");
   RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:dm?+dm[1]:null,m:dm?+dm[2]:null,km:(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km||"")||[])[1]?(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km)[1].replace(".",",")+" km"):"",de:(/(\d[\d.]*)\s*m/i.exec(F.de||"")||[])[1]?"+"+(/(\d[\d.]*)\s*m/i.exec(F.de)[1])+" m":"",txt:norm(p[0]+" "+it.r+" "+limpia(p[3]))}))}
 COLX.rsrc="todas";
+COLX.isRuta=ci=>RUT.some(x=>x.ci===ci);
 COLX.byP=p=>ALL.find(x=>x.pp===p);
 // en la ficha de una ruta del grupo: «También en <colaborador>» con su tarjeta
 COLX.also=r=>{const v=[];for(const i of r.p||[])for(const it of PAR[i]||[])if(!v.includes(it))v.push(it);if(!v.length)return "";
