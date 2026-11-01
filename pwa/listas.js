@@ -11,8 +11,14 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 #mlbox .crow .dkm{color:var(--ink)}
 #mlbox .crow .thumb{width:34px!important;height:34px!important;min-width:34px;border-radius:8px;object-fit:cover;position:static!important;display:block}
 .rmk{margin:10px 0 4px}
+#mlbox .mlgh{display:flex;align-items:center;gap:10px;width:100%;margin:10px 0 0;padding:14px 14px;border:1px solid var(--edge);border-radius:12px;background:var(--card,#fff);color:var(--ink);font-size:17px;font-weight:800;cursor:pointer;text-align:left}
+#mlbox .mlgh b{margin-left:auto;background:var(--ink);color:var(--paper,#fff);border-radius:999px;padding:2px 10px;font-size:14px}
+#mlbox .mlgh .chev{width:16px;flex:none;transition:transform .15s;color:var(--muted)}#mlbox .mlgh[aria-expanded=true] .chev{transform:rotate(90deg)}
+#mlbox .mlgh[aria-expanded=true]{border-radius:12px 12px 0 0}
+#pendban{position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:500;display:flex;gap:10px;align-items:center;background:#20302a;color:#fff;border-radius:999px;padding:8px 8px 8px 16px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.3);white-space:nowrap;font-size:15px}
+#pendban button{border:0;border-radius:999px;background:#fff;color:#20302a;font-weight:800;padding:8px 14px;cursor:pointer;font-size:14px}
 </style>`);
-let MODE="quiero",POS=null;
+let MODE="quiero",POS=null;const OPEN=new Set();
 const ckey=p=>(p.co?"@"+p.co.id:"");
 window.rKey=r=>"r:"+(slug(r)||("id"+r.id));
 // botones ✓/★ en la ficha de cada ruta del grupo
@@ -36,8 +42,8 @@ let LAST=[];
 function render(){if(box.hidden)return;const o=items(),all=o.cumbre.concat(o.lugar,o.ruta);
   const nC=(typeof PEAKS!=="undefined"?PEAKS:[]).length,hc=o.cumbre.filter(x=>x.m==="hecha").length;
   const sel=l=>{let v=l.filter(x=>x.m===MODE);if(POS)v=v.slice().sort((a,b)=>km(POS,a.p||a.r)-km(POS,b.p||b.r));return v};
-  LAST=[];const sec=(t,l)=>{const v=sel(l);if(!v.length)return"";return `<h3>${t} · ${v.length}</h3><div class="rows">${v.map(x=>{LAST.push(x);return fila(x,LAST.length-1)}).join("")}</div>`};
-  const body=sec("⛰️ Cumbres",o.cumbre)+sec("🏞️ Lugares",o.lugar)+sec("🥾 Rutas",o.ruta);
+  LAST=[];const sec=(t,l,id)=>{const v=sel(l);if(!v.length)return"";const op=OPEN.has(MODE+id);return `<button class="mlgh" data-lsec="${id}" aria-expanded="${op}"><span>${t}</span><b>${v.length}</b><svg class="chev" viewBox="0 0 10 10"><path d="M3 1.5 7 5 3 8.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>${op?`<div class="rows">${v.map(x=>{LAST.push(x);return fila(x,LAST.length-1)}).join("")}</div>`:(v.forEach(x=>LAST.push(x)),"")}`};
+  const body=sec("⛰️ Cumbres",o.cumbre,"c")+sec("🏞️ Lugares",o.lugar,"l")+sec("🥾 Rutas",o.ruta,"r");
   const nq=all.filter(x=>x.m==="quiero").length,nh=all.filter(x=>x.m==="hecha").length;
   box.innerHTML=`<h2>★ Mis listas</h2>
   <div class="mlbig"><b>${hc}</b><span>cumbres subidas de ${nC}</span></div><div class="mlbar"><i style="width:${nC?(hc/nC*100).toFixed(1):0}%"></i></div>
@@ -51,12 +57,28 @@ box.addEventListener("click",e=>{
   const m=e.target.closest("[data-lmode]");if(m){MODE=m.dataset.lmode;render();return}
   if(e.target.closest("[data-lnear]")){if(POS){POS=null;render();return}if(!navigator.geolocation){toast("Este móvil no da la ubicación");return}toast("Buscando dónde estás…");
     navigator.geolocation.getCurrentPosition(p=>{POS={lat:p.coords.latitude,lon:p.coords.longitude};render()},()=>toast("No he podido saber dónde estás."),{enableHighAccuracy:true,timeout:12000,maximumAge:300000});return}
-  if(e.target.closest("[data-lmap]")){const v=LAST.filter(x=>x.m==="quiero");if(!v.length)return;showView("mapa");LAY.mq=true;
-    const b=L.latLngBounds(v.map(x=>[(x.p||x.r).lat,(x.p||x.r).lon]));setTimeout(()=>{map.fitBounds(b.pad(.15),{maxZoom:13});if(window.refreshMarks)refreshMarks()},120);return}
+  if(e.target.closest("[data-lmap]")){pendMap();return}
+  const sg=e.target.closest("[data-lsec]");if(sg){const id=MODE+sg.dataset.lsec;if(OPEN.has(id))OPEN.delete(id);else OPEN.add(id);render();return}
   const o=e.target.closest("[data-lopen]");if(o){const x=LAST[+o.dataset.lopen];if(!x)return;
     if(x.r){ovShow({t:"route",id:x.r.id});return}
     const p=x.p;if(p.co){COLX.open(p.ci);return}
     const rs=(P[p.i].rs||[]).filter(i=>R[i].u);if(rs.length)ovShow(rs.length>1?{t:"pt",i:p.i}:{t:"route",id:rs[0]});else{showView("mapa");setTimeout(()=>flyTo(p.lat,p.lon,10),100)}}});
+/* «Ver pendientes en el mapa»: el mapa enseña solo tus ★ (se apagan las demás capas); un aviso arriba deja volver a como estaba */
+let SAVED=null,PRT=null;
+const WANT={peaks:true,spots:true,tracks:false,mh:false,mq:true,solo:true,mp:false,mt:false,seg:false};
+function setLay(k,v){const b=document.querySelector(`.laypanel [data-lay="${k}"]`);if(b&&(b.getAttribute("aria-pressed")==="true")!==v)b.click()}
+function pendMap(){const v=LAST.filter(x=>x.m==="quiero");if(!v.length)return;
+  if(!SAVED){SAVED={};document.querySelectorAll(".laypanel [data-lay]").forEach(b=>{SAVED[b.dataset.lay]=b.getAttribute("aria-pressed")==="true"})}
+  showView("mapa");
+  for(const k in WANT)setLay(k,WANT[k]);
+  document.querySelectorAll('.laypanel [data-lay^="co_"]').forEach(b=>setLay(b.dataset.lay,true));
+  // las rutas pendientes (no son un punto): una ★ en su salida
+  if(PRT)PRT.remove();PRT=L.layerGroup(v.filter(x=>x.r).map(x=>L.marker([x.r.lat,x.r.lon],{icon:L.divIcon({className:"pt mio mk-q",html:`<svg viewBox="-12 -12 24 24"><use href="#ic-senda" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:routeTitle(x.r),zIndexOffset:500}).on("click",ev=>{L.DomEvent.stopPropagation(ev);openRoute(x.r.id)}))).addTo(map);
+  let ban=document.getElementById("pendban");if(!ban){ban=document.createElement("div");ban.id="pendban";document.getElementById("map").parentElement.appendChild(ban)}
+  ban.innerHTML=`<span>★ Solo tus pendientes · ${v.length}</span><button data-pendoff>Ver todo</button>`;ban.hidden=false;
+  ban.onclick=e=>{if(e.target.closest("[data-pendoff]"))pendOff()};
+  const b=L.latLngBounds(v.map(x=>[(x.p||x.r).lat,(x.p||x.r).lon]));setTimeout(()=>{map.invalidateSize();map.fitBounds(b.pad(.2),{maxZoom:13});if(window.refreshMarks)refreshMarks()},150)}
+function pendOff(){if(SAVED){for(const k in SAVED)setLay(k,SAVED[k]);SAVED=null}if(PRT){PRT.remove();PRT=null}const ban=document.getElementById("pendban");if(ban)ban.hidden=true;if(window.refreshMarks)refreshMarks()}
 // al marcar o desmarcar en cualquier sitio, la lista se pone al día
 document.addEventListener("click",e=>{if(e.target.closest("[data-mk]"))setTimeout(()=>{render();if(window.LISTAS_CNT)LISTAS_CNT()},0)});
 // también al cambiar las marcas desde la cuenta (otro móvil) y al entrar en Mis cosas
