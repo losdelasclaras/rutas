@@ -65,7 +65,13 @@ for _f in os.listdir(O+'colab'):
 for _f in _cf:
     if os.path.exists(A+'colab/fotos/'+_f) and not os.path.exists(O+'colab/'+_f): shutil.copy(A+'colab/fotos/'+_f,O+'colab/'+_f)
 assert t.count('__COLAB__')==1
-t=t.replace('__COLAB__',json.dumps(_CO,ensure_ascii=False,separators=(',',':')).replace('</','<\\/'))
+# sus datos en un archivo aparte (colab-<huella>.json), que la app pide después de arrancar
+import hashlib as _hl,glob as _gl
+for _old in _gl.glob(O+'colab-*.json'):os.remove(_old)
+if _CO:
+    _cj=json.dumps(_CO,ensure_ascii=False,separators=(',',':'));_cn=f"colab-{_hl.md5(_cj.encode()).hexdigest()[:8]}.json"
+    open(O+_cn,'w').write(_cj);t=t.replace('__COLAB__',json.dumps({'f':_cn}))
+else: t=t.replace('__COLAB__','{}')
 i=t.rindex('</script>'); t=t[:i]+'</script>\n<script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>\n</body></html>\n'
 # pestañas Cumbres y Lugares: también los puntos de los colaboradores (pwa/colab.js rellena window.COLX)
 rep('C.items=qs?ZI.filter(p=>nk(p.c).includes(qs)):ZI;const key=p=>C.pre+norm(p.c);','C.items=qs?ZI.filter(p=>nk(p.c).includes(qs)):ZI;const key=p=>C.pre+norm(p.c)+(p.co?"@"+p.co.id:"");')
@@ -116,6 +122,10 @@ t=t.replace('<div class="legend"','<div class="legend"',1)
 _i=t.index('<div class="legend"');_j=t.index('</div>',_i)
 _i=t.index('<div class="legend"');_j=t.index('</div>',_i);_lg=t[_i:_j];_pk=_lg[_lg.index('<button class="lay" data-lay="peaks"'):];_tg=_lg[_lg.index('<button class="laytog"'):_lg.index('</button>',_lg.index('<button class="laytog"'))+9]
 t=t[:_i]+'<div class="legend" role="group" aria-label="Capas del mapa">'+_tg+'<div class="laypanel"><p class="laygh">Mapa</p><button class="lay" data-base="topo" aria-pressed="true"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#cfe0b8" stroke="#6b8a4a" stroke-width=".8"/></svg>Topográfico</button><button class="lay" data-base="ign" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#e8d9a8" stroke="#8a6d2b" stroke-width=".8"/></svg>IGN</button><button class="lay" data-base="orto" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#5f7a4a" stroke="#2f4224" stroke-width=".8"/></svg>Ortofoto (IGN)</button><button class="lay" data-base="none" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#f1f1ec" stroke="#999" stroke-width=".8"/></svg>Sin mapa</button><p class="laygh">Ver</p>'+_pk+'<button class="lay" data-lay="tracks" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><path d="M-4 3C-2 -3 0 3 1 -1S3 -3 4 -4" fill="none" stroke="#6a2bd1" stroke-width="1.6" stroke-linecap="round"/></svg>Tracks</button><p class="laygh">Mis lugares</p><button class="lay" data-lay="mh" aria-pressed="true"><span class="lico lh">✓</span>Visitados</button><button class="lay" data-lay="mq" aria-pressed="true"><span class="lico lq">★</span>Quiero ir</button><button class="lay" data-lay="solo" aria-pressed="false"><span class="lico">◎</span>Ver solo los míos</button></div>'+t[_j:]
+# Capas: un apartado por colaborador (Cumbres y Lugares), puesto ya en la página para que capas.js lo agrupe aunque sus datos lleguen después
+if _CO:
+    _lh=''.join(f'<p class="laygh">{_c["n"]}</p>'+''.join(f'<button class="lay" data-lay="co_{_c["id"]}_{_k}" aria-pressed="true"><svg class="ico" viewBox="-12 -12 24 24" style="border-radius:50%;box-shadow:0 0 0 2.5px {_c["c"]}"><use href="#ic-{_ic}" x="-12" y="-12" width="24" height="24"/></svg>{_t}</button>' for _k,_t,_ic in (("c","Cumbres","cumbre"),("l","Lugares","otros"))) for _c in _CO)
+    rep('<p class="laygh">Mis lugares</p>',_lh+'<p class="laygh">Mis lugares</p>')
 rep('<div class="attrib">Relieve: Terrain Tiles (Mapzen/AWS) · Pueblos: © OpenStreetMap</div>','')
 rep('<button class="btn primary" id="b-near" data-short="Cerca" title="Rutas cerca de…">','<button class="btn ghost" id="b-me" data-short="Yo" title="Dónde estoy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 19-7-4-7 4z"/></svg>Dónde estoy</button>\n        <button class="btn primary" id="b-near" data-short="Cerca" title="Rutas cerca de…">')
 rep('<button class="fsbtn" id="fsbtn"','<button class="instbtn" id="instbtn" hidden>Instalar</button>\n    <button class="fsbtn" id="fsbtn"')
