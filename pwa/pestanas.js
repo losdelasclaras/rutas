@@ -29,7 +29,7 @@ main.appendChild(sec);const inner=sec.firstElementChild;
 const MS={mp:document.getElementById("mpbox"),mt:document.getElementById("mtbox"),off:document.getElementById("offbox"),res:window.RESUMEN?RESUMEN.box:null};
 for(const k in MS)if(MS[k]){MS[k].dataset.msec=k;inner.appendChild(MS[k])}
 const MN={mp:["📍","Puntos"],mt:["🧵","Tracks"],off:["📥","Mapas"],res:["🏆","Resumen"]};
-const cuenta=k=>k==="res"?(typeof PEAKS!=="undefined"?PEAKS.filter(p=>MARKS["c:"+norm(p.c)]==="hecha").length+" ⛰️":""):k==="mp"?MISPUNTOS.get().length:k==="mt"?MISPUNTOS.tracks().length:(window.OFFLINE?OFFLINE.list().length:0);
+const cuenta=k=>k==="res"?(typeof PEAKS!=="undefined"?PEAKS.filter(p=>MARKS["c:"+norm(p.c)+(p.co?"@"+p.co.id:"")]==="hecha").length+" ⛰️":""):k==="mp"?MISPUNTOS.get().length:k==="mt"?MISPUNTOS.tracks().length:(window.OFFLINE?OFFLINE.list().length:0);
 let curM=store.get("ldc-mios","mp");if(!MN[curM])curM="mp";
 const barM=document.getElementById("st-mios");
 function pintaM(){barM.innerHTML=Object.keys(MN).map(k=>`<button role="tab" data-ms="${k}" aria-selected="${k===curM}"><span class="i">${MN[k][0]}</span><span>${MN[k][1]}</span><small>${cuenta(k)}</small></button>`).join("");

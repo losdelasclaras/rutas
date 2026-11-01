@@ -10,7 +10,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 #resbox .cards b{display:block;font-size:22px}#resbox .cards small{color:var(--muted);font-weight:600;font-size:12.5px}
 #resbox .chips2{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}#resbox .chips2 span{border:1px solid var(--edge);border-radius:999px;padding:4px 10px;font-size:13px;background:var(--card)}
 </style>`);
-const key=p=>"c:"+norm(p.c),lkey=p=>"l:"+norm(p.c);
+const ck=p=>p.co?"@"+p.co.id:"",key=p=>"c:"+norm(p.c)+ck(p),lkey=p=>"l:"+norm(p.c)+ck(p);
 const fila=(t,a,b)=>`<div class="rw"><div class="t"><span>${t}</span><small>${a} de ${b}</small></div><div class="bar"><i style="width:${b?(a/b*100).toFixed(1):0}%"></i></div></div>`;
 function render(){if(box.hidden)return;
   const C=PEAKS,hechas=C.filter(p=>MARKS[key(p)]==="hecha"),quiero=C.filter(p=>MARKS[key(p)]==="quiero");
@@ -22,7 +22,7 @@ function render(){if(box.hidden)return;
   const L=SPOTS,lv=L.filter(p=>MARKS[lkey(p)]==="hecha").length,lq=L.filter(p=>MARKS[lkey(p)]==="quiero").length;
   const MT=MISPUNTOS.tracks(),kmT=MT.reduce((s,t)=>s+(+t.km||0),0);
   box.innerHTML=`<h2>🏆 Resumen</h2>
-  <p class="note" style="margin-top:0">Cuenta las cumbres y lugares que salen en las rutas del blog. Ve marcándolos en Del grupo › Cumbres y Lugares (o en el mapa).</p>
+  <p class="note" style="margin-top:0">Cuenta las cumbres y lugares del grupo y de los colaboradores. Ve marcándolos en Del grupo › Cumbres y Lugares (o en el mapa).</p>
   <div class="big"><b>${hechas.length}</b><span>cumbres subidas de ${C.length}</span></div><div class="bar"><i style="width:${(hechas.length/C.length*100).toFixed(1)}%"></i></div>
   <p class="note">${quiero.length?`★ ${quiero.length} en tu lista de «quiero subir»`:"Aún no tienes cumbres en «quiero subir»"}${alta?` · La más alta: <b>${esc(alta.c)}</b> (${(alta.a||0).toLocaleString("es-ES")} m)`:""}</p>
   <h3>Por zonas</h3>${Z.map(z=>fila(...z)).join("")}
