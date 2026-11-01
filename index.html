@@ -295,7 +295,7 @@ html,body{height:100%;margin:0}
     <section class="view" id="v-mapa">
       <div id="map" aria-label="Mapa de rutas"></div>
       <div class="mapbar" id="mapbar"></div>
-      <div class="legend" role="group" aria-label="Capas del mapa"><button class="laytog" aria-expanded="false" aria-label="Capas del mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Capas</span></button><div class="laypanel"><p class="laygh">Mapa</p><button class="lay" data-base="topo" aria-pressed="true"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#cfe0b8" stroke="#6b8a4a" stroke-width=".8"/></svg>Topográfico</button><button class="lay" data-base="ign" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#e8d9a8" stroke="#8a6d2b" stroke-width=".8"/></svg>IGN</button><button class="lay" data-base="orto" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#5f7a4a" stroke="#2f4224" stroke-width=".8"/></svg>Ortofoto (IGN)</button><button class="lay" data-base="none" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#f1f1ec" stroke="#999" stroke-width=".8"/></svg>Sin mapa</button><p class="laygh">Ver</p><button class="lay" data-lay="peaks" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>Cumbres</button>
+      <div class="legend" role="group" aria-label="Capas del mapa"><button class="laytog" aria-expanded="false" aria-label="Capas del mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Capas</span></button><div class="laypanel"><p class="laygh">Mapa</p><button class="lay" data-base="topo" aria-pressed="true"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#cfe0b8" stroke="#6b8a4a" stroke-width=".8"/></svg>Topográfico</button><button class="lay" data-base="ign" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#e8d9a8" stroke="#8a6d2b" stroke-width=".8"/></svg>IGN</button><button class="lay" data-base="orto" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#5f7a4a" stroke="#2f4224" stroke-width=".8"/></svg>Ortofoto (IGN)</button><button class="lay" data-base="none" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#f1f1ec" stroke="#999" stroke-width=".8"/></svg>Sin mapa</button><p class="laygh">Los de las Claras</p><button class="lay" data-lay="peaks" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>Cumbres</button>
         <button class="lay" data-lay="spots" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-brana" x="-12" y="-12" width="24" height="24"/></svg>Lugares</button>
       <button class="lay" data-lay="tracks" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><path d="M-4 3C-2 -3 0 3 1 -1S3 -3 4 -4" fill="none" stroke="#6a2bd1" stroke-width="1.6" stroke-linecap="round"/></svg>Tracks</button><p class="laygh">Hiking Asturias</p><button class="lay" data-lay="co_c1_c" aria-pressed="false"><svg class="ico" viewBox="-12 -12 24 24" style="border-radius:50%;box-shadow:0 0 0 2.5px #e8710a"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>Cumbres</button><button class="lay" data-lay="co_c1_l" aria-pressed="false"><svg class="ico" viewBox="-12 -12 24 24" style="border-radius:50%;box-shadow:0 0 0 2.5px #e8710a"><use href="#ic-otros" x="-12" y="-12" width="24" height="24"/></svg>Lugares</button><p class="laygh">Mis lugares</p><button class="lay" data-lay="mh" aria-pressed="true"><span class="lico lh">✓</span>Visitados</button><button class="lay" data-lay="mq" aria-pressed="true"><span class="lico lq">★</span>Quiero ir</button><button class="lay" data-lay="solo" aria-pressed="false"><span class="lico">◎</span>Ver solo los míos</button></div></div>
       <div class="rmenu" id="rmenu" hidden>
@@ -1397,7 +1397,7 @@ function lbls(){const on=map.getZoom()>=12;for(const m of LBL){if(!m._map){if(m.
 function sync(){for(const c of CO)for(const[k]of KS){const key=`co_${c.id}_${k}`,on=LAY[key]&&!window.FOLONLY,g=G[c.id+"_"+k];
     if(on&&!map.hasLayer(g))g.addTo(map);else if(!on&&map.hasLayer(g))g.remove();
     const b=document.querySelector(`[data-lay="${key}"]`);if(b)b.setAttribute("aria-pressed",!!LAY[key])}
-  cull()}
+  cull();if(window.capasSum)capasSum()}
 // como los puntos del grupo: solo se dibujan los que caen en pantalla (y un margen); el mapa va igual de fluido con más colaboradores
 function cull(){const b=map.getBounds().pad(.35);for(const gid in MKG){const g=G[gid];if(!map.hasLayer(g))continue;
   for(const m of MKG[gid]){const inb=b.contains(m.getLatLng());if(inb&&!g.hasLayer(m))g.addLayer(m);else if(!inb&&g.hasLayer(m))g.removeLayer(m)}}lbls()}
@@ -1435,7 +1435,7 @@ for(const L of [PEAKS,SPOTS]){const pares=L.filter(x=>x.par);for(const x of pare
 window.COLX={
   cats:()=>CATS.concat(EXTRA),
   ok(p,C){const o=C.o||"todas";return o==="todas"||(o==="grupo"&&!p.co)||(o==="dos"&&!!p.both)||(p.co&&o==="co_"+p.co.id)},
-  chips(kind,C){const o=C.o||"todas";const ops=[["todas","Todos",""],["grupo","Del grupo","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c]),["dos","En los dos","#7b5ea7"]];
+  chips(kind,C){const o=C.o||"todas";const ops=[["todas","Todos",""],["grupo","Los de las Claras","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c]),["dos","En los dos","#7b5ea7"]];
     return `<div class="chips" data-k="${kind}" data-grp="o">${ops.map(([v,l,col])=>`<button class="chip" data-v="${v}" aria-pressed="${o===v}">${col?`<span class="dot" style="background:${col}"></span>`:""}${esc(l)}</button>`).join("")}</div>`},
   cls:p=>(p.co?` src-co${p.both?" both":""}" style="--cc:${p.co.c}`:` src-g${p.both?" both":""}`),
   ico:(p,kind)=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true" style="border-radius:50%;box-shadow:0 0 0 2.5px ${p.co.c}"><use href="#ic-${p.k}" x="-12" y="-12" width="24" height="24"/></svg>`,
@@ -1458,7 +1458,7 @@ COLX.byP=p=>ALL.find(x=>x.pp===p);
 COLX.also=r=>{const v=[];for(const i of r.p||[])for(const it of PAR[i]||[])if(!v.includes(it))v.push(it);if(!v.length)return "";
   const by={};for(const it of v)(by[it.co.n] ||= []).push(it);
   return Object.entries(by).map(([n,l])=>`<div class="sec"><h3>También en ${esc(n)}</h3><div class="rows">${l.map(it=>COLX.rrow(RUT.find(x=>Object.getPrototypeOf(x)===it)||Object.assign(Object.create(it),{y:null,km:"",de:""}))).join("")}</div></div>`).join("")};
-COLX.rchips=()=>{const o=COLX.rsrc;const ops=[["todas","Todas",""],["grupo","Del grupo","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c])];
+COLX.rchips=()=>{const o=COLX.rsrc;const ops=[["todas","Todas",""],["grupo","Los de las Claras","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c])];
   return `<div class="chips rsrc">${ops.map(([v,l,col])=>`<button class="chip" data-rsrc="${v}" aria-pressed="${o===v}">${col?`<span class="dot" style="background:${col}"></span>`:""}${esc(l)}</button>`).join("")}</div>`};
 COLX.routes=(q,limpio)=>{const o=COLX.rsrc;
   const c=(o==="grupo"||!limpio)?[]:RUT.filter(x=>(o==="todas"||o==="co_"+x.co.id)&&(!q||x.txt.includes(q))&&(!window.RFOK||RFOK(x)));
@@ -1492,7 +1492,7 @@ for(const el of kids){if(el.matches("p.laygh")){const b=document.createElement("
     const g=document.createElement("div");g.className="laygrp";el.replaceWith(b);b.after(g);cur={b,g,name:el.textContent.trim()};groups.push(cur)}
   else if(cur)cur.g.appendChild(el)}
 const KEY="ldc-capas-abierta";let open;try{open=localStorage.getItem(KEY)}catch(e){}
-if(!groups.some(x=>x.name===open))open=(groups.find(x=>/^ver$/i.test(x.name))||groups[0]).name;
+if(!groups.some(x=>x.name===open))open=(groups.find(x=>/^(ver|los de las claras)$/i.test(x.name))||groups[0]).name;
 function sum(){for(const x of groups){let s="";
     if(/^mapa$/i.test(x.name)){const b=x.g.querySelector('[data-base][aria-pressed="true"]');s=b?b.textContent.trim():""}
     else{const on=[...x.g.querySelectorAll('[data-lay][aria-pressed="true"]:not([hidden])')].filter(b=>b.dataset.lay!=="solo").map(b=>b.textContent.trim());if(x.g.querySelector('[data-lay]'))s=on.length?on.join(", "):"nada"}
@@ -1500,7 +1500,9 @@ function sum(){for(const x of groups){let s="";
 function show(){for(const x of groups){const o=x.name===open;x.g.hidden=!o;x.b.setAttribute("aria-expanded",o)}sum()}
 pn.addEventListener("click",e=>{const h=e.target.closest("button.laygh");if(h){const x=groups.find(g=>g.b===h);open=(open===x.name)?"":x.name;try{localStorage.setItem(KEY,open)}catch(e){}show();e.stopPropagation();return}
   setTimeout(sum,0)});
-show();
+show();window.capasSum=sum;
+// al abrir el panel, el resumen de cada apartado al día
+document.addEventListener("click",e=>{if(e.target.closest(".laytog"))setTimeout(sum,0)});setTimeout(sum,800);
 })();
 
 }catch(e){console.error("módulo capas",e);(window.__ERRS=window.__ERRS||[]).push("capas: "+(e&&e.message))}
@@ -3079,7 +3081,7 @@ const RF={z:"",ep:"",iv:"",tk:""},CUT=new Date().getFullYear()-5;
 window.RFOK=r=>(!RF.z||zoneOf(r.r)===RF.z)&&(!RF.ep||(RF.ep==="new"?(r.y||0)>=CUT:(r.y||0)<CUT))&&(!RF.iv||(RF.iv==="si"?!!r.iv:!r.iv))&&(!RF.tk||!!r.gx);
 const rsrc=()=>window.COLX?COLX.rsrc:"todas";
 const RG=()=>[["z","Zona",[["","Todas"],["cant","Cantábrica"],["pir","Pirineos"],["alp","Alpes y Dolomitas"]]],
-  ...(window.COLX?[["rs","De quién",[["todas","Todas"],["grupo","Del grupo"],...CO_LIST()]]]:[]),
+  ...(window.COLX?[["rs","De quién",[["todas","Todas"],["grupo","Los de las Claras"],...CO_LIST()]]]:[]),
   ["ep","Época",[["","Todas"],["new",`Desde ${CUT}`],["old",`Antes de ${CUT}`]]],
   ["iv","Invierno",[["","Todas"],["si","Solo invernales"],["no","Sin invernales"]]],
   ["tk","Track",[["","Todas"],["si","Con track en el mapa"]]]];
@@ -3154,5 +3156,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="cfdc1ebe18";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="06262d0f13";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
