@@ -281,6 +281,23 @@ def _gpx_linea(b):
     if len(ll) > 1500: ll = ll[::len(ll) // 1500 + 1]
     return ll
 
+def alturas_colab(new, old):
+    # altura de cada punto según el modelo del terreno (Open-Meteo), para ordenar sus cumbres por altura como las del grupo
+    cache = {(q[1], q[2]): q[8] for q in old.get('p', []) if len(q) > 8 and q[8] is not None}
+    pts = new.get('p', [])
+    for q in pts:
+        while len(q) < 9: q.append(None)
+        if q[8] is None and (q[1], q[2]) in cache: q[8] = cache[(q[1], q[2])]
+    falta = [q for q in pts if q[8] is None]
+    for i in range(0, len(falta), 100):
+        lote = falta[i:i + 100]
+        try:
+            j = json.loads(get('https://api.open-meteo.com/v1/elevation?latitude=' + ','.join(str(q[1]) for q in lote) + '&longitude=' + ','.join(str(q[2]) for q in lote)))
+            for q, e in zip(lote, j.get('elevation', [])):
+                if e is not None: q[8] = round(e)
+        except Exception as e:
+            log(f'⚠ No he podido sacar la altura de los puntos del colaborador: {e}'); break
+
 def fotos_colab(cid, new):
     # las fotos de su My Maps se bajan, se reducen y se sirven desde la propia app (las de Google no se dejan ver desde fuera)
     import hashlib
@@ -346,6 +363,7 @@ def colaboradores():
                 else: log(f'⚠ No he podido leer la carpeta de Drive del colaborador {co["id"]} (¿compartida con «Cualquier persona con el enlace»?).')
             except Exception as e:
                 log(f'⚠ Drive del colaborador {co["id"]}: {e}')
+        alturas_colab(new, old)
         fotos_colab(co['id'], new)
         nom = co.get('nombre') or new.get('t') or co['id']
         if new != old:
