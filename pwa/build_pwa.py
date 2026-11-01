@@ -47,7 +47,7 @@ rep('</style>','''html,body{height:100%;margin:0}
 </style>
 </head><body>''')
 # cada módulo va protegido: si uno falla en un móvil concreto, los demás y la app siguen funcionando
-_mods=['mispuntos','colab','capas','sync','seguir','mistracks','offline','yo','sos','resumen','seguidores','pestanas','novedades','instalar','compartir','perfil','tiempo']
+_mods=['mispuntos','colab','capas','sync','seguir','mistracks','offline','yo','sos','resumen','seguidores','pestanas','novedades','instalar','compartir','perfil','tiempo','cerca']
 _w=lambda n:'try{\n'+open(f'/home/claude/pwa/{n}.js').read()+'\n}catch(e){console.error("módulo '+n+'",e);(window.__ERRS=window.__ERRS||[]).push("'+n+': "+(e&&e.message))}'
 i=t.rindex('</script>'); t=t[:i]+'\n'+'\n'.join(_w(n) for n in _mods)+'\n'+t[i:]
 # colaboradores (app/colaboradores.json + app/colab/<id>.json, los rellena el robot): van dentro de la página, así se ven también sin cobertura
@@ -94,6 +94,14 @@ rep('  const row=e.target.closest("[data-r]"); if(row){const r=R[+row.dataset.r]
 rep('  const row=e.target.closest("[data-r]");if(row){ovShow({t:"route",id:+row.dataset.r});return}});','  const cor=e.target.closest("[data-cor]");if(cor&&window.COLX){COLX.open(+cor.dataset.cor);return}\n  const row=e.target.closest("[data-r]");if(row){ovShow({t:"route",id:+row.dataset.r});return}});')
 # ficha de una ruta del grupo: si alguno de sus puntos también lo tiene un colaborador, se ve su ficha debajo
 rep('target="_blank" rel="noopener">Google Maps</a></div>\n  <div class="sec"><h3>El tiempo</h3>','target="_blank" rel="noopener">Google Maps</a></div>\n  ${window.COLX?COLX.also(r):""}\n  <div class="sec"><h3>El tiempo</h3>')
+# Cumbres y Lugares: cerca de un lugar / de mí (pwa/cerca.js)
+rep('const ZI=C.all.filter(p=>zoneOf(p.r)===C.z);','const ZI=C.near?C.all.filter(p=>(p._d=km(C.near,p))<=C.near.rad).sort((a,b)=>a._d-b._d):C.all.filter(p=>zoneOf(p.r)===C.z);')
+rep('const HTML=`','const HTML=`${window.cercaBar?cercaBar(kind,C):""}')
+rep('${zc.filter(x=>x[1]).length>1?','${!C.near&&zc.filter(x=>x[1]).length>1?')
+rep('<b>${esc(p.c)}</b><span>${window.COLX?COLX.src(p):""}','<b>${esc(p.c)}</b><span>${C.near?`<b class="dkm">${p._d<10?p._d.toFixed(1).replace(".",","):p._d.toFixed(0)} km</b> · `:""}${window.COLX?COLX.src(p):""}')
+rep('if(st.t==="search"){h=`<h2 class="ovh">Rutas cerca de…</h2>','if(st.t==="search"){h=`<h2 class="ovh">${window.cercaTit?cercaTit():"Rutas cerca de…"}</h2>')
+rep('p=>ovShow({t:"near",lat:p.coords.latitude,lon:p.coords.longitude,label:"tu ubicación"})','p=>{if(window.nearPick&&nearPick(p.coords.latitude,p.coords.longitude,"tu ubicación"))return;ovShow({t:"near",lat:p.coords.latitude,lon:p.coords.longitude,label:"tu ubicación"})}')
+rep('const st=e.target.closest("[data-ovsite]");if(st){const s=ovFound[+st.dataset.ovsite];ovShow(','const st=e.target.closest("[data-ovsite]");if(st){const s=ovFound[+st.dataset.ovsite];if(window.nearPick&&nearPick(s.lat,s.lon,s.alt?s.alt.split(";")[0]:s.n))return;ovShow(')
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
 t=re.sub(r'\s*<button class="lay" data-lay="towns".*?</button>','',t,count=1,flags=re.S)
