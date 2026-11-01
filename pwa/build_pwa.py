@@ -67,6 +67,16 @@ for _f in _cf:
 assert t.count('__COLAB__')==1
 t=t.replace('__COLAB__',json.dumps(_CO,ensure_ascii=False,separators=(',',':')).replace('</','<\\/'))
 i=t.rindex('</script>'); t=t[:i]+'</script>\n<script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>\n</body></html>\n'
+# pestañas Cumbres y Lugares: también los puntos de los colaboradores (pwa/colab.js rellena window.COLX)
+rep('C.items=qs?ZI.filter(p=>nk(p.c).includes(qs)):ZI;const key=p=>C.pre+norm(p.c);','C.items=qs?ZI.filter(p=>nk(p.c).includes(qs)):ZI;const key=p=>C.pre+norm(p.c)+(p.co?"@"+p.co.id:"");')
+rep('...CATS.map(([k,l])=>[k,l]).filter(([k])=>C.items.some(p=>p.cat===k))','...(window.COLX?COLX.cats():CATS).map(([k,l])=>[k,l]).filter(([k])=>C.items.some(p=>p.cat===k))')
+rep('const list=C.items.filter(p=>(kind==="cumbres"?','const list=C.items.filter(p=>(!window.COLX||COLX.ok(p,C))&&(kind==="cumbres"?')
+rep('<div class="chips" data-k="${kind}" data-grp="g">','${window.COLX?COLX.chips(kind,C):""}<div class="chips" data-k="${kind}" data-grp="g">')
+rep('const rsx=(P[p.i].rs||[]).filter(x=>R[x].u),ri=rsx[0];','const rsx=p.co?[]:(P[p.i].rs||[]).filter(x=>R[x].u),ri=rsx[0];')
+rep('<div class="row crow${s?" is-"+s:""}">${ICO(kind==="cumbres"?"cumbre":p.cat)}<div class="t"><b>${esc(p.c)}</b><span>','<div class="row crow${s?" is-"+s:""}${window.COLX?COLX.cls(p):""}">${p.co?COLX.ico(p,kind):ICO(kind==="cumbres"?"cumbre":p.cat)}<div class="t"><b>${esc(p.c)}</b><span>${window.COLX?COLX.src(p):""}')
+rep('esc((CATS.find(c=>c[0]===p.cat)||[,"Otros"])[1])','esc(((window.COLX?COLX.cats():CATS).find(c=>c[0]===p.cat)||[,"Otros"])[1])')
+rep('${ri!=null?`<button data-go="${ri}"','${p.co?`<button data-cov="${p.ci}" title="Ver en el mapa">Ver</button>`:""}${ri!=null?`<button data-go="${ri}"')
+rep('const go=e.target.closest("[data-go]");if(go){','const cv=e.target.closest("[data-cov]");if(cv&&window.COLX){COLX.open(+cv.dataset.cov);return}\n  const go=e.target.closest("[data-go]");if(go){')
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
 t=re.sub(r'\s*<button class="lay" data-lay="towns".*?</button>','',t,count=1,flags=re.S)

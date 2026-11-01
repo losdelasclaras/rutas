@@ -84,4 +84,42 @@ function sync(){for(const c of CO)for(const[k]of KS){const key=`co_${c.id}_${k}`
 map.on("zoomend",lbls);
 document.querySelector(".legend").addEventListener("click",()=>setTimeout(sync,0));
 setTimeout(sync,0);
+
+/* ---------- también en las pestañas Cumbres y Lugares (y en sus buscadores) ---------- */
+if(typeof PEAKS!=="undefined"&&typeof SPOTS!=="undefined"){
+document.head.insertAdjacentHTML("beforeend",`<style>
+.crow.src-g{background:rgba(195,38,46,.09);box-shadow:inset 5px 0 0 #c3262e}
+.crow.src-co{background:color-mix(in srgb,var(--cc) 20%,transparent);box-shadow:inset 5px 0 0 var(--cc)}
+.crow.both{background:rgba(123,94,167,.2)}
+.crow .cosrc{font-style:normal;font-weight:800}
+.crow .cosrc.dos{color:#7b5ea7}
+.chip .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+</style>`);
+const EXTRA=[["aloja","Alojamientos"],["pueblo","Pueblos con encanto"],["activo","Turismo activo"],["area","Áreas recreativas"]];
+const ALL=[];
+const regAt=(la,lo)=>{let b=null,bd=1e9;for(const q of P){const d=(q.lat-la)**2+((q.lon-lo)*.73)**2;if(d<bd){bd=d;b=q}}return b&&bd<.04?String(b.r).split(" / ")[0]:"Asturias"};
+const kmd=(a,b)=>Math.hypot(a.lat-b.lat,(a.lon-b.lon)*.73)*111;
+const sig=n=>new Set(nk(n).split(" ").filter(w=>w.length>=4&&!/^(pico|pena|picu|ruta|senda|desde|circular|braña|brana|playa|mirador|cascada|bosque|cueva)$/.test(w)));
+for(const c of CO)for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
+  const an=(/(\d[\d.]{2,4})\s*m\b/i.exec(p[0])||[])[1];
+  const it={c:p[0],r:regAt(p[1],p[2]),a:cum?(an?+an.replace(/\./g,""):(p[8]||null)):null,lat:p[1],lon:p[2],co:c,ci:ALL.length,pp:p,k};
+  if(!cum)it.cat=k;
+  // ¿lo tenéis también en el grupo? mismo nombre, o muy cerca y con una palabra del nombre en común
+  const lista=cum?PEAKS:SPOTS,sw=sig(it.c);
+  for(const g of lista){if(g.co)continue;const d=kmd(g,it);
+    if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))){it.both="grupo";it.par=g;g.both=g.both||c.n;if(!it.a&&g.a)it.a=g.a;break}}
+  ALL.push(it);lista.push(it)}
+PEAKS.sort((a,b)=>(b.a||0)-(a.a||0));SPOTS.sort((a,b)=>a.c.localeCompare(b.c,"es"));
+// los que coinciden, juntos: el del colaborador justo debajo del vuestro
+for(const L of [PEAKS,SPOTS]){const pares=L.filter(x=>x.par);for(const x of pares)L.splice(L.indexOf(x),1);for(const x of pares){const j=L.indexOf(x.par);L.splice(j<0?L.length:j+1,0,x)}}
+window.COLX={
+  cats:()=>CATS.concat(EXTRA),
+  ok(p,C){const o=C.o||"todas";return o==="todas"||(o==="grupo"&&!p.co)||(o==="dos"&&!!p.both)||(p.co&&o==="co_"+p.co.id)},
+  chips(kind,C){const o=C.o||"todas";const ops=[["todas","Todos",""],["grupo","Del grupo","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c]),["dos","En los dos","#7b5ea7"]];
+    return `<div class="chips" data-k="${kind}" data-grp="o">${ops.map(([v,l,col])=>`<button class="chip" data-v="${v}" aria-pressed="${o===v}">${col?`<span class="dot" style="background:${col}"></span>`:""}${esc(l)}</button>`).join("")}</div>`},
+  cls:p=>(p.co?` src-co${p.both?" both":""}" style="--cc:${p.co.c}`:` src-g${p.both?" both":""}`),
+  ico:(p,kind)=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true" style="border-radius:50%;box-shadow:0 0 0 2.5px ${p.co.c}"><use href="#ic-${p.k}" x="-12" y="-12" width="24" height="24"/></svg>`,
+  src:p=>p.co?`<em class="cosrc" style="color:${p.co.c}">${esc(p.co.n)}</em>${p.both?` · <em class="cosrc dos">en los dos</em>`:""} · `:p.both?`<em class="cosrc dos">También en ${esc(p.both)}</em> · `:"",
+  open(ci){const it=ALL[ci];if(!it)return;if(typeof showView==="function")showView("mapa");setTimeout(()=>abrir(it.co,it.pp,it.k),80)}};
+renderCols()}
 })();
