@@ -20,6 +20,11 @@
   "mapa_mid": "",
   "drive_carpeta": "",
   "fuente": "KML de sus mapas (importado a mano con robot/importar_kml.py, 1 nov 2026)",
-  "quitar_nombres": "restaurante|sidrer[ií]a|\\bhotel|casa rural|casa de aldea|apartamentos|camping|hostal|posada|cafeter[ií]a|\\bbar\\b|tienda|multiaventura"
+  "quitar_nombres": "restaurante|sidrer[ií]a|\\bhotel|casa rural|casa de aldea|apartamentos|camping|hostal|posada|cafeter[ií]a|\\bbar\\b|tienda|multiaventura",
+  "capas": [
+   "c",
+   "r",
+   "t"
+  ]
  }
 ]

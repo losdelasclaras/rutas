@@ -44,7 +44,7 @@ const pn=document.querySelector(".laypanel");
 // cada colaborador, su propio apartado en Capas con «Cumbres» y «Lugares» (como «Ver» del grupo)
 const KS=[["c","Cumbres","cumbre"],["l","Lugares","otros"]];
 const KR=[["r","Rutas","senda"],["t","Tracks","senda"]];
-const KC=c=>(c.p.length?KS:[]).concat(c.r&&c.r.length?KR:[]);
+const KC=c=>KS.concat(KR).filter(([k])=>c.k?c.k.includes(k):k==="c"||k==="l"?c.p.length:(c.r&&c.r.length));
 if(pn&&!pn.querySelector('[data-lay^="co_"]')){const ml=[...pn.querySelectorAll("p.laygh")].find(p=>/mis lugares/i.test(p.textContent));
   const h=CO.map(c=>`<p class="laygh">${esc(c.n)}</p>`+KS.map(([k,t,ic])=>`<button class="lay" data-lay="co_${c.id}_${k}" aria-pressed="true"><svg class="ico" viewBox="-12 -12 24 24" style="border-radius:50%;box-shadow:0 0 0 2.5px ${c.c}"><use href="#ic-${ic}" x="-12" y="-12" width="24" height="24"/></svg>${t}</button>`).join("")).join("");
   if(ml)ml.insertAdjacentHTML("beforebegin",h);else pn.insertAdjacentHTML("beforeend",h)}
@@ -78,6 +78,7 @@ function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);
   ${F.sal?`<p class="salida">Salida: ${esc(F.sal)}</p>`:""}
   ${otros.length?`<p class="desc" style="font-size:.92em;opacity:.85">${otros.map(esc).join("<br>")}</p>`:""}
   <div class="actions">${u?`<a class="btn primary" href="${esc(u)}" target="_blank" rel="noopener">${/instagram\.com/i.test(u)?"Ver en Instagram":"Leer en "+esc(c.n)}</a>`:""}<a class="btn ghost" href="https://www.google.com/maps/search/?api=1&query=${la},${lo}" target="_blank" rel="noopener">Google Maps</a></div>`;
+  if(p[9]&&p[9].length&&window.COLX&&COLX.rutaItem)sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>${p[9].length===1?"Su ruta":"Sus rutas"} a esta cumbre</h3><div class="rows">${p[9].map(i=>COLX.rrow(COLX.rutaItem(c,i))).join("")}</div></div>`);
   {const it=window.COLX&&COLX.byP(p);const rs=it&&it.par?(P[it.par.i].rs||[]).filter(ri=>R[ri].u):[];
    if(rs.length)sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>También del grupo</h3><div class="rows">${rs.map(ri=>rowHTML(R[ri],"",true)).join("")}</div></div>`)}
   if(window.showTrack)showTrack(null);nodes.classed("sel",false);
@@ -187,6 +188,7 @@ for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exe
 COLX.rsrc="todas";
 COLX.isRuta=ci=>RUT.some(x=>x.ci===ci);
 COLX.rutasCo=()=>ALL.filter(x=>x.rr!=null);
+COLX.rutaItem=(c,i)=>RUT.find(x=>x.rr===i&&x.co===c);
 COLX.rKey=x=>rKeyCo(x.co,x.c);
 COLX.byP=p=>ALL.find(x=>x.pp===p);
 // en la ficha de una ruta del grupo: «También en <colaborador>» con su tarjeta
@@ -200,7 +202,7 @@ COLX.routes=(q,limpio)=>{const o=COLX.rsrc;
   return {c,hideG:o!=="todas"&&o!=="grupo"}};
 COLX.near=(lat,lon)=>F.reg==="todas"&&!nExtra()&&!F.wz?RUT.filter(x=>!window.RFOK||RFOK(x)).map(x=>({r:x,d:km({lat,lon},x)})):[];
 COLX.rrow=(x,extra)=>{const de=x.de?(/^\+/.test(x.de)?x.de:"+"+x.de):"",nums=[x.km,de].filter(Boolean).join(" · ");
-  return `<button class="row src-co" style="--cc:${x.co.c}" data-cor="${x.ci}">${x.pp&&x.pp[5]?`<img class="thumb" src="${esc(x.pp[5])}" alt="" loading="lazy">`:`<span class="thumb none" aria-hidden="true"></span>`}<div class="t"><b>${esc(x.c)}</b><span><em class="cosrc" style="color:${x.co.c}">${esc(x.co.n)}</em> · ${x.y?(x.m?MESES[x.m]+" ":"")+x.y:"Sin fecha"} · ${esc(x.r)}${extra?" · "+esc(extra):""}</span></div><span class="alt">${esc(nums)}</span></button>`};
+  return `<button class="row src-co" style="--cc:${x.co.c}" data-cor="${x.ci}">${x.pp&&x.pp[5]?`<img class="thumb" src="${esc(x.pp[5])}" alt="" loading="lazy">`:`<span style="display:grid;place-items:center;width:56px;flex:none">${COLX.ico(x)}</span>`}<div class="t"><b>${esc(x.c)}</b><span><em class="cosrc" style="color:${x.co.c}">${esc(x.co.n)}</em> · ${x.y?(x.m?MESES[x.m]+" ":"")+x.y:"Sin fecha"} · ${esc(x.r)}${extra?" · "+esc(extra):""}</span></div><span class="alt">${esc(nums)}</span></button>`};
 if(typeof renderList==="function")renderList();
 renderCols()}
 if(window.LISTAS)LISTAS.render();
