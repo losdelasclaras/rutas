@@ -1,1 +1,402 @@
-{}
+{
+"Torre Salinas|43.15|-4.86": [
+43.14857,
+-4.86073,
+"Torre de Salinas"
+],
+"Peña Ubiña|43.02|-5.96": [
+43.01833,
+-5.95673,
+"Peña Ubiña"
+],
+"El Siete|43.03|-5.96": [
+43.02905,
+-5.95973,
+"El Siete"
+],
+"Coriscao|43.09|-4.79": [
+43.08635,
+-4.79393,
+"Coriscáu"
+],
+"Montihuero|43.0|-6.13": [
+42.99868,
+-6.13467,
+"Montihuero"
+],
+"Cornón|43.03|-6.31": [
+43.02847,
+-6.30648,
+"Cornón"
+],
+"Peña Orniz|43.02|-6.12": [
+43.02384,
+-6.12236,
+"Peña Orniz"
+],
+"Peña Ubiña Pequeña|43.0|-5.95": [
+43.00189,
+-5.95125,
+"Peña Ubiña Pequeña"
+],
+"Peña Redonda|43.0|-6.13": [
+42.99757,
+-6.14721,
+"Peña Redonda"
+],
+"Pico Sestil|42.35|-6.39": [
+42.35256,
+-6.40603,
+"Sestil"
+],
+"Peña del Arca|43.06|-5.97": [
+43.05769,
+-5.97042,
+"Peña del Arca"
+],
+"Peñas de Trespando|43.03|-6.1": null,
+"Peña los Años|43.0|-6.15": [
+43.00501,
+-6.15447,
+"Peña Los Años"
+],
+"Peña Rueda|43.07|-5.94": [
+43.06988,
+-5.93965,
+"Peña Rueda"
+],
+"Alto de Terreiros|42.91|-6.13": [
+42.90822,
+-6.11913,
+"Alto de Terreiros"
+],
+"Cabeza de la Yegua|42.4|-6.54": [
+42.40252,
+-6.54293,
+"Cabeza de Yegua"
+],
+"Peña la Arena|42.89|-6.1": [
+42.89861,
+-6.1203,
+"Peña la Arena"
+],
+"Peña Salgueiro|43.0|-6.16": [
+43.00016,
+-6.1592,
+"Peña Salgueiro"
+],
+"Nevadín|42.88|-6.3": [
+42.8781,
+-6.30065,
+"Pico Nevadín"
+],
+"Peña Valdiglesia|42.83|-6.34": null,
+"Catoute|42.8|-6.32": [
+42.80137,
+-6.32206,
+"Pico Catoute"
+],
+"Peña Chana|43.01|-6.15": [
+43.00897,
+-6.14686,
+"Peña Chana"
+],
+"Peña Cerreos|43.01|-5.94": [
+43.0129,
+-5.93964,
+"Peña Cerreos"
+],
+"Picos Albos|43.04|-6.12": null,
+"Peña Ten|43.1|-5.14": [
+43.1035,
+-5.14185,
+"Peña Ten"
+],
+"Tambarón|42.84|-6.28": [
+42.84064,
+-6.27989,
+"Pico el Tambarón"
+],
+"La Cervata|43.02|-6.12": [
+43.01645,
+-6.12076,
+"La Cervata"
+],
+"Peña Cefera|42.79|-6.24": [
+42.78933,
+-6.23477,
+"Peña Cefera"
+],
+"Tapinón|43.04|-5.91": [
+43.0417,
+-5.90708,
+"El Tapinón o Pico Vallín"
+],
+"Peña Chana|43.05|-6.18": [
+43.04626,
+-6.17685,
+"Llagüezos"
+],
+"Gildar|43.1|-4.95": [
+43.09797,
+-4.95067,
+"Pico Gildar"
+],
+"Picos Blancos|43.03|-6.17": [
+43.03052,
+-6.16633,
+"Picos blancos"
+],
+"Cebolleda|43.09|-4.96": [
+43.09196,
+-4.95713,
+"Pico Cebolleda"
+],
+"Muxivén|42.98|-6.28": [
+42.98493,
+-6.27786,
+"Muxivén"
+],
+"Pico Tuerto|42.41|-6.57": [
+42.41307,
+-6.57073,
+"Pico Tuerto"
+],
+"Pico Cebolleu|43.03|-6.16": [
+43.03287,
+-6.16263,
+"Pico Cebolléu"
+],
+"Torre de Babia|43.0|-6.08": null,
+"Picos de la Mortera|43.04|-6.15": [
+43.03358,
+-6.1478,
+"Picos de la Mortera"
+],
+"Peña Vendimia|42.89|-6.3": [
+42.8881,
+-6.293,
+"Peña Vendimia"
+],
+"Peña del Viento|43.08|-5.34": [
+43.09163,
+-5.34011,
+"Peña el Viento"
+],
+"Cueto Arbas|42.99|-6.44": [
+42.99304,
+-6.43709,
+"Cueto Arbás"
+],
+"Cuiña|42.84|-6.83": [
+42.84422,
+-6.83282,
+"Cuíña"
+],
+"Torres de Vizbueno|42.8|-6.29": [
+42.79855,
+-6.27628,
+"Torres de Vizbueno"
+],
+"Peñas Pintas|42.95|-5.1": [
+42.95507,
+-5.09772,
+"Alto de las Pintas"
+],
+"Cornón de Busmor|42.9|-6.53": null,
+"Peña Roguera|42.79|-6.36": null,
+"Pico Miravalles|42.88|-6.78": [
+42.88019,
+-6.77763,
+"Miravalles"
+],
+"Peña Salgada|43.05|-6.21": [
+43.04709,
+-6.21398,
+"Peña Salgada"
+],
+"Pico San Justo|43.06|-5.3": [
+43.0584,
+-5.30017,
+"Pico de San Justo"
+],
+"Peña Blanca|43.04|-6.27": [
+43.03661,
+-6.2852,
+"Peña Blanca"
+],
+"Pico Ferreirúa|43.06|-6.04": [
+43.0626,
+-6.03719,
+"Pico Ferreirúa"
+],
+"Alto del Bigardón|42.91|-6.54": [
+42.91301,
+-6.54288,
+"Alto del Bigardón"
+],
+"Peña Beza|43.19|-5.03": [
+43.18324,
+-5.02787,
+"Pica Beza"
+],
+"Monte Cristallo|46.52|12.23": null,
+"Pico Rebollosas|43.07|-5.99": [
+43.06725,
+-5.98895,
+"Rebollosas"
+],
+"Pico Yordas o Burín|42.99|-5.05": [
+42.99319,
+-5.05473,
+"Pico Yordas o Burín"
+],
+"Mustallar|42.82|-6.84": [
+42.82258,
+-6.84232,
+"Pico O Mostallar"
+],
+"Las Tres Marías|42.95|-5.79": null,
+"Pico de la Llávana|43.05|-6.13": [
+43.05276,
+-6.12603,
+"La Llávana"
+],
+"Alto del Beigardón|42.91|-6.54": null,
+"Pico de las Rebollosas|43.07|-5.99": [
+43.06725,
+-5.98895,
+"Rebollosas"
+],
+"Pico Piedras|43.08|-6.08": [
+43.0758,
+-6.08123,
+"Pico las Piedras"
+],
+"Peña Valdorria|42.9|-5.42": [
+42.89935,
+-5.41969,
+"Peña Valdorria"
+],
+"El Rastrillo|42.99|-6.14": [
+42.98827,
+-6.14218,
+"El Rastrillo"
+],
+"Peña Negra|42.91|-6.09": null,
+"Alto de las Cabaninas|42.89|-6.27": [
+42.88893,
+-6.24783,
+"Alto de las Cabaninas"
+],
+"Teso Mular|42.92|-6.66": [
+42.92415,
+-6.65637,
+"Teso Mular"
+],
+"Pico Jario|43.15|-5.0": [
+43.15026,
+-5.00437,
+"Jario"
+],
+"Pico del águila|43.08|-5.23": [
+43.07928,
+-5.25841,
+"Pico del Águila"
+],
+"Pico Remelende|43.08|-5.23": [
+43.08464,
+-5.23263,
+"Pico Remelende"
+],
+"Susaron|42.99|-5.28": [
+42.98914,
+-5.28443,
+"Susarón"
+],
+"Pico Castaño|42.97|-5.11": [
+42.97336,
+-5.10825,
+"Pico Castaño"
+],
+"Pico Susarón|42.99|-5.28": [
+42.98914,
+-5.28443,
+"Susarón"
+],
+"Peña de Gúa|43.05|-6.21": [
+43.0613,
+-6.23441,
+"Peña de Gúa"
+],
+"Peña del Alba|43.06|-5.46": [
+43.05698,
+-5.46484,
+"Peña del Alba"
+],
+"Pico Cerroso|42.89|-5.09": [
+42.88619,
+-5.09093,
+"Pico Cerroso"
+],
+"Pico Chagariechu|43.06|-6.29": [
+43.06907,
+-6.29919,
+"Chagariechu"
+],
+"Peña Portillina|42.86|-6.69": [
+42.86403,
+-6.69257,
+"Peña Portillina"
+],
+"Peñas Albas|43.07|-5.23": null,
+"Miravalles|42.88|-6.78": [
+42.88019,
+-6.77763,
+"Miravalles"
+],
+"La Serrona|42.94|-5.95": null,
+"Cueto Ancino|42.92|-5.39": null,
+"Alto del Miro|42.92|-6.59": null,
+"Gilbo|42.96|-5.05": [
+42.95803,
+-5.0461,
+"Pico Gilbo"
+],
+"Peña Mea|43.18|-5.56": [
+43.17518,
+-5.56115,
+"Peña Mea"
+],
+"Peña del Seo|42.58|-6.95": [
+42.57671,
+-6.94828,
+"Pena de Seo"
+],
+"Alto Vildeu|43.12|-6.29": [
+43.12047,
+-6.29385,
+"Alto Vildéu"
+],
+"Alto de la Cruz|42.94|-6.42": [
+42.93502,
+-6.41751,
+"La Cruz"
+],
+"Alto de los Forgos|42.45|-6.59": null,
+"Peña Armada|42.96|-5.26": null,
+"Pico Águilas|42.45|-6.59": [
+42.45803,
+-6.56559,
+"Pico de Águilas"
+],
+"Monte Ranedo|43.05|-5.08": null,
+"Alto de los Navallos|42.64|-6.5": null,
+"Peña de Moncó|43.04|-6.63": [
+43.03831,
+-6.63113,
+"La Peña de Moncó"
+],
+"Monte Meno|42.64|-6.54": null,
+"Pena Falcueira|42.49|-6.87": null
+}
