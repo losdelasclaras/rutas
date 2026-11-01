@@ -96,7 +96,7 @@ def _cumbres(cimas):
     for g in grupos:
         n, la, lo, al, ta, _ = g[0]; ta = next((x[4] for x in g if x[4]), None)
         mil = lambda v: f"{v:,}".replace(',', '.')
-        alt = f"Altitud: {mil(ta)} m" if ta else f"Altitud: {mil(al)} m (aprox., según su track)"
+        alt = ""   # sin altitud: la del track no es fiable (decidido por él, 1 nov 2026)
         p.append([n, round(la, 5), round(lo, 5), alt, '', '', '1634', 'CUMBRES', None, sorted({x[5] for x in g})])
     return p
 
