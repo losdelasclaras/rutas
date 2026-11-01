@@ -57,6 +57,13 @@ for _c in (json.load(open(A+'colaboradores.json')) if os.path.exists(A+'colabora
     if not os.path.exists(_f): continue
     _d=json.load(open(_f))
     _CO.append({'id':_c['id'],'n':_c.get('nombre') or _d.get('t') or 'Colaborador','c':_c.get('color') or '#e8710a','p':_d.get('p',[]),'l':_d.get('l',[])+[[x[1],x[2]] for x in _d.get('d',[])]})
+# sus fotos (bajadas por el robot) se publican en colab/
+os.makedirs(O+'colab',exist_ok=True)
+_cf={x[5][6:] for _c in _CO for x in _c['p'] if x[5].startswith('colab/')}
+for _f in os.listdir(O+'colab'):
+    if _f not in _cf: os.remove(O+'colab/'+_f)
+for _f in _cf:
+    if os.path.exists(A+'colab/fotos/'+_f) and not os.path.exists(O+'colab/'+_f): shutil.copy(A+'colab/fotos/'+_f,O+'colab/'+_f)
 assert t.count('__COLAB__')==1
 t=t.replace('__COLAB__',json.dumps(_CO,ensure_ascii=False,separators=(',',':')).replace('</','<\\/'))
 i=t.rindex('</script>'); t=t[:i]+'</script>\n<script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>\n</body></html>\n'

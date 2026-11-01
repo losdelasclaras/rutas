@@ -281,6 +281,36 @@ def _gpx_linea(b):
     if len(ll) > 1500: ll = ll[::len(ll) // 1500 + 1]
     return ll
 
+def fotos_colab(cid, new):
+    # las fotos de su My Maps se bajan, se reducen y se sirven desde la propia app (las de Google no se dejan ver desde fuera)
+    import hashlib
+    from PIL import Image
+    d = APP + 'colab/fotos/'; os.makedirs(d, exist_ok=True)
+    falla = new.setdefault('ff', [])            # fotos que no se han podido bajar (no se reintentan cada noche)
+    ok = nuevas = mal = 0; err = None
+    for pt in new.get('p', []):
+        u = pt[5]
+        if not u: continue
+        if u.startswith('colab/'): ok += 1; continue
+        fn = f'{cid}-{hashlib.md5(u.encode()).hexdigest()[:12]}.jpg'
+        if not os.path.exists(d + fn):
+            if u in falla or (mal >= 8 and not nuevas): continue
+            try:
+                b = None
+                for v in (u, u.replace('/*/', '/%2A/'), u + ('&' if '?' in u else '?') + 'fife=s1024'):
+                    try: b = get(v, True, tries=2); Image.open(io.BytesIO(b)).verify(); break
+                    except Exception as e: err = e; b = None
+                if b is None: raise err
+                im = Image.open(io.BytesIO(b)).convert('RGB'); im.thumbnail((800, 800), Image.LANCZOS)
+                im.save(d + fn, 'JPEG', quality=72, optimize=True, progressive=True); nuevas += 1
+            except Exception as e:
+                mal += 1; err = e; falla.append(u); continue
+        pt[5] = 'colab/' + fn; ok += 1
+    if nuevas or mal: log(f'📷 Fotos del colaborador {cid}: {nuevas} nuevas, {ok} en total' + (f', {mal} no se han podido bajar ({err})' if mal else ''))
+    usadas = {pt[5][6:] for pt in new.get('p', []) if pt[5].startswith('colab/')}
+    for f in os.listdir(d):
+        if f.startswith(cid + '-') and f not in usadas: os.remove(d + f)
+
 def colaboradores():
     cf = APP + 'colaboradores.json'
     if not os.path.exists(cf): return
@@ -316,6 +346,7 @@ def colaboradores():
                 else: log(f'⚠ No he podido leer la carpeta de Drive del colaborador {co["id"]} (¿compartida con «Cualquier persona con el enlace»?).')
             except Exception as e:
                 log(f'⚠ Drive del colaborador {co["id"]}: {e}')
+        fotos_colab(co['id'], new)
         nom = co.get('nombre') or new.get('t') or co['id']
         if new != old:
             json.dump(new, open(fo, 'w'), ensure_ascii=False, separators=(',', ':'))
