@@ -102,6 +102,11 @@ rep('<b>${esc(p.c)}</b><span>${window.COLX?COLX.src(p):""}','<b>${esc(p.c)}</b><
 rep('if(st.t==="search"){h=`<h2 class="ovh">Rutas cerca de…</h2>','if(st.t==="search"){h=`<h2 class="ovh">${window.cercaTit?cercaTit():"Rutas cerca de…"}</h2>')
 rep('p=>ovShow({t:"near",lat:p.coords.latitude,lon:p.coords.longitude,label:"tu ubicación"})','p=>{if(window.nearPick&&nearPick(p.coords.latitude,p.coords.longitude,"tu ubicación"))return;ovShow({t:"near",lat:p.coords.latitude,lon:p.coords.longitude,label:"tu ubicación"})}')
 rep('const st=e.target.closest("[data-ovsite]");if(st){const s=ovFound[+st.dataset.ovsite];ovShow(','const st=e.target.closest("[data-ovsite]");if(st){const s=ovFound[+st.dataset.ovsite];if(window.nearPick&&nearPick(s.lat,s.lon,s.alt?s.alt.split(";")[0]:s.n))return;ovShow(')
+# filtros: un botón «⚙ Filtros» que abre un panel desde abajo (pwa/cerca.js); en Cumbres y Lugares las filas de botones van dentro del panel
+rep('  ${!C.near&&zc.filter(x=>x[1]).length>1?','  ${window.fpOpen?fpOpen(kind,C):""}${!C.near&&zc.filter(x=>x[1]).length>1?')
+rep('.join("")}</div>\n  <div class="rows">${list.length?','.join("")}</div>${window.fpClose?fpClose(kind,C,list.length):""}\n  <div class="rows">${list.length?')
+rep('function routeOk(r){return','function routeOk(r){return (!window.RFOK||RFOK(r))&&')
+rep('function renderList(){','function renderList(){if(window.rfSync)setTimeout(rfSync,0);')
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
 t=re.sub(r'\s*<button class="lay" data-lay="towns".*?</button>','',t,count=1,flags=re.S)
