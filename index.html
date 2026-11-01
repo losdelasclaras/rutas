@@ -2301,7 +2301,7 @@ function render(){if(box.hidden)return;
   const L=SPOTS,lv=L.filter(p=>MARKS[lkey(p)]==="hecha").length,lq=L.filter(p=>MARKS[lkey(p)]==="quiero").length;
   const MT=MISPUNTOS.tracks(),kmT=MT.reduce((s,t)=>s+(+t.km||0),0);
   box.innerHTML=`<h2>🏆 Resumen</h2>
-  <p class="note" style="margin-top:0">Cuenta las cumbres y lugares del grupo y de los colaboradores. Ve marcándolos en Del grupo › Cumbres y Lugares (o en el mapa).</p>
+  <p class="note" style="margin-top:0">Cuenta las cumbres y lugares del grupo y de los colaboradores. Ve marcándolos en Explorar › Cumbres y Lugares (o en el mapa).</p>
   <div class="big"><b>${hechas.length}</b><span>cumbres subidas de ${C.length}</span></div><div class="bar"><i style="width:${(hechas.length/C.length*100).toFixed(1)}%"></i></div>
   <p class="note">${quiero.length?`★ ${quiero.length} en tu lista de «quiero subir»`:"Aún no tienes cumbres en «quiero subir»"}${alta?` · La más alta: <b>${esc(alta.c)}</b> (${(alta.a||0).toLocaleString("es-ES")} m)`:""}</p>
   <h3>Por zonas</h3>${Z.map(z=>fila(...z)).join("")}
@@ -2680,7 +2680,7 @@ const ICO={mapa:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>'
   mios:'<path d="M6 8h12l-1 12H7z"/><path d="M9 8V6a3 3 0 016 0v2"/>',
   seg:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c3.2-.4 5.5 1.8 5.5 5.3"/>'};
 const tab=(v,t)=>`<button role="tab" data-v="${v}" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">${ICO[v]}</svg>${t}</button>`;
-nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Del grupo")+tab("mios","Mis cosas")+tab("seg","Seguidores");
+nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Explorar")+tab("mios","Mis cosas")+tab("seg","Seguidores");
 
 /* «Mis cosas»: una vista nueva con mis puntos, mis tracks y los mapas descargados */
 const sec=document.createElement("section");sec.className="view pad";sec.id="v-mios";sec.hidden=true;
@@ -2760,7 +2760,7 @@ const vr=document.getElementById("v-rutas");
 const mo=new MutationObserver(()=>{if(!vr.hidden){vistasYa();mo.disconnect()}});mo.observe(vr,{attributes:true,attributeFilter:["hidden"]});
 if(!vr.hidden)vistasYa();
 // aviso al abrir la app
-setTimeout(()=>{if(badge&&typeof toast==="function")toast(`🆕 ${NUEVAS.length===1?"Hay una ruta nueva":"Hay "+NUEVAS.length+" rutas nuevas"} en el blog · míralas en Del grupo › Rutas`)},2500);
+setTimeout(()=>{if(badge&&typeof toast==="function")toast(`🆕 ${NUEVAS.length===1?"Hay una ruta nueva":"Hay "+NUEVAS.length+" rutas nuevas"} en el blog · míralas en Explorar › Rutas`)},2500);
 window.NOVEDADES=NUEVAS;
 })();
 
@@ -3093,6 +3093,20 @@ renderCols();
 })();
 
 }catch(e){console.error("módulo cerca",e);(window.__ERRS=window.__ERRS||[]).push("cerca: "+(e&&e.message))}
+try{
+/* ---------- botones del mapa: una fila abajo (Capas · Grabar · Punto · Yo); sin «Todo» ni «Rutas» (eso está en Explorar);
+   en el ordenador fuera lo que necesita GPS: SOS, Punto, Yo, Grabar y Seguir ---------- */
+(function(){
+const pc=matchMedia("(hover:hover) and (pointer:fine)").matches&&!/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+document.documentElement.classList.toggle("pc",pc);
+document.head.insertAdjacentHTML("beforeend",`<style>
+#b-home,#b-rutas,#b-wiz2,#b-near,#rmenu{display:none!important}
+.fabs{flex-direction:row!important;align-items:flex-end!important;gap:8px!important}
+html.pc .sosbtn,html.pc #b-pt,html.pc #b-me,html.pc #b-grab,html.pc [data-follow],html.pc [data-mtfol],html.pc [data-segfol],html.pc [data-tmpfol]{display:none!important}
+</style>`);
+})();
+
+}catch(e){console.error("módulo botones",e);(window.__ERRS=window.__ERRS||[]).push("botones: "+(e&&e.message))}
 </script>
 <script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>
 <script>
@@ -3114,5 +3128,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="3619954ef3";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="af76b6aae0";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
