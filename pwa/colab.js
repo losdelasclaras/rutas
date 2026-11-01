@@ -63,6 +63,8 @@ function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);
   ${F.sal?`<p class="salida">Salida: ${esc(F.sal)}</p>`:""}
   ${otros.length?`<p class="desc" style="font-size:.92em;opacity:.85">${otros.map(esc).join("<br>")}</p>`:""}
   <div class="actions">${u?`<a class="btn primary" href="${esc(u)}" target="_blank" rel="noopener">${/instagram\.com/i.test(u)?"Ver en Instagram":"Leer en "+esc(c.n)}</a>`:""}<a class="btn ghost" href="https://www.google.com/maps/search/?api=1&query=${la},${lo}" target="_blank" rel="noopener">Google Maps</a></div>`;
+  {const it=window.COLX&&COLX.byP(p);const rs=it&&it.par?(P[it.par.i].rs||[]).filter(ri=>R[ri].u):[];
+   if(rs.length)sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>También del grupo</h3><div class="rows">${rs.map(ri=>rowHTML(R[ri],"",true)).join("")}</div></div>`)}
   if(window.showTrack)showTrack(null);nodes.classed("sel",false);
   sheet.hidden=false;sheet.scrollTop=0;flyTo(la,lo)}
 for(const c of CO){for(const[k]of KS)if(LAY[`co_${c.id}_${k}`]===undefined)LAY[`co_${c.id}_${k}`]=LAY["co_"+c.id]!==false;delete LAY["co_"+c.id];
@@ -96,7 +98,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .chip .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 </style>`);
 const EXTRA=[["aloja","Alojamientos"],["pueblo","Pueblos con encanto"],["activo","Turismo activo"],["area","Áreas recreativas"]];
-const ALL=[];
+const ALL=[],PAR={};
 const regAt=(la,lo)=>{let b=null,bd=1e9;for(const q of P){const d=(q.lat-la)**2+((q.lon-lo)*.73)**2;if(d<bd){bd=d;b=q}}return b&&bd<.04?String(b.r).split(" / ")[0]:"Asturias"};
 const kmd=(a,b)=>Math.hypot(a.lat-b.lat,(a.lon-b.lon)*.73)*111;
 const sig=n=>new Set(nk(n).split(" ").filter(w=>w.length>=4&&!/^(pico|pena|picu|ruta|senda|desde|circular|braña|brana|playa|mirador|cascada|bosque|cueva)$/.test(w)));
@@ -107,7 +109,7 @@ for(const c of CO)for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
   // ¿lo tenéis también en el grupo? mismo nombre, o muy cerca y con una palabra del nombre en común
   const lista=cum?PEAKS:SPOTS,sw=sig(it.c);
   for(const g of lista){if(g.co)continue;const d=kmd(g,it);
-    if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))){it.both="grupo";it.par=g;g.both=g.both||c.n;if(!it.a&&g.a)it.a=g.a;break}}
+    if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))){it.both="grupo";it.par=g;g.both=g.both||c.n;(PAR[g.i]=PAR[g.i]||[]).push(it);if(!it.a&&g.a)it.a=g.a;break}}
   ALL.push(it);lista.push(it)}
 PEAKS.sort((a,b)=>(b.a||0)-(a.a||0));SPOTS.sort((a,b)=>a.c.localeCompare(b.c,"es"));
 // los que coinciden, juntos: el del colaborador justo debajo del vuestro
@@ -132,6 +134,11 @@ for(const it of ALL){const p=it.pp;if(!(/RUTA/i.test(p[7]||"")||/distancia\s*:/i
   const[F]=ficha(p[3]),dm=/\/(20\d\d)\/(\d\d)\//.exec(p[4]||"");
   RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:dm?+dm[1]:null,m:dm?+dm[2]:null,km:(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km||"")||[])[1]?(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km)[1].replace(".",",")+" km"):"",de:(/(\d[\d.]*)\s*m/i.exec(F.de||"")||[])[1]?"+"+(/(\d[\d.]*)\s*m/i.exec(F.de)[1])+" m":"",txt:norm(p[0]+" "+it.r+" "+limpia(p[3]))}))}
 COLX.rsrc="todas";
+COLX.byP=p=>ALL.find(x=>x.pp===p);
+// en la ficha de una ruta del grupo: «También en <colaborador>» con su tarjeta
+COLX.also=r=>{const v=[];for(const i of r.p||[])for(const it of PAR[i]||[])if(!v.includes(it))v.push(it);if(!v.length)return "";
+  const by={};for(const it of v)(by[it.co.n] ||= []).push(it);
+  return Object.entries(by).map(([n,l])=>`<div class="sec"><h3>También en ${esc(n)}</h3><div class="rows">${l.map(it=>COLX.rrow(RUT.find(x=>Object.getPrototypeOf(x)===it)||Object.assign(Object.create(it),{y:null,km:"",de:""}))).join("")}</div></div>`).join("")};
 COLX.rchips=()=>{const o=COLX.rsrc;const ops=[["todas","Todas",""],["grupo","Del grupo","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c])];
   return `<div class="chips rsrc">${ops.map(([v,l,col])=>`<button class="chip" data-rsrc="${v}" aria-pressed="${o===v}">${col?`<span class="dot" style="background:${col}"></span>`:""}${esc(l)}</button>`).join("")}</div>`};
 COLX.routes=(q,limpio)=>{const o=COLX.rsrc;

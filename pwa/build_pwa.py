@@ -92,6 +92,8 @@ rep('function nearSplit(lat,lon){RAD=radAt(lat,lon);const all=nearestRoutes(lat,
 rep('function nearListHTML(ns){const row=o=>rowHTML(o.r,(o.d<10?o.d.toFixed(1).replace(".",","):o.d.toFixed(0))+" km",true);','function nearListHTML(ns){const row=o=>{const dd=(o.d<10?o.d.toFixed(1).replace(".",","):o.d.toFixed(0))+" km";return o.r.cox?COLX.rrow(o.r,dd):rowHTML(o.r,dd,true)};')
 rep('  const row=e.target.closest("[data-r]"); if(row){const r=R[+row.dataset.r];openRoute(r.id);','  const cor=e.target.closest("[data-cor]"); if(cor&&window.COLX){COLX.open(+cor.dataset.cor);return}\n  const row=e.target.closest("[data-r]"); if(row){const r=R[+row.dataset.r];openRoute(r.id);')
 rep('  const row=e.target.closest("[data-r]");if(row){ovShow({t:"route",id:+row.dataset.r});return}});','  const cor=e.target.closest("[data-cor]");if(cor&&window.COLX){COLX.open(+cor.dataset.cor);return}\n  const row=e.target.closest("[data-r]");if(row){ovShow({t:"route",id:+row.dataset.r});return}});')
+# ficha de una ruta del grupo: si alguno de sus puntos también lo tiene un colaborador, se ve su ficha debajo
+rep('target="_blank" rel="noopener">Google Maps</a></div>\n  <div class="sec"><h3>El tiempo</h3>','target="_blank" rel="noopener">Google Maps</a></div>\n  ${window.COLX?COLX.also(r):""}\n  <div class="sec"><h3>El tiempo</h3>')
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
 t=re.sub(r'\s*<button class="lay" data-lay="towns".*?</button>','',t,count=1,flags=re.S)
