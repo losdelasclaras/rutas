@@ -39,28 +39,36 @@ def dp(pts, eps):
         if mx > eps: keep[k] = True; st += [(i, k), (k, j)]
     return [p for p, k in zip(pts, keep) if k]
 
-def main(cid, nombre, carpeta):
+def construir(raices):
+    """raices: árboles KML (ET) en orden de preferencia: si una ruta sale en varios mapas, vale la primera
+    (los mapas por zonas traen el track entero; «Todas las rutas (simplificado)» va al final y solo completa).
+    La zona es el nombre de la carpeta (capa) del mapa."""
     rutas, vistos, cimas = [], set(), []
-    for f in sorted(glob.glob(os.path.join(carpeta, '*.kml'))):
-        if re.search(r'\(\d\)\.kml$', f) and not re.search(r'de \d\)\.kml$', f): pass
-        zona = re.sub(r'^\d+\s*RV - | \(\d de \d\)( \(\d\))?\.kml$|( \(\d\))?\.kml$', '', os.path.basename(f))
-        if zona in FUERA: continue
-        for pm in ET.parse(f).getroot().iter(K + 'Placemark'):
+    construir.origen = []
+    for nr, root in enumerate(raices):
+        for fo in root.iter(K + 'Folder'):
+            zona = re.sub(r'^\d+\s*RV - |\s*\(\d de \d\)$', '', (fo.findtext(K + 'name') or '').strip())
+            if zona in FUERA: continue
+            for pm in fo.iter(K + 'Placemark'):
+                r = _ruta(pm, zona, vistos, cimas, len(rutas))
+                if r: rutas.append(r); construir.origen.append(nr)
+    return rutas, _cumbres(cimas)
+
+def _ruta(pm, zona, vistos, cimas, idx):
             n = (pm.findtext(K + 'name') or '').strip()
             c = pm.find('.//' + K + 'LineString/' + K + 'coordinates')
-            if c is None or not n: continue
+            if c is None or not n: return None
             raw = [v.split(',') for v in c.text.split() if v.count(',') >= 1]
             pts = [[float(a[1]), float(a[0]), float(a[2]) if len(a) > 2 and a[2] else None] for a in raw]
             ele = [(float(a[1]), float(a[0]), float(a[2])) for a in raw if len(a) > 2 and a[2]]
-            if len(pts) < 2: continue
+            if len(pts) < 2: return None
             la, lo = pts[0][0], pts[0][1]
             z = zona
             if zona == 'Fuera de España':
-                if not (44 < la < 48.5 and 5 < lo < 14): continue   # solo Alpes y Dolomitas
+                if not (44 < la < 48.5 and 5 < lo < 14): return None   # solo Alpes y Dolomitas
                 z = 'Dolomitas' if lo > 10.5 else 'Alpes'
-            if zona == 'Pirineos': z = 'Pirineos'
             key = (n, round(la, 4), round(lo, 4))
-            if key in vistos: continue
+            if key in vistos: return None
             vistos.add(key)
             dd = {x.get('name'): (x.findtext(K + 'value') or '').strip() for x in pm.iter(K + 'Data')}
             s = dp(pts, 0.00012)
@@ -72,9 +80,11 @@ def main(cid, nombre, carpeta):
                 hi = max(ele, key=lambda q: q[2])
                 if hi[2] - min(q[2] for q in ele) >= 150 and hi[2] >= 700:
                     ta = re.search(r'\((\d[\d.]{2,5})\s*m', n); ta = int(ta.group(1).replace('.', '')) if ta else None
-                    cimas.append((ds[0], hi[0], hi[1], round(hi[2]), ta if ta and abs(ta - hi[2]) < 200 else None, len(rutas)))
-            rutas.append([n, z, dd.get('Actividad', ''), dd.get('Distancia', ''), dd.get('Desnivel +', ''), dd.get('Dificultad', ''),
-                          dd.get('Track en Wikiloc', ''), dd.get('Ruta en el blog', ''), s])
+                    cimas.append((ds[0], hi[0], hi[1], round(hi[2]), ta if ta and abs(ta - hi[2]) < 200 else None, idx))
+            return [n, z, dd.get('Actividad', ''), dd.get('Distancia', ''), dd.get('Desnivel +', ''), dd.get('Dificultad', ''),
+                    dd.get('Track en Wikiloc', ''), dd.get('Ruta en el blog', ''), s]
+
+def _cumbres(cimas):
     # agrupar: mismo nombre (sin tildes) y a menos de 1,5 km = la misma cumbre; se queda la del punto más alto
     sin = lambda x: unicodedata.normalize('NFD', x.lower()).encode('ascii', 'ignore').decode()
     grupos = []
@@ -88,7 +98,12 @@ def main(cid, nombre, carpeta):
         mil = lambda v: f"{v:,}".replace(',', '.')
         alt = f"Altitud: {mil(ta)} m" if ta else f"Altitud: {mil(al)} m (aprox., según su track)"
         p.append([n, round(la, 5), round(lo, 5), alt, '', '', '1634', 'CUMBRES', None, sorted({x[5] for x in g})])
-    print(len(p), 'cumbres sacadas de', len(cimas), 'rutas')
+    return p
+
+def main(cid, nombre, carpeta):
+    raices = [ET.parse(f).getroot() for f in sorted(glob.glob(os.path.join(carpeta, '*.kml')), key=lambda f: 'simplificado' in f.lower())]
+    rutas, p = construir(raices)
+    print(len(p), 'cumbres sacadas de sus rutas')
     out = f'app/colab/{cid}.json'
     json.dump({'t': nombre, 'p': p, 'l': [], 'r': rutas}, open(out, 'w'), ensure_ascii=False, separators=(',', ':'))
     print(len(rutas), 'rutas ->', out, os.path.getsize(out) // 1024, 'KB', sum(len(r[8]) for r in rutas), 'puntos de track')

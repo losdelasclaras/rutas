@@ -431,6 +431,24 @@ def colaboradores():
                     new.update(t=tit, p=pts, l=lin)
             except Exception as e:
                 log(f'⚠ No he podido leer el mapa del colaborador {co["id"]}: {e}')
+        if co.get('mapas_rutas'):
+            # colaborador con sus rutas (tracks) en varios My Maps: uno por zona con el track entero y, al final, «Todas las rutas (simplificado)»
+            try:
+                sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+                import importar_kml as IK, xml.etree.ElementTree as ET
+                mids = co['mapas_rutas']; raices = []
+                for m in mids: raices.append(ET.fromstring(get(f'https://www.google.com/maps/d/kml?mid={m}&forcekml=1').encode('utf-8')))
+                rutas, cps = IK.construir(raices)
+                simpl = len(raices) - 1 if co.get('mapa_todas_al_final', True) and len(raices) > 1 else -1
+                ob = {r[0]: r for r in old.get('r', [])}
+                for r, o in zip(rutas, IK.construir.origen):   # solo en el simplificado: se conserva el track entero que ya teníamos
+                    if o == simpl and r[0] in ob and len(ob[r[0]][8]) > len(r[8]): r[8] = ob[r[0]][8]
+                if len(rutas) < 0.9 * len(old.get('r', [])):
+                    log(f'⚠ Los mapas de {co.get("nombre") or co["id"]} han devuelto solo {len(rutas)} rutas (había {len(old["r"])}): no lo toco.')
+                else:
+                    new.update(t=co.get('nombre') or old.get('t') or co['id'], p=cps, r=rutas, l=[])
+            except Exception as e:
+                log(f'⚠ No he podido leer los mapas de rutas del colaborador {co["id"]}: {e} (se queda como estaba)')
         if co.get('drive_carpeta'):
             try:
                 h = get(f'https://drive.google.com/embeddedfolderview?id={co["drive_carpeta"]}')
