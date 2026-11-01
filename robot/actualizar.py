@@ -380,6 +380,37 @@ def blog_colab(co, new):
     con = sum(1 for r in rs if r[7])
     if n: log(f'📝 Blog de {co.get("nombre") or co["id"]}: {n} rutas emparejadas con su entrada ({con} de {len(rs)} con enlace al blog; índice con {len(urls)} entradas).')
 
+def fotos_rutas(co, new):
+    # rutas que solo traen track: la foto principal de su entrada del blog (og:image), reducida y servida desde la app;
+    # las cumbres sacadas de esas rutas llevan la foto de su ruta
+    import hashlib
+    from PIL import Image
+    rs = new.get('r')
+    if not rs: return
+    d = APP + 'colab/fotos/'; os.makedirs(d, exist_ok=True)
+    nuevas = mal = 0
+    for r in rs:
+        while len(r) < 10: r.append('')
+        if not r[7] or r[9]: continue
+        fn = f'{co["id"]}r-{hashlib.md5(r[7].encode()).hexdigest()[:12]}.jpg'
+        if not os.path.exists(d + fn):
+            if mal >= 8 and not nuevas: continue
+            try:
+                h = get(r[7])
+                m = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)', h) or re.search(r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image', h) \
+                    or re.search(r'<img[^>]+src=["\']([^"\']+wp-content/uploads[^"\']+\.(?:jpe?g|png|webp))', h, re.I)
+                if not m: mal += 1; continue
+                im = Image.open(io.BytesIO(get(html.unescape(m.group(1)), True))).convert('RGB'); im.thumbnail((800, 800), Image.LANCZOS)
+                im.save(d + fn, 'JPEG', quality=72, optimize=True, progressive=True); nuevas += 1
+            except Exception as e:
+                mal += 1; continue
+        r[9] = 'colab/' + fn
+    for p in new.get('p', []):
+        if len(p) > 9 and p[9] and not p[5]:
+            f = next((rs[i][9] for i in p[9] if i < len(rs) and rs[i][9]), '')
+            if f: p[5] = f
+    if nuevas or mal: log(f'📷 Fotos de rutas de {co.get("nombre") or co["id"]} (de su blog): {nuevas} nuevas, {sum(1 for r in rs if r[9])} en total' + (f', {mal} sin foto' if mal else ''))
+
 def colaboradores():
     cf = APP + 'colaboradores.json'
     if not os.path.exists(cf): return
@@ -420,6 +451,8 @@ def colaboradores():
                 log(f'⚠ Drive del colaborador {co["id"]}: {e}')
         fotos_colab(co['id'], new)
         blog_colab(co, new)
+        if new.get('r'): new['r'] = json.loads(json.dumps(new['r'])); new['p'] = json.loads(json.dumps(new.get('p', [])))
+        fotos_rutas(co, new)
         nom = co.get('nombre') or new.get('t') or co['id']
         if new != old:
             json.dump(new, open(fo, 'w'), ensure_ascii=False, separators=(',', ':'))

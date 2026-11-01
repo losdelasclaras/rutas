@@ -104,10 +104,10 @@ function pintaTracks(c){const g=G[c.id+"_t"];if(!g||g.__ok)return;g.__ok=1;linea
   ls.forEach((ll,i)=>{if(!ll||ll.length<2)return;g.addLayer(L.polyline(ll,{color:"#fff",weight:5.5,opacity:.8,interactive:false,renderer:TRC}));
     g.addLayer(L.polyline(ll,{color:c.c,weight:3,opacity:.9,renderer:TRC}).bindTooltip(esc(c.r[i][0]),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);abrirR(c,i)}))})})}
 let TRCO=null;
-function abrirR(c,i){const r=c.r[i],[n,z,act,km,de,dif,wl,blog,ini]=r;
+function abrirR(c,i){const r=c.r[i],[n,z,act,km,de,dif,wl,blog,ini,fo]=r;
   const key=rKeyCo(c,n),st=MARKS[key]||"",deN=(/(\d[\d.]*)/.exec(de)||[])[1];
   sheet.classList.remove("full");
-  sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
+  sheet.innerHTML=`<div class="grab"></div>${fo?`<div class="photo"><img src="${esc(fo)}" alt="" onerror="this.parentNode.remove()"></div>`:""}<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
   <div class="meta"><span class="tag" style="background:${c.c};color:#fff;border-color:${c.c}">${esc(c.n)}</span>${act?`<span class="tag">${esc(act)}</span>`:""}<span class="tag">${esc(z)}</span></div>
   <div class="mkblock rmk"><span>Esta ruta</span><span class="mk" data-key="${esc(key)}"><button data-mk="hecha" aria-pressed="${st==="hecha"}" title="Hecha">✓ Hecha</button><button data-mk="quiero" aria-pressed="${st==="quiero"}" title="Quiero hacerla">★ Quiero hacerla</button></span></div>
   ${(km||de||dif)?`<div class="ficha">${km?`<div><b>${esc(km)}</b><span>Distancia</span></div>`:""}${deN?`<div><b>+${esc(deN)} m</b><span>Desnivel</span></div>`:""}${dif?`<div><b>${esc(cap1(dif))}</b><span>Dificultad</span></div>`:""}</div>`:""}
@@ -202,7 +202,8 @@ COLX.routes=(q,limpio)=>{const o=COLX.rsrc;
   return {c,hideG:o!=="todas"&&o!=="grupo"}};
 COLX.near=(lat,lon)=>F.reg==="todas"&&!nExtra()&&!F.wz?RUT.filter(x=>!window.RFOK||RFOK(x)).map(x=>({r:x,d:km({lat,lon},x)})):[];
 COLX.rrow=(x,extra)=>{const de=x.de?(/^\+/.test(x.de)?x.de:"+"+x.de):"",nums=[x.km,de].filter(Boolean).join(" · ");
-  return `<button class="row src-co" style="--cc:${x.co.c}" data-cor="${x.ci}">${x.pp&&x.pp[5]?`<img class="thumb" src="${esc(x.pp[5])}" alt="" loading="lazy">`:`<span style="display:grid;place-items:center;width:56px;flex:none">${COLX.ico(x)}</span>`}<div class="t"><b>${esc(x.c)}</b><span><em class="cosrc" style="color:${x.co.c}">${esc(x.co.n)}</em> · ${x.y?(x.m?MESES[x.m]+" ":"")+x.y:"Sin fecha"} · ${esc(x.r)}${extra?" · "+esc(extra):""}</span></div><span class="alt">${esc(nums)}</span></button>`};
+  const fo=x.pp?x.pp[5]:(x.rr!=null?x.co.r[x.rr][9]:"");
+  return `<button class="row src-co" style="--cc:${x.co.c}" data-cor="${x.ci}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:`<span style="display:grid;place-items:center;width:56px;flex:none">${COLX.ico(x)}</span>`}<div class="t"><b>${esc(x.c)}</b><span><em class="cosrc" style="color:${x.co.c}">${esc(x.co.n)}</em> · ${x.y?(x.m?MESES[x.m]+" ":"")+x.y:"Sin fecha"} · ${esc(x.r)}${extra?" · "+esc(extra):""}</span></div><span class="alt">${esc(nums)}</span></button>`};
 if(typeof renderList==="function")renderList();
 renderCols()}
 if(window.LISTAS)LISTAS.render();
