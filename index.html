@@ -297,7 +297,7 @@ html,body{height:100%;margin:0}
       <div class="mapbar" id="mapbar"></div>
       <div class="legend" role="group" aria-label="Capas del mapa"><button class="laytog" aria-expanded="false" aria-label="Capas del mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Capas</span></button><div class="laypanel"><p class="laygh">Mapa</p><button class="lay" data-base="topo" aria-pressed="true"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#cfe0b8" stroke="#6b8a4a" stroke-width=".8"/></svg>Topográfico</button><button class="lay" data-base="ign" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#e8d9a8" stroke="#8a6d2b" stroke-width=".8"/></svg>IGN</button><button class="lay" data-base="orto" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#5f7a4a" stroke="#2f4224" stroke-width=".8"/></svg>Ortofoto (IGN)</button><button class="lay" data-base="none" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#f1f1ec" stroke="#999" stroke-width=".8"/></svg>Sin mapa</button><p class="laygh">Ver</p><button class="lay" data-lay="peaks" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>Cumbres</button>
         <button class="lay" data-lay="spots" aria-pressed="true"><svg class="ico2" viewBox="-12 -12 24 24"><use href="#ic-brana" x="-12" y="-12" width="24" height="24"/></svg>Lugares</button>
-      <button class="lay" data-lay="tracks" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><path d="M-4 3C-2 -3 0 3 1 -1S3 -3 4 -4" fill="none" stroke="#6a2bd1" stroke-width="1.6" stroke-linecap="round"/></svg>Tracks</button><p class="laygh">Hiking Asturias</p><button class="lay" data-lay="co_c1_c" aria-pressed="true"><svg class="ico" viewBox="-12 -12 24 24" style="border-radius:50%;box-shadow:0 0 0 2.5px #e8710a"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>Cumbres</button><button class="lay" data-lay="co_c1_l" aria-pressed="true"><svg class="ico" viewBox="-12 -12 24 24" style="border-radius:50%;box-shadow:0 0 0 2.5px #e8710a"><use href="#ic-otros" x="-12" y="-12" width="24" height="24"/></svg>Lugares</button><p class="laygh">Mis lugares</p><button class="lay" data-lay="mh" aria-pressed="true"><span class="lico lh">✓</span>Visitados</button><button class="lay" data-lay="mq" aria-pressed="true"><span class="lico lq">★</span>Quiero ir</button><button class="lay" data-lay="solo" aria-pressed="false"><span class="lico">◎</span>Ver solo los míos</button></div></div>
+      <button class="lay" data-lay="tracks" aria-pressed="false"><svg class="ico" viewBox="-5 -5 10 10"><path d="M-4 3C-2 -3 0 3 1 -1S3 -3 4 -4" fill="none" stroke="#6a2bd1" stroke-width="1.6" stroke-linecap="round"/></svg>Tracks</button><p class="laygh">Hiking Asturias</p><button class="lay" data-lay="co_c1_c" aria-pressed="false"><svg class="ico" viewBox="-12 -12 24 24" style="border-radius:50%;box-shadow:0 0 0 2.5px #e8710a"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>Cumbres</button><button class="lay" data-lay="co_c1_l" aria-pressed="false"><svg class="ico" viewBox="-12 -12 24 24" style="border-radius:50%;box-shadow:0 0 0 2.5px #e8710a"><use href="#ic-otros" x="-12" y="-12" width="24" height="24"/></svg>Lugares</button><p class="laygh">Mis lugares</p><button class="lay" data-lay="mh" aria-pressed="true"><span class="lico lh">✓</span>Visitados</button><button class="lay" data-lay="mq" aria-pressed="true"><span class="lico lq">★</span>Quiero ir</button><button class="lay" data-lay="solo" aria-pressed="false"><span class="lico">◎</span>Ver solo los míos</button></div></div>
       <div class="rmenu" id="rmenu" hidden>
         <button data-rm="geo">📍 Rutas cerca de mí</button>
         <button data-rm="lugar">🔎 Cerca de un pueblo o lugar</button>
@@ -482,8 +482,10 @@ function ensureZone(zk){if(zk!==ZK){ZK=zk;store.set("ldc-zona",zk);renderMapbar(
 const FSV=[1,1.15,1.3,1.45];let FS=+store.get("ldc-fs",1.15);if(!FSV.includes(FS))FS=1.15;
 document.documentElement.style.setProperty("--fs",FS);
 document.getElementById("fsbtn").textContent=["Aa","Aa+","Aa++","Aa+++"][FSV.indexOf(FS)];
-// capas: la primera vez, cumbres y lugares (y mis marcas); después, lo que dejó la última vez
-const LAY=Object.assign({peaks:true,spots:true,tracks:false,mh:true,mq:true,solo:false},store.get("ldc-capas",{}));
+// capas: la primera vez, solo las cumbres del grupo (y mis marcas); después, lo que dejó la última vez
+// la primera vez (y una vez a todos, nov 2026): solo las cumbres del grupo; lo demás se enciende en Capas
+const LAY=Object.assign({peaks:true,spots:false,tracks:false,mh:true,mq:true,solo:false},store.get("ldc-capas",{}));
+if(store.get("ldc-capas2","0")!=="1"){LAY.peaks=true;LAY.spots=false;LAY.tracks=false;LAY.solo=false;store.set("ldc-capas2","1")}
 const saveLay=()=>store.set("ldc-capas",LAY);
 function sizeMarks(){
   const z=map.getZoom(); k=2**(z-8);
@@ -1300,7 +1302,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-3f2a23da.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-9717e461.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -1338,7 +1340,7 @@ function catCo(p){const n=p[0]||"",ic=p[6]||"",f=(p[7]||"").toUpperCase(),c=catO
   if(/OTROS/.test(f)&&/rea recreativa|parque/i.test(n))return "area";
   if(ic==="1634")return "cumbre";
   return c}
-// en Capas: un apartado «Colaboradores» con un botón por cada uno (encendidos la primera vez)
+// en Capas: un apartado por colaborador (apagados de entrada; cada uno enciende lo que quiera)
 const pn=document.querySelector(".laypanel");
 // cada colaborador, su propio apartado en Capas con «Cumbres» y «Lugares» (como «Ver» del grupo)
 const KS=[["c","Cumbres","cumbre"],["l","Lugares","otros"]];
@@ -1377,7 +1379,8 @@ function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);
    if(rs.length)sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>También del grupo</h3><div class="rows">${rs.map(ri=>rowHTML(R[ri],"",true)).join("")}</div></div>`)}
   if(window.showTrack)showTrack(null);nodes.classed("sel",false);
   sheet.hidden=false;sheet.scrollTop=0;flyTo(la,lo)}
-for(const c of CO){for(const[k]of KS)if(LAY[`co_${c.id}_${k}`]===undefined)LAY[`co_${c.id}_${k}`]=LAY["co_"+c.id]!==false;delete LAY["co_"+c.id];
+const nuevo2=store.get("ldc-capas2co","0")!=="1";store.set("ldc-capas2co","1");
+for(const c of CO){for(const[k]of KS)if(LAY[`co_${c.id}_${k}`]===undefined||nuevo2)LAY[`co_${c.id}_${k}`]=false;delete LAY["co_"+c.id];
   const g=L.layerGroup(),gc=L.layerGroup();
   for(const ln of c.l){const ll=ln[1];
     g.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.85,interactive:false,renderer:TRC}));
@@ -3133,5 +3136,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="14ef0e76f9";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="b2c41bc412";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
