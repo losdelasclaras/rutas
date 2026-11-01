@@ -49,7 +49,7 @@ function render(){if(box.hidden)return;const o=items(),all=o.cumbre.concat(o.lug
   <div class="mlbig"><b>${hc}</b><span>cumbres subidas de ${nC}</span></div><div class="mlbar"><i style="width:${nC?(hc/nC*100).toFixed(1):0}%"></i></div>
   <details class="mlres"${box._res?" open":""}><summary>🏆 Ver el resumen completo</summary><div id="mlresin"></div></details>
   <div class="chips" style="margin:12px 0 4px"><button class="chip" data-lmode="quiero" aria-pressed="${MODE==="quiero"}">★ Pendientes · ${nq}</button><button class="chip" data-lmode="hecha" aria-pressed="${MODE==="hecha"}">✓ Hechas · ${nh}</button></div>
-  <div class="mlacts"><button class="btn ghost" data-lnear>${POS?"🎯 Ordenado por cercanía":"🎯 Ordenar por cercanía"}</button>${MODE==="quiero"&&nq?`<button class="btn primary" data-lmap>🗺 Ver pendientes en el mapa</button>`:""}</div>
+  <div class="mlacts"><button class="btn ghost" data-lnear>${POS?"🎯 Ordenado por cercanía":"🎯 Ordenar por cercanía"}</button>${(MODE==="quiero"?nq:nh)?`<button class="btn primary" data-lmap>🗺 ${MODE==="quiero"?"Ver pendientes en el mapa":"Ver lo hecho en el mapa"}</button>`:""}</div>
   ${body||`<p class="empty">${MODE==="quiero"?"Aún no tienes nada en «quiero ir». Márcalo con ★ en el mapa, en Cumbres, en Lugares o en la ficha de una ruta.":"Aún no has marcado nada como hecho. Usa ✓ en el mapa, en Cumbres, en Lugares o en la ficha de una ruta."}</p>`}`;
   if(window.RESUMEN&&box._res){const rb=RESUMEN.box;document.getElementById("mlresin").appendChild(rb);rb.hidden=false;RESUMEN.render()}}
 box.addEventListener("toggle",e=>{if(!e.target.matches("details.mlres"))return;box._res=e.target.open;if(box._res&&window.RESUMEN){const rb=RESUMEN.box;document.getElementById("mlresin").appendChild(rb);rb.hidden=false;RESUMEN.render()}},true);
@@ -65,17 +65,17 @@ box.addEventListener("click",e=>{
     const rs=(P[p.i].rs||[]).filter(i=>R[i].u);if(rs.length)ovShow(rs.length>1?{t:"pt",i:p.i}:{t:"route",id:rs[0]});else{showView("mapa");setTimeout(()=>flyTo(p.lat,p.lon,10),100)}}});
 /* «Ver pendientes en el mapa»: el mapa enseña solo tus ★ (se apagan las demás capas); un aviso arriba deja volver a como estaba */
 let SAVED=null,PRT=null;
-const WANT={peaks:true,spots:true,tracks:false,mh:false,mq:true,solo:true,mp:false,mt:false,seg:false};
+const WANT={peaks:true,spots:true,tracks:false,solo:true,mp:false,mt:false,seg:false};
 function setLay(k,v){const b=document.querySelector(`.laypanel [data-lay="${k}"]`);if(b&&(b.getAttribute("aria-pressed")==="true")!==v)b.click()}
-function pendMap(){const v=LAST.filter(x=>x.m==="quiero");if(!v.length)return;
+function pendMap(){const md=MODE,v=LAST.filter(x=>x.m===md);if(!v.length)return;WANT.mq=md==="quiero";WANT.mh=md==="hecha";
   if(!SAVED){SAVED={};document.querySelectorAll(".laypanel [data-lay]").forEach(b=>{SAVED[b.dataset.lay]=b.getAttribute("aria-pressed")==="true"})}
   showView("mapa");
   for(const k in WANT)setLay(k,WANT[k]);
   document.querySelectorAll('.laypanel [data-lay^="co_"]').forEach(b=>setLay(b.dataset.lay,true));
   // las rutas pendientes (no son un punto): una ★ en su salida
-  if(PRT)PRT.remove();PRT=L.layerGroup(v.filter(x=>x.r).map(x=>L.marker([x.r.lat,x.r.lon],{icon:L.divIcon({className:"pt mio mk-q",html:`<svg viewBox="-12 -12 24 24"><use href="#ic-senda" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:routeTitle(x.r),zIndexOffset:500}).on("click",ev=>{L.DomEvent.stopPropagation(ev);openRoute(x.r.id)}))).addTo(map);
+  if(PRT)PRT.remove();PRT=L.layerGroup(v.filter(x=>x.r).map(x=>L.marker([x.r.lat,x.r.lon],{icon:L.divIcon({className:"pt mio "+(md==="quiero"?"mk-q":"mk-h"),html:`<svg viewBox="-12 -12 24 24"><use href="#ic-senda" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:routeTitle(x.r),zIndexOffset:500}).on("click",ev=>{L.DomEvent.stopPropagation(ev);openRoute(x.r.id)}))).addTo(map);
   let ban=document.getElementById("pendban");if(!ban){ban=document.createElement("div");ban.id="pendban";document.getElementById("map").parentElement.appendChild(ban)}
-  ban.innerHTML=`<span>★ Solo tus pendientes · ${v.length}</span><button data-pendoff>Ver todo</button>`;ban.hidden=false;
+  ban.innerHTML=`<span>${md==="quiero"?"★ Solo tus pendientes":"✓ Solo lo que has hecho"} · ${v.length}</span><button data-pendoff>Ver todo</button>`;ban.hidden=false;
   ban.onclick=e=>{if(e.target.closest("[data-pendoff]"))pendOff()};
   const b=L.latLngBounds(v.map(x=>[(x.p||x.r).lat,(x.p||x.r).lon]));setTimeout(()=>{map.invalidateSize();map.fitBounds(b.pad(.2),{maxZoom:13});if(window.refreshMarks)refreshMarks()},150)}
 function pendOff(){if(SAVED){for(const k in SAVED)setLay(k,SAVED[k]);SAVED=null}if(PRT){PRT.remove();PRT=null}const ban=document.getElementById("pendban");if(ban)ban.hidden=true;if(window.refreshMarks)refreshMarks()}
