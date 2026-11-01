@@ -437,11 +437,15 @@ def cumbres_osm(co, new):
         la0, la1 = min(p[1] for p in g) - .03, max(p[1] for p in g) + .03; lo0, lo1 = min(p[2] for p in g) - .04, max(p[2] for p in g) + .04
         q = f'[out:json][timeout:60];node({la0:.4f},{lo0:.4f},{la1:.4f},{lo1:.4f})[natural~"^(peak|volcano|hill)$"];out;'
         ok = False
-        for srv in ('https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter'):
+        for srv in ('https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'):
             try:
                 req = urllib.request.Request(srv, data=urllib.parse.urlencode({'data': q}).encode(), headers=hdr)
                 with urllib.request.urlopen(req, timeout=90) as r: osm += json.loads(r.read().decode())['elements']; ok = True; break
-            except Exception as e: err = f'{srv.split("/")[2]}: {e}'; time.sleep(3)
+            except Exception as e:
+                m = f'{srv.split("/")[2]}: {e}'
+                try: m += ' ' + e.read().decode()[:120].replace('\n', ' ')
+                except Exception: pass
+                err += ('; ' if err else '') + m; time.sleep(3)
         if not ok: osm = None; break
         time.sleep(1)
     if osm is None: log(f'⚠ OpenStreetMap no ha respondido ({err}): cumbres de {co.get("nombre") or co["id"]} con lo guardado de otras noches.')
