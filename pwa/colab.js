@@ -6,6 +6,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt.cum i{border-radius:3px;transform:translate(-50%,-50%) rotate(45deg)}
 #map .leaflet-tooltip.lbl.co{font-weight:700}
 .cpop{max-width:250px;font-size:15px;line-height:1.35}.cpop b{font-size:16.5px;display:block}.cpop .q{font-size:13px;color:#666;margin:2px 0 4px}
+.cpop .dd{white-space:pre-line;max-height:38vh;overflow:auto}
 .cpop img{width:100%;max-height:170px;object-fit:cover;border-radius:8px;margin:6px 0 4px;display:block}
 .cpop a.vm{display:inline-block;margin-top:6px;font-weight:700}
 .lico.co{width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25);display:inline-block}
@@ -18,7 +19,7 @@ if(pn){const ml=[...pn.querySelectorAll("p.laygh")].find(p=>/mis lugares/i.test(
 const G={},LBL=[];
 const alt=n=>{const m=/(\d[\d.]{2,5})\s*m\b/.exec(n||"");return m?+m[1].replace(/\./g,""):0};
 function pop(c,p){const[n,,,d,u,f]=p;
-  return `<div class="cpop"><b>${esc(n)}</b><div class="q">${esc(c.n)}</div>`+(f?`<img src="${esc(f)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:"")+(d?`<div>${esc(d)}</div>`:"")+(u?`<a class="vm" href="${esc(u)}" target="_blank" rel="noopener">Ver más ›</a>`:"")+`</div>`}
+  return `<div class="cpop"><b>${esc(n)}</b><div class="q">${esc(c.n)}</div>`+(f?`<img src="${esc(f)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:"")+(d?`<div class="dd">${esc(d)}</div>`:"")+(u?`<a class="vm" href="${esc(u)}" target="_blank" rel="noopener">Ver más ›</a>`:"")+`</div>`}
 for(const c of CO){if(LAY["co_"+c.id]===undefined)LAY["co_"+c.id]=true;
   const g=L.layerGroup();
   for(const ln of c.l){const ll=ln[1];

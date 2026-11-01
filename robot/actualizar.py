@@ -253,9 +253,11 @@ def _kml_colab(k):
             if d.get('name') == 'gx_media_links': fotos += (d.findtext(KNS + 'value') or '').split()
         fotos += re.findall(r'<img[^>]+src="([^"]+)"', dh)
         us = [u.rstrip('.,;)') for u in re.findall(r'https?://[^\s<>"]+', dh) if u not in fotos and 'googleusercontent' not in u]
-        d = txt(dh)
+        d = re.sub(r'<br\s*/?>|</p>|</div>', '\n', dh, flags=re.I)
+        d = html.unescape(re.sub(r'<[^>]+>', ' ', d))
         for u in us: d = d.replace(u, '')
-        d = re.sub(r'\s+', ' ', d).strip()[:400]
+        d = re.sub(r'[•·]{3,}', '', d)
+        d = '\n'.join(l for l in (re.sub(r'[ \t\xa0]+', ' ', x).strip() for x in d.split('\n')) if l)[:700]
         pt = pm.find('.//' + KNS + 'Point/' + KNS + 'coordinates')
         if pt is not None:
             c = pt.text.strip().split(',')
