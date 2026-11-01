@@ -370,7 +370,6 @@ def colaboradores():
                 else: log(f'⚠ No he podido leer la carpeta de Drive del colaborador {co["id"]} (¿compartida con «Cualquier persona con el enlace»?).')
             except Exception as e:
                 log(f'⚠ Drive del colaborador {co["id"]}: {e}')
-        alturas_colab(new, old)
         fotos_colab(co['id'], new)
         nom = co.get('nombre') or new.get('t') or co['id']
         if new != old:

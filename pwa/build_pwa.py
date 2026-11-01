@@ -115,6 +115,8 @@ rep('function routeOk(r){return','function routeOk(r){return (!window.RFOK||RFOK
 rep('function renderList(){','function renderList(){if(window.rfSync)setTimeout(rfSync,0);')
 # ficha de cada ruta: ✓ Hecha / ★ Quiero hacerla (pwa/listas.js)
 rep('${r.ds?`<p class="desc">','${window.rMk?rMk(r):""}\n  ${r.ds?`<p class="desc">')
+# franjas de altura: «Menos de 1.500» solo con altura conocida (las que no la tienen salen en «Todas»)
+rep('(g==="0"&&p.a<1500)','(g==="0"&&!!p.a&&p.a<1500)')
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
 t=re.sub(r'\s*<button class="lay" data-lay="towns".*?</button>','',t,count=1,flags=re.S)

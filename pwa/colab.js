@@ -56,14 +56,18 @@ function ficha(d){const F={},resto=[];
     if(m){const k=m[1].toLowerCase();F[/inicio|partida|salida/.test(k)?"sal":/dist/.test(k)?"km":/desn/.test(k)?"de":/dific/.test(k)?"dif":"tm"]=m[2].trim()}else resto.push(l)}
   return [F,resto]}
 const coKey=(c,n,k)=>(k==="cumbre"?"c:":"l:")+norm(n)+"@"+c.id;
+const altCo=(n,d)=>{let m=/\(?\s*(\d[\d.]{2,4})\s*m(?:ts|etros)?\s*\)?/i.exec(n||"");if(m){const v=+m[1].replace(/\./g,"");if(v>=300&&v<=4900)return v}
+  for(const l of limpia(d).split("\n")){if(/desnivel|distancia|dificultad|km/i.test(l))continue;
+    m=/\(\s*(\d[\d.]{2,4})\s*m(?:ts|etros)?\s*\)/i.exec(l)||/(?:altitud|altura|cota)\D{0,15}(\d[\d.]{2,4})\s*m/i.exec(l);
+    if(m){const v=+m[1].replace(/\./g,"");if(v>=300&&v<=4900)return v}}return null};
 const cap1=s=>s?s[0].toUpperCase()+s.slice(1).toLowerCase():s;
 function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);
-  const a=(/(\d[\d.]{2,4})\s*m\b/i.exec(n+" "+limpia(d))||[])[1];
+  const a=altCo(n,d);
   const desc=resto.filter(l=>!/^\W*\w[\w ]{1,20}:\s/u.test(l)),otros=resto.filter(l=>/^\W*\w[\w ]{1,20}:\s/u.test(l));
   sheet.classList.remove("full");
   sheet.innerHTML=`<div class="grab"></div>`+(f?`<div class="photo"><img src="${esc(f)}" alt="" onerror="this.parentNode.remove()"></div>`:"")+
   `<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
-  <div class="meta"><span class="tag" style="background:${c.c};color:#fff;border-color:${c.c}">${esc(c.n)}</span><span class="tag">${esc(CATN[k]||"Lugar")}</span>${a&&k==="cumbre"?`<span class="tag alt">${(+a.replace(/\./g,"")).toLocaleString("es-ES")} m</span>`:""}</div>
+  <div class="meta"><span class="tag" style="background:${c.c};color:#fff;border-color:${c.c}">${esc(c.n)}</span><span class="tag">${esc(CATN[k]||"Lugar")}</span>${a&&k==="cumbre"?`<span class="tag alt">${a.toLocaleString("es-ES")} m</span>`:""}</div>
   ${(()=>{const key=coKey(c,n,k),st=MARKS[key]||"",L=k==="cumbre"?["Subida","Quiero subir"]:["He estado","Quiero ir"];return `<div class="mkblock"><span>${esc(n)}</span><span class="mk" data-key="${esc(key)}"><button data-mk="hecha" aria-pressed="${st==="hecha"}" title="${L[0]}">✓ ${L[0]}</button><button data-mk="quiero" aria-pressed="${st==="quiero"}" title="${L[1]}">★ ${L[1]}</button></span></div>`})()}
   ${desc.length?`<p class="desc">${desc.map(esc).join("<br>")}</p>`:""}
   ${(F.km||F.de||F.tm||F.dif)?`<div class="ficha">${F.km?`<div><b>${esc(F.km)}</b><span>Distancia</span></div>`:""}${F.de?`<div><b>${esc(F.de)}</b><span>Desnivel</span></div>`:""}${F.tm?`<div><b>${esc(F.tm)}</b><span>Duración</span></div>`:""}${F.dif?`<div><b>${esc(cap1(F.dif))}</b><span>Dificultad</span></div>`:""}</div>`:""}
@@ -116,8 +120,7 @@ const regAt=(la,lo)=>{let b=null,bd=1e9;for(const q of P){const d=(q.lat-la)**2+
 const kmd=(a,b)=>Math.hypot(a.lat-b.lat,(a.lon-b.lon)*.73)*111;
 const sig=n=>new Set(nk(n).split(" ").filter(w=>w.length>=4&&!/^(pico|pena|picu|ruta|senda|desde|circular|braña|brana|playa|mirador|cascada|bosque|cueva)$/.test(w)));
 for(const c of CO)for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
-  const an=(/(\d[\d.]{2,4})\s*m\b/i.exec(p[0])||[])[1];
-  const it={c:p[0],r:regAt(p[1],p[2]),a:cum?(an?+an.replace(/\./g,""):(p[8]||null)):null,lat:p[1],lon:p[2],co:c,ci:ALL.length,pp:p,k};
+  const it={c:p[0],r:regAt(p[1],p[2]),a:cum?altCo(p[0],p[3]):null,lat:p[1],lon:p[2],co:c,ci:ALL.length,pp:p,k};
   if(!cum)it.cat=k;
   // ¿lo tenéis también en el grupo? mismo nombre, o muy cerca y con una palabra del nombre en común
   const lista=cum?PEAKS:SPOTS,sw=sig(it.c);
