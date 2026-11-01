@@ -8,7 +8,7 @@ Cada noche (GitHub Actions) mira:
 Si algo ha cambiado, regenera la app (build.py, assemble.py, gpx/proc.py, pwa/build_pwa.py).
 Escribe un informe en robot/informe.md. Sale con código 0 si no hay cambios, 0 si los hay (lo indica en robot/hay-cambios).
 """
-import json, os, re, sys, io, html, math, subprocess, datetime, unicodedata, urllib.request, urllib.parse, xml.etree.ElementTree as ET
+import json, os, re, sys, io, html, math, subprocess, datetime, time, unicodedata, urllib.request, urllib.parse, xml.etree.ElementTree as ET
 
 APP = '/home/claude/app/'
 CFG = {
@@ -411,6 +411,63 @@ def fotos_rutas(co, new):
             if f: p[5] = f
     if nuevas or mal: log(f'📷 Fotos de rutas de {co.get("nombre") or co["id"]} (de su blog): {nuevas} nuevas, {sum(1 for r in rs if r[9])} en total' + (f', {mal} sin foto' if mal else ''))
 
+MESES_ES = {m: i + 1 for i, m in enumerate(['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'])}
+MESES_ES.update({'setiembre': 9})
+MESES_EN = {m: i + 1 for i, m in enumerate(['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'])}
+
+def _fecha_wikiloc(h):
+    # «Fecha de realización» (o «Recorded») de la ruta en Wikiloc -> 'AAAA-MM'
+    m = re.search(r'"(?:dateRecorded|recordedDate|recordDate|startDate)"\s*:\s*"?(\d{4})-(\d{2})', h)
+    if m: return f'{m.group(1)}-{m.group(2)}'
+    t = html.unescape(re.sub(r'<[^>]+>', ' ', re.sub(r'(?is)<(script|style)[^>]*>.*?</\1>', ' ', h)))
+    t = re.sub(r'\s+', ' ', t)
+    for lab in (r'fecha de realizaci[oó]n', r'realizad[ao] (?:el|en)', r'recorded', r'date recorded'):
+        for m in re.finditer(lab, t, re.I):
+            z = t[m.end(): m.end() + 80].lower()
+            n = re.search(r'(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})', z)
+            if n and 1 <= int(n.group(2)) <= 12: return f'{n.group(3)}-{int(n.group(2)):02d}'
+            n = re.search(r'(\d{4})-(\d{2})', z)
+            if n: return f'{n.group(1)}-{n.group(2)}'
+            n = re.search(r'([a-zñ]+)\.?\s+(?:de\s+)?(\d{4})', z)
+            if n:
+                mm = MESES_ES.get(n.group(1)) or MESES_EN.get(n.group(1)) or next((v for k, v in {**MESES_ES, **MESES_EN}.items() if len(n.group(1)) >= 3 and k.startswith(n.group(1))), None)
+                if mm: return f'{n.group(2)}-{mm:02d}'
+    return ''
+
+def _fecha_blog(h):
+    # fecha de publicación de la entrada del blog -> 'AAAA-MM'
+    m = re.search(r'(?:article:published_time["\'][^>]*content=["\']|"datePublished"\s*:\s*")(\d{4})-(\d{2})', h) \
+        or re.search(r'content=["\'](\d{4})-(\d{2})[^"\']*["\'][^>]*article:published_time', h) \
+        or re.search(r'<time[^>]+datetime=["\'](\d{4})-(\d{2})', h)
+    return f'{m.group(1)}-{m.group(2)}' if m else ''
+
+def fechas_rutas(co, new):
+    # fecha de cada ruta (las de los colaboradores no la traen): «Fecha de realización» de Wikiloc y, si no, la de su entrada del blog.
+    # Se guarda en una caché por enlace (app/colab/fechas_<id>.json) y se pone cada noche en el campo 10 de cada ruta.
+    rs = new.get('r')
+    if not rs: return
+    fc = APP + f'colab/fechas_{co["id"]}.json'
+    cache = json.load(open(fc)) if os.path.exists(fc) else {}
+    pedidas = nuevas = 0; mal = {'w': 0, 'b': 0}; ok = {'w': 0, 'b': 0}
+    for r in rs:
+        for src, u, fx in (('w', r[6], _fecha_wikiloc), ('b', r[7], _fecha_blog)):
+            if not u or u in cache or pedidas >= 150: continue
+            if mal[src] >= 8 and not ok[src]: continue      # esa web no nos deja: se reintenta otra noche
+            pedidas += 1
+            try:
+                f = fx(get(u, tries=2)); cache[u] = f; ok[src] += 1; nuevas += bool(f)
+            except Exception:
+                mal[src] += 1
+            time.sleep(0.7)
+    if pedidas: json.dump(cache, open(fc, 'w'), ensure_ascii=False, indent=0, sort_keys=True)
+    con = 0
+    for r in rs:
+        while len(r) < 11: r.append('')
+        f = cache.get(r[6]) or cache.get(r[7]) or ''
+        r[10] = f; con += bool(f)
+    if pedidas: log(f'📅 Fechas de rutas de {co.get("nombre") or co["id"]}: {nuevas} nuevas ({con} de {len(rs)} con fecha)'
+                    + (f'; Wikiloc no responde ({mal["w"]} fallos)' if mal['w'] and not ok['w'] else '') + (f'; su blog no responde ({mal["b"]} fallos)' if mal['b'] and not ok['b'] else '') + '.')
+
 def cumbres_osm(co, new):
     """Cumbres sacadas de sus tracks: se buscan en OpenStreetMap (picos con el mismo nombre por donde pasa su track)
     y, si están, se ponen en el sitio exacto del pico. Si no, se quedan en el punto más alto del track.
@@ -532,6 +589,7 @@ def colaboradores():
         blog_colab(co, new)
         if new.get('r'): new['r'] = json.loads(json.dumps(new['r'])); new['p'] = json.loads(json.dumps(new.get('p', [])))
         fotos_rutas(co, new)
+        fechas_rutas(co, new)
         nom = co.get('nombre') or new.get('t') or co['id']
         if new != old:
             json.dump(new, open(fo, 'w'), ensure_ascii=False, separators=(',', ':'))

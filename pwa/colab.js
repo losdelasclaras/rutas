@@ -110,20 +110,20 @@ function pintaTracks(c){const g=G[c.id+"_t"];if(!g||g.__ok)return;g.__ok=1;linea
   ls.forEach((ll,i)=>{if(!ll||ll.length<2)return;g.addLayer(L.polyline(ll,{color:"#fff",weight:5.5,opacity:.8,interactive:false,renderer:TRC}));
     g.addLayer(L.polyline(ll,{color:c.c,weight:3,opacity:.9,renderer:TRC}).bindTooltip(esc(c.r[i][0]),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);abrirR(c,i)}))})})}
 let TRCO=null;
-function pintaCo(c,ls,noms,extra){if(TRCO){TRCO.remove();TRCO=null}const L0=[];
+function pintaCo(c,ls,noms,extra,nofit){if(TRCO){TRCO.remove();TRCO=null}const L0=[];
   ls.forEach((ll,j)=>{L0.push(L.polyline(ll,{color:"#fff",weight:8,opacity:.95,interactive:false}),L.polyline(ll,{color:c.c,weight:5,opacity:1}).bindTooltip(esc(noms[j]||""),{sticky:true}),
     L.circleMarker(ll[0],{radius:7,color:"#fff",weight:2,fillColor:"#2a7a3b",fillOpacity:1,interactive:false}).bindTooltip("Salida",{direction:"top"}))});
-  TRCO=L.layerGroup(L0).addTo(map);
+  TRCO=L.layerGroup(L0).addTo(map);if(nofit)return;
   const b=L.latLngBounds(ls.flat().map(q=>[q[0],q[1]]));if(extra)b.extend(extra);
   const el=mapEl.getBoundingClientRect(),wide=el.width>=860,pb=!wide?Math.min(el.height*.62,sheet.offsetHeight)+16:24;
   map.fitBounds(b,{paddingTopLeft:[wide?60:24,110],paddingBottomRight:[wide?640:24,pb],maxZoom:15})}
 // si se abre una ruta o cumbre del grupo, se quita el track del colaborador
-{const st=window.showTrack;if(st)window.showTrack=function(r){if(TRCO&&!showTrack._co){TRCO.remove();TRCO=null}return st.apply(this,arguments)}}
-function abrirR(c,i){const r=c.r[i],[n,z,act,km,de,dif,wl,blog,ini,fo]=r;
+{const st=window.showTrack;if(st)window.showTrack=function(r){if(TRCO&&!showTrack._co){TRCO.remove();TRCO=null;coPill(null)}return st.apply(this,arguments)}}
+function abrirR(c,i,nofit){coPill(null);const r=c.r[i],[n,z,act,km,de,dif,wl,blog,ini,fo]=r;
   const key=rKeyCo(c,n),st=MARKS[key]||"",deN=(/(\d[\d.]*)/.exec(de)||[])[1];
   sheet.classList.remove("full");
   sheet.innerHTML=`<div class="grab"></div>${fo?`<div class="photo"><img src="${esc(fo)}" alt="" onerror="this.parentNode.remove()"></div>`:""}<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
-  <div class="meta"><span class="tag" style="background:${c.c};color:#fff;border-color:${c.c}">${esc(c.n)}</span>${act?`<span class="tag">${esc(act)}</span>`:""}<span class="tag">${esc(z)}</span></div>
+  <div class="meta"><span class="tag" style="background:${c.c};color:#fff;border-color:${c.c}">${esc(c.n)}</span>${act?`<span class="tag">${esc(act)}</span>`:""}<span class="tag">${esc(z)}</span>${(()=>{const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");return fe?`<span class="tag">📅 ${MESES[+fe[2]]?MESES[+fe[2]]+" ":""}${fe[1]}</span>`:""})()}</div>
   <div class="mkblock rmk"><span>Esta ruta</span><span class="mk" data-key="${esc(key)}"><button data-mk="hecha" aria-pressed="${st==="hecha"}" title="Hecha">✓ Hecha</button><button data-mk="quiero" aria-pressed="${st==="quiero"}" title="Quiero hacerla">★ Quiero hacerla</button></span></div>
   ${(km||de||dif)?`<div class="ficha">${km?`<div><b>${esc(km)}</b><span>Distancia</span></div>`:""}${deN?`<div><b>+${esc(deN)} m</b><span>Desnivel</span></div>`:""}${dif?`<div><b>${esc(cap1(dif))}</b><span>Dificultad</span></div>`:""}</div>`:""}
   <div class="topacts"><button class="btn primary" data-cofol>▶ Seguir</button><button class="btn ghost" data-cosave>☆ Guardar en Mis tracks</button></div>
@@ -131,8 +131,19 @@ function abrirR(c,i){const r=c.r[i],[n,z,act,km,de,dif,wl,blog,ini,fo]=r;
   sheet._cor={c,i};if(window.showTrack)showTrack(null);nodes.classed("sel",false);sheet.hidden=false;sheet.scrollTop=0;
   if(TRCO){TRCO.remove();TRCO=null}
   lineas().then(J=>{const ll=(J[c.id]||[])[i];if(!ll||ll.length<2){flyTo(ini[0],ini[1]);return}
-    pintaCo(c,[ll],[n]);
+    pintaCo(c,[ll],[n],null,nofit&&TRCO&&TRCO.__i===c.id+":"+i);if(TRCO)TRCO.__i=c.id+":"+i;
     if(sheet._cor&&sheet._cor.c===c&&sheet._cor.i===i)extraR(c,i,ll)})}
+/* desde las listas: al mapa con el track entero a la vista y una pastilla abajo para abrir la ficha (como «Ver en el mapa» de las del grupo) */
+function coPill(c,i){let el=document.getElementById("copill");if(!c){if(el)el.hidden=true;return}
+  if(!el){el=document.createElement("div");el.id="copill";el.className="trkpill";document.getElementById("v-mapa").appendChild(el);
+    el.addEventListener("click",e=>{const k=el._k;if(!k)return;if(e.target.closest("[data-px]")){el.hidden=true;if(TRCO){TRCO.remove();TRCO=null}return}abrirR(k.c,k.i,true)})}
+  const r=c.r[i],deN=(/(\d[\d.]*)/.exec(r[4])||[])[1];el._k={c,i};el.style.borderColor=c.c;
+  el.innerHTML=`<button class="pn"><b>${esc(r[0])}</b><span style="color:${c.c}">${[r[3],deN?"+"+deN+" m":""].filter(Boolean).map(esc).join(" · ")}${r[3]||deN?" · ":""}ver la ficha</span></button><button class="x" data-px aria-label="Quitar el recorrido">×</button>`;el.hidden=false}
+function verR(c,i){const r=c.r[i];sheet.hidden=true;sheet.classList.remove("full");sheet._cor=null;if(window.showTrack)showTrack(null);{const tp=document.getElementById("trkpill");if(tp)tp.hidden=true}
+  if(TRCO){TRCO.remove();TRCO=null}coPill(c,i);map.invalidateSize();
+  lineas().then(J=>{const ll=(J[c.id]||[])[i];if(!ll||ll.length<2){flyTo(r[8][0],r[8][1]);return}
+    pintaCo(c,[ll],[r[0]],null,true);TRCO.__i=c.id+":"+i;
+    map.fitBounds(L.latLngBounds(ll.map(q=>[q[0],q[1]])),{paddingTopLeft:[24,110],paddingBottomRight:[24,90],maxZoom:15})})}
 /* lo mismo que la ficha de una ruta del grupo: tiempo, perfil y GPX, sus cumbres y otras rutas por la zona */
 function gxDe(ll){const cum=[0];for(let j=1;j<ll.length;j++)cum.push(cum[j-1]+map.distance([ll[j-1][0],ll[j-1][1]],[ll[j][0],ll[j][1]]));
   const E=ll.map(q=>q[2]),has=E.filter(e=>e!=null).length>=.8*E.length;const g={km:Math.round(cum[cum.length-1]/100)/10,up:0,pf:[],mx:null,mn:null,st:[ll[0][0],ll[0][1]],ln:ll};
@@ -226,7 +237,7 @@ window.COLX={
   cls:p=>(p.co?` src-co${p.both?" both":""}" style="--cc:${p.co.c}`:` src-g${p.both?" both":""}`),
   ico:(p,kind)=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true" style="border-radius:50%;box-shadow:0 0 0 2.5px ${p.co.c}"><use href="#ic-${p.k}" x="-12" y="-12" width="24" height="24"/></svg>`,
   src:p=>p.co?`<em class="cosrc" style="color:${p.co.c}">${esc(p.co.n)}</em>${p.both?` · <em class="cosrc dos">en los dos</em>`:""} · `:p.both?`<em class="cosrc dos">También en ${esc(p.both)}</em> · `:"",
-  open(ci){const it=ALL[ci];if(!it)return;if(it.rr!=null){if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>abrirR(it.co,it.rr),80);return}if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>abrir(it.co,it.pp,it.k),80)}};
+  open(ci){const it=ALL[ci];if(!it)return;if(it.rr!=null){if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>verR(it.co,it.rr),80);return}if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>abrir(it.co,it.pp,it.k),80)}};
 /* ---------- también en la pestaña Rutas: sus puntos que son rutas (capas de rutas o con «Distancia:») ---------- */
 document.head.insertAdjacentHTML("beforeend",`<style>
 #list .row.src-co{background:color-mix(in srgb,var(--cc) 16%,transparent);box-shadow:inset 5px 0 0 var(--cc)}
@@ -234,7 +245,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .rsrc{margin:4px 0 10px}
 </style>`);
 const RUT=[];
-for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exec(r[4])||[])[1];RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:null,m:null,gx:1,iv:/raqueta|nieve|invern/i.test(r[2]+" "+r[0])?1:0,km:r[3]?r[3].replace(/\s*km/i," km"):"",de:dm?"+"+dm+" m":"",txt:norm(r[0]+" "+r[1]+" "+r[2])}));continue}
+for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exec(r[4])||[])[1];const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:fe?+fe[1]:null,m:fe?+fe[2]:null,gx:1,iv:/raqueta|nieve|invern/i.test(r[2]+" "+r[0])?1:0,km:r[3]?r[3].replace(/\s*km/i," km"):"",de:dm?"+"+dm+" m":"",txt:norm(r[0]+" "+r[1]+" "+r[2])}));continue}
   const p=it.pp;if(!(/RUTA/i.test(p[7]||"")||/distancia\s*:/i.test(limpia(p[3]))))continue;
   const[F]=ficha(p[3]),dm=/\/(20\d\d)\/(\d\d)\//.exec(p[4]||"");
   RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:dm?+dm[1]:null,m:dm?+dm[2]:null,km:(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km||"")||[])[1]?(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km)[1].replace(".",",")+" km"):"",de:(/(\d[\d.]*)\s*m/i.exec(F.de||"")||[])[1]?"+"+(/(\d[\d.]*)\s*m/i.exec(F.de)[1])+" m":"",txt:norm(p[0]+" "+it.r+" "+limpia(p[3]))}))}
