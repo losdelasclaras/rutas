@@ -411,6 +411,52 @@ def fotos_rutas(co, new):
             if f: p[5] = f
     if nuevas or mal: log(f'📷 Fotos de rutas de {co.get("nombre") or co["id"]} (de su blog): {nuevas} nuevas, {sum(1 for r in rs if r[9])} en total' + (f', {mal} sin foto' if mal else ''))
 
+def cumbres_osm(co, new):
+    """Cumbres sacadas de sus tracks: se buscan en OpenStreetMap (picos con el mismo nombre por donde pasa su track)
+    y, si están, se ponen en el sitio exacto del pico. Si no, se quedan en el punto más alto del track.
+    Lo encontrado se guarda en app/colab/osm_<id>.json, por si otra noche OpenStreetMap no responde."""
+    ps = [p for p in new.get('p', []) if len(p) > 9 and p[9] and p[7] == 'CUMBRES']
+    if not ps: return
+    cf = APP + f'colab/osm_{co["id"]}.json'
+    cache = json.load(open(cf)) if os.path.exists(cf) else {}
+    GW = {'pico', 'picu', 'picos', 'pena', 'penha', 'pena', 'alto', 'monte', 'cerro', 'cueto', 'cuetu', 'teso', 'tesu', 'torre', 'el', 'la', 'los', 'las',
+          'de', 'del', 'do', 'da', 'dos', 'das', 'o', 'a', 'os', 'as', 'y', 'e', 'l', 'pic', 'tuca', 'tuc', 'punta', 'mount', 'monte', 'cima', 'cabeza'}
+    def tk(t):
+        t = unicodedata.normalize('NFD', t.lower()); t = ''.join(c for c in t if unicodedata.category(c) != 'Mn')
+        return frozenset(w for w in re.sub(r'[^a-z0-9 ]+', ' ', t).split() if w not in GW and not w.isdigit())
+    def igual(a, b): return bool(a) and bool(b) and (a == b or a <= b or b <= a)
+    def dist(a, b): return math.hypot((a[0] - b[0]) * 111.2, (a[1] - b[1]) * 111.2 * math.cos(math.radians(a[0])))
+    rs = new.get('r', [])
+    q = '[out:json][timeout:90];(' + ''.join(f'node(around:2500,{p[1]},{p[2]})[natural~"^(peak|volcano|hill)$"];' for p in ps) + ');out;'
+    osm = None
+    for srv in ('https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'):
+        try:
+            req = urllib.request.Request(srv, data=urllib.parse.urlencode({'data': q}).encode(), headers=UA)
+            with urllib.request.urlopen(req, timeout=120) as r: osm = json.loads(r.read().decode())['elements']; break
+        except Exception as e: last = e
+    if osm is None: log(f'⚠ OpenStreetMap no ha respondido: cumbres de {co.get("nombre") or co["id"]} con lo guardado de otras noches.')
+    bien, fuera = 0, []
+    for p in ps:
+        k = p[0] + '|' + str(round(p[1], 2)) + '|' + str(round(p[2], 2))
+        if osm is not None:
+            t = tk(p[0]); trk = [q for i in p[9] if i < len(rs) for q in rs[i][8]]
+            mejor = None
+            for e in osm:
+                g = e.get('tags', {}); ns = {g.get(x) for x in ('name', 'name:es', 'alt_name', 'name:ast', 'name:gl', 'loc_name', 'official_name') if g.get(x)}
+                if not any(igual(t, tk(n)) for n in ns): continue
+                d = min((dist((e['lat'], e['lon']), q) for q in trk), default=99)
+                if d <= 0.5 and (mejor is None or d < mejor[0]): mejor = (d, round(e['lat'], 5), round(e['lon'], 5), g.get('name', ''))
+            cache[k] = list(mejor[1:]) if mejor else None
+        c = cache.get(k)
+        if c: p[1], p[2] = c[0], c[1]; bien += 1
+        else: fuera.append(p[0])
+    try: json.dump(cache, open(cf, 'w'), ensure_ascii=False, indent=0)
+    except Exception: pass
+    try: open(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'cumbres_{co["id"]}.txt'), 'w').write(
+        f'# Cumbres de {co.get("nombre") or co["id"]} NO encontradas en OpenStreetMap (siguen en el punto más alto de su track): {len(fuera)} de {len(ps)}\n' + '\n'.join(sorted(fuera)) + '\n')
+    except Exception: pass
+    log(f'⛰ Cumbres de {co.get("nombre") or co["id"]}: {bien} de {len(ps)} colocadas en el pico de OpenStreetMap; {len(fuera)} siguen en el punto más alto de su track (lista en robot/cumbres_{co["id"]}.txt).')
+
 def colaboradores():
     cf = APP + 'colaboradores.json'
     if not os.path.exists(cf): return
@@ -447,6 +493,7 @@ def colaboradores():
                     log(f'⚠ Los mapas de {co.get("nombre") or co["id"]} han devuelto solo {len(rutas)} rutas (había {len(old["r"])}): no lo toco.')
                 else:
                     new.update(t=co.get('nombre') or old.get('t') or co['id'], p=cps, r=rutas, l=[])
+                    cumbres_osm(co, new)
             except Exception as e:
                 log(f'⚠ No he podido leer los mapas de rutas del colaborador {co["id"]}: {e} (se queda como estaba)')
         if co.get('drive_carpeta'):
