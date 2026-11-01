@@ -81,6 +81,12 @@ rep('const go=e.target.closest("[data-go]");if(go){','const cv=e.target.closest(
 for _k,_ph in (("cumbres","Busca una cumbre…"),("lugares","Busca un lugar: braña, lago, refugio…")):
     rep(f'<div id="colh-{_k}"></div>\n      <input class="search" id="qs-{_k}" type="search" placeholder="{_ph}" autocomplete="off" style="margin:4px 0 6px">',
         f'<input class="search" id="qs-{_k}" type="search" placeholder="🔍 {_ph}" autocomplete="off" style="margin:2px 0 12px;font-size:1.08em;padding:12px 14px">\n      <div id="colh-{_k}"></div>')
+# pestaña Rutas: también las rutas de los colaboradores (sin blog: su web o su Instagram). Solo con los filtros sin tocar
+rep('  rs.sort(byDate);const by={};rs.forEach(r=>{(by[r.y||"Sin fecha"] ||= []).push(r)});',
+    '  const CO_=window.COLX&&!F.wz?COLX.routes(s,F.reg==="todas"&&!nExtra()):{c:[],hideG:false};if(CO_.hideG)rs.length=0;\n  rs.sort(byDate);const by={};rs.forEach(r=>{(by[r.y||"Sin fecha"] ||= []).push(r)});\n  for(const it of CO_.c)(by[it.y||"Sin fecha"] ||= []).push(it);if(CO_.c.length)for(const y in by)by[y].sort((a,b)=>((b.m||0)-(a.m||0)));')
+rep('  const cnt=ban+`<p class="count">${rs.length} ${rs.length===1?"ruta":"rutas"}','  const cnt=ban+(window.COLX?COLX.rchips():"")+`<p class="count">${rs.length+CO_.c.length} ${rs.length+CO_.c.length===1?"ruta":"rutas"}')
+rep('<div class="rows">${by[y].map(r=>rowHTML(r)).join("")}</div>','<div class="rows">${by[y].map(r=>r.cox?COLX.rrow(r):rowHTML(r)).join("")}</div>')
+rep('document.getElementById("list").addEventListener("click",e=>{','document.getElementById("list").addEventListener("click",e=>{const cr=e.target.closest("[data-cor]");if(cr&&window.COLX){COLX.open(+cr.dataset.cor);return}const rc=e.target.closest("[data-rsrc]");if(rc&&window.COLX){COLX.rsrc=rc.dataset.rsrc;renderList();return}')
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
 t=re.sub(r'\s*<button class="lay" data-lay="towns".*?</button>','',t,count=1,flags=re.S)
