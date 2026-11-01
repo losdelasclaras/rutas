@@ -59,10 +59,26 @@ const CATS={cumbre:"cumbre",fuente:"agua",agua:"agua",refugio:"refugio",cabana:"
 const GRP=L.layerGroup();let DIB="";if(!map.getPane("segp")){map.createPane("segp").style.zIndex=640}
 if(LAY.seg===undefined)LAY.seg=true;
 const conDatos=d=>{const x=d.data();return{...x,id:d.id,dd:J(x.d)||{}}};
+/* las fotos van en un documento aparte, «seguidores/<id>__fotos», sin «tp»: la lista (ordenada por «tp») no las descarga
+   y solo se bajan al abrir esa aportación. Así la pestaña y el arranque gastan poquísimos datos aunque haya muchas */
+const partir=dd=>{const f={},o={...dd};if(o.foto){f.foto=o.foto;delete o.foto}
+  if(o.ps)o.ps=o.ps.map((p,i)=>{if(!p.foto)return p;(f.ps=f.ps||{})[i]=p.foto;const{foto,...q}=p;return q});return[o,Object.keys(f).length?f:null]};
+async function guardaPub(fs,db,id,doc,dd){const[o,f]=partir(dd);
+  // primero las fotos y luego la ficha ligera; si las reglas de la base de datos no lo dejan, se guarda como antes (todo junto) y no se pierde nada
+  try{if(f)await fs.setDoc(fs.doc(db,"seguidores",id+"__fotos"),{uid:doc.uid||"",f:JSON.stringify(f)});
+    await fs.setDoc(fs.doc(db,"seguidores",id),{...doc,d:JSON.stringify(o),hf:f?1:0});
+    if(!f)try{await fs.deleteDoc(fs.doc(db,"seguidores",id+"__fotos"))}catch(e){}}
+  catch(e){console.warn("fotos aparte no permitido; se guarda todo junto",e);
+    await fs.setDoc(fs.doc(db,"seguidores",id),{...doc,d:JSON.stringify(dd)});
+    if(f)try{await fs.deleteDoc(fs.doc(db,"seguidores",id+"__fotos"))}catch(e2){}}}
+async function fotosDe(x){if(!x||!x.hf||x._f)return;try{const a=await fb(),fs=a.fs,sn=await fs.getDoc(fs.doc(a.db,"seguidores",x.id+"__fotos"));
+  if(sn.exists()){const f=J(sn.data().f)||{};if(f.foto)x.dd.foto=f.foto;if(f.ps&&x.dd.ps)for(const i in f.ps)if(x.dd.ps[i])x.dd.ps[i].foto=f.ps[i]}x._f=1}catch(e){console.warn("fotos",e)}}
+let MIG=false;
 async function fb(){if(A)return A;if(!window.LDCFB)throw new Error("sin Firebase");A=await LDCFB.load();return A}
 async function cargarPub(){try{const a=await fb(),fs=a.fs;
     const s=await fs.getDocs(fs.query(fs.collection(a.db,"seguidores"),fs.orderBy("tp","desc"),fs.limit(300)));
     PUB=[];s.forEach(d=>PUB.push(conDatos(d)));
+    if(esAdm()&&!MIG){MIG=true;for(const x of PUB){const[,f]=partir(x.dd);if(!f)continue;const{dd,id,...doc}=x;try{await guardaPub(fs,a.db,id,doc,dd);x.hf=1}catch(e){console.warn("partir",e)}}}
     const sinF=dd=>{const o={...dd};delete o.foto;if(o.ps)o.ps=o.ps.map(({foto,...q})=>q);return o};
     try{localStorage.setItem(CK,JSON.stringify(PUB.map(({dd,...x})=>({...x,d:JSON.stringify(sinF(dd))}))))}catch(e){}
   }catch(e){console.warn("seguidores",e)}pinta()}
@@ -90,7 +106,7 @@ addEventListener("ldc-user",()=>setTimeout(cargarRev,500));
 /* --- ver una en el mapa --- */
 let TMP=null;
 const quitaTmp=()=>{if(TMP){TMP.remove();TMP=null}};
-function ver(x,modo){const d=x.dd||{};if(typeof showView==="function")showView("mapa");quitaTmp();
+function ver(x,modo){if(x.hf&&!x._f){fotosDe(x).then(()=>{if(x._f&&sheet._seg===x&&x.dd.foto&&!sheet.querySelector("[data-fotobig]")){const m=sheet.querySelector(".meta");if(m)m.insertAdjacentHTML("afterend",`<img src="${x.dd.foto}" alt="" data-fotobig style="width:100%;max-height:300px;object-fit:cover;border-radius:12px;display:block;margin:6px 0 10px;cursor:zoom-in">`)}})}const d=x.dd||{};if(typeof showView==="function")showView("mapa");quitaTmp();
   const pad={paddingTopLeft:[30,90],paddingBottomRight:innerWidth>=860?[480,30]:[30,Math.round(innerHeight*.5)],maxZoom:15};
   let q=null;
   if(x.tipo==="track"&&d.pts&&d.pts.length>1){TMP=L.layerGroup([L.polyline(d.pts,{color:"#fff",weight:8,opacity:.9}),L.polyline(d.pts,{color:"#d9480f",weight:5,opacity:.95})]).addTo(map);
@@ -125,12 +141,12 @@ sec.addEventListener("click",e=>{if(e.target.closest("button"))return;const r=e.
 /* --- publicar, rechazar, quitar (el administrador) --- */
 async function publicar(id){const x=REV.find(y=>y.id===id);if(!x)return;
   try{const a=await fb(),fs=a.fs;const{dd,email,id:_i,...o}=x;
-    await fs.setDoc(fs.doc(a.db,"seguidores",id),{...o,tp:Date.now()});await fs.deleteDoc(fs.doc(a.db,"propuestas",id));
+    const{d:_d,...o2}=o;await guardaPub(fs,a.db,id,{...o2,tp:Date.now()},dd);await fs.deleteDoc(fs.doc(a.db,"propuestas",id));
     toast("Publicado en Seguidores ✓");fin()}catch(e){toast("No se ha podido publicar: "+(e.code||e.message))}}
 async function rechazar(id){if(!confirm("¿Rechazar esta propuesta? Se borrará."))return;
   try{const a=await fb();await a.fs.deleteDoc(a.fs.doc(a.db,"propuestas",id));toast("Propuesta rechazada");fin()}catch(e){toast("No se ha podido borrar: "+(e.code||e.message))}}
 async function quitar(id,modo){if(!confirm(modo==="mia"?"¿Retirar tu propuesta?":"¿Quitarlo de Seguidores?"))return;
-  try{const a=await fb();await a.fs.deleteDoc(a.fs.doc(a.db,modo==="mia"?"propuestas":"seguidores",id));toast("Quitado");fin()}catch(e){toast("No se ha podido quitar: "+(e.code||e.message))}}
+  try{const a=await fb();await a.fs.deleteDoc(a.fs.doc(a.db,modo==="mia"?"propuestas":"seguidores",id));if(modo!=="mia")try{await a.fs.deleteDoc(a.fs.doc(a.db,"seguidores",id+"__fotos"))}catch(e){}toast("Quitado");fin()}catch(e){toast("No se ha podido quitar: "+(e.code||e.message))}}
 function fin(){if(sheet._seg){sheet.hidden=true;sheet._seg=null;quitaTmp()}cargarPub();cargarRev()}
 document.addEventListener("click",e=>{let b;
   if(b=e.target.closest("[data-segok]")){e.stopPropagation();publicar(b.dataset.segok);return}
@@ -142,7 +158,7 @@ sheet.addEventListener("click",e=>{const x=sheet._seg;
   if(e.target.closest("[data-segx]"))quitaTmp();
   if(!x)return;const d=x.dd||{};
   if(e.target.closest("[data-segfol]")){quitaTmp();const t=x.tipo==="carpeta"?(d.ts||[])[0]:d;if(t)SEGUIR.start({u:"tmp",ti:x.tipo==="carpeta"?t.n:x.n,gx:{ln:t.pts,km:t.km}},false);return}
-  if(e.target.closest("[data-segsave]")){const go=()=>{const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6),nota=[x.com,"Compartido por "+(x.quien||"un seguidor"),...(x.links||[])].filter(Boolean).join("\n");
+  if(e.target.closest("[data-segsave]")){const go=async()=>{await fotosDe(x);const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6),nota=[x.com,"Compartido por "+(x.quien||"un seguidor"),...(x.links||[])].filter(Boolean).join("\n");
       if(x.tipo==="carpeta"){const k=MPI.guardarCarpeta(x.n,d.ps||[],d.ts||[],nota);toast(k?`Guardado en la carpeta «${x.n}» (Mis cosas › Puntos)`:"Ya tenías todo eso");quitaTmp();sheet.hidden=true;return}
       if(x.tipo==="track"){const o={id,n:x.n,km:d.km,pts:d.pts,src:"gpx",f:new Date().toISOString()};MPI.desn(o);MPI.saveTracks([...MPI.tracks(),o]);toast("Guardado en Mis cosas › Tracks")}
       else{MPI.addPoint({id,n:x.n,lat:d.lat,lon:d.lon,a:d.a,ic:d.ic||"otro",nota,f:new Date().toISOString(),...(d.foto?{fo:1}:{})});if(d.foto&&MPI.fotoPut)MPI.fotoPut(id,d.foto);toast("Guardado en Mis cosas › Puntos")}};
@@ -168,7 +184,8 @@ sheet.addEventListener("click",e=>{
   if(e.target.closest("[data-segprop]")){const it=deMio();if(!it)return;proponer(it);return}
   if(e.target.closest("[data-segsend]")&&PROP){enviar(e.target.closest("[data-segsend]"))}});
 function proponer(it){
-    const go=()=>{PROP=it;const u=LDCFB.user()||{};
+    const go=()=>{if(!esAdm()&&MIAS.length>=5){MPI.show(`<div class="sheet-head"><h2>⏳ Tienes 5 propuestas pendientes</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><p>Espera a que Los de las Claras revise alguna antes de mandar más. Las puedes ver en la pestaña <b>Seguidores</b>.</p><div class="mpacts"><button class="mpb" data-close>Vale</button></div>`);return}
+      PROP=it;const u=LDCFB.user()||{};
       if(esAdm()&&it.key){const ya=PUB.find(x=>x.id===pubId(it));
         MPI.show(`<div class="sheet-head"><h2>📢 ${ya?"Actualizar la publicación":"Publicar"}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
         <p>${it.tipo==="carpeta"?"📁 Carpeta":it.tipo==="track"?"🧵 Track":"📍 Punto"} <b>${esc(it.n)}</b>${it.tipo==="carpeta"?cuentaC(it.dd):""}${it.dd.km?" · "+kmT(it.dd.km):""}</p>
@@ -179,7 +196,7 @@ function proponer(it){
         <div class="mpacts"><button class="mpb pri" data-segsend>📢 ${ya?"Actualizar":"Publicar ahora"}</button>${ya?`<button class="mpb dan" data-segunpub="${esc(ya.id)}">Despublicar</button>`:""}<button class="mpb" data-close>Cancelar</button></div>`);return}
       MPI.show(`<div class="sheet-head"><h2>👥 Proponer al grupo</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
       <p>${it.tipo==="carpeta"?"📁 Carpeta":it.tipo==="track"?"🧵 Track":"📍 Punto"} <b>${esc(it.n)}</b>${it.tipo==="carpeta"?cuentaC(it.dd):""}${it.dd.km?" · "+kmT(it.dd.km):""}</p>
-      <p class="note">Lo revisa Los de las Claras y, si encaja, se publica en la pestaña <b>Seguidores</b> para todo el mundo. Tu correo no se publica.</p>
+      <p class="note">Lo revisa Los de las Claras y, si encaja, se publica en la pestaña <b>Seguidores</b> para todo el mundo. Tu correo no se publica. Como mucho 3 fotos y 5 propuestas pendientes a la vez.</p>
       <div class="segform"><label>Nombre con el que aparecerás</label><input data-segq maxlength="40" value="${esc((u.displayName||"").trim())}">
       <label>Cuéntanos algo</label><textarea data-segc maxlength="1500" placeholder="${it.tipo!=="punto"?"Cuándo la hiciste, estado del camino, por dónde va…":"Qué hay aquí: fuente, paso, mirador…"}">${esc(it.com)}</textarea>
       <label>Enlaces (opcional)</label><textarea data-segl style="min-height:60px" placeholder="Tu blog, álbum de fotos, Wikiloc, YouTube… uno por línea"></textarea></div>
@@ -198,9 +215,9 @@ async function enviar(b){const u=LDCFB.user();if(!u){toast("Entra con tu cuenta 
   // fotos: se mandan reducidas (el documento no puede pasar de 1 MB)
   const peq=async j=>{try{const im=new Image();im.src=j;await im.decode();const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);return c.toDataURL("image/jpeg",.6)}catch(e){return null}};
   if(PROP.tipo==="punto"&&PROP.pid&&MPI.fotoGet){const j=await MPI.fotoGet(PROP.pid);if(j)PROP.dd.foto=await peq(j)}
-  if(PROP.tipo==="carpeta"&&MPI.fotoGet){let tot=JSON.stringify(PROP.dd).length;for(const p of PROP.dd.ps){const id=p.pid;delete p.pid;if(!id)continue;const j=await MPI.fotoGet(id);const f=j&&await peq(j);if(f&&tot+f.length<850000){p.foto=f;tot+=f.length}}}
+  if(PROP.tipo==="carpeta"&&MPI.fotoGet){let tot=JSON.stringify(PROP.dd).length;let nf=0;for(const p of PROP.dd.ps){const id=p.pid;delete p.pid;if(!id||nf>=3)continue;nf++;const j=await MPI.fotoGet(id);const f=j&&await peq(j);if(f&&tot+f.length<850000){p.foto=f;tot+=f.length}}}
   if(esAdm()&&PROP.key){try{const a=await fb(),fs=a.fs,id=pubId(PROP),ya=PUB.find(x=>x.id===id);
-      await fs.setDoc(fs.doc(a.db,"seguidores",id),{tipo:PROP.tipo,n:PROP.n.slice(0,100),com,links,quien,blog:"Los de las Claras",uid:u.uid,t:ya?ya.t:Date.now(),tp:Date.now(),d:JSON.stringify(PROP.dd)});
+      await guardaPub(fs,a.db,id,{tipo:PROP.tipo,n:PROP.n.slice(0,100),com,links,quien,blog:"Los de las Claras",uid:u.uid,t:ya?ya.t:Date.now(),tp:Date.now()},PROP.dd);
       PROP=null;sheet.hidden=true;toast(ya?"Publicación actualizada ✓":"Publicado en el mapa ✓ (Cumbres, Lugares y Tracks)");cargarPub()}
     catch(e){b.disabled=false;b.textContent="📢 Publicar";toast("No se ha podido publicar: "+(e.code||e.message))}return}
   try{const a=await fb(),fs=a.fs;
