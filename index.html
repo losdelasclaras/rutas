@@ -324,15 +324,15 @@ html,body{height:100%;margin:0}
     <section class="view pad" id="v-cumbres" hidden><div class="inner">
       <h1 class="vt">Tus cumbres</h1>
       <p class="lead">Marca las que ya has subido y las que quieres subir. Desde cada una puedes ir a su ruta.</p>
+      <input class="search" id="qs-cumbres" type="search" placeholder="🔍 Busca una cumbre…" autocomplete="off" style="margin:2px 0 12px;font-size:1.08em;padding:12px 14px">
       <div id="colh-cumbres"></div>
-      <input class="search" id="qs-cumbres" type="search" placeholder="Busca una cumbre…" autocomplete="off" style="margin:4px 0 6px">
       <div id="col-cumbres"></div>
     </div></section>
     <section class="view pad" id="v-lugares" hidden><div class="inner">
       <h1 class="vt">Tus lugares</h1>
       <p class="lead">Brañas, foces, lagos, cascadas y otros rincones de tus rutas. Ve marcando dónde has estado y adónde quieres ir.</p>
+      <input class="search" id="qs-lugares" type="search" placeholder="🔍 Busca un lugar: braña, lago, refugio…" autocomplete="off" style="margin:2px 0 12px;font-size:1.08em;padding:12px 14px">
       <div id="colh-lugares"></div>
-      <input class="search" id="qs-lugares" type="search" placeholder="Busca un lugar: braña, lago, refugio…" autocomplete="off" style="margin:4px 0 6px">
       <div id="col-lugares"></div>
     </div></section>
   </main>
@@ -2862,5 +2862,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="01c66af87f";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="78d4e67981";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
