@@ -862,7 +862,7 @@ const SPOTS=uniq(P.map((p,i)=>({...p,i})).filter(p=>p.t!=="cumbre"&&!p.x&&!/^(in
 const COL={cumbres:{all:PEAKS,pre:"c:",done:"Subida",want:"Quiero subir",f:"todas",g:"todas",z:"cant",el:"col-cumbres"},
            lugares:{all:SPOTS,pre:"l:",done:"He estado",want:"Quiero ir",f:"todas",g:"todas",z:"cant",el:"col-lugares"}};
 const BANDS=[["todas","Todas"],["2000","+2.000 m"],["1500","1.500–2.000"],["0","Menos de 1.500"],["techo","Techos de concejo"]];
-function bandOk(p,g){return g==="todas"||(g==="3000"&&p.a>=3000)||(g==="2000"&&p.a>=2000)||(g==="1500"&&p.a>=1500&&p.a<2000)||(g==="0"&&p.a<1500)||(g==="techo"&&p.techo)}
+function bandOk(p,g){return g==="todas"||(g==="3000"&&p.a>=3000)||(g==="2000"&&p.a>=2000)||(g==="1500"&&p.a>=1500&&p.a<2000)||(g==="0"&&!!p.a&&p.a<1500)||(g==="techo"&&p.techo)}
 function renderCol(kind){const C=COL[kind];
   const zc=Object.keys(ZONES).map(z=>[z,C.all.filter(p=>zoneOf(p.r)===z).length]);
   const qs=nk(document.getElementById("qs-"+kind).value||"");
@@ -1300,7 +1300,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-21249968.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-3f2a23da.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -1355,14 +1355,18 @@ function ficha(d){const F={},resto=[];
     if(m){const k=m[1].toLowerCase();F[/inicio|partida|salida/.test(k)?"sal":/dist/.test(k)?"km":/desn/.test(k)?"de":/dific/.test(k)?"dif":"tm"]=m[2].trim()}else resto.push(l)}
   return [F,resto]}
 const coKey=(c,n,k)=>(k==="cumbre"?"c:":"l:")+norm(n)+"@"+c.id;
+const altCo=(n,d)=>{let m=/\(?\s*(\d[\d.]{2,4})\s*m(?:ts|etros)?\s*\)?/i.exec(n||"");if(m){const v=+m[1].replace(/\./g,"");if(v>=300&&v<=4900)return v}
+  for(const l of limpia(d).split("\n")){if(/desnivel|distancia|dificultad|km/i.test(l))continue;
+    m=/\(\s*(\d[\d.]{2,4})\s*m(?:ts|etros)?\s*\)/i.exec(l)||/(?:altitud|altura|cota)\D{0,15}(\d[\d.]{2,4})\s*m/i.exec(l);
+    if(m){const v=+m[1].replace(/\./g,"");if(v>=300&&v<=4900)return v}}return null};
 const cap1=s=>s?s[0].toUpperCase()+s.slice(1).toLowerCase():s;
 function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);
-  const a=(/(\d[\d.]{2,4})\s*m\b/i.exec(n+" "+limpia(d))||[])[1];
+  const a=altCo(n,d);
   const desc=resto.filter(l=>!/^\W*\w[\w ]{1,20}:\s/u.test(l)),otros=resto.filter(l=>/^\W*\w[\w ]{1,20}:\s/u.test(l));
   sheet.classList.remove("full");
   sheet.innerHTML=`<div class="grab"></div>`+(f?`<div class="photo"><img src="${esc(f)}" alt="" onerror="this.parentNode.remove()"></div>`:"")+
   `<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
-  <div class="meta"><span class="tag" style="background:${c.c};color:#fff;border-color:${c.c}">${esc(c.n)}</span><span class="tag">${esc(CATN[k]||"Lugar")}</span>${a&&k==="cumbre"?`<span class="tag alt">${(+a.replace(/\./g,"")).toLocaleString("es-ES")} m</span>`:""}</div>
+  <div class="meta"><span class="tag" style="background:${c.c};color:#fff;border-color:${c.c}">${esc(c.n)}</span><span class="tag">${esc(CATN[k]||"Lugar")}</span>${a&&k==="cumbre"?`<span class="tag alt">${a.toLocaleString("es-ES")} m</span>`:""}</div>
   ${(()=>{const key=coKey(c,n,k),st=MARKS[key]||"",L=k==="cumbre"?["Subida","Quiero subir"]:["He estado","Quiero ir"];return `<div class="mkblock"><span>${esc(n)}</span><span class="mk" data-key="${esc(key)}"><button data-mk="hecha" aria-pressed="${st==="hecha"}" title="${L[0]}">✓ ${L[0]}</button><button data-mk="quiero" aria-pressed="${st==="quiero"}" title="${L[1]}">★ ${L[1]}</button></span></div>`})()}
   ${desc.length?`<p class="desc">${desc.map(esc).join("<br>")}</p>`:""}
   ${(F.km||F.de||F.tm||F.dif)?`<div class="ficha">${F.km?`<div><b>${esc(F.km)}</b><span>Distancia</span></div>`:""}${F.de?`<div><b>${esc(F.de)}</b><span>Desnivel</span></div>`:""}${F.tm?`<div><b>${esc(F.tm)}</b><span>Duración</span></div>`:""}${F.dif?`<div><b>${esc(cap1(F.dif))}</b><span>Dificultad</span></div>`:""}</div>`:""}
@@ -1415,8 +1419,7 @@ const regAt=(la,lo)=>{let b=null,bd=1e9;for(const q of P){const d=(q.lat-la)**2+
 const kmd=(a,b)=>Math.hypot(a.lat-b.lat,(a.lon-b.lon)*.73)*111;
 const sig=n=>new Set(nk(n).split(" ").filter(w=>w.length>=4&&!/^(pico|pena|picu|ruta|senda|desde|circular|braña|brana|playa|mirador|cascada|bosque|cueva)$/.test(w)));
 for(const c of CO)for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
-  const an=(/(\d[\d.]{2,4})\s*m\b/i.exec(p[0])||[])[1];
-  const it={c:p[0],r:regAt(p[1],p[2]),a:cum?(an?+an.replace(/\./g,""):(p[8]||null)):null,lat:p[1],lon:p[2],co:c,ci:ALL.length,pp:p,k};
+  const it={c:p[0],r:regAt(p[1],p[2]),a:cum?altCo(p[0],p[3]):null,lat:p[1],lon:p[2],co:c,ci:ALL.length,pp:p,k};
   if(!cum)it.cat=k;
   // ¿lo tenéis también en el grupo? mismo nombre, o muy cerca y con una palabra del nombre en común
   const lista=cum?PEAKS:SPOTS,sw=sig(it.c);
@@ -3130,5 +3133,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="61de8a33d7";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="14ef0e76f9";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
