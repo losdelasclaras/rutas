@@ -677,6 +677,7 @@ function routeBody(r){
   <div class="sheet-head"><h2>${esc(routeTitle(r))}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="topacts">${r.gx?`<button class="btn primary" data-follow="${r.id}">▶ Seguir track</button>`:""}${r.u?`<a class="btn ${r.gx?"ghost":"primary"}" href="${esc(r.u)}" target="_blank" rel="noopener">Leer en el blog</a><button class="btn ghost" data-share="${r.id}">↗ Compartir</button>`:""}<button class="btn ghost ovonly" data-ovmap="${r.id}">🗺 Ver en mapa</button></div>
   <div class="meta">${r.iv?`<span class="tag iv">❄ Invernal</span>`:""}${r.nv?`<span class="tag new">Renovada</span>`:""}${r.y?`<span class="tag">${r.m?MESES[r.m]+" ":""}${r.y}</span>`:""}${(r.co&&r.co.length?r.co:r.grp?[r.r,r.grp]:[r.r]).map(c=>`<span class="tag">${esc(c)}</span>`).join("")}${r.a&&!r.tk?`<span class="tag alt">${fmtA(r.a)}</span>`:""}${techos.map(t=>`<span class="tag">Techo de ${esc(t.techo)}</span>`).join("")}</div>
+  ${window.rMk?rMk(r):""}
   ${r.ds?`<p class="desc">${esc(r.ds.replace(/\s*📝.*$/,""))}</p>`:""}
   ${(r.km||r.de||r.tm||r.dif||r.dl)?`<div class="ficha">${r.km?`<div><b>${fmtKm(r.km)}</b><span>Distancia</span></div>`:""}${r.de?`<div><b>+${r.de.toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${r.tm?`<div><b>${esc(r.tm)}</b><span>Duración</span></div>`:""}${r.dl?`<div><b>${DIFN[r.dl]}</b><span>Dificultad</span></div>`:r.dif?`<div><b>${esc(r.dif)}</b><span>Dificultad</span></div>`:""}</div>`:""}
   ${r.sal?`<p class="salida">Salida: ${esc(r.sal.replace(/\s*↗$/,""))}${r.zo?" · "+esc(r.zo):""}</p>`:""}
@@ -1309,6 +1310,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .cpop a.vm{display:inline-block;margin-top:6px;font-weight:700}
 #map .cpt.mk-h::after,#map .cpt.mk-q::after{position:absolute;left:calc(var(--ms,24px)*.28);top:calc(var(--ms,24px)*-.78);width:15px;height:15px;border-radius:50%;font-size:10px;line-height:15px;text-align:center;font-weight:900;color:#fff;border:1.5px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.4);pointer-events:none;z-index:2}
 #map .cpt.mk-h::after{content:"✓";background:#2e7d4f}#map .cpt.mk-q::after{content:"★";background:#d9a400}
+#map .cpt.co-off{display:none}
 .lico.co{width:16px;height:16px;border-radius:50%;border:3px solid;box-sizing:border-box;display:inline-block;background:#fff}
 </style>`);
 const SYM={aloja:["#b5532f",'<path d="M-7.5-5h2v4.2H6a1.8 1.8 0 0 1 1.8 1.8V5.5h-2V3.4H-5.5v2.1h-2Z" fill="#fff"/><circle cx="-2.7" cy="-2.6" r="1.8" fill="#fff"/><path d="M0.2-4.2H4.4a2 2 0 0 1 2 2v.6H0.2Z" fill="#fff"/>'],
@@ -1379,16 +1381,16 @@ for(const c of CO){for(const[k]of KS)if(LAY[`co_${c.id}_${k}`]===undefined)LAY[`
     m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(p[1],p[2]);return}abrir(c,p,k)});
     m.__n=p[0];m.__c=c.c;m.__k=coKey(c,p[0],k);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(cum?gc:g).addLayer(m)}
   G[c.id+"_l"]=g;G[c.id+"_c"]=gc}
-function coMarks(m){const el=m.getElement();if(!el)return;const v=MARKS[m.__k];el.classList.toggle("mk-h",v==="hecha"&&LAY.mh);el.classList.toggle("mk-q",v==="quiero"&&LAY.mq)}
+function coMarks(m){const el=m.getElement();if(!el)return;const v=MARKS[m.__k],on=(v==="hecha"&&LAY.mh)||(v==="quiero"&&LAY.mq);el.classList.toggle("mk-h",v==="hecha"&&LAY.mh);el.classList.toggle("mk-q",v==="quiero"&&LAY.mq);el.classList.toggle("co-off",!!LAY.solo&&!on);const tt=m.getTooltip();if(tt)tt.setOpacity(LAY.solo&&!on?0:1)}
 {const orig=window.refreshMarks;if(orig)window.refreshMarks=function(){orig.apply(this,arguments);for(const m of LBL)coMarks(m)}}
 // los nombres, como los del grupo: solo con el mapa cerca
 function lbls(){const on=map.getZoom()>=12;for(const m of LBL){if(on&&!m.getTooltip())m.bindTooltip(esc(m.__n),{permanent:true,direction:"right",offset:[10,0],className:"lbl co",interactive:false});const te=on&&m.getTooltip()&&m.getTooltip().getElement();if(te)te.style.setProperty("--cc",m.__c);else if(!on&&m.getTooltip())m.unbindTooltip()}}
-function sync(){for(const c of CO)for(const[k]of KS){const key=`co_${c.id}_${k}`,on=LAY[key]&&!LAY.solo&&!window.FOLONLY,g=G[c.id+"_"+k];
+function sync(){for(const c of CO)for(const[k]of KS){const key=`co_${c.id}_${k}`,on=LAY[key]&&!window.FOLONLY,g=G[c.id+"_"+k];
     if(on&&!map.hasLayer(g))g.addTo(map);else if(!on&&map.hasLayer(g))g.remove();
     const b=document.querySelector(`[data-lay="${key}"]`);if(b)b.setAttribute("aria-pressed",!!LAY[key])}
   lbls()}
 map.on("zoomend",lbls);
-document.querySelector(".legend").addEventListener("click",()=>setTimeout(sync,0));
+document.querySelector(".legend").addEventListener("click",()=>setTimeout(()=>{sync();for(const m of LBL)coMarks(m)},0));
 setTimeout(sync,0);
 
 /* ---------- también en las pestañas Cumbres y Lugares (y en sus buscadores) ---------- */
@@ -1438,6 +1440,7 @@ for(const it of ALL){const p=it.pp;if(!(/RUTA/i.test(p[7]||"")||/distancia\s*:/i
   const[F]=ficha(p[3]),dm=/\/(20\d\d)\/(\d\d)\//.exec(p[4]||"");
   RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:dm?+dm[1]:null,m:dm?+dm[2]:null,km:(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km||"")||[])[1]?(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km)[1].replace(".",",")+" km"):"",de:(/(\d[\d.]*)\s*m/i.exec(F.de||"")||[])[1]?"+"+(/(\d[\d.]*)\s*m/i.exec(F.de)[1])+" m":"",txt:norm(p[0]+" "+it.r+" "+limpia(p[3]))}))}
 COLX.rsrc="todas";
+COLX.isRuta=ci=>RUT.some(x=>x.ci===ci);
 COLX.byP=p=>ALL.find(x=>x.pp===p);
 // en la ficha de una ruta del grupo: «También en <colaborador>» con su tarjeta
 COLX.also=r=>{const v=[];for(const i of r.p||[])for(const it of PAR[i]||[])if(!v.includes(it))v.push(it);if(!v.length)return "";
@@ -2298,6 +2301,74 @@ window.RESUMEN={box,render};
 
 }catch(e){console.error("módulo resumen",e);(window.__ERRS=window.__ERRS||[]).push("resumen: "+(e&&e.message))}
 try{
+/* ---------- Mis cosas › ★ Mis listas: todo lo marcado (cumbres, lugares y rutas, del grupo y de los colaboradores) + resumen ---------- */
+(function(){
+const box=document.createElement("div");box.className="mpbox";box.id="mlbox";box.hidden=true;document.body.appendChild(box);
+document.head.insertAdjacentHTML("beforeend",`<style>
+#mlbox .mlbig{display:flex;align-items:baseline;gap:8px;margin:4px 0 2px}#mlbox .mlbig b{font-size:38px;line-height:1;font-family:var(--f-display)}#mlbox .mlbig span{color:var(--muted);font-weight:600}
+#mlbox .mlbar{height:9px;border-radius:5px;background:#e9ece6;overflow:hidden;margin:4px 0 8px}#mlbox .mlbar i{display:block;height:100%;background:var(--moss,#2a7a3b)}
+#mlbox h3{font-size:15px;margin:18px 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+#mlbox .mlacts{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px}
+#mlbox details.mlres{margin:6px 0 4px;border:1px solid var(--edge);border-radius:12px;padding:6px 12px}#mlbox details.mlres summary{font-weight:700;cursor:pointer;padding:6px 0}
+#mlbox details.mlres #resbox{border:0;padding:0;margin:0;box-shadow:none;background:none}#mlbox details.mlres #resbox>h2{display:none}
+#mlbox .crow .dkm{color:var(--ink)}
+#mlbox .crow .thumb{width:34px!important;height:34px!important;min-width:34px;border-radius:8px;object-fit:cover;position:static!important;display:block}
+.rmk{margin:10px 0 4px}
+</style>`);
+let MODE="quiero",POS=null;
+const ckey=p=>(p.co?"@"+p.co.id:"");
+window.rKey=r=>"r:"+(slug(r)||("id"+r.id));
+// botones ✓/★ en la ficha de cada ruta del grupo
+window.rMk=r=>{if(!r.u)return"";const k=rKey(r),s=MARKS[k]||"";
+  return `<div class="mkblock rmk"><span>Esta ruta</span><span class="mk" data-key="${esc(k)}"><button data-mk="hecha" aria-pressed="${s==="hecha"}" title="Hecha">✓ Hecha</button><button data-mk="quiero" aria-pressed="${s==="quiero"}" title="Quiero hacerla">★ Quiero hacerla</button></span></div>`};
+function items(){const out={cumbre:[],lugar:[],ruta:[]};
+  const isR=p=>p.co&&window.COLX&&COLX.isRuta&&COLX.isRuta(p.ci);
+  for(const p of (typeof PEAKS!=="undefined"?PEAKS:[])){const k="c:"+norm(p.c)+ckey(p);if(MARKS[k])out.cumbre.push({p,k,m:MARKS[k],t:"cumbre"})}
+  for(const p of (typeof SPOTS!=="undefined"?SPOTS:[])){const k="l:"+norm(p.c)+ckey(p);if(MARKS[k])(isR(p)?out.ruta:out.lugar).push({p,k,m:MARKS[k],t:isR(p)?"cruta":"lugar"})}
+  for(const r of R){if(!r.u)continue;const k=rKey(r);if(MARKS[k])out.ruta.push({r,k,m:MARKS[k],t:"ruta",lat:r.lat,lon:r.lon})}
+  return out}
+const pend=()=>{const o=items();return o.cumbre.concat(o.lugar,o.ruta).filter(x=>x.m==="quiero").length};
+function fila(x,i){const p=x.p,r=x.r,s=x.m,lat=p?p.lat:r.lat,lon=p?p.lon:r.lon,d=POS?km(POS,{lat,lon}):null;
+  const dd=d!=null?`<b class="dkm">${d<10?d.toFixed(1).replace(".",","):d.toFixed(0)} km</b> · `:"";
+  const L=x.t==="cumbre"?["Subida","Quiero subir"]:x.t==="ruta"?["Hecha","Quiero hacerla"]:["He estado","Quiero ir"];
+  const ico=p?(p.co?COLX.ico(p):ICO(x.t==="cumbre"?"cumbre":p.cat)):thumbHTML(r);
+  const tit=p?p.c:routeTitle(r),sub=p?(window.COLX?COLX.src(p):"")+esc(x.t==="cumbre"&&p.a?fmtA(p.a)+" · "+p.r:p.r):esc((r.y?(r.m?MESES[r.m]+" ":"")+r.y+" · ":"")+r.r);
+  return `<div class="row crow${s?" is-"+s:""}${p&&window.COLX?COLX.cls(p):r?" src-g":""}">${ico}<div class="t"><b>${esc(tit)}</b><span>${dd}${sub}</span></div>
+   <span class="mk" data-key="${esc(x.k)}"><button data-mk="hecha" aria-pressed="${s==="hecha"}" title="${L[0]}">✓</button><button data-mk="quiero" aria-pressed="${s==="quiero"}" title="${L[1]}">★</button><button data-lopen="${i}" title="Ver">Ver</button></span></div>`}
+let LAST=[];
+function render(){if(box.hidden)return;const o=items(),all=o.cumbre.concat(o.lugar,o.ruta);
+  const nC=(typeof PEAKS!=="undefined"?PEAKS:[]).length,hc=o.cumbre.filter(x=>x.m==="hecha").length;
+  const sel=l=>{let v=l.filter(x=>x.m===MODE);if(POS)v=v.slice().sort((a,b)=>km(POS,a.p||a.r)-km(POS,b.p||b.r));return v};
+  LAST=[];const sec=(t,l)=>{const v=sel(l);if(!v.length)return"";return `<h3>${t} · ${v.length}</h3><div class="rows">${v.map(x=>{LAST.push(x);return fila(x,LAST.length-1)}).join("")}</div>`};
+  const body=sec("⛰️ Cumbres",o.cumbre)+sec("🏞️ Lugares",o.lugar)+sec("🥾 Rutas",o.ruta);
+  const nq=all.filter(x=>x.m==="quiero").length,nh=all.filter(x=>x.m==="hecha").length;
+  box.innerHTML=`<h2>★ Mis listas</h2>
+  <div class="mlbig"><b>${hc}</b><span>cumbres subidas de ${nC}</span></div><div class="mlbar"><i style="width:${nC?(hc/nC*100).toFixed(1):0}%"></i></div>
+  <details class="mlres"${box._res?" open":""}><summary>🏆 Ver el resumen completo</summary><div id="mlresin"></div></details>
+  <div class="chips" style="margin:12px 0 4px"><button class="chip" data-lmode="quiero" aria-pressed="${MODE==="quiero"}">★ Pendientes · ${nq}</button><button class="chip" data-lmode="hecha" aria-pressed="${MODE==="hecha"}">✓ Hechas · ${nh}</button></div>
+  <div class="mlacts"><button class="btn ghost" data-lnear>${POS?"🎯 Ordenado por cercanía":"🎯 Ordenar por cercanía"}</button>${MODE==="quiero"&&nq?`<button class="btn primary" data-lmap>🗺 Ver pendientes en el mapa</button>`:""}</div>
+  ${body||`<p class="empty">${MODE==="quiero"?"Aún no tienes nada en «quiero ir». Márcalo con ★ en el mapa, en Cumbres, en Lugares o en la ficha de una ruta.":"Aún no has marcado nada como hecho. Usa ✓ en el mapa, en Cumbres, en Lugares o en la ficha de una ruta."}</p>`}`;
+  if(window.RESUMEN&&box._res){const rb=RESUMEN.box;document.getElementById("mlresin").appendChild(rb);rb.hidden=false;RESUMEN.render()}}
+box.addEventListener("toggle",e=>{if(!e.target.matches("details.mlres"))return;box._res=e.target.open;if(box._res&&window.RESUMEN){const rb=RESUMEN.box;document.getElementById("mlresin").appendChild(rb);rb.hidden=false;RESUMEN.render()}},true);
+box.addEventListener("click",e=>{
+  const m=e.target.closest("[data-lmode]");if(m){MODE=m.dataset.lmode;render();return}
+  if(e.target.closest("[data-lnear]")){if(POS){POS=null;render();return}if(!navigator.geolocation){toast("Este móvil no da la ubicación");return}toast("Buscando dónde estás…");
+    navigator.geolocation.getCurrentPosition(p=>{POS={lat:p.coords.latitude,lon:p.coords.longitude};render()},()=>toast("No he podido saber dónde estás."),{enableHighAccuracy:true,timeout:12000,maximumAge:300000});return}
+  if(e.target.closest("[data-lmap]")){const v=LAST.filter(x=>x.m==="quiero");if(!v.length)return;showView("mapa");LAY.mq=true;
+    const b=L.latLngBounds(v.map(x=>[(x.p||x.r).lat,(x.p||x.r).lon]));setTimeout(()=>{map.fitBounds(b.pad(.15),{maxZoom:13});if(window.refreshMarks)refreshMarks()},120);return}
+  const o=e.target.closest("[data-lopen]");if(o){const x=LAST[+o.dataset.lopen];if(!x)return;
+    if(x.r){ovShow({t:"route",id:x.r.id});return}
+    const p=x.p;if(p.co){COLX.open(p.ci);return}
+    const rs=(P[p.i].rs||[]).filter(i=>R[i].u);if(rs.length)ovShow(rs.length>1?{t:"pt",i:p.i}:{t:"route",id:rs[0]});else{showView("mapa");setTimeout(()=>flyTo(p.lat,p.lon,10),100)}}});
+// al marcar o desmarcar en cualquier sitio, la lista se pone al día
+document.addEventListener("click",e=>{if(e.target.closest("[data-mk]"))setTimeout(()=>{render();if(window.LISTAS_CNT)LISTAS_CNT()},0)});
+// también al cambiar las marcas desde la cuenta (otro móvil) y al entrar en Mis cosas
+for(const f of ["renderCols","showView"]){const o=window[f];if(typeof o==="function")window[f]=function(){const r=o.apply(this,arguments);try{render();if(window.LISTAS_CNT)LISTAS_CNT()}catch(e){}return r}}
+window.LISTAS={box,render,pend};
+})();
+
+}catch(e){console.error("módulo listas",e);(window.__ERRS=window.__ERRS||[]).push("listas: "+(e&&e.message))}
+try{
 /* ---------- 👥 Seguidores: puntos y tracks que comparte la gente, revisados antes por Los de las Claras ----------
    · En la ficha de un punto o un track tuyo: «👥 Proponer al grupo» (con comentario y enlaces: blog, fotos, Wikiloc…).
    · La propuesta solo la ven quien la manda y el administrador. Al aceptarla se publica en la pestaña Seguidores.
@@ -2578,17 +2649,18 @@ nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Del grupo")+tab("mios","Mis cosas"
 
 /* «Mis cosas»: una vista nueva con mis puntos, mis tracks y los mapas descargados */
 const sec=document.createElement("section");sec.className="view pad";sec.id="v-mios";sec.hidden=true;
-sec.innerHTML=`<div class="inner"><h1 class="vt">Mis cosas</h1><p class="lead" style="margin-bottom:4px">Tus puntos, tus tracks y los mapas que has descargado. Con tu cuenta de Google los tienes en el móvil y en el ordenador.</p>
+sec.innerHTML=`<div class="inner"><h1 class="vt">Mis cosas</h1><p class="lead" style="margin-bottom:4px">Lo que has hecho y lo que quieres hacer, tus puntos, tus tracks y los mapas que has descargado. Con tu cuenta de Google los tienes en el móvil y en el ordenador.</p>
 <div class="subtabs" id="st-mios" role="tablist" style="grid-template-columns:repeat(4,1fr)"></div></div>`;
 main.appendChild(sec);const inner=sec.firstElementChild;
-const MS={mp:document.getElementById("mpbox"),mt:document.getElementById("mtbox"),off:document.getElementById("offbox"),res:window.RESUMEN?RESUMEN.box:null};
+const MS={ml:document.getElementById("mlbox"),mp:document.getElementById("mpbox"),mt:document.getElementById("mtbox"),off:document.getElementById("offbox")};
 for(const k in MS)if(MS[k]){MS[k].dataset.msec=k;inner.appendChild(MS[k])}
-const MN={mp:["📍","Puntos"],mt:["🧵","Tracks"],off:["📥","Mapas"],res:["🏆","Resumen"]};
-const cuenta=k=>k==="res"?(typeof PEAKS!=="undefined"?PEAKS.filter(p=>MARKS["c:"+norm(p.c)+(p.co?"@"+p.co.id:"")]==="hecha").length+" ⛰️":""):k==="mp"?MISPUNTOS.get().length:k==="mt"?MISPUNTOS.tracks().length:(window.OFFLINE?OFFLINE.list().length:0);
-let curM=store.get("ldc-mios","mp");if(!MN[curM])curM="mp";
+const MN={ml:["★","Mis listas"],mp:["📍","Puntos"],mt:["🧵","Tracks"],off:["📥","Mapas"]};
+const cuenta=k=>k==="ml"?(window.LISTAS?LISTAS.pend()+" ★":""):k==="res"?(typeof PEAKS!=="undefined"?PEAKS.filter(p=>MARKS["c:"+norm(p.c)+(p.co?"@"+p.co.id:"")]==="hecha").length+" ⛰️":""):k==="mp"?MISPUNTOS.get().length:k==="mt"?MISPUNTOS.tracks().length:(window.OFFLINE?OFFLINE.list().length:0);
+let curM=store.get("ldc-mios","ml");if(!MN[curM])curM="ml";
 const barM=document.getElementById("st-mios");
 function pintaM(){barM.innerHTML=Object.keys(MN).map(k=>`<button role="tab" data-ms="${k}" aria-selected="${k===curM}"><span class="i">${MN[k][0]}</span><span>${MN[k][1]}</span><small>${cuenta(k)}</small></button>`).join("");
-  for(const k in MS)if(MS[k])MS[k].hidden=k!==curM;if(curM==="res"&&window.RESUMEN)RESUMEN.render()}
+  for(const k in MS)if(MS[k])MS[k].hidden=k!==curM;if(curM==="ml"&&window.LISTAS)LISTAS.render()}
+window.LISTAS_CNT=()=>barM.querySelectorAll("[data-ms]").forEach(b=>{const s=b.querySelector("small");if(s)s.textContent=cuenta(b.dataset.ms)});
 barM.addEventListener("click",e=>{const b=e.target.closest("[data-ms]");if(!b)return;curM=b.dataset.ms;store.set("ldc-mios",curM);pintaM();if(sec.scrollTop>barM.offsetTop)sec.scrollTop=barM.offsetTop});
 const mo=new MutationObserver(()=>barM.querySelectorAll("[data-ms]").forEach(b=>{const s=b.querySelector("small");if(s)s.textContent=cuenta(b.dataset.ms)}));
 for(const k in MS)if(MS[k])mo.observe(MS[k],{childList:true});
@@ -2613,6 +2685,7 @@ window.showView=showView=function(v){
   const top=GN[v]?"grupo":v;
   nav.querySelectorAll("[data-v]").forEach(x=>x.setAttribute("aria-selected",x.dataset.v===top));
   VIEWS.forEach(n=>{const el=document.getElementById("v-"+n);if(el)el.hidden=n!==v});
+  if(v==="mios"&&window.LISTAS){LISTAS.render();if(window.LISTAS_CNT)LISTAS_CNT()}
   store.set("ldc-tab",v)};
 window.LUGTAB=k=>{showView("mios");if(MN[k]){curM=k;store.set("ldc-mios",k);pintaM()}};
 const vis=VIEWS.find(n=>{const el=document.getElementById("v-"+n);return el&&!el.hidden})||"mapa";
@@ -3006,5 +3079,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="d4dc3b169d";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="4c3c64da62";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
