@@ -1,23 +1,38 @@
-/* ---------- Cumbres y Lugares: «Cerca de un lugar» y «Cerca de mí» (como en Rutas); en Rutas también «Cerca de mí» ---------- */
+/* ---------- «Modo cerca» común a Rutas, Cumbres y Lugares (cerca de un sitio o de mí) + botón 🎯 Cerca del mapa ---------- */
 (function(){
-let PICK=null;   // pestaña que está eligiendo sitio («cumbres» o «lugares»)
-window.cercaBar=(kind,C)=>`<div class="wizrow cerca"><button class="btn ghost wizbtn" data-cnear>📍 Cerca de un lugar</button><button class="btn ghost wizbtn" data-cme>🎯 Cerca de mí</button><button class="btn ghost wizbtn" data-fpopen>⚙ Filtros${fpN(C)?" ("+fpN(C)+")":""}</button></div>`+
-  (C.near?`<div class="wzban"><b>📍 Cerca de ${esc(C.near.label)}</b><span>A menos de ${C.near.rad} km, de la más cercana a la más lejana.</span><div><button class="btn primary" data-cnear>Cambiar</button> <button class="linkbtn" data-cnoff>Ver todas</button></div></div>`:"");
-window.cercaTit=()=>PICK==="cumbres"?"Cumbres cerca de…":PICK==="lugares"?"Lugares cerca de…":"Rutas cerca de…";
-window.nearPick=(lat,lon,label)=>{if(!PICK)return false;const k=PICK;PICK=null;COL[k].near={lat,lon,label,rad:radAt(lat,lon)};
-  if(typeof OVS!=="undefined"&&OVS.length)ovCloseAll();setTimeout(()=>{showView(k);renderCol(k);const v=document.getElementById("v-"+k);if(v)v.scrollTop=0},150);return true};
-function geo(cb){if(!navigator.geolocation){toast("Este móvil no da la ubicación");return}toast("Buscando dónde estás…");
-  navigator.geolocation.getCurrentPosition(p=>cb(p.coords.latitude,p.coords.longitude),()=>toast("No he podido saber dónde estás. Revisa que la ubicación esté activada."),{enableHighAccuracy:true,timeout:12000,maximumAge:300000})}
-for(const k of ["cumbres","lugares"]){const v=document.getElementById("v-"+k);if(!v)continue;v.addEventListener("click",e=>{
-  if(e.target.closest("[data-cnear]")){PICK=k;ovShow({t:"search"});return}
-  if(e.target.closest("[data-cme]")){geo((la,lo)=>{PICK=k;nearPick(la,lo,"tu ubicación")});return}
-  if(e.target.closest("[data-cnoff]")){COL[k].near=null;renderCol(k)}})}
+let PICK=false;      // esperando a que se elija sitio en la pantalla de búsqueda
+window.NEAR=null;    // {lat,lon,label,rad}
+const banner=()=>NEAR?`<div class="wzban"><b>📍 Cerca de ${esc(NEAR.label)}</b><span>A menos de ${NEAR.rad} km, de lo más cercano a lo más lejano. Arriba cambias entre Rutas, Cumbres y Lugares.</span><div><button class="btn primary" data-cnear>Cambiar</button> <button class="linkbtn" data-cnoff>Ver todo</button></div></div>`:"";
+window.cercaBar=(kind,C)=>`<div class="wizrow cerca"><button class="btn ghost wizbtn" data-cnear>📍 Cerca de un lugar</button><button class="btn ghost wizbtn" data-cme>🎯 Cerca de mí</button><button class="btn ghost wizbtn" data-fpopen>⚙ Filtros${fpN(C)?" ("+fpN(C)+")":""}</button></div>`+banner();
+window.cercaTit=()=>PICK?"¿Cerca de dónde?":"Rutas cerca de…";
+const vistaX=()=>["rutas","cumbres","lugares"].find(k=>{const v=document.getElementById("v-"+k);return v&&!v.hidden});
+function ponNear(n,ir){window.NEAR=n;for(const k of ["cumbres","lugares"])COL[k].near=n;
+  const v=ir||vistaX()||"rutas";if(ir||!vistaX())showView(v);renderCols();renderList();const el=document.getElementById("v-"+v);if(el)el.scrollTop=0}
+window.nearPick=(lat,lon,label)=>{if(!PICK)return false;PICK=false;if(typeof OVS!=="undefined"&&OVS.length)ovCloseAll();
+  setTimeout(()=>ponNear({lat,lon,label,rad:radAt(lat,lon)}),150);return true};
+function geo(cb){if(!navigator.geolocation){toast("Este aparato no da la ubicación: elige un sitio");buscar();return}toast("Buscando dónde estás…");
+  navigator.geolocation.getCurrentPosition(p=>cb(p.coords.latitude,p.coords.longitude),()=>{toast("No he podido saber dónde estás: elige un sitio");buscar()},{enableHighAccuracy:true,timeout:12000,maximumAge:300000})}
+function buscar(){PICK=true;ovShow({t:"search"})}
+function yo(ir){geo((la,lo)=>ponNear({lat:la,lon:lo,label:"tu ubicación",rad:radAt(la,lo)},ir))}
+window.CERCA={yo,buscar,quitar:()=>ponNear(null)};
+document.addEventListener("click",e=>{if(!e.target.closest("#v-rutas,#v-cumbres,#v-lugares"))return;
+  if(e.target.closest("[data-cnear]")){e.stopPropagation();buscar();return}
+  if(e.target.closest("[data-cme]")){e.stopPropagation();yo();return}
+  if(e.target.closest("[data-cnoff]")){e.stopPropagation();ponNear(null)}},true);
 // si se sale de la búsqueda sin elegir sitio, no queda pendiente
-addEventListener("popstate",()=>setTimeout(()=>{if(typeof OVS!=="undefined"&&!OVS.length)PICK=null},0));
-// Rutas: «Cerca de mí» al lado de «Cerca de un lugar»
+addEventListener("popstate",()=>setTimeout(()=>{if(typeof OVS!=="undefined"&&!OVS.length)PICK=false},0));
+// Rutas: los mismos dos botones (el de «Cerca de un lugar» ya estaba)
 const b2=document.getElementById("b-near2");
-if(b2){b2.insertAdjacentHTML("afterend",`<button class="btn ghost wizbtn" id="b-nearme">🎯 Cerca de mí</button>`);
-  document.getElementById("b-nearme").addEventListener("click",()=>geo((la,lo)=>ovShow({t:"near",lat:la,lon:lo,label:"tu ubicación"})))}
+if(b2){b2.setAttribute("data-cnear","");b2.insertAdjacentHTML("afterend",`<button class="btn ghost wizbtn" id="b-nearme" data-cme>🎯 Cerca de mí</button>`)}
+// la lista de Rutas en modo cerca: sin años, de la más cercana a la más lejana (del grupo y de los colaboradores)
+const RL=window.renderList;
+window.renderList=function(){if(!NEAR)return RL.apply(this,arguments);if(window.rfSync)setTimeout(rfSync,0);
+  const s=norm(document.getElementById("q").value.trim()),o=window.COLX?COLX.rsrc:"todas";
+  const g=o!=="todas"&&o!=="grupo"?[]:R.filter(r=>r.u&&routeOk(r)&&(!s||norm((r.ti||"")+" "+r.p.map(i=>P[i].n).join(" ")+" "+r.r+" "+(r.sal||"")).includes(s))).map(r=>({r,d:km(NEAR,r)}));
+  const c=o==="grupo"||!window.COLX||!COLX.near?[]:COLX.near(NEAR.lat,NEAR.lon).filter(x=>(o==="todas"||o==="co_"+x.r.co.id)&&(!s||x.r.txt.includes(s)));
+  const L=g.concat(c).filter(x=>x.d<=NEAR.rad).sort((a,b)=>a.d-b.d);
+  const row=x=>{const dd=(x.d<10?x.d.toFixed(1).replace(".",","):x.d.toFixed(0))+" km";return x.r.cox?COLX.rrow(x.r,dd):rowHTML(x.r,dd)};
+  document.getElementById("list").innerHTML=banner()+(window.COLX?COLX.rchips():"")+`<p class="count">${L.length} ${L.length===1?"ruta":"rutas"}</p>`+(L.length?`<div class="rows">${L.map(row).join("")}</div>`:`<p class="empty">No hay rutas a menos de ${NEAR.rad} km con esa búsqueda y esos filtros.</p>`)};
 
 /* ---------- ⚙ Filtros: panel desde abajo en Rutas, Cumbres y Lugares ---------- */
 document.head.insertAdjacentHTML("beforeend",`<style>

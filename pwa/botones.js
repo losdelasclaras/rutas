@@ -10,4 +10,7 @@ html.pc .sosbtn,html.pc #b-pt,html.pc #b-me,html.pc #b-grab,html.pc [data-follow
 </style>`);
 // «Ver solo los míos» fuera de Capas (confundía: se quedaba puesto y parecía que faltaban puntos). Lo mismo, con aviso visible, en Mis listas › Ver en el mapa
 if(typeof LAY!=="undefined"&&LAY.solo){const b=document.querySelector('.laypanel [data-lay="solo"]');if(b)b.click();else{LAY.solo=false;if(typeof sizeMarks==="function")sizeMarks()}}
+// 🎯 Cerca: rutas, cumbres y lugares cerca de ti (en el ordenador, cerca del sitio que elijas)
+{const f=document.querySelector(".fabs");if(f){f.insertAdjacentHTML("afterbegin",`<button class="btn ghost" id="b-cerca" data-short="Cerca" title="Qué hay cerca"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/></svg>Cerca</button>`);
+  document.getElementById("b-cerca").addEventListener("click",()=>{if(!window.CERCA)return;if(pc)CERCA.buscar();else CERCA.yo("rutas")})}}
 })();
