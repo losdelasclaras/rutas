@@ -1,6 +1,7 @@
 name: Sondeo de mapas
 on:
   push: {branches: [datos], paths: ['robot/sondeo/**']}
+permissions: {contents: write}
 jobs:
   s:
     runs-on: ubuntu-latest
@@ -8,8 +9,8 @@ jobs:
       - uses: actions/checkout@v4
         with: {ref: datos, fetch-depth: 1}
       - run: |
-          mkdir out
-          while read m; do [ -n "$m" ] && curl -sSL -m 120 "https://www.google.com/maps/d/kml?mid=$m&forcekml=1" -o out/$m.kml; done < robot/sondeo/mids.txt
-          ls -la out
-      - uses: actions/upload-artifact@v4
-        with: {name: kml, path: out}
+          mkdir /tmp/out
+          while read m; do [ -n "$m" ] && curl -sSL -m 120 "https://www.google.com/maps/d/kml?mid=$m&forcekml=1" -o /tmp/out/$m.kml; done < robot/sondeo/mids.txt
+          ls -la /tmp/out
+          git config --global user.name "Robot de Los de las Claras"; git config --global user.email "losdelasclaras@users.noreply.github.com"
+          git checkout --orphan sondeo && git rm -rqf . && cp /tmp/out/*.kml . && git add *.kml && git commit -qm sondeo && git push -fq origin sondeo
