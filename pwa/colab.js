@@ -111,15 +111,27 @@ function abrirR(c,i){const r=c.r[i],[n,z,act,km,de,dif,wl,blog,ini,fo]=r;
   <div class="meta"><span class="tag" style="background:${c.c};color:#fff;border-color:${c.c}">${esc(c.n)}</span>${act?`<span class="tag">${esc(act)}</span>`:""}<span class="tag">${esc(z)}</span></div>
   <div class="mkblock rmk"><span>Esta ruta</span><span class="mk" data-key="${esc(key)}"><button data-mk="hecha" aria-pressed="${st==="hecha"}" title="Hecha">✓ Hecha</button><button data-mk="quiero" aria-pressed="${st==="quiero"}" title="Quiero hacerla">★ Quiero hacerla</button></span></div>
   ${(km||de||dif)?`<div class="ficha">${km?`<div><b>${esc(km)}</b><span>Distancia</span></div>`:""}${deN?`<div><b>+${esc(deN)} m</b><span>Desnivel</span></div>`:""}${dif?`<div><b>${esc(cap1(dif))}</b><span>Dificultad</span></div>`:""}</div>`:""}
+  <div class="topacts"><button class="btn primary" data-cofol>▶ Seguir</button><button class="btn ghost" data-cosave>☆ Guardar en Mis tracks</button></div>
   <div class="actions">${blog?`<a class="btn primary" href="${esc(blog)}" target="_blank" rel="noopener">Leer en el blog</a>`:""}${wl?`<a class="btn ${blog?"ghost":"primary"}" href="${esc(wl)}" target="_blank" rel="noopener">Ver en Wikiloc</a>`:""}<a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${ini[0]},${ini[1]}" target="_blank" rel="noopener">Cómo llegar a la salida</a></div>`;
-  if(window.showTrack)showTrack(null);nodes.classed("sel",false);sheet.hidden=false;sheet.scrollTop=0;
+  sheet._cor={c,i};if(window.showTrack)showTrack(null);nodes.classed("sel",false);sheet.hidden=false;sheet.scrollTop=0;
   if(TRCO){TRCO.remove();TRCO=null}
   lineas().then(J=>{const ll=(J[c.id]||[])[i];if(!ll||ll.length<2){flyTo(ini[0],ini[1]);return}
     TRCO=L.layerGroup([L.polyline(ll,{color:"#fff",weight:8,opacity:.95,interactive:false}),L.polyline(ll,{color:c.c,weight:5,opacity:1,interactive:false}),
       L.circleMarker(ll[0],{radius:7,color:"#fff",weight:2,fillColor:"#2a7a3b",fillOpacity:1,interactive:false}).bindTooltip("Salida",{direction:"top"})]).addTo(map);
     const el=mapEl.getBoundingClientRect(),wide=el.width>=860,pb=!wide?Math.min(el.height*.62,sheet.offsetHeight)+16:24;
     map.fitBounds(L.latLngBounds(ll),{paddingTopLeft:[wide?60:24,110],paddingBottomRight:[wide?640:24,pb],maxZoom:15})})}
-sheet.addEventListener("click",e=>{if(e.target.closest("[data-trcox]")&&TRCO){TRCO.remove();TRCO=null}});
+sheet.addEventListener("click",e=>{if(e.target.closest("[data-trcox]")){sheet._cor=null;if(TRCO){TRCO.remove();TRCO=null}}});
+// ▶ Seguir y ☆ Guardar en Mis tracks, como con las rutas del grupo
+sheet.addEventListener("click",e=>{const k=sheet._cor;if(!k)return;
+  const fol=e.target.closest("[data-cofol]"),sav=e.target.closest("[data-cosave]");if(!fol&&!sav)return;
+  const r=k.c.r[k.i],kmN=parseFloat(String(r[3]).replace(",","."))||null;
+  lineas().then(J=>{const ll=(J[k.c.id]||[])[k.i];if(!ll||ll.length<2){toast("No tengo el track de esta ruta");return}
+    if(fol){if(TRCO){TRCO.remove();TRCO=null}if(window.SEGUIR)SEGUIR.start({u:"tmp",ti:r[0],gx:{ln:ll,km:kmN}},false);return}
+    const go=()=>{const M=window.MISPUNTOS;if(!M||!M.saveTracks){toast("No se ha podido guardar");return}
+      if(M.tracks().some(t=>t.n===r[0])){toast("Ya la tenías en Mis tracks");return}
+      const o={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),n:r[0],km:kmN,pts:ll.map(q=>q.slice()),src:"gpx",f:new Date().toISOString()};
+      if(M.desn)M.desn(o);M.saveTracks([...M.tracks(),o]);toast("Guardada en Mis cosas › Tracks")};
+    if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go()})});
 map.on("click",()=>{});
 function coMarks(m){const el=m.getElement();if(!el)return;const v=MARKS[m.__k],on=(v==="hecha"&&LAY.mh)||(v==="quiero"&&LAY.mq);el.classList.toggle("mk-h",v==="hecha"&&LAY.mh);el.classList.toggle("mk-q",v==="quiero"&&LAY.mq);el.classList.toggle("co-off",!!LAY.solo&&!on);const tt=m.getTooltip();if(tt)tt.setOpacity(LAY.solo&&!on?0:1)}
 {const orig=window.refreshMarks;if(orig)window.refreshMarks=function(){orig.apply(this,arguments);for(const m of LBL)coMarks(m)}}

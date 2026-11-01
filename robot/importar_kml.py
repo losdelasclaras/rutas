@@ -50,10 +50,10 @@ def main(cid, nombre, carpeta):
             c = pm.find('.//' + K + 'LineString/' + K + 'coordinates')
             if c is None or not n: continue
             raw = [v.split(',') for v in c.text.split() if v.count(',') >= 1]
-            pts = [[float(a[1]), float(a[0])] for a in raw]
+            pts = [[float(a[1]), float(a[0]), float(a[2]) if len(a) > 2 and a[2] else None] for a in raw]
             ele = [(float(a[1]), float(a[0]), float(a[2])) for a in raw if len(a) > 2 and a[2]]
             if len(pts) < 2: continue
-            la, lo = pts[0]
+            la, lo = pts[0][0], pts[0][1]
             z = zona
             if zona == 'Fuera de España':
                 if not (44 < la < 48.5 and 5 < lo < 14): continue   # solo Alpes y Dolomitas
@@ -65,7 +65,7 @@ def main(cid, nombre, carpeta):
             dd = {x.get('name'): (x.findtext(K + 'value') or '').strip() for x in pm.iter(K + 'Data')}
             s = dp(pts, 0.00012)
             if len(s) > 400: s = s[::math.ceil(len(s) / 400)] + [s[-1]]
-            s = [[round(a, 5), round(b, 5)] for a, b in s]
+            s = [[round(q[0], 5), round(q[1], 5)] + ([round(q[2])] if q[2] is not None else []) for q in s]   # con la altura: «Seguir» calcula lo que queda de subida
             dst = destinos(n); ds = [x for x in dst if es_cima(x, dd.get('Actividad'))]
             if not ds and dd.get('Actividad') == 'Alpinismo' and len(dst) == 1 and not GEN.search(dst[0]) and len(dst[0].split()) <= 3 and dst[0][:1].isupper(): ds = dst
             if len(ds) == 1 and ele:
