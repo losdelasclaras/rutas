@@ -303,15 +303,16 @@ def fotos_colab(cid, new):
     import hashlib
     from PIL import Image
     d = APP + 'colab/fotos/'; os.makedirs(d, exist_ok=True)
-    falla = new.setdefault('ff', [])            # fotos que no se han podido bajar (no se reintentan cada noche)
+    new.pop('ff', None)
     ok = nuevas = mal = 0; err = None
     for pt in new.get('p', []):
         u = pt[5]
         if not u: continue
         if u.startswith('colab/'): ok += 1; continue
-        fn = f'{cid}-{hashlib.md5(u.encode()).hexdigest()[:12]}.jpg'
+        # el nombre sale del punto (nombre y sitio), no de la dirección de Google, que cambia cada vez que se lee el mapa
+        fn = f'{cid}-{hashlib.md5(f"{pt[0]}|{pt[1]}|{pt[2]}".encode()).hexdigest()[:12]}.jpg'
         if not os.path.exists(d + fn):
-            if u in falla or (mal >= 8 and not nuevas): continue
+            if (mal >= 8 and not nuevas): continue
             try:
                 b = None
                 for v in (u, u.replace('/*/', '/%2A/'), u + ('&' if '?' in u else '?') + 'fife=s1024'):
@@ -321,7 +322,7 @@ def fotos_colab(cid, new):
                 im = Image.open(io.BytesIO(b)).convert('RGB'); im.thumbnail((800, 800), Image.LANCZOS)
                 im.save(d + fn, 'JPEG', quality=72, optimize=True, progressive=True); nuevas += 1
             except Exception as e:
-                mal += 1; err = e; falla.append(u); continue
+                mal += 1; err = e; continue
         pt[5] = 'colab/' + fn; ok += 1
     if nuevas or mal: log(f'📷 Fotos del colaborador {cid}: {nuevas} nuevas, {ok} en total' + (f', {mal} no se han podido bajar ({err})' if mal else ''))
     usadas = {pt[5][6:] for pt in new.get('p', []) if pt[5].startswith('colab/')}
