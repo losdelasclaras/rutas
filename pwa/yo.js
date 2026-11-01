@@ -13,8 +13,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 let W=null,SIGUE=true,PRIMERO=true;
 function apaga(msg){if(W!=null){navigator.geolocation.clearWatch(W);W=null}b.classList.remove("vivo","suelto");if(msg)toast(msg)}
 function fix(p){const la=p.coords.latitude,lo=p.coords.longitude;
-  if(typeof showMe==="function")showMe(la,lo);
-  if(PRIMERO){PRIMERO=false;try{ensureZone(zoneAt(la,lo))}catch(e){}map.flyTo([la,lo],Math.max(map.getZoom(),14),{duration:.8});return}
+  if(typeof showMe==="function")showMe(la,lo,p.coords.accuracy);
+  if(PRIMERO){PRIMERO=false;try{ensureZone(zoneAt(la,lo))}catch(e){}map.flyTo([la,lo],Math.max(map.getZoom(),15),{duration:.8});toast("Estás aquí (punto azul)");return}
   if(SIGUE)map.panTo([la,lo],{animate:true,duration:.5})}
 function err(e){if(e&&e.code===1)apaga("Sin permiso de ubicación: actívalo en los ajustes del móvil para el navegador");
   else if(PRIMERO)toast("Todavía no tengo tu ubicación… sigo buscando")}

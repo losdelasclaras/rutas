@@ -91,7 +91,17 @@ function applyFilter(){
   renderMapbar(); renderFilters(); const n=nExtra()+(F.reg!=="todas"?1:0); document.getElementById("fsum").textContent=n?`(${n} activo${n>1?"s":""})`:"";
   markNodes(); renderList();
 }
-function showMe(lat,lon){if(meDot)meDot.remove();meDot=L.circleMarker([lat,lon],{radius:8,color:"#fff",weight:3,fillColor:"#1a73e8",fillOpacity:1}).addTo(map)}
+/* tu posición: punto azul grande con halo, siempre por encima de cumbres y lugares, y el círculo de precisión */
+map.createPane("yo");map.getPane("yo").style.zIndex=680;map.getPane("yo").style.pointerEvents="none";
+document.head.insertAdjacentHTML("beforeend",`<style>
+.yodot{position:relative}.yodot i{position:absolute;left:-13px;top:-13px;width:26px;height:26px;border-radius:50%;background:#1a73e8;border:4px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.5);box-sizing:border-box}
+.yodot b{position:absolute;left:-30px;top:-30px;width:60px;height:60px;border-radius:50%;background:rgba(26,115,232,.28);animation:yopulse 1.8s ease-out infinite}
+@keyframes yopulse{0%{transform:scale(.4);opacity:1}100%{transform:scale(1.3);opacity:0}}
+</style>`);
+let meAcc=null;
+function showMe(lat,lon,acc){if(meDot)meDot.remove();if(meAcc){meAcc.remove();meAcc=null}
+  if(acc&&acc>25&&acc<3000)meAcc=L.circle([lat,lon],{radius:acc,pane:"yo",color:"#1a73e8",weight:1,opacity:.5,fillColor:"#1a73e8",fillOpacity:.1,interactive:false}).addTo(map);
+  meDot=L.marker([lat,lon],{pane:"yo",interactive:false,keyboard:false,icon:L.divIcon({className:"yodot",html:"<b></b><i></i>",iconSize:[0,0]})}).addTo(map)}
 /* track del GPX: solo se dibuja con la ruta abierta */
 let TRK=null,SHOWN=null;
 window.showTrack=function(r){if(TRK){TRK.remove();TRK=null}SHOWN=r;if(r&&r.gx&&!r.gx.ln){loadTracks().then(ok=>{if(ok&&SHOWN===r)showTrack(r)});return}

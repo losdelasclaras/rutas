@@ -121,7 +121,7 @@ function start(r,rev,resume){if(!r||!r.gx)return;
   if(resume&&resume.rev===F.rev){F.s=resume.s||0;F.on=!!resume.on;F.i=resume.i||0;F.t=resume.tt||0}
   // solo se ve la ruta: fuera puntos, nombres, tracks del blog, mis puntos y mis tracks (vuelven al terminar)
   window.FOLONLY=true;document.getElementById("map").classList.add("fol-only");
-  if(probeC){probeC.remove();probeC=null}if(meDot){meDot.remove();meDot=null}if(typeof syncAllTracks==="function")syncAllTracks();MPI&&MPI.sync&&MPI.sync();
+  if(probeC){probeC.remove();probeC=null}if(meDot){meDot.remove();meDot=null}if(typeof meAcc!=="undefined"&&meAcc){meAcc.remove();meAcc=null}if(typeof syncAllTracks==="function")syncAllTracks();MPI&&MPI.sync&&MPI.sync();
   // si tiene el mapa descargado, se pone el del IGN (el que funciona sin cobertura)
   if(window.OFFLINE&&OFFLINE.has(r.u)&&BASE!=="ign"){F.prevBase=BASE;setBase("ign")}
   F.el=document.createElement("div");F.el.className="fol";F.el.innerHTML=panelHTML();vm.appendChild(F.el);vm.classList.add("fol-on");
