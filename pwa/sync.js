@@ -49,16 +49,22 @@ const hora=()=>{const h=store.get(TK,null);if(!h)return"";const d=new Date(h),ho
 const cuenta=()=>{const nm=Object.keys(MARKS).length,np=MPI.get().length,nt=MPI.tracks().length;
   return`${nm} marca${nm===1?"":"s"} de cumbres y lugares · ${np} punto${np===1?"":"s"}${nt?` · ${nt} track${nt===1?"":"s"}`:""}`};
 let OPEN=false,PEND=null,MOT=null;
-const MOTS={marcas:"Entra para guardar tus marcas",puntos:"Entra para guardar tus puntos",tracks:"Entra para guardar tus tracks",proponer:"Entra para proponer al grupo"};
+const MOTS={marcas:"Entra para no perder tus marcas",puntos:"Entra para guardar tus puntos",tracks:"Entra para guardar tus tracks",proponer:"Entra para proponer al grupo"};
 // guardar algo tuyo pide haber entrado con Google; lo que pulsaste se hace solo después de entrar
 window.cuentaOk=(fn,motivo)=>{if(store.get(SK,"0")==="1")return true;PEND=fn;MOT=motivo||"marcas";panel();return false};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;
   e.preventDefault();e.stopPropagation();const k=b.parentElement.dataset.key,v=b.dataset.m;
   cuentaOk(()=>{if(MARKS[k]!==v){MARKS[k]=v;saveMarks();renderCols();if(typeof refreshMarks==="function")refreshMarks()}toast(v==="hecha"?"Marcado ✓":"Apuntado en tu lista ★")},"marcas")},true);
+// lo mismo con los botones ✓/★ de las fichas (mapa, rutas, colaboradores) y de Mis listas: sin cuenta, primero entrar
+document.addEventListener("click",e=>{const b=e.target.closest("[data-mk]");if(!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;
+  e.preventDefault();e.stopPropagation();const k=b.parentElement.dataset.key,v=b.dataset.mk;
+  cuentaOk(()=>{if(MARKS[k]!==v){MARKS[k]=v;saveMarks()}
+    document.querySelectorAll(`.mk[data-key="${CSS.escape(k)}"]`).forEach(g=>g.querySelectorAll("[data-mk]").forEach(x=>x.setAttribute("aria-pressed",MARKS[k]===x.dataset.mk)));
+    renderCols();if(typeof refreshMarks==="function")refreshMarks();if(window.LISTAS)LISTAS.render();toast(v==="hecha"?"Marcado ✓":"Apuntado en tu lista ★")},"marcas")},true);
 function panel(){OPEN=true;
   if(!USER){load().catch(()=>{});
     show(`<div class="sheet-head"><h2>${MOT?esc(MOTS[MOT]||"Entra con tu cuenta"):"Tu cuenta"}</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
-    <p>${MOT?"Para guardar algo tuyo hay que entrar con tu cuenta de Google. ":"Entra con tu cuenta de Google y "}Tus <b>marcas de cumbres y lugares, tus puntos y tus tracks</b> se guardan en tu cuenta: los tendrás en el móvil y en el ordenador, y no se pierden si cambias de móvil.</p>
+    <p>${MOT?"Para guardar algo tuyo hay que entrar con tu cuenta de Google. ":"Entra con tu cuenta de Google y "}Tus <b>marcas de cumbres, lugares y rutas, tus puntos y tus tracks</b> se guardan en tu cuenta: los tendrás en el móvil y en el ordenador, y no se pierden si cambias de móvil.</p>
     <p class="note">Solo hace falta una vez: después la app entra sola. Para ver rutas y mapas no hace falta. Solo se guarda lo tuyo y nadie más puede verlo.</p>
     ${ERR?`<p class="syncst er">${esc(ERR)}</p>`:""}
     <p style="margin:14px 0 6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="gbtn" data-gin>${GLOGO}Entrar con Google</button>${MOT?`<button class="mpb" data-close>Ahora no</button>`:""}</p>
