@@ -357,20 +357,26 @@ def blog_colab(co, new):
         if urls: break
     urls = {u for u in urls if not re.search(r'/(category|tag|categoria|etiqueta|page|author|wp-content)/|\.(jpg|png|webp)$', u)}
     if not urls: log(f'⚠ No he podido leer el índice del blog de {co.get("nombre") or co["id"]} ({web}).'); return
-    STOP = {'de', 'del', 'la', 'las', 'el', 'los', 'y', 'e', 'desde', 'por', 'a', 'al', 'en', 'con', 'circular', 'ruta', 'invernal', 'invierno', 'nieve', 'subida', 'o', 'u', 'the'}
-    sin = lambda t: re.sub(r'[^a-z0-9ñ ]+', ' ', unicodedata.normalize('NFD', t.lower()).replace('ñ', 'ñ').encode('ascii', 'ignore').decode()).split()
-    toks = lambda t: {w for w in sin(t) if w not in STOP and len(w) > 1}
+    STOP = {'de', 'del', 'la', 'las', 'el', 'los', 'y', 'e', 'desde', 'por', 'a', 'al', 'en', 'con', 'circular', 'ruta', 'invernal', 'invierno', 'nieve', 'subida', 'o', 'u', 'the',
+            'ascension', 'raquetada', 'raquetas', 'vuelta', 'ida', 'hasta', 'entre', 'sobre', 'camino'}
+    def sin(t):
+        t = unicodedata.normalize('NFD', t.lower()); t = ''.join(c for c in t if unicodedata.category(c) != 'Mn')
+        return [w for w in re.sub(r'[^a-z0-9 ]+', ' ', t).split() if w not in STOP and len(w) > 1]
     try: open(os.path.join(os.path.dirname(os.path.abspath(__file__)), f'blog_{co["id"]}.txt'), 'w').write('\n'.join(sorted(urls)) + '\n')
     except Exception: pass
-    slugs = [(u, toks(u.rstrip('/').rsplit('/', 1)[-1].replace('-', ' '))) for u in urls]
+    slugs = [(u, set(sin(u.rstrip('/').rsplit('/', 1)[-1].replace('-', ' ')))) for u in urls]
     n = 0
     for r in rs:
         if r[7]: continue
-        t = toks(re.sub(r'\(.*?\)', '', r[0].split('|')[-1]))
-        if len(t) < 2: continue
-        sc = sorted(((len(t & s) / len(t | s), len(t & s), u) for u, s in slugs if s), reverse=True)
-        if sc and sc[0][1] >= 2 and sc[0][0] >= 0.6 and (len(sc) < 2 or sc[1][0] < sc[0][0]):
-            r[7] = sc[0][2]; n += 1
+        tt = re.sub(r'\(.*?\)', '', r[0].split('|')[-1]); t = set(sin(tt))
+        dl = sin(re.split(r'\s+(?:desde|por)\s+', tt, maxsplit=1, flags=re.I)[0]); de = set(dl)
+        if len(t) < 2 or not dl: continue
+        sc = sorted(((2 * len(t & s) / (len(t) + len(s)), len(t & s), u, s) for u, s in slugs if s), key=lambda x: (x[0], x[1]), reverse=True)
+        if not sc: continue
+        f, ov, u, s = sc[0]
+        # parecido de nombre, el destino principal (lo primero antes de «desde») en la entrada y sin empate
+        if ov >= 2 and f >= 0.6 and (len(sc) < 2 or sc[1][0] < f) and dl[0] in s and len(de & s) >= math.ceil(.6 * len(de)):
+            r[7] = u; n += 1
     con = sum(1 for r in rs if r[7])
     if n: log(f'📝 Blog de {co.get("nombre") or co["id"]}: {n} rutas emparejadas con su entrada ({con} de {len(rs)} con enlace al blog; índice con {len(urls)} entradas).')
 
