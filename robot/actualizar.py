@@ -237,6 +237,85 @@ def drive():
     if nuevos: CAMBIOS.append(f'drive: {nuevos} tracks nuevos')
     else: log('Drive: sin tracks nuevos.')
 
+# ------------------------------------------------------------------ 3b. COLABORADORES (su My Maps y, si lo hay, su carpeta de Drive)
+# app/colaboradores.json: [{"id","nombre" (vacío = el título de su mapa),"color","mapa_mid","drive_carpeta"}]  ->  app/colab/<id>.json
+KNS = '{http://www.opengis.net/kml/2.2}'
+def _kml_colab(k):
+    r = ET.fromstring(k.encode('utf-8'))
+    doc = r.find(KNS + 'Document')
+    tit = (doc.findtext(KNS + 'name') if doc is not None else '') or ''
+    pts, lin = [], []
+    for pm in r.iter(KNS + 'Placemark'):
+        n = re.sub(r'\s+', ' ', (pm.findtext(KNS + 'name') or '')).strip()
+        dh = pm.findtext(KNS + 'description') or ''
+        fotos = []
+        for d in pm.iter(KNS + 'Data'):
+            if d.get('name') == 'gx_media_links': fotos += (d.findtext(KNS + 'value') or '').split()
+        fotos += re.findall(r'<img[^>]+src="([^"]+)"', dh)
+        us = [u.rstrip('.,;)') for u in re.findall(r'https?://[^\s<>"]+', dh) if u not in fotos and 'googleusercontent' not in u]
+        d = txt(dh)
+        for u in us: d = d.replace(u, '')
+        d = re.sub(r'\s+', ' ', d).strip()[:400]
+        pt = pm.find('.//' + KNS + 'Point/' + KNS + 'coordinates')
+        if pt is not None:
+            c = pt.text.strip().split(',')
+            pts.append([n, round(float(c[1]), 5), round(float(c[0]), 5), d, us[0] if us else '', fotos[0] if fotos else ''])
+            continue
+        for ls in pm.iter(KNS + 'LineString'):
+            cc = [s.split(',') for s in (ls.findtext(KNS + 'coordinates') or '').split()]
+            ll = [[round(float(v[1]), 5), round(float(v[0]), 5)] for v in cc if len(v) >= 2]
+            if len(ll) >= 2: lin.append([n, ll])
+    return tit.strip(), pts, lin
+
+def _gpx_linea(b):
+    ll = [[round(float(a), 5), round(float(o), 5)] for a, o in re.findall(r'<(?:trkpt|rtept)[^>]*?lat="([-\d.]+)"[^>]*?lon="([-\d.]+)"', b)]
+    ll += [[round(float(a), 5), round(float(o), 5)] for o, a in re.findall(r'<(?:trkpt|rtept)[^>]*?lon="([-\d.]+)"[^>]*?lat="([-\d.]+)"', b)]
+    if len(ll) > 1500: ll = ll[::len(ll) // 1500 + 1]
+    return ll
+
+def colaboradores():
+    cf = APP + 'colaboradores.json'
+    if not os.path.exists(cf): return
+    os.makedirs(APP + 'colab', exist_ok=True)
+    for co in json.load(open(cf)):
+        fo = APP + f'colab/{co["id"]}.json'
+        old = json.load(open(fo)) if os.path.exists(fo) else {}
+        new = dict(old)
+        if co.get('mapa_mid'):
+            try:
+                tit, pts, lin = _kml_colab(get(f'https://www.google.com/maps/d/kml?mid={co["mapa_mid"]}&forcekml=1'))
+                if len(pts) < 0.9 * len(old.get('p', [])):
+                    log(f'⚠ El mapa del colaborador «{old.get("t", co["id"])}» ha devuelto solo {len(pts)} puntos (había {len(old["p"])}): no lo toco.')
+                else:
+                    new.update(t=tit, p=pts, l=lin)
+            except Exception as e:
+                log(f'⚠ No he podido leer el mapa del colaborador {co["id"]}: {e}')
+        if co.get('drive_carpeta'):
+            try:
+                h = get(f'https://drive.google.com/embeddedfolderview?id={co["drive_carpeta"]}')
+                ent = re.findall(r'id="entry-([\w-]+)".*?class="flip-entry-title">(.*?)</div>', h, re.S)
+                prev = {x[0]: x for x in old.get('d', [])}
+                dd = []
+                for fid, nombre in ent:
+                    nombre = html.unescape(nombre).strip()
+                    if not re.search(r'\.(gpx|kml)$', nombre, re.I): continue
+                    if fid in prev: dd.append(prev[fid]); continue
+                    b = get(f'https://drive.google.com/uc?export=download&id={fid}', True).decode('utf-8', 'replace')
+                    if nombre.lower().endswith('.kml'): b = kml2gpx(b, nombre[:-4]) or ''
+                    ll = _gpx_linea(b)
+                    if len(ll) >= 2: dd.append([fid, re.sub(r'\.(gpx|kml)$', '', nombre, flags=re.I), ll])
+                if ent or 'flip-list' in h or 'flip-entries' in h: new['d'] = dd
+                else: log(f'⚠ No he podido leer la carpeta de Drive del colaborador {co["id"]} (¿compartida con «Cualquier persona con el enlace»?).')
+            except Exception as e:
+                log(f'⚠ Drive del colaborador {co["id"]}: {e}')
+        nom = co.get('nombre') or new.get('t') or co['id']
+        if new != old:
+            json.dump(new, open(fo, 'w'), ensure_ascii=False, separators=(',', ':'))
+            log(f'🤝 Colaborador «{nom}»: {len(new.get("p", []))} puntos, {len(new.get("l", [])) + len(new.get("d", []))} tracks.')
+            CAMBIOS.append(f'colaborador {nom}')
+        else:
+            log(f'Colaborador «{nom}»: sin cambios.')
+
 # ------------------------------------------------------------------ 4. REGENERAR
 def regenerar():
     def run(*a, cwd=APP):
@@ -261,7 +340,7 @@ def regenerar():
 if __name__ == '__main__':
     hoy = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=1))).strftime('%d/%m/%Y %H:%M')
     err = None
-    for paso in (blog, mapa, drive):
+    for paso in (blog, mapa, drive, colaboradores):
         try: paso()
         except Exception as e:
             log(f'⚠ Error en {paso.__name__}: {e}'); err = e

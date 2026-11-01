@@ -47,9 +47,18 @@ rep('</style>','''html,body{height:100%;margin:0}
 </style>
 </head><body>''')
 # cada módulo va protegido: si uno falla en un móvil concreto, los demás y la app siguen funcionando
-_mods=['mispuntos','capas','sync','seguir','mistracks','offline','yo','sos','resumen','seguidores','pestanas','novedades','instalar','compartir','perfil','tiempo']
+_mods=['mispuntos','colab','capas','sync','seguir','mistracks','offline','yo','sos','resumen','seguidores','pestanas','novedades','instalar','compartir','perfil','tiempo']
 _w=lambda n:'try{\n'+open(f'/home/claude/pwa/{n}.js').read()+'\n}catch(e){console.error("módulo '+n+'",e);(window.__ERRS=window.__ERRS||[]).push("'+n+': "+(e&&e.message))}'
 i=t.rindex('</script>'); t=t[:i]+'\n'+'\n'.join(_w(n) for n in _mods)+'\n'+t[i:]
+# colaboradores (app/colaboradores.json + app/colab/<id>.json, los rellena el robot): van dentro de la página, así se ven también sin cobertura
+_CO=[]
+for _c in (json.load(open(A+'colaboradores.json')) if os.path.exists(A+'colaboradores.json') else []):
+    _f=A+f"colab/{_c['id']}.json"
+    if not os.path.exists(_f): continue
+    _d=json.load(open(_f))
+    _CO.append({'id':_c['id'],'n':_c.get('nombre') or _d.get('t') or 'Colaborador','c':_c.get('color') or '#e8710a','p':_d.get('p',[]),'l':_d.get('l',[])+[[x[1],x[2]] for x in _d.get('d',[])]})
+assert t.count('__COLAB__')==1
+t=t.replace('__COLAB__',json.dumps(_CO,ensure_ascii=False,separators=(',',':')).replace('</','<\\/'))
 i=t.rindex('</script>'); t=t[:i]+'</script>\n<script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(reg=>{reg.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update()})}).catch(()=>{}))}</script>\n</body></html>\n'
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
