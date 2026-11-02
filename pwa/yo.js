@@ -24,7 +24,8 @@ function fix(p,ap){const la=p.coords.latitude,lo=p.coords.longitude;
   if(PRIMERO){PRIMERO=false;try{ensureZone(zoneAt(la,lo))}catch(e){}map.flyTo([la,lo],Math.max(map.getZoom(),15),{duration:.8});toast(ap?"Estás por aquí (aproximado, con wifi y datos); afinando con el GPS…":"Estás aquí (punto azul)");return}
   if(SIGUE)map.panTo([la,lo],{animate:true,duration:.5})}
 function err(e){if(e&&e.code===1)apaga("Sin permiso de ubicación: actívalo en los ajustes del móvil para el navegador");
-  else if(PRIMERO)toast("Todavía no tengo tu ubicación… sigo buscando")}
+  else if(PRIMERO){let apk=false;try{apk=sessionStorage.getItem("ldc-apk")==="1"}catch(x){}
+    toast(apk?"Todavía no te encuentro. Si sigue así, mira que la app tenga permiso: Ajustes › Aplicaciones › Los de las Claras › Permisos › Ubicación":"Todavía no tengo tu ubicación… sigo buscando")}}
 
 b.addEventListener("click",()=>{
   if(!navigator.geolocation){toast("Este móvil no da la ubicación");return}
