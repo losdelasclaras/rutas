@@ -113,6 +113,7 @@ document.addEventListener("visibilitychange",()=>{if(F&&document.visibilityState
 const save=()=>{if(F)store.set(FK,{u:F.r.u,rev:F.rev,s:F.s,i:F.i,tt:F.t,on:F.on,t:Date.now()})};
 
 function start(r,rev,resume){if(!r||!r.gx)return;
+  if(!resume&&typeof window.SEGUIR_NATIVO==="function")return window.SEGUIR_NATIVO(r,rev);   // en la app del APK: a la pantalla de grabar del móvil
   if(!r.gx.ln){toast("Preparando el track…");loadTracks().then(ok=>{if(ok&&r.gx.ln)start(r,rev,resume);else toast("Sin conexión: no puedo cargar el track ahora")});return}
   if(!navigator.geolocation){toast("Este aparato no da la ubicación");return}
   stop(true);

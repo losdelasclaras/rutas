@@ -71,9 +71,9 @@ if(enApp&&navigator.geolocation){const G=navigator.geolocation,gcp=G.getCurrentP
       else{showView("mapa");if(typeof showMe==="function")showMe(f.lat,f.lon,f.acc);map.setView([f.lat,f.lon],Math.max(map.getZoom(),15));toast(f.acc>100?"Estás por aquí (aproximado)":"Estás aquí (punto azul)")}},900)};
   addEventListener("hashchange",lee);setTimeout(lee,600)}
 /* en la app del APK, «▶ Seguir» abre la pantalla de grabar del móvil con el track (allí el GPS es el de Android y siempre funciona; se puede grabar a la vez) */
-if(enApp&&window.SEGUIR){const st0=SEGUIR.start;
-  SEGUIR.start=function(r,rev,resume){if(resume||!r||!r.gx)return st0.apply(this,arguments);
-    if(!r.gx.ln){toast("Preparando el track…");loadTracks().then(ok=>{if(ok&&r.gx.ln)SEGUIR.start(r,rev);else toast("Sin conexión: no puedo cargar el track ahora")});return}
+if(enApp){
+  window.SEGUIR_NATIVO=function(r,rev){
+    if(!r.gx.ln){toast("Preparando el track…");loadTracks().then(ok=>{if(ok&&r.gx.ln)SEGUIR_NATIVO(r,rev);else toast("Sin conexión: no puedo cargar el track ahora")});return}
     let ln=r.gx.ln.map(q=>[+(+q[0]).toFixed(6),+(+q[1]).toFixed(6),q[2]!=null&&isFinite(q[2])?Math.round(q[2]):null]);if(rev)ln.reverse();
     if(ln.length>1500&&window.COMPARTIR&&COMPARTIR.simple){let t=2;while(ln.length>1500&&t<40){ln=COMPARTIR.simple(ln,t);t*=1.5}}
     const n=(typeof routeTitle==="function"&&r.p?routeTitle(r):r.ti||r.n)||"Track";
