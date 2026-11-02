@@ -105,7 +105,7 @@ object Buzon {
     }
     fun enviar(c: Context, pts: List<DoubleArray>, nombre: String, fin: (Boolean) -> Unit) = enviar(c, pts, nombre, JSONArray(), fin)
     fun enviar(c: Context, pts: List<DoubleArray>, nombre: String, wps: JSONArray, fin: (Boolean) -> Unit) {
-        val a = JSONArray(); for (q in pts) a.put(JSONArray().put(q[0]).put(q[1]).put(q[3].toLong()))
+        val a = JSONArray(); for (q in pts) a.put(JSONArray().put(q[0]).put(q[1]).put(q[3].toLong()).put(if (q[2].isNaN()) JSONObject.NULL else Math.round(q[2])))   // [lat, lon, ms, altura GPS]
         val item = JSONObject().put("n", nombre).put("t0", if (pts.isNotEmpty()) pts[0][3].toLong() else System.currentTimeMillis()).put("p", a)
         if (wps.length() > 0) item.put("w", wps)
         // primero a la lista de pendientes (por si no hay cobertura) y luego se intenta mandar todo
