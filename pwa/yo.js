@@ -45,7 +45,7 @@ if(fabs)fabs.insertAdjacentHTML("afterbegin",`<button class="btn ghost" id="b-pt
 // dentro de la app Android (la del APK): botón «Grabar», que abre la grabadora nativa (graba con la pantalla apagada)
 const enApp=(()=>{try{if(document.referrer.startsWith("android-app://es.losdelasclaras.rutas"))sessionStorage.setItem("ldc-apk","1");return sessionStorage.getItem("ldc-apk")==="1"}catch(e){return false}})();
 // en el APK los mapas sin cobertura se guardan en la pantalla de grabar (que es donde se usan): fuera los de la web (Mis cosas › Mapas y sus botones)
-if(enApp){document.documentElement.classList.add("apk");document.head.insertAdjacentHTML("beforeend",`<style>html.apk [data-offr],html.apk [data-offt],html.apk [data-offzone],html.apk .offhint{display:none!important}</style>`)}
+if(enApp){document.documentElement.classList.add("apk");document.head.insertAdjacentHTML("beforeend",`<style>html.apk [data-offr],html.apk [data-offt],html.apk .offhint{display:none!important}</style>`)}
 if(enApp&&fabs){fabs.insertAdjacentHTML("afterbegin",`<button class="btn ghost" id="b-grab" data-short="Grabar" title="Grabar recorrido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4" fill="#c3262e" stroke="none"/></svg>Grabar</button>`);
   document.getElementById("b-grab").addEventListener("click",()=>{location.href="intent://grabar?b="+buzon()+"#Intent;scheme=ldcgrabar;package=es.losdelasclaras.rutas;end"})}
 /* en la app del APK, Chrome no le da la ubicación a la web: se la pide a Android (intent://ubicar) y vuelve con #yo=lat,lon,precisión,hora,para.

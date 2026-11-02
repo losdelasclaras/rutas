@@ -97,6 +97,10 @@ function zona(){if(typeof showView==="function")showView("mapa");sheet.hidden=tr
   const fin=()=>{map.off("moveend",upd);fr.remove();b.remove();ZB=null};ZB=fin;map.on("moveend",upd);upd();
   b.addEventListener("click",e=>{if(e.target.closest("[data-ozc]")){fin();return}
     if(e.target.closest("[data-oz]")){const bb=map.getBounds(),c=bb.getCenter();const{set,zmax,z0}=tilesZone(bb);fin();
+      // en el APK: la zona se guarda para la pantalla de grabar (que es donde se usa sin cobertura), con el mapa que se elija allí
+      if(document.documentElement.classList.contains("apk")){let nm="la zona",bd2=1e9;for(const p of PLACES){const d=(p[2]-c.lat)**2+((p[3]-c.lng)*Math.cos(c.lat*Math.PI/180))**2;if(d<bd2){bd2=d;nm=p[0]}}
+        let bz=null;try{bz=localStorage.getItem("ldc-buzon")}catch(x){}
+        location.href="intent://zona"+(bz?"?b="+bz:"")+"#Intent;scheme=ldcgrabar;package=es.losdelasclaras.rutas;S.z="+[bb.getSouth(),bb.getWest(),bb.getNorth(),bb.getEast()].map(v=>v.toFixed(5)).join(",")+";S.n="+encodeURIComponent(nm)+";end";return}
       let best=null,bd=1e9;for(const p of PLACES){const d=(p[2]-c.lat)**2+((p[3]-c.lng)*Math.cos(c.lat*Math.PI/180))**2;if(d<bd){bd=d;best=p[0]}}
       bajar({id:"z:"+Date.now().toString(36),ref:null,n:"Zona de "+(best||"mapa"),k:"zona",zb:[bb.getSouth(),bb.getWest(),bb.getNorth(),bb.getEast()].map(v=>Math.round(v*1e5)/1e5),z0,zmax},set)}})}
 
@@ -133,7 +137,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-offr],[dat
   if(t.src==="blog"){const r=R.find(x=>x.u===t.u);if(r){if(has(r.u)){abrirLista();return}rutaOffline(r)}return}
   const ref="mt:"+t.id;if(has(ref)){abrirLista();return}porTrack({id:"t:"+t.id,ref,n:t.n,k:"track"},t.pts)},true);
 const grp=[...document.querySelectorAll(".laypanel button.laygh")].find(x=>/^mapa$/i.test((x.querySelector(".tt")||x).textContent.trim()));
-if(grp&&grp.nextElementSibling)grp.nextElementSibling.insertAdjacentHTML("beforeend",`<button class="lay" data-offzone><span class="lico">📥</span>Descargar esta zona</button>`);
+if(grp&&grp.nextElementSibling)grp.nextElementSibling.insertAdjacentHTML("beforeend",`<button class="lay" data-offzone><span class="lico">📥</span>${(()=>{try{return sessionStorage.getItem("ldc-apk")==="1"||document.referrer.startsWith("android-app://es.losdelasclaras.rutas")}catch(e){return false}})()?"Mapa de una zona para grabar sin cobertura":"Descargar esta zona"}</button>`);
 document.querySelector(".legend").addEventListener("click",e=>{if(e.target.closest("[data-offzone]"))zona()});
 
 // sin cobertura y con mapas descargados: se pone el mapa del IGN
