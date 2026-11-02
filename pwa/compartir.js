@@ -37,7 +37,30 @@ async function abrirCorto(c){if(typeof toast==="function")toast("Abriendo lo que
     mostrar({n:x.n||"Track compartido",pts,km,up:x.up!=null?x.up:undefined},"enlace")}
   catch(e){toast(navigator.onLine?"No he podido abrir ese track":"Sin conexión: abre el enlace cuando tengas cobertura")}}
 function cache(t){try{const m=JSON.parse(localStorage.getItem(EK)||"{}")[t.id],h=t.n+"|"+t.pts.length+"|"+t.pts[0][0]+"|"+t.pts[t.pts.length-1][1];return m&&m.h===h?base()+"#c="+m.c:null}catch(e){return null}}
-async function compartir(t){const r=t.src==="blog"?R.find(x=>x.u===t.u):null;if(r){shareRoute(r);return}
+/* 📤 Compartir un track: primero se elige cómo. Archivo GPX (lo que él prefiere: vale para WhatsApp, Wikiloc, OruxMaps…) o enlace a la app */
+const enApk=()=>{try{return sessionStorage.getItem("ldc-apk")==="1"}catch(e){return false}};
+const xe=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function gpxTxt(n,pts,wps){return`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${xe(n)}</name></metadata>\n`+
+  (wps||[]).map(w=>`<wpt lat="${w.lat}" lon="${w.lon}"><name>${xe(w.n||"Punto")}</name></wpt>`).join("\n")+(wps&&wps.length?"\n":"")+
+  `<trk><name>${xe(n)}</name><trkseg>\n`+pts.map(p=>`<trkpt lat="${(+p[0]).toFixed(6)}" lon="${(+p[1]).toFixed(6)}">${p[2]!=null?`<ele>${Math.round(p[2])}</ele>`:""}</trkpt>`).join("\n")+`\n</trkseg></trk>\n</gpx>\n`}
+const nomArch=n=>(String(n).normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^\w\s-]/g,"").trim().replace(/\s+/g,"-").slice(0,60)||"track")+".gpx";
+// enviar un GPX como archivo de verdad. En la app del APK lo manda Android (Chrome no deja mandar .gpx); en el navegador, si el móvil no deja, se descarga
+async function enviaGpx(n,pts,wps){if(pts.length>3000)pts=simple(pts,3);const txt=gpxTxt(n,pts,wps),nm=nomArch(n);
+  if(enApk()){location.href="intent://gpx#Intent;scheme=ldcgpx;package=es.losdelasclaras.rutas;S.n="+encodeURIComponent(nm)+";S.g="+encodeURIComponent(txt)+";end";return}
+  try{const f=new File([txt],nm,{type:"application/gpx+xml"});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:n});return}}catch(e){if(e&&e.name==="AbortError")return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type:"application/gpx+xml"}));a.download=nm;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);
+  setTimeout(()=>toast("Guardado en Descargas. En WhatsApp: 📎 › Documento › Descargas"),1500)}
+window.enviaGpx=enviaGpx;
+function compartir(t){const r=t.src==="blog"?R.find(x=>x.u===t.u):null;
+  if(!t.pts||t.pts.length<2){if(r)shareRoute(r);return}
+  MPI.show(`<div class="sheet-head"><h2>📤 Compartir «${esc(t.n)}»</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+    <div class="topacts" style="flex-direction:column"><button class="btn primary" data-shk="gpx">📄 Enviar el archivo GPX</button><button class="btn ghost" data-shk="url">🔗 Enviar un enlace a la app</button></div>
+    <p class="note">El <b>archivo GPX</b> se abre con Wikiloc, OruxMaps, Google Earth o esta misma app. Con el <b>enlace</b>, quien lo toque ve el track en la app de Los de las Claras.</p>`);
+  sheet._shk={t,r}}
+sheet.addEventListener("click",e=>{const b=e.target.closest("[data-shk]"),d=sheet._shk;if(!b||!d)return;sheet._shk=null;
+  if(b.dataset.shk==="gpx"){enviaGpx(d.t.n,d.t.pts);return}
+  if(d.r){shareRoute(d.r);return}compartirEnlace(d.t)});
+async function compartirEnlace(t){
   if(!t.pts||t.pts.length<2)return;
   let url=cache(t);
   if(!url&&window.LDCFB&&LDCFB.user()&&navigator.onLine){
