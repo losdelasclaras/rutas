@@ -66,6 +66,7 @@ function open(id,fit){const t=T().find(x=>String(x.id)===String(id));if(!t)retur
   <div class="topacts"><button class="btn primary" data-mtfol="${esc(t.id)}">▶ Seguir track</button><button class="btn ghost" data-mtshare="${esc(t.id)}">📤 Compartir</button>${r?`<button class="btn ghost" data-mtroute="${esc(t.id)}">📘 Ver la ruta</button>`:""}</div>
   <div class="meta"><span class="tag">${r?"Ruta del blog":"Track cargado"}</span>${d.km?`<span class="tag">${kmTxt(d.km)}</span>`:""}${d.up!=null?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}${t.f?`<span class="tag">Guardado el ${fmtF(t.f)}</span>`:""}</div>
   <div class="estbox"><button class="mpb${t.est==="hecho"?" on":""}" data-mtest="hecho" data-id="${esc(t.id)}">✓ ${t.est==="hecho"?"Hecho":"Lo he hecho"}</button><button class="mpb${t.est==="pend"?" on":""}" data-mtest="pend" data-id="${esc(t.id)}">★ Pendiente</button>${t.est==="hecho"?`<label class="note" style="display:flex;align-items:center;gap:6px">el <input type="date" data-mtfh="${esc(t.id)}" value="${(t.fh||"").slice(0,10)}" max="${new Date().toISOString().slice(0,10)}"></label>`:""}</div>
+  ${datosHTML(t,d)}
   ${perfil(t)}
   ${!r&&t.pts&&t.pts.some(x=>x[2]==null)?`<p class="note">${navigator.onLine?"Calculando las alturas…":"Este track no trae alturas; se calcularán cuando haya conexión."}</p>`:""}
   ${window.OFFLINE&&!OFFLINE.has(r?r.u:"mt:"+t.id)&&p&&p[0][0]<44&&p[0][0]>35&&p[0][1]>-10&&p[0][1]<4.7?`<div class="offhint" style="margin:12px 0 4px;padding:10px 12px;border-radius:12px;background:#eef6ef;color:#1f4d2a;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="flex:1;min-width:180px">📥 <b>¿Vas a ir?</b> Descarga el mapa para verlo aunque no tengas cobertura.</span><button class="mpb pri" style="background:#2a7a3b;border-color:#2a7a3b" data-offt="${esc(t.id)}">Descargar mapa</button></div>`:""}
@@ -75,6 +76,25 @@ function open(id,fit){const t=T().find(x=>String(x.id)===String(id));if(!t)retur
   sheet._mt=t.id;
   if(fit)setTimeout(()=>encuadra(t),60);
   if(!r&&t.pts&&t.pts.some(x=>x[2]==null))MPI.demAlt(t.id)}
+/* 📊 Datos del track: distancia, desniveles, alturas y, si es grabado, horas, tiempo en movimiento y velocidad */
+document.head.insertAdjacentHTML("beforeend",`<style>.dat{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}.dat div{background:var(--paper,#f4f6f2);border:1px solid var(--edge);border-radius:12px;padding:8px 10px}.dat b{display:block;font-size:1.15em}.dat span{font-size:.8em;color:var(--muted);font-weight:700}.dat .w{grid-column:1/-1}</style>`);
+const hm=s=>{s=Math.round(s/60);const h=Math.floor(s/60),m=s%60;return h?`${h} h ${String(m).padStart(2,"0")} min`:`${m} min`};
+const hora=ms=>new Date(ms).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"});
+function datosHTML(t,d){const c=[],x=(v,l,w)=>c.push(`<div${w?' class="w"':""}><b>${v}</b><span>${l}</span></div>`);
+  if(d.km)x(kmTxt(d.km),"Distancia");
+  const r=routeOf(t),g=r&&r.gx,mx=t.mx!=null?t.mx:g&&g.mx,mn=t.mn!=null?t.mn:g&&g.mn;
+  if(d.up!=null)x("+"+d.up.toLocaleString("es-ES")+" m","Desnivel de subida");
+  if(d.dn!=null)x("−"+d.dn.toLocaleString("es-ES")+" m","Desnivel de bajada");
+  if(mx!=null)x(Math.round(mx).toLocaleString("es-ES")+" m","Altura máxima");
+  if(mn!=null)x(Math.round(mn).toLocaleString("es-ES")+" m","Altura mínima");
+  const m=t.tm;
+  if(m&&m.b>m.a){const tot=(m.b-m.a)/1000;
+    x(new Date(m.a).toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"})+` · de ${hora(m.a)} a ${hora(m.b)}`,"Cuándo",1);
+    x(hm(tot),"Tiempo total");x(hm(m.m),"En movimiento");x(hm(Math.max(0,tot-m.m)),"Parado");
+    if(d.km&&m.m>60){const v=d.km/(m.m/3600);x(v.toLocaleString("es-ES",{maximumFractionDigits:1})+" km/h","Velocidad en movimiento");
+      if(d.up&&m.m>600)x(Math.round(d.up/(m.m/3600)).toLocaleString("es-ES")+" m/h","Subida por hora en movimiento")}}
+  else if(d.km){const a=d.km/4,b=(d.up||0)/400,h=Math.max(a,b)+Math.min(a,b)/2;x("≈ "+hm(h*3600),"Tiempo estimado andando, sin paradas",1)}
+  return c.length?`<h3 style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 0">📊 Datos</h3><div class="dat">${c.join("")}</div>`:""}
 function refresh(id){render();if(!sheet.hidden&&String(sheet._mt)===String(id)&&sheet.querySelector("[data-mtfol]"))open(id,false)}
 
 function gpxDe(t){const x=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));

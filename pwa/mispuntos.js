@@ -212,11 +212,16 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
   const tx=(el,tag)=>{const n=el.getElementsByTagName(tag)[0];return n?n.textContent.trim():""};
   const base=fname.replace(/\.[^.]+$/,"");let np=0,nt=0;const have=new Set(MP.map(p=>p.lat.toFixed(4)+","+p.lon.toFixed(4)+"|"+p.n));
   const addP=(lat,lon,n,nota)=>{if(!isFinite(lat)||!isFinite(lon))return;const k=lat.toFixed(4)+","+lon.toFixed(4)+"|"+n;if(have.has(k))return;have.add(k);MP.push({id:nid(),n:n||"Punto importado",ic:"otro",nota:nota||"",lat:c5(lat),lon:c5(lon),f:new Date().toISOString()});np++};
-  const addT=(pts,n)=>{if(pts.length<2)return;const t=thin(pts);let km=0;for(let i=1;i<t.length;i++)km+=dist(t[i-1],t[i]);const o={id:nid(),n:n||base,km:Math.round(km/100)/10,pts:t,src:"gpx",f:new Date().toISOString()};desn(o);MT.push(o);nuevos.push(o);nt++};const nuevos=[];
+  const addT=(pts,n,tms)=>{if(pts.length<2)return;const t=thin(pts);let km=0;for(let i=1;i<t.length;i++)km+=dist(t[i-1],t[i]);const o={id:nid(),n:n||base,km:Math.round(km/100)/10,pts:t,src:"gpx",f:new Date().toISOString()};desn(o);
+    // si el GPX trae la hora de cada punto: inicio, fin y tiempo en movimiento (tramos de menos de 1 min y a más de 1 km/h)
+    if(tms&&tms.length===pts.length){let a=null,b=null,mov=0;for(let i=0;i<tms.length;i++){if(!tms[i])continue;if(a==null)a=tms[i];b=tms[i];
+        if(i&&tms[i-1]){const dt=(tms[i]-tms[i-1])/1000;if(dt>0&&dt<=60&&dist(pts[i-1],pts[i])/dt>0.28)mov+=dt}}
+      if(a&&b>a){o.tm={a,b,m:Math.round(mov)};o.fh=new Date(a).toISOString()}}MT.push(o);nuevos.push(o);nt++};const nuevos=[];
   if(doc.getElementsByTagName("gpx").length){
     for(const w of doc.getElementsByTagName("wpt"))addP(+w.getAttribute("lat"),+w.getAttribute("lon"),tx(w,"name"),tx(w,"desc")||tx(w,"cmt"));
     const gpsAlt=/Los de las Claras/.test((doc.documentElement.getAttribute("creator")||""));   // grabado con la app: altura del GPS, poco fiable
-    for(const t of doc.getElementsByTagName("trk")){const pts=[...t.getElementsByTagName("trkpt")].map(p=>{const e=gpsAlt?"":tx(p,"ele");return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});addT(pts,tx(t,"name"))}
+    for(const t of doc.getElementsByTagName("trk")){const tp=[...t.getElementsByTagName("trkpt")],pts=tp.map(p=>{const e=gpsAlt?"":tx(p,"ele");return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});
+      const tms=tp.map(p=>{const v=Date.parse(tx(p,"time"));return isFinite(v)?v:0});addT(pts,tx(t,"name"),tms.some(Boolean)?tms:null)}
     for(const r of doc.getElementsByTagName("rte")){const pts=[...r.getElementsByTagName("rtept")].map(p=>[+p.getAttribute("lat"),+p.getAttribute("lon")]);addT(pts,tx(r,"name"))}}
   else{for(const pm of doc.getElementsByTagName("Placemark")){const n=tx(pm,"name"),d=tx(pm,"description").replace(/<[^>]+>/g," ").trim();
       for(const pt of pm.getElementsByTagName("Point")){const c=tx(pt,"coordinates").split(",");addP(+c[1],+c[0],n,d)}

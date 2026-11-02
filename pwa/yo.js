@@ -94,6 +94,8 @@ async function recoger(){let b=null;try{b=localStorage.getItem("ldc-buzon")}catc
         if(ts.some(t=>t.src==="grab"&&t.f===new Date(it.t0).toISOString()))continue;   // ya estaba
         let km=0;for(let i=1;i<pts.length;i++)km+=map.distance(pts[i-1],pts[i]);
         const o={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),n:it.n||"Recorrido grabado",km:Math.round(km/100)/10,pts,src:"grab",f:new Date(it.t0).toISOString(),est:"hecho",fh:new Date(it.t0).toISOString()};
+        // tiempos: la grabadora apunta un punto cada pocos metros; si entre dos pasa más de 1 min es que estabas parado (o en pausa)
+        {const tt=(it.p||[]).map(q=>+q[2]).filter(v=>v>1e12);if(tt.length>1){let mov=0;for(let i=1;i<tt.length;i++){const d=tt[i]-tt[i-1];if(d>0&&d<=60000)mov+=d}o.tm={a:tt[0],b:tt[tt.length-1],m:Math.round(mov/1000)}}}
         ts.push(o);ult=o;n++}
       if(n){MPI.saveTracks(ts);for(const o of ts.slice(-n))MPI.demAlt(o.id)}
       await fs.deleteDoc(ref);
