@@ -2458,6 +2458,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 #mlbox .mlgh .chev{width:16px;flex:none;transition:transform .15s;color:var(--muted)}#mlbox .mlgh[aria-expanded=true] .chev{transform:rotate(90deg)}
 #mlbox .mlgh[aria-expanded=true]{border-radius:12px 12px 0 0}
 #pendban{position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:500;display:flex;gap:10px;align-items:center;background:#20302a;color:#fff;border-radius:999px;padding:8px 8px 8px 16px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.3);white-space:nowrap;font-size:15px}
+#pendban[hidden]{display:none}
 #pendban button{border:0;border-radius:999px;background:#fff;color:#20302a;font-weight:800;padding:8px 14px;cursor:pointer;font-size:14px}
 </style>`);
 let MODE="quiero",POS=null;const OPEN=new Set();
@@ -2525,6 +2526,8 @@ function pendOff(){if(SAVED){for(const k in SAVED)setLay(k,SAVED[k]);SAVED=null}
 document.addEventListener("click",e=>{if(e.target.closest("[data-mk]"))setTimeout(()=>{render();if(window.LISTAS_CNT)LISTAS_CNT()},0)});
 // también al cambiar las marcas desde la cuenta (otro móvil) y al entrar en Mis cosas
 for(const f of ["renderCols","showView"]){const o=window[f];if(typeof o==="function")window[f]=function(){const r=o.apply(this,arguments);try{render();if(window.LISTAS_CNT)LISTAS_CNT()}catch(e){}return r}}
+// al irte del mapa (otra pestaña) se quita solo y las capas vuelven a como estaban
+setTimeout(()=>{const sv=window.showView;if(typeof sv==="function")window.showView=showView=function(v){if(v!=="mapa"&&(SAVED||PRT))pendOff();return sv.apply(this,arguments)}},0);   // después de pestanas.js, que cambia showView
 window.LISTAS={box,render,pend};
 })();
 
@@ -3300,5 +3303,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="1f2cd52a2f";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="0aeb781454";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
