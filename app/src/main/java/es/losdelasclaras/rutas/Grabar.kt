@@ -15,6 +15,8 @@ import android.os.*
 import android.provider.Settings
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import org.json.JSONArray
@@ -40,12 +42,24 @@ object Grab {
     }
 }
 
+/** Puntos guardados con 📍 en la pantalla de grabar: [nombre, lat, lon, alt, ms] en puntos.json (van en el GPX y a Mis puntos). */
+object Puntos {
+    private fun f(c: Context) = File(c.filesDir, "puntos.json")
+    fun leer(c: Context): JSONArray = try { JSONArray(f(c).readText()) } catch (e: Exception) { JSONArray() }
+    fun poner(c: Context, a: JSONArray) { f(c).writeText(a.toString()) }
+    fun borrar(c: Context) { f(c).delete() }
+}
+
 /** Copia en Descargas › Los de las Claras (GPX), para no perder nunca un recorrido. */
-fun guardarGpx(c: Context, pts: List<DoubleArray>, nombre: String): Pair<String, Uri>? {
+fun guardarGpx(c: Context, pts: List<DoubleArray>, nombre: String, wps: JSONArray = JSONArray()): Pair<String, Uri>? {
     if (pts.size < 2) return null
     fun x(s: String) = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
     val iso = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).apply { timeZone = java.util.TimeZone.getTimeZone("UTC") }
-    val sb = StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<gpx version=\"1.1\" creator=\"Los de las Claras\" xmlns=\"http://www.topografix.com/GPX/1/1\">\n<trk><name>${x(nombre)}</name><trkseg>\n")
+    val sb = StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<gpx version=\"1.1\" creator=\"Los de las Claras\" xmlns=\"http://www.topografix.com/GPX/1/1\">\n")
+    for (i in 0 until wps.length()) { val w = wps.optJSONArray(i) ?: continue
+        sb.append("<wpt lat=\"${w.optDouble(1)}\" lon=\"${w.optDouble(2)}\">"); if (!w.isNull(3) && !w.optDouble(3).isNaN()) sb.append("<ele>${Math.round(w.optDouble(3))}</ele>")
+        sb.append("<name>${x(w.optString(0, "Punto"))}</name></wpt>\n") }
+    sb.append("<trk><name>${x(nombre)}</name><trkseg>\n")
     for (q in pts) { sb.append("<trkpt lat=\"${q[0]}\" lon=\"${q[1]}\">"); if (!q[2].isNaN()) sb.append("<ele>${Math.round(q[2])}</ele>"); if (q[3] > 0) sb.append("<time>${iso.format(java.util.Date(q[3].toLong()))}</time>"); sb.append("</trkpt>\n") }
     sb.append("</trkseg></trk>\n</gpx>\n")
     val arch = nombre.replace(Regex("[^\\p{L}\\p{N} _-]"), "").trim().replace(Regex("\\s+"), "-").ifEmpty { "recorrido" } + ".gpx"
@@ -89,9 +103,11 @@ object Buzon {
             .put("t", JSONObject().put("integerValue", System.currentTimeMillis().toString()))).toString()
         return pedir(url, "PATCH", cuerpo).first == 200
     }
-    fun enviar(c: Context, pts: List<DoubleArray>, nombre: String, fin: (Boolean) -> Unit) {
+    fun enviar(c: Context, pts: List<DoubleArray>, nombre: String, fin: (Boolean) -> Unit) = enviar(c, pts, nombre, JSONArray(), fin)
+    fun enviar(c: Context, pts: List<DoubleArray>, nombre: String, wps: JSONArray, fin: (Boolean) -> Unit) {
         val a = JSONArray(); for (q in pts) a.put(JSONArray().put(q[0]).put(q[1]).put(q[3].toLong()))
         val item = JSONObject().put("n", nombre).put("t0", if (pts.isNotEmpty()) pts[0][3].toLong() else System.currentTimeMillis()).put("p", a)
+        if (wps.length() > 0) item.put("w", wps)
         // primero a la lista de pendientes (por si no hay cobertura) y luego se intenta mandar todo
         synchronized(this) { val l = try { JSONArray(pend(c).readText()) } catch (e: Exception) { JSONArray() }; l.put(item); pend(c).writeText(l.toString()) }
         Thread { fin(mandar(c)) }.start()
@@ -157,26 +173,94 @@ class GrabarService : Service(), LocationListener {
     override fun onDestroy() { quitar(); super.onDestroy() }
 }
 
-/** Pantalla de grabar: una página local (assets/grabar.html) que habla con el servicio a través de «Nativo». */
-class GrabarActivity : Activity() {
+/**
+ * Pantalla de grabar y seguir (assets/grabar.html, a pantalla completa con el mapa).
+ * La posición la da Android directamente (GPS y red del móvil), así que aquí siempre funciona aunque dentro de la web no llegue.
+ * Los trozos del mapa topográfico se guardan en el móvil (files/teselas) y se ven sin cobertura.
+ */
+class GrabarActivity : Activity(), LocationListener {
     private lateinit var web: WebView
     private var empezarTrasPermiso = false
+    private var lm: LocationManager? = null
+    private var ultGps = 0L
+    private val teselas by lazy { File(filesDir, "teselas").apply { mkdirs() } }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(b: Bundle?) {
         super.onCreate(b)
         web = WebView(this)
         web.settings.javaScriptEnabled = true; web.settings.domStorageEnabled = true
-        web.webViewClient = WebViewClient(); web.webChromeClient = WebChromeClient()
+        web.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(v: WebView?, r: WebResourceRequest?): WebResourceResponse? {
+                val u = r?.url?.toString() ?: return null
+                val m = Regex("^https://[abc]\\.tile\\.opentopomap\\.org/(\\d+)/(\\d+)/(\\d+)\\.png$").find(u) ?: return null
+                val (z, x, y) = m.destructured
+                val f = tesela(z, x, y)
+                if (!f.exists() || f.length() == 0L) bajarTesela(u, f)
+                return if (f.exists() && f.length() > 0) WebResourceResponse("image/png", null, f.inputStream())
+                else WebResourceResponse("image/png", null, 404, "Sin cobertura", emptyMap(), java.io.ByteArrayInputStream(ByteArray(0)))
+            }
+        }
+        web.webChromeClient = WebChromeClient()
         web.addJavascriptInterface(Puente(), "Nativo")
         setContentView(web)
+        datosDe(intent)
         web.loadUrl("file:///android_asset/grabar.html")
-        buzonDe(intent); Buzon.reintentar(this)
+        Buzon.reintentar(this)
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) permisos()
     }
-    override fun onNewIntent(i: Intent?) { super.onNewIntent(i); buzonDe(i) }
-    /** La web pasa su «buzón» (intent://grabar?b=CÓDIGO): ahí se deja la grabación para que la recoja la app. */
-    private fun buzonDe(i: Intent?) { val b = i?.data?.getQueryParameter("b") ?: return
-        if (Regex("[A-Za-z0-9]{12,40}").matches(b)) getSharedPreferences("buzon", MODE_PRIVATE).edit().putString("b", b).apply() }
+    override fun onNewIntent(i: Intent?) { super.onNewIntent(i); setIntent(i); datosDe(i); web.evaluateJavascript("cargaSeguir();refresca()", null) }
+    override fun onResume() { super.onResume(); mirar() }
+    override fun onPause() { super.onPause(); soltar() }
+
+    /** La web pasa su «buzón» (…?b=CÓDIGO) y, al seguir, el track (extras «t» = [[lat,lon,alt]…] y «n» = nombre). */
+    private fun datosDe(i: Intent?) {
+        val b = i?.data?.getQueryParameter("b")
+        if (b != null && Regex("[A-Za-z0-9]{12,40}").matches(b)) getSharedPreferences("buzon", MODE_PRIVATE).edit().putString("b", b).apply()
+        val t = i?.getStringExtra("t")
+        if (i?.data?.host == "seguir" && t != null) try {
+            val a = JSONArray(t); if (a.length() >= 2)
+                Grab.prefs(this).edit().putString("seguir", JSONObject().put("n", i.getStringExtra("n") ?: "Track").put("t", a).toString()).apply()
+        } catch (e: Exception) {}
+    }
+
+    private fun tesela(z: String, x: String, y: String) = File(teselas, "$z/$x/$y.png")
+    private fun bajarTesela(u: String, f: File): Boolean = try {
+        val k = java.net.URL(u).openConnection() as java.net.HttpURLConnection
+        k.connectTimeout = 8000; k.readTimeout = 12000; k.setRequestProperty("User-Agent", "LosDeLasClaras-Rutas/1.0 (Android; losdelasclaras.github.io/rutas)")
+        if (k.responseCode == 200) { f.parentFile?.mkdirs(); val tmp = File(f.path + ".tmp"); k.inputStream.use { i -> tmp.outputStream().use { i.copyTo(it) } }; tmp.renameTo(f); k.disconnect(); true }
+        else { k.disconnect(); false }
+    } catch (e: Exception) { false }
+
+    // ---------- posición en directo (mientras se ve la pantalla) ----------
+    @SuppressLint("MissingPermission")
+    private fun mirar() {
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return
+        val m = getSystemService(LOCATION_SERVICE) as LocationManager; lm = m
+        try { m.removeUpdates(this) } catch (e: Exception) {}
+        // primero lo último que sepa el móvil (sale al momento), luego GPS y red
+        var mejor: Location? = null
+        for (pr in listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)) try { val l = m.getLastKnownLocation(pr)
+            if (l != null && (mejor == null || l.time > mejor.time)) mejor = l } catch (e: Exception) {}
+        mejor?.let { if (System.currentTimeMillis() - it.time < 30 * 60000) mandar(it) }
+        try { m.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 0f, this, Looper.getMainLooper()) } catch (e: Exception) {}
+        try { m.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 3000L, 0f, this, Looper.getMainLooper()) } catch (e: Exception) {}
+    }
+    private fun soltar() { try { lm?.removeUpdates(this) } catch (e: Exception) {} }
+    override fun onLocationChanged(l: Location) {
+        // con GPS reciente, la de la red (menos precisa) no lo pisa
+        if (l.provider == LocationManager.GPS_PROVIDER) ultGps = System.currentTimeMillis()
+        else if (System.currentTimeMillis() - ultGps < 15000) return
+        mandar(l)
+    }
+    private fun mandar(l: Location) {
+        val alt = if (l.hasAltitude()) l.altitude.toString() else "null"
+        web.evaluateJavascript("pos(${l.latitude},${l.longitude},${if (l.hasAccuracy()) l.accuracy else 0f},$alt)", null)
+    }
+    @Deprecated("") override fun onStatusChanged(p: String?, s: Int, e: Bundle?) {}
+    override fun onProviderEnabled(p: String) {}
+    override fun onProviderDisabled(p: String) {}
 
     private fun permisos(): Boolean {
         val faltan = mutableListOf<String>()
@@ -189,7 +273,7 @@ class GrabarActivity : Activity() {
     }
     override fun onRequestPermissionsResult(rc: Int, p: Array<out String>, r: IntArray) {
         super.onRequestPermissionsResult(rc, p, r)
-        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) { if (empezarTrasPermiso) arrancar() }
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) { mirar(); if (empezarTrasPermiso) arrancar() }
         else web.evaluateJavascript("sinPermiso()", null)
         empezarTrasPermiso = false
     }
@@ -200,58 +284,113 @@ class GrabarActivity : Activity() {
     }
     private fun arrancar() {
         val p = Grab.prefs(this)
-        if (!p.getBoolean("activo", false)) { Grab.archivo(this).delete(); p.edit().putBoolean("activo", true).putLong("t0", System.currentTimeMillis()).putLong("pau", 0).putLong("pz", 0).apply() }
+        if (!p.getBoolean("activo", false)) { Grab.archivo(this).delete(); Puntos.borrar(this)
+            p.edit().putBoolean("activo", true).putLong("t0", System.currentTimeMillis()).putLong("pau", 0).putLong("pz", 0).apply() }
         servicio(null); web.evaluateJavascript("refresca()", null)
     }
 
     inner class Puente {
-        @JavascriptInterface fun estado(): String { val p = Grab.prefs(this@GrabarActivity)
+        private val c get() = this@GrabarActivity
+        @JavascriptInterface fun estado(): String { val p = Grab.prefs(c)
             return JSONObject().put("activo", p.getBoolean("activo", false)).put("t0", p.getLong("t0", 0)).put("pau", p.getLong("pau", 0))
-                .put("pz", p.getLong("pz", 0)).put("ultima", Grab.ultima(this@GrabarActivity).exists()).toString() }
+                .put("pz", p.getLong("pz", 0)).put("ultima", Grab.ultima(c).exists()).toString() }
         @JavascriptInterface fun puntos(desde: Int): String {
-            val a = JSONArray(); val l = Grab.leer(Grab.archivo(this@GrabarActivity))
+            val a = JSONArray(); val l = Grab.leer(Grab.archivo(c))
             for (i in desde until l.size) { val q = l[i]; a.put(JSONArray().put(q[0]).put(q[1]).put(if (q[2].isNaN()) JSONObject.NULL else q[2]).put(q[3])) }
             return a.toString() }
         @JavascriptInterface fun empezar() = runOnUiThread { if (permisos()) arrancar() else empezarTrasPermiso = true }
-        @JavascriptInterface fun pausa() = runOnUiThread { val p = Grab.prefs(this@GrabarActivity)
+        @JavascriptInterface fun pausa() = runOnUiThread { val p = Grab.prefs(c)
             if (p.getLong("pz", 0) == 0L) { p.edit().putLong("pz", System.currentTimeMillis()).apply(); servicio("pausa") }
             else { p.edit().putLong("pau", p.getLong("pau", 0) + System.currentTimeMillis() - p.getLong("pz", 0)).putLong("pz", 0).apply(); servicio(null) }
             web.evaluateJavascript("refresca()", null) }
-        /** Termina: guarda una copia, abre la app con el track y deja todo listo para la siguiente. */
+        /** Termina: guarda una copia, el GPX (con los puntos) en Descargas y lo pasa a la app por el buzón. */
         @JavascriptInterface fun terminar(nombre: String) = runOnUiThread {
             servicio("parar")
-            val f = Grab.archivo(this@GrabarActivity); val pts = Grab.leer(f)
-            if (pts.size < 2) { Grab.prefs(this@GrabarActivity).edit().clear().apply(); f.delete()
+            val f = Grab.archivo(c); val pts = Grab.leer(f)
+            if (pts.size < 2) { Grab.prefs(c).edit().putBoolean("activo", false).remove("t0").remove("pau").remove("pz").apply(); f.delete()
                 web.evaluateJavascript("cierra();refresca();aviso('No había nada grabado todavía (el GPS no había dado ningún punto).')", null); return@runOnUiThread }
-            // copia de seguridad (solo si hay recorrido: así nunca se pisa la anterior con una vacía)
-            f.copyTo(Grab.ultima(this@GrabarActivity), true)
+            f.copyTo(Grab.ultima(c), true)
             try { f.copyTo(File(filesDir, "grabacion-" + System.currentTimeMillis() + ".txt"), true) } catch (e: Exception) {}
-            Grab.prefs(this@GrabarActivity).edit().clear().putString("nombre", nombre).apply(); f.delete()
-            hecho(pts, nombre) }
-        @JavascriptInterface fun tirar() = runOnUiThread { servicio("parar"); Grab.archivo(this@GrabarActivity).delete(); Grab.prefs(this@GrabarActivity).edit().clear().apply(); web.evaluateJavascript("refresca()", null) }
+            val wps = Puntos.leer(c); Puntos.borrar(c)
+            Grab.prefs(c).edit().putBoolean("activo", false).remove("t0").remove("pau").remove("pz").putString("nombre", nombre).putString("wps", wps.toString()).apply(); f.delete()
+            hecho(pts, nombre, wps) }
+        @JavascriptInterface fun tirar() = runOnUiThread { servicio("parar"); Grab.archivo(c).delete()
+            Grab.prefs(c).edit().putBoolean("activo", false).remove("t0").remove("pau").remove("pz").apply()
+            // los puntos no se tiran: pasan a la app igualmente
+            val w = Puntos.leer(c); Puntos.borrar(c); if (w.length() > 0) Buzon.enviar(c, emptyList(), "Puntos", w) {}
+            web.evaluateJavascript("refresca()", null) }
         @JavascriptInterface fun recuperar() = runOnUiThread {
-            val n = Grab.prefs(this@GrabarActivity).getString("nombre", "Recorrido grabado") ?: "Recorrido grabado"
-            val pts = Grab.leer(Grab.ultima(this@GrabarActivity)); hecho(pts, n) }
-        /** Compartir el GPX guardado: WhatsApp, Wikiloc, correo… o «Los de las Claras» para meterlo en la app. */
+            val p = Grab.prefs(c); val n = p.getString("nombre", "Recorrido grabado") ?: "Recorrido grabado"
+            val w = try { JSONArray(p.getString("wps", "[]")) } catch (e: Exception) { JSONArray() }
+            hecho(Grab.leer(Grab.ultima(c)), n, w, false) }
+        /** Compartir el GPX guardado como archivo: WhatsApp, Wikiloc, correo… */
         @JavascriptInterface fun compartir() = runOnUiThread {
-            val u = Grab.prefs(this@GrabarActivity).getString("uri", null) ?: return@runOnUiThread
+            val u = Grab.prefs(c).getString("uri", null) ?: return@runOnUiThread
             val i = Intent(Intent.ACTION_SEND).setType("application/gpx+xml").putExtra(Intent.EXTRA_STREAM, Uri.parse(u)).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            try { startActivity(Intent.createChooser(i, "Enviar el recorrido")) } catch (e: Exception) {} }
+            try { startActivity(Intent.createChooser(i, "Enviar el recorrido (GPX)")) } catch (e: Exception) {} }
         @JavascriptInterface fun bateria() = runOnUiThread {
             try { startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName"))) }
             catch (e: Exception) { try { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) } catch (x: Exception) {} } }
         @JavascriptInterface fun sinBateria(): Boolean = if (Build.VERSION.SDK_INT >= 23) (getSystemService(POWER_SERVICE) as PowerManager).isIgnoringBatteryOptimizations(packageName) else true
         @JavascriptInterface fun volver() = runOnUiThread { finish() }
+        // seguir
+        @JavascriptInterface fun seguir(): String = Grab.prefs(c).getString("seguir", "") ?: ""
+        @JavascriptInterface fun dejarSeguir() { Grab.prefs(c).edit().remove("seguir").apply() }
+        @JavascriptInterface fun vibrar() { try { val v = getSystemService(VIBRATOR_SERVICE) as Vibrator
+            if (Build.VERSION.SDK_INT >= 26) v.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 400, 200, 400), -1)) else @Suppress("DEPRECATION") v.vibrate(longArrayOf(0, 400, 200, 400), -1) } catch (e: Exception) {} }
+        // puntos
+        @JavascriptInterface fun nPuntos(): Int = Puntos.leer(c).length()
+        @JavascriptInterface fun listaPuntos(): String = Puntos.leer(c).toString()
+        @JavascriptInterface fun punto(n: String, la: Double, lo: Double, al: Double): Boolean {
+            val w = JSONArray().put(n.take(80)).put(la).put(lo).put(if (al.isNaN()) JSONObject.NULL else al).put(System.currentTimeMillis())
+            // grabando: se guarda para el GPX y se pasa a la app al terminar. Sin grabar: a la app ya (y se queda en el mapa de esta pantalla hasta grabar)
+            val l = Puntos.leer(c); l.put(w); Puntos.poner(c, l)
+            if (!Grab.prefs(c).getBoolean("activo", false)) Buzon.enviar(c, emptyList(), "Puntos", JSONArray().put(w)) {}
+            return true }
+        // mapa sin cobertura: bajar la zona del track
+        @JavascriptInterface fun bajar(lista: String) { Thread {
+            val a = try { JSONArray(lista) } catch (e: Exception) { return@Thread }
+            val falta = (0 until a.length()).map { a.getString(it) }.filter { k -> val (z, x, y) = k.split("/"); val f = tesela(z, x, y); !(f.exists() && f.length() > 0) }
+            val t = a.length(); var h = t - falta.size; var mal = 0; var ultAviso = 0L
+            if (falta.isEmpty()) { runOnUiThread { web.evaluateJavascript("bajando($t,$t,false)", null) }; return@Thread }
+            for ((n, k) in falta.withIndex()) {
+                val (z, x, y) = k.split("/"); val ok = bajarTesela("https://" + "abc"[n % 3] + ".tile.opentopomap.org/$z/$x/$y.png", tesela(z, x, y))
+                if (ok) h++ else mal++
+                if (mal >= 10 && h == t - falta.size) { runOnUiThread { web.evaluateJavascript("sinRed()", null) }; return@Thread }
+                if (System.currentTimeMillis() - ultAviso > 2500) { ultAviso = System.currentTimeMillis(); val hh = h; runOnUiThread { web.evaluateJavascript("bajando($hh,$t,true)", null) } }
+                Thread.sleep(60)
+            }
+            runOnUiThread { web.evaluateJavascript("bajando($t,$t,true)", null) }
+        }.start() }
     }
 
     /** Guarda el GPX en Descargas y enseña el resumen (sin abrir la app: así no se queda colgada). */
-    private fun hecho(pts: List<DoubleArray>, nombre: String) {
-        val r = guardarGpx(this, pts, nombre)
+    private fun hecho(pts: List<DoubleArray>, nombre: String, wps: JSONArray, enviar: Boolean = true) {
+        val r = guardarGpx(this, pts, nombre, wps)
         if (r == null) { web.evaluateJavascript("cierra();refresca();aviso('No he podido guardar el GPX en Descargas')", null); return }
         Grab.prefs(this).edit().putString("uri", r.second.toString()).putString("donde", r.first).putString("nombre", nombre).apply()
         val js = "hecho(" + JSONObject.quote(nombre) + "," + JSONObject.quote(r.first) + ",\u0001EST\u0001)"
-        if (getSharedPreferences("buzon", MODE_PRIVATE).getString("b", null) == null) { web.evaluateJavascript(js.replace("\u0001EST\u0001", "'sinbuzon'"), null); return }
+        if (!enviar || getSharedPreferences("buzon", MODE_PRIVATE).getString("b", null) == null) { web.evaluateJavascript(js.replace("\u0001EST\u0001", if (enviar) "'sinbuzon'" else "'ok'"), null); return }
         web.evaluateJavascript(js.replace("\u0001EST\u0001", "'enviando'"), null)
-        Buzon.enviar(this, pts, nombre) { ok -> runOnUiThread { web.evaluateJavascript(js.replace("\u0001EST\u0001", if (ok) "'ok'" else "'pendiente'"), null) } }
+        Buzon.enviar(this, pts, nombre, wps) { ok -> runOnUiThread { web.evaluateJavascript(js.replace("\u0001EST\u0001", if (ok) "'ok'" else "'pendiente'"), null) } }
+    }
+}
+
+/** Enviar un GPX como archivo desde la web (Chrome no deja mandar .gpx): intent://gpx#Intent;scheme=ldcgpx;…;S.n=nombre.gpx;S.g=<gpx>;end */
+class CompartirActivity : Activity() {
+    override fun onCreate(b: Bundle?) {
+        super.onCreate(b)
+        val g = intent?.getStringExtra("g"); var n = intent?.getStringExtra("n") ?: "track.gpx"
+        if (g == null || !g.contains("<gpx")) { finish(); return }
+        n = n.replace(Regex("[^\\w.-]"), "-").take(70); if (!n.endsWith(".gpx")) n += ".gpx"
+        try {
+            val d = File(cacheDir, "compartir").apply { mkdirs(); listFiles()?.forEach { it.delete() } }
+            val f = File(d, n); f.writeText(g)
+            val u = androidx.core.content.FileProvider.getUriForFile(this, "es.losdelasclaras.rutas.fileprovider", f)
+            val i = Intent(Intent.ACTION_SEND).setType("application/gpx+xml").putExtra(Intent.EXTRA_STREAM, u).putExtra(Intent.EXTRA_SUBJECT, n.removeSuffix(".gpx"))
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            startActivity(Intent.createChooser(i, "Enviar el GPX"))
+        } catch (e: Exception) { android.widget.Toast.makeText(this, "No he podido preparar el GPX", android.widget.Toast.LENGTH_LONG).show() }
+        finish()
     }
 }

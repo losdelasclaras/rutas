@@ -1,89 +1,169 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Grabar recorrido</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Grabar y seguir</title>
 <link rel="stylesheet" href="leaflet.css">
 <style>
-:root{--ink:#1f2a24;--paper:#f4f6f2;--card:#fff;--muted:#5d6b62;--edge:#d9dfd9}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font:18px/1.45 system-ui,-apple-system,Roboto,sans-serif}
-body{display:flex;flex-direction:column}
-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#c3262e;color:#fff}
-header img{width:38px;height:38px;border-radius:10px;background:#fff}header b{font-size:20px;flex:1}
-header button{border:0;background:rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:8px 12px;font-size:16px;font-weight:700}
-#map{flex:1;min-height:180px;background:#e8e6dc}
-.pan{background:var(--card);border-top:1px solid var(--edge);padding:12px 14px 16px}
-.st{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;gap:6px}
-.st b{display:block;font-size:30px;font-variant-numeric:tabular-nums;line-height:1.1}.st small{color:var(--muted);font-weight:700;font-size:14px}
-.est{margin:10px 0;padding:9px 12px;border-radius:12px;font-weight:700;font-size:16px;background:#f1f1f1}
-.est.rec{background:#c3262e;color:#fff}.est.pau{background:#fff1e0;color:#8a4b00}
-.bt{display:flex;gap:8px}.bt button{flex:1;border:0;border-radius:14px;padding:16px 8px;font-size:20px;font-weight:800}
-.go{background:#c3262e;color:#fff}.ps{background:#eceeea;color:var(--ink)}.fn{background:var(--ink);color:#fff}
-.aviso{margin:10px 0 0;font-size:15px;color:var(--muted)}.aviso button{border:1px solid var(--edge);background:#fff;border-radius:10px;padding:7px 10px;font-size:15px;font-weight:700;margin-top:6px}
-.sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;z-index:2000}.sheet[hidden]{display:none}
+:root{--ink:#1f2a24;--card:#fff;--muted:#5d6b62;--edge:#d9dfd9;--rojo:#c3262e;--lila:#7b2cbf}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;color:var(--ink);font:18px/1.4 system-ui,-apple-system,Roboto,sans-serif;background:#e8e6dc}
+#map{position:fixed;inset:0;background:#e8e6dc}
+.leaflet-control-attribution{font-size:10px}
+/* datos arriba */
+#top{position:fixed;left:10px;right:10px;top:10px;z-index:1000;background:rgba(255,255,255,.96);border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.25);padding:8px 10px}
+.st{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.st b{display:block;font-size:26px;font-variant-numeric:tabular-nums;line-height:1.1}.st small{color:var(--muted);font-weight:700;font-size:13px}
+#est{margin-top:6px;padding:6px 10px;border-radius:10px;font-weight:800;font-size:15px;text-align:center;background:#f1f1f1}
+#est.rec{background:var(--rojo);color:#fff}#est.pau{background:#fff1e0;color:#8a4b00}
+#seg{margin-top:6px;padding:7px 10px;border-radius:10px;background:#f2ebfa;color:#3d1466;font-weight:700;font-size:15px}
+#seg.fuera{background:#b3261e;color:#fff}
+#seg[hidden],#est[hidden]{display:none}
+#seg .x{float:right;border:0;background:none;color:inherit;font-weight:800;font-size:15px;padding:0 0 0 8px;text-decoration:underline}
+/* botones redondos a la derecha */
+#lado{position:fixed;right:12px;bottom:130px;z-index:1000;display:flex;flex-direction:column;gap:12px}
+.rd{width:60px;height:60px;border-radius:50%;border:0;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3);display:grid;place-items:center;font-size:26px;color:var(--ink);padding:0}
+.rd small{display:block;font-size:10px;font-weight:800;margin-top:-4px}
+.rd.on{background:#1a73e8;color:#fff}.rd[hidden]{display:none}
+/* grabar abajo */
+#abajo{position:fixed;left:0;right:0;bottom:28px;z-index:1000;display:flex;justify-content:center;align-items:center;gap:22px}
+.big{width:84px;height:84px;border-radius:50%;border:5px solid #fff;box-shadow:0 3px 12px rgba(0,0,0,.35);display:grid;place-items:center;padding:0}
+.big.go{background:var(--rojo)}.big.go i{width:34px;height:34px;border-radius:50%;background:#fff}
+.big.ps{background:#fff;border-color:#fff}.big.ps i{width:30px;height:32px;border-left:10px solid var(--ink);border-right:10px solid var(--ink)}
+.big.pl{background:#fff}.big.pl i{width:0;height:0;border-left:30px solid var(--rojo);border-top:18px solid transparent;border-bottom:18px solid transparent;margin-left:8px}
+.big.fn{background:var(--ink)}.big.fn i{width:30px;height:30px;background:#fff;border-radius:4px}
+#est button{border:0;background:#20302a;color:#fff;border-radius:10px;padding:4px 10px;font-weight:800;font-size:14px;margin-left:6px}
+#casa{position:fixed;left:12px;bottom:130px;z-index:1000}
+/* hojas */
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;z-index:3000}.sheet[hidden]{display:none}
 .sh{background:var(--card);width:100%;max-height:88%;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px 22px}
 .sh h2{margin:0 0 8px;font-size:22px}
 .sh input{width:100%;font:inherit;font-size:18px;padding:12px;border:1px solid var(--edge);border-radius:12px;margin:6px 0 12px}
-.sh .b2{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:19px;font-weight:800;margin:8px 0}
-.me{width:20px;height:20px}.me i{position:absolute;inset:0;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 2px 6px rgba(0,0,0,.35)}
+.b2{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:19px;font-weight:800;margin:8px 0;background:#eceeea;color:var(--ink)}
+.b2.go{background:var(--rojo);color:#fff}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:130px;z-index:2500;background:rgba(20,28,24,.92);color:#fff;padding:10px 16px;border-radius:14px;font-size:16px;font-weight:700;max-width:86%;text-align:center}
+#toast[hidden]{display:none}
+.me{position:relative}.me i{position:absolute;left:-12px;top:-12px;width:24px;height:24px;border-radius:50%;background:#1a73e8;border:4px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.5)}
+.wp{position:relative}.wp i{position:absolute;left:-11px;top:-28px;width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#e8711a;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
 </style></head><body>
-<header><img src="icono.png" alt=""><b>Grabar recorrido</b><button onclick="Nativo.volver()">← Mapa</button></header>
 <div id="map"></div>
-<div class="pan">
-  <div class="st"><span><b id="tt">0:00</b><small>tiempo</small></span><span><b id="km">0,00</b><small>km</small></span><span><b id="up">+0</b><small>m de subida</small></span></div>
-  <div class="est" id="est"></div>
-  <div class="bt" id="bt"></div>
-  <div class="aviso" id="av"></div>
+<div id="top">
+  <div class="st"><span><b id="tt">0:00</b><small>tiempo</small></span><span><b id="km">0,00</b><small>km</small></span><span><b id="up">+0</b><small>m subida</small></span></div>
+  <div id="est"></div>
+  <div id="seg" hidden></div>
 </div>
+<button class="rd" id="casa" onclick="Nativo.volver()" aria-label="Volver a la app">🏠</button>
+<div id="lado">
+  <button class="rd" id="b-bat" hidden onclick="Nativo.bateria()" aria-label="Sin límite de batería">🔋</button>
+  <button class="rd" id="b-pt" onclick="nuevoPunto()" aria-label="Guardar un punto">📍</button>
+  <button class="rd on" id="b-me" onclick="centrar()" aria-label="Centrar en mí">◎</button>
+</div>
+<div id="abajo"></div>
+<div id="toast" hidden></div>
 <div class="sheet" id="sheet" hidden><div class="sh" id="sh"></div></div>
 <script src="leaflet.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const toR=Math.PI/180,dm=(a,b)=>{const dl=(b[0]-a[0])*toR,dn=(b[1]-a[1])*toR;const h=Math.sin(dl/2)**2+Math.cos(a[0]*toR)*Math.cos(b[0]*toR)*Math.sin(dn/2)**2;return 12742000*Math.asin(Math.min(1,Math.sqrt(h)))};
 const hms=ms=>{const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+":":"")+String(m).padStart(h?2:1,"0")+":"+String(x).padStart(2,"0")};
-let S={activo:false},PTS=[],D=0;
-const map=L.map("map",{zoomControl:false,attributionControl:false}).setView([43.1,-5.8],9);
-L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17,subdomains:"abc"}).addTo(map);
+const kmT=m=>(m/1000).toLocaleString("es-ES",{minimumFractionDigits:m<10000?2:1,maximumFractionDigits:m<10000?2:1});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let S={activo:false},PTS=[],D=0,YO=null,SIGUE=true,PRIM=true;
+// mapa: el topográfico de la app; los trozos que se ven (y los de la zona del track) se guardan en el móvil y se ven sin cobertura
+const map=L.map("map",{zoomControl:false,attributionControl:true}).setView([43.1,-5.8],9);
+map.attributionControl.setPrefix(false);
+L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17,maxNativeZoom:17,subdomains:"abc",attribution:"© OpenTopoMap (CC-BY-SA) · © OpenStreetMap"}).addTo(map);
+const segB=L.polyline([],{color:"#fff",weight:9,opacity:.85}).addTo(map),segL=L.polyline([],{color:"#7b2cbf",weight:5,opacity:.95,dashArray:"10 7"}).addTo(map);
 const lineB=L.polyline([],{color:"#fff",weight:8,opacity:.9}).addTo(map),line=L.polyline([],{color:"#c3262e",weight:5}).addTo(map);
-let me=null,sigue=true;map.on("dragstart",()=>sigue=false);
+let me=null,acc=null;const WPL=L.layerGroup().addTo(map);
+map.on("dragstart",()=>{SIGUE=false;$("b-me").classList.remove("on")});
+function centrar(){SIGUE=true;$("b-me").classList.add("on");if(YO)map.setView([YO[0],YO[1]],Math.max(map.getZoom(),15));else toast("Buscando dónde estás…")}
+function toast(t,ms){const e=$("toast");e.textContent=t;e.hidden=false;clearTimeout(e._t);e._t=setTimeout(()=>e.hidden=true,ms||3500)}
+// posición en directo (la manda Android, con el GPS del móvil)
+function pos(la,lo,ac,al){YO=[la,lo,al];
+  if(!me)me=L.marker([la,lo],{icon:L.divIcon({className:"me",html:"<i></i>",iconSize:[0,0]}),zIndexOffset:1000,interactive:false}).addTo(map);else me.setLatLng([la,lo]);
+  if(ac>25&&ac<3000){if(!acc)acc=L.circle([la,lo],{radius:ac,color:"#1a73e8",weight:1,fillOpacity:.1,interactive:false}).addTo(map);else{acc.setLatLng([la,lo]);acc.setRadius(ac)}}else if(acc){acc.remove();acc=null}
+  if(PRIM){PRIM=false;if(!T.length)map.setView([la,lo],15)}else if(SIGUE)map.panTo([la,lo],{animate:true});
+  sigueA(la,lo)}
+function sinPermiso(){toast("⛔ Sin permiso de ubicación. Ábrelo en Ajustes › Aplicaciones › Los de las Claras › Permisos › Ubicación.",8000)}
+/* ---------- seguir un track ---------- */
+let T=[],TC=[],TU=[],TN="",FUERA=0,AVISADO=false,IDX=0;
+function cargaSeguir(){let o=null;try{o=JSON.parse(Nativo.seguir()||"null")}catch(e){}
+  if(!o||!o.t||o.t.length<2){T=[];segL.setLatLngs([]);segB.setLatLngs([]);$("seg").hidden=true;return}
+  const nuevo=TN!==o.n||T.length!==o.t.length;T=o.t;TN=o.n||"Track";
+  TC=[0];for(let i=1;i<T.length;i++)TC.push(TC[i-1]+dm(T[i-1],T[i]));
+  // subida que queda desde cada punto (suavizada, como en la app)
+  TU=new Array(T.length).fill(0);let up=0;for(let i=T.length-2;i>=0;i--){const a=T[i][2],b=T[i+1][2];if(a!=null&&b!=null&&b>a)up+=b-a;TU[i]=up}
+  const ll=T.map(p=>[p[0],p[1]]);segL.setLatLngs(ll);segB.setLatLngs(ll);
+  if(nuevo){IDX=0;map.fitBounds(L.latLngBounds(ll),{padding:[40,40],paddingTopLeft:[20,150],paddingBottomRight:[80,150]});SIGUE=false;$("b-me").classList.remove("on");bajarZona()}
+  pintaSeg(null)}
+function pintaSeg(d){const e=$("seg");if(!T.length){e.hidden=true;return}e.hidden=false;
+  const queda=TC[TC.length-1]-TC[IDX],sub=Math.round(TU[IDX]||0);
+  e.className=d!=null&&d>60?"fuera":"";
+  e.innerHTML=`<button class="x" onclick="dejar()">Dejar</button>`+(d!=null&&d>60?`⚠️ Te has salido del track (a ${Math.round(d)} m)`:`▶ ${esc(TN)}`)+
+    `<br><span style="font-weight:600">Faltan <b>${kmT(queda)} km</b>${sub>0?` · <b>+${sub.toLocaleString("es-ES")} m</b> por subir`:""}</span>`}
+function sigueA(la,lo){if(!T.length)return;
+  // el punto del track más cercano (buscando primero cerca del anterior)
+  let best=-1,bd=1e12;const p=[la,lo];
+  const a=Math.max(0,IDX-60),b=Math.min(T.length,IDX+400);for(let i=a;i<b;i++){const d=dm(p,T[i]);if(d<bd){bd=d;best=i}}
+  if(bd>300)for(let i=0;i<T.length;i++){const d=dm(p,T[i]);if(d<bd){bd=d;best=i}}
+  IDX=best;if(bd>60){FUERA++;if(FUERA>=2&&!AVISADO){AVISADO=true;try{Nativo.vibrar()}catch(e){}}}else{FUERA=0;AVISADO=false}
+  pintaSeg(bd)}
+function dejar(){Nativo.dejarSeguir();cargaSeguir();toast("Has dejado de seguir el track")}
+// mapa sin cobertura: se bajan los trozos del mapa a lo largo del track (zoom 11 a 16)
+function bajarZona(){if(!T.length)return;const L0=[];const vis=new Set();
+  const tl=(la,lo,z)=>{const n=2**z,x=Math.floor((lo+180)/360*n),r=la*toR,y=Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n);return[x,y]};
+  for(let z=11;z<=16;z++){const ring=z<=15?1:1;let prev=null;
+    for(const q of T){const[x,y]=tl(q[0],q[1],z);const k=x+"/"+y;if(k===prev)continue;prev=k;
+      for(let dx=-ring;dx<=ring;dx++)for(let dy=-ring;dy<=ring;dy++){const kk=z+"/"+(x+dx)+"/"+(y+dy);if(!vis.has(kk)){vis.add(kk);L0.push(kk)}}}}
+  if(L0.length>4000)L0.length=4000;
+  try{Nativo.bajar(JSON.stringify(L0))}catch(e){}}
+function bajando(h,t,falta){if(falta&&h<t)toast(`🗺 Guardando el mapa de la zona para sin cobertura: ${h} de ${t}`,2500);else if(h>=t)toast(falta?"🗺 Mapa de la zona guardado: se verá sin cobertura":"🗺 El mapa de la zona ya estaba guardado",3000)}
+function sinRed(){toast("Sin cobertura: el mapa de la zona no se ha podido guardar. Se verán las partes que ya hayas visto.",5000)}
+/* ---------- puntos ---------- */
+function nuevoPunto(){if(!YO){toast("Todavía no sé dónde estás: espera a que salga el punto azul");return}
+  const n=+(Nativo.nPuntos()||0)+1;
+  $("sh").innerHTML=`<h2>📍 Guardar un punto aquí</h2><label>Nombre</label><input id="pn" maxlength="80" value="Punto ${n}">
+  <button class="b2 go" onclick="guardaPunto()">✓ Guardar punto</button><button class="b2" onclick="cierra()">Cancelar</button>
+  <p style="font-size:14px;color:#5d6b62">Pasa a tu app, en <b>Mis cosas › Puntos</b>${S.activo?", y va también dentro del GPX del recorrido":""}.</p>`;
+  $("sheet").hidden=false;setTimeout(()=>{const i=$("pn");i.focus();i.select()},50)}
+function guardaPunto(){const n=($("pn").value||"").trim()||"Punto";Nativo.punto(n,YO[0],YO[1],YO[2]==null?NaN:YO[2]);cierra();pintaPuntos();toast("📍 «"+n+"» guardado")}
+function pintaPuntos(){WPL.clearLayers();let l=[];try{l=JSON.parse(Nativo.listaPuntos()||"[]")}catch(e){}
+  for(const w of l)WPL.addLayer(L.marker([w[1],w[2]],{icon:L.divIcon({className:"wp",html:"<i></i>",iconSize:[0,0]})}).bindTooltip(esc(w[0]),{direction:"top",offset:[0,-28]}))}
+/* ---------- grabar ---------- */
 function sube(){let up=0,ref=null;for(const p of PTS){if(p[2]==null)continue;if(ref==null){ref=p[2];continue}if(p[2]-ref>5){up+=p[2]-ref;ref=p[2]}else if(ref-p[2]>5)ref=p[2]}return Math.round(up)}
 const dur=()=>S.activo?Math.max(0,(S.pz||Date.now())-S.t0-S.pau):0;
-function aviso(t){$("av").dataset.fijo="1";$("av").textContent=t;setTimeout(()=>{delete $("av").dataset.fijo;pinta()},6000)}
-function sinPermiso(){aviso("⛔ Sin permiso de ubicación no se puede grabar. Ábrelo en Ajustes › Aplicaciones › Los de las Claras › Permisos › Ubicación.")}
 function pinta(){
-  $("tt").textContent=hms(dur());$("km").textContent=(D/1000).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2});$("up").textContent="+"+sube().toLocaleString("es-ES");
+  $("tt").textContent=hms(dur());$("km").textContent=kmT(D);$("up").textContent="+"+sube().toLocaleString("es-ES");
   const e=$("est");
-  if(!S.activo){e.className="est";e.innerHTML="Pulsa <b>Grabar</b> para empezar. Puedes apagar la pantalla: sigue grabando."}
-  else if(S.pz){e.className="est pau";e.textContent="⏸ En pausa"}
-  else{e.className="est rec";e.textContent=PTS.length?"● Grabando · puedes apagar la pantalla":"● Grabando · esperando la señal del GPS…"}
-  $("bt").innerHTML=!S.activo?`<button class="go" onclick="Nativo.empezar()">⏺ Grabar</button>`:`<button class="ps" onclick="Nativo.pausa()">${S.pz?"▶ Seguir":"⏸ Pausa"}</button><button class="fn" onclick="fin()">■ Terminar</button>`;
-  let av="";
-  if(!Nativo.sinBateria())av=`Si con la pantalla apagada se corta la grabación: <br><button onclick="Nativo.bateria()">🔋 Dejar que grabe sin límite de batería</button>`;
-  if(!S.activo&&S.ultima)av+=`<br><button onclick="Nativo.recuperar()">📂 La última grabación (guardar otra vez o compartir)</button>`;
-  if(!$("av").dataset.fijo)$("av").innerHTML=av}
+  if(!S.activo){e.className="";e.innerHTML=(T.length?"Toca ● para grabar mientras lo sigues":"Toca ● para grabar")+(S.ultima?`<button onclick="Nativo.recuperar()">📂 Última</button>`:"")}
+  else if(S.pz){e.className="pau";e.textContent="❚❚ En pausa"}
+  else{e.className="rec";e.textContent=PTS.length?"● Grabando · puedes apagar la pantalla":"● Grabando · esperando la señal del GPS…"}
+  $("abajo").innerHTML=!S.activo?`<button class="big go" onclick="Nativo.empezar()" aria-label="Grabar"><i></i></button>`:
+    `<button class="big ${S.pz?"pl":"ps"}" onclick="Nativo.pausa()" aria-label="${S.pz?"Seguir grabando":"Pausa"}"><i></i></button><button class="big fn" onclick="fin()" aria-label="Terminar"><i></i></button>`;
+  $("b-bat").hidden=!S.activo||Nativo.sinBateria()}
 function nuevos(){const n=JSON.parse(Nativo.puntos(PTS.length));for(const p of n){if(PTS.length)D+=dm(PTS[PTS.length-1],p);PTS.push(p)}
-  if(n.length){const ll=PTS.map(p=>[p[0],p[1]]);line.setLatLngs(ll);lineB.setLatLngs(ll);const q=PTS[PTS.length-1];
-    if(!me)me=L.marker([q[0],q[1]],{icon:L.divIcon({className:"me",html:"<i></i>",iconSize:[20,20]})}).addTo(map);else me.setLatLng([q[0],q[1]]);
-    if(PTS.length===n.length)map.setView([q[0],q[1]],15);else if(sigue)map.panTo([q[0],q[1]])}}
-function refresca(){S=JSON.parse(Nativo.estado());if(!S.activo){PTS=[];D=0;line.setLatLngs([]);lineB.setLatLngs([])}nuevos();pinta()}
-function fin(){const d=new Date(S.t0);
-  $("sh").innerHTML=`<h2>■ Terminar la grabación</h2><p><b>${hms(dur())}</b> · <b>${(D/1000).toLocaleString("es-ES",{maximumFractionDigits:2})} km</b> · <b>+${sube()} m</b></p>
+  if(n.length){const ll=PTS.map(p=>[p[0],p[1]]);line.setLatLngs(ll);lineB.setLatLngs(ll)}}
+function refresca(){S=JSON.parse(Nativo.estado());if(!S.activo){PTS=[];D=0;line.setLatLngs([]);lineB.setLatLngs([])}nuevos();pinta();pintaPuntos()}
+function fin(){const d=new Date(S.t0),np=+(Nativo.nPuntos()||0);
+  $("sh").innerHTML=`<h2>■ Terminar la grabación</h2><p><b>${hms(dur())}</b> · <b>${kmT(D)} km</b> · <b>+${sube()} m</b>${np?` · <b>${np}</b> punto${np>1?"s":""}`:""}</p>
   <label>Nombre</label><input id="nm" maxlength="80" value="Recorrido del ${d.toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}">
   <button class="b2 go" onclick="Nativo.terminar(document.getElementById('nm').value.trim()||'Recorrido grabado')">✓ Terminar y guardar</button>
-  <button class="b2 ps" onclick="cierra()">▶ Seguir grabando</button>
-  <button class="b2 ps" style="color:#b3261e" onclick="if(confirm('¿Tirar lo grabado? No se puede recuperar.')){cierra();Nativo.tirar()}">🗑 Tirar la grabación</button>`;
+  <button class="b2" onclick="cierra()">● Seguir grabando</button>
+  <button class="b2" style="color:#b3261e" onclick="if(confirm('¿Tirar lo grabado? No se puede recuperar.')){cierra();Nativo.tirar()}">🗑 Tirar la grabación</button>`;
   $("sheet").hidden=false}
-function hecho(n,donde,est){const e=n.replace(/</g,"&lt;");
-  const msg=est==="ok"?`<p style="font-size:17px">✅ <b>Ya está en tu app</b>, en <b>Mis cosas › Tracks</b>. Vuelve al mapa y lo verás (desde ahí lo puedes ver, cambiar de nombre, borrar o compartir).</p>`:
+function hecho(n,donde,est){const e=esc(n);
+  const msg=est==="ok"?`<p style="font-size:17px">✅ <b>Ya está en tu app</b>, en <b>Mis cosas › Tracks</b>.</p>`:
     est==="enviando"?`<p style="font-size:17px">⏳ Pasándolo a tu app…</p>`:
-    est==="pendiente"?`<p style="font-size:17px">📶 <b>Sin cobertura</b>: se pasará a tu app en cuanto haya conexión (vuelve a abrir esta pantalla con cobertura).</p>`:
-    `<p style="font-size:16px">Para tenerlo en Mis tracks: en el mapa ve a <b>Mis cosas › Tracks › ⬆️ Cargar GPX/KML</b> y elige el archivo en <b>Descargas › Los de las Claras</b>.</p>`;
+    est==="pendiente"?`<p style="font-size:17px">📶 <b>Sin cobertura</b>: pasará a tu app en cuanto haya conexión (vuelve a abrir esta pantalla con cobertura).</p>`:
+    `<p style="font-size:16px">Para tenerlo en Mis tracks: en la app ve a <b>Mis cosas › Tracks › ⬆️ Cargar GPX/KML</b> y elige el archivo en <b>Descargas › Los de las Claras</b>.</p>`;
   $("sh").innerHTML=`<h2>✓ ${e}</h2>${msg}
-  <button class="b2 go" onclick="cierra();Nativo.volver()">← Volver al mapa</button>
-  <button class="b2 ps" onclick="Nativo.compartir()">📤 Compartir el GPX (WhatsApp, Wikiloc…)</button>
-  <p style="font-size:14px;color:#5d6b62">Copia de seguridad en ${donde.replace(/</g,"&lt;")}.</p>`;$("sheet").hidden=false;refresca()}
+  <button class="b2 go" onclick="Nativo.compartir()">📄 Enviar el archivo GPX (WhatsApp, Wikiloc…)</button>
+  <button class="b2" onclick="cierra();Nativo.volver()">🏠 Volver a la app</button>
+  <button class="b2" onclick="cierra()">Cerrar</button>
+  <p style="font-size:14px;color:#5d6b62">Copia en ${esc(donde)}.</p>`;$("sheet").hidden=false;refresca()}
+function aviso(t){toast(t,6000)}
 function cierra(){$("sheet").hidden=true}
-refresca();
+cargaSeguir();refresca();
 setInterval(()=>{if(document.visibilityState!=="visible")return;S=JSON.parse(Nativo.estado());nuevos();pinta()},2000);
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")refresca()});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){refresca();cargaSeguir()}});
 </script></body></html>

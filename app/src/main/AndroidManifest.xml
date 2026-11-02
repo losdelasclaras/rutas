@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
@@ -48,6 +49,13 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/><category android:name="android.intent.category.DEFAULT"/><category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="ldcgrabar"/>
+            </intent-filter>
+        </activity>
+        <!-- enviar un GPX de verdad desde la web (Chrome no deja mandar archivos .gpx) -->
+        <activity android:name=".CompartirActivity" android:exported="true" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:noHistory="true" android:excludeFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/><category android:name="android.intent.category.DEFAULT"/><category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="ldcgpx"/>
             </intent-filter>
         </activity>
         <service android:name=".GrabarService" android:exported="false" android:foregroundServiceType="location"/>
