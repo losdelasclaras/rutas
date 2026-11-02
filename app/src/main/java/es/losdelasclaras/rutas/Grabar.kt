@@ -360,6 +360,9 @@ class GrabarActivity : Activity(), LocationListener {
             val l = Puntos.leer(c); l.put(w); Puntos.poner(c, l)
             if (!Grab.prefs(c).getBoolean("activo", false)) Buzon.enviar(c, emptyList(), "Puntos", JSONArray().put(w)) {}
             return true }
+        /** Cuántas de esas teselas faltan por guardar (para preguntar solo si hace falta y decir cuánto ocupa). */
+        @JavascriptInterface fun faltan(lista: String): Int { val a = try { JSONArray(lista) } catch (e: Exception) { return 0 }
+            return (0 until a.length()).count { val (cp, z, x, y) = a.getString(it).split("/"); val f = tesela(cp, z, x, y); !(f.exists() && f.length() > 0) } }
         // mapa sin cobertura: bajar la zona del track
         @JavascriptInterface fun bajar(lista: String) { Thread {
             val a = try { JSONArray(lista) } catch (e: Exception) { return@Thread }
