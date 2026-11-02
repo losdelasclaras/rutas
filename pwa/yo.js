@@ -46,6 +46,30 @@ if(fabs)fabs.insertAdjacentHTML("afterbegin",`<button class="btn ghost" id="b-pt
 const enApp=(()=>{try{if(document.referrer.startsWith("android-app://es.losdelasclaras.rutas"))sessionStorage.setItem("ldc-apk","1");return sessionStorage.getItem("ldc-apk")==="1"}catch(e){return false}})();
 if(enApp&&fabs){fabs.insertAdjacentHTML("afterbegin",`<button class="btn ghost" id="b-grab" data-short="Grabar" title="Grabar recorrido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4" fill="#c3262e" stroke="none"/></svg>Grabar</button>`);
   document.getElementById("b-grab").addEventListener("click",()=>{location.href="intent://grabar?b="+buzon()+"#Intent;scheme=ldcgrabar;package=es.losdelasclaras.rutas;end"})}
+/* en la app del APK, Chrome no le da la ubicación a la web: se la pide a Android (intent://ubicar) y vuelve con #yo=lat,lon,precisión,hora,para.
+   Al volver la página se recarga: la posición se guarda un par de minutos y se repite lo que se había tocado (Yo, Cerca de mí, Punto, Más cerca…). */
+if(enApp&&navigator.geolocation){const G=navigator.geolocation,gcp=G.getCurrentPosition.bind(G),wp=G.watchPosition.bind(G),cw=G.clearWatch.bind(G);
+  const KF="ldc-yo-fresca",fake=f=>({coords:{latitude:f.lat,longitude:f.lon,accuracy:f.acc,altitude:null,altitudeAccuracy:null,heading:null,speed:null},timestamp:f.t});
+  const fresca=()=>{try{const f=JSON.parse(sessionStorage.getItem(KF)||"null");return f&&Date.now()-f.t<120000?f:null}catch(e){return null}};
+  let PARA="yo",ULT=0;
+  document.addEventListener("click",e=>{const t=e.target;PARA=t.closest("#b-pt")?"punto":t.closest("[data-cme],#b-cerca")?"cerca":t.closest("[data-ordgps],[data-ord]")?"orden":t.closest("[data-lnear]")?"listas":t.closest("#b-me")?"yo":PARA},true);
+  const pide=()=>{if(Date.now()-ULT<10000)return;ULT=Date.now();location.href="intent://ubicar?p="+PARA+"#Intent;scheme=ldcubicar;package=es.losdelasclaras.rutas;end"};
+  G.getCurrentPosition=(ok,err,o)=>{const f=fresca();if(f){setTimeout(()=>ok&&ok(fake(f)),0);return}let hecho=false;
+    gcp(p=>{if(!hecho){hecho=true;ok&&ok(p)}},()=>{},o);setTimeout(()=>{if(!hecho)pide()},1500)};
+  G.watchPosition=(ok,err,o)=>{const f=fresca();let hubo=false;if(f){hubo=true;setTimeout(()=>ok&&ok(fake(f)),0)}
+    const w=wp(p=>{hubo=true;ok&&ok(p)},e=>{if(!hubo)pide();err&&err(e)},o);setTimeout(()=>{if(!hubo)pide()},1500);return w};
+  G.clearWatch=k=>cw(k);
+  const lee=()=>{const h=location.hash||"";let m=/^#yo=(-?[\d.]+),(-?[\d.]+),(\d+),(\d+),?([a-z]*)/.exec(h),nada=/^#yonada=/.test(h);if(!m&&!nada)return;
+    try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+    if(nada){toast("No he podido saber dónde estás. Mira que la ubicación del móvil esté encendida.");return}
+    const f={lat:+m[1],lon:+m[2],acc:+m[3],t:Date.now()},para=m[5]||"yo";try{sessionStorage.setItem(KF,JSON.stringify(f))}catch(e){}
+    store.set("ldc-ultpos",{lat:f.lat,lon:f.lon,t:f.t});
+    setTimeout(()=>{if(para==="cerca"&&window.CERCA)CERCA.yo();
+      else if(para==="punto"&&window.MISPUNTOS&&MISPUNTOS.gps)MISPUNTOS.gps();
+      else if(para==="orden"){showView("rutas");renderList()}
+      else if(para==="listas"){showView("mios");setTimeout(()=>{const b=document.querySelector("[data-lnear]");if(b)b.click()},300)}
+      else{showView("mapa");if(typeof showMe==="function")showMe(f.lat,f.lon,f.acc);map.setView([f.lat,f.lon],Math.max(map.getZoom(),15));toast(f.acc>100?"Estás por aquí (aproximado)":"Estás aquí (punto azul)")}},900)};
+  addEventListener("hashchange",lee);setTimeout(lee,600)}
 /* en la app del APK, «▶ Seguir» abre la pantalla de grabar del móvil con el track (allí el GPS es el de Android y siempre funciona; se puede grabar a la vez) */
 if(enApp&&window.SEGUIR){const st0=SEGUIR.start;
   SEGUIR.start=function(r,rev,resume){if(resume||!r||!r.gx)return st0.apply(this,arguments);
