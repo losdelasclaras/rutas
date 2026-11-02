@@ -212,7 +212,8 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
   const tx=(el,tag)=>{const n=el.getElementsByTagName(tag)[0];return n?n.textContent.trim():""};
   const base=fname.replace(/\.[^.]+$/,"");let np=0,nt=0;const have=new Set(MP.map(p=>p.lat.toFixed(4)+","+p.lon.toFixed(4)+"|"+p.n));
   const addP=(lat,lon,n,nota)=>{if(!isFinite(lat)||!isFinite(lon))return;const k=lat.toFixed(4)+","+lon.toFixed(4)+"|"+n;if(have.has(k))return;have.add(k);MP.push({id:nid(),n:n||"Punto importado",ic:"otro",nota:nota||"",lat:c5(lat),lon:c5(lon),f:new Date().toISOString()});np++};
-  const addT=(pts,n,tms)=>{if(pts.length<2)return;const t=thin(pts);let km=0;for(let i=1;i<pts.length;i++){const d=dist(pts[i-1],pts[i]);if(d<2000)km+=d}const o={id:nid(),n:n||base,km:Math.round(km/100)/10,pts:t,src:"gpx",f:new Date().toISOString()};desn(o);
+  const addT=(pts,n,tms,ga)=>{if(pts.length<2)return;const t=thin(pts);let km=0;for(let i=1;i<pts.length;i++){const d=dist(pts[i-1],pts[i]);if(d<2000)km+=d}const o={id:nid(),n:n||base,km:Math.round(km/100)/10,pts:t,src:"gpx",f:new Date().toISOString()};
+    if(ga&&ga.length===pts.length&&ga.every(v=>v!=null&&isFinite(v)))o.ug=suben(pts.map((q,i)=>[q[0],q[1],ga[i]]));desn(o);
     // si el GPX trae la hora de cada punto: inicio, fin y tiempo en movimiento (tramos de menos de 1 min y a más de 1 km/h)
     if(tms&&tms.length===pts.length){let a=null,b=null,mov=0;for(let i=0;i<tms.length;i++){if(!tms[i])continue;if(a==null)a=tms[i];b=tms[i];
         if(i&&tms[i-1]){const dt=(tms[i]-tms[i-1])/1000;if(dt>0&&dt<=60&&dist(pts[i-1],pts[i])/dt>0.28)mov+=dt}}
@@ -221,7 +222,7 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
     for(const w of doc.getElementsByTagName("wpt"))addP(+w.getAttribute("lat"),+w.getAttribute("lon"),tx(w,"name"),tx(w,"desc")||tx(w,"cmt"));
     const gpsAlt=/Los de las Claras/.test((doc.documentElement.getAttribute("creator")||""));   // grabado con la app: altura del GPS, poco fiable
     for(const t of doc.getElementsByTagName("trk")){const tp=[...t.getElementsByTagName("trkpt")],pts=tp.map(p=>{const e=gpsAlt?"":tx(p,"ele");return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});
-      const tms=tp.map(p=>{const v=Date.parse(tx(p,"time"));return isFinite(v)?v:0});addT(pts,tx(t,"name"),tms.some(Boolean)?tms:null)}
+      const tms=tp.map(p=>{const v=Date.parse(tx(p,"time"));return isFinite(v)?v:0});addT(pts,tx(t,"name"),tms.some(Boolean)?tms:null,gpsAlt?tp.map(p=>{const e=tx(p,"ele");return e===""?null:+e}):null)}
     for(const r of doc.getElementsByTagName("rte")){const pts=[...r.getElementsByTagName("rtept")].map(p=>[+p.getAttribute("lat"),+p.getAttribute("lon")]);addT(pts,tx(r,"name"))}}
   else{for(const pm of doc.getElementsByTagName("Placemark")){const n=tx(pm,"name"),d=tx(pm,"description").replace(/<[^>]+>/g," ").trim();
       for(const pt of pm.getElementsByTagName("Point")){const c=tx(pt,"coordinates").split(",");addP(+c[1],+c[0],n,d)}
@@ -237,8 +238,15 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
   for(const o of nuevos)if(o.pts.some(p=>p[2]==null))demAlt(o.id);
   if(nt===1&&!np&&window.MISTRACKS)MISTRACKS.open(nuevos[0].id,true)}
 // desnivel de un track (con margen de 4 m para que el ruido no sume)
-function desn(o){const p=o.pts;if(!p.length||p.some(x=>x[2]==null)){delete o.up;delete o.dn;return}let U=0,D=0,ref=p[0][2],mx=-1e9,mn=1e9;
-  for(const x of p){const d=x[2]-ref;if(d>=4){U+=d;ref=x[2]}else if(d<=-4){D-=d;ref=x[2]}if(x[2]>mx)mx=x[2];if(x[2]<mn)mn=x[2]}o.up=Math.round(U);o.dn=Math.round(D);o.mx=mx;o.mn=mn}
+/* desnivel: el perfil se suaviza en tramos de 50 m (las alturas del GPS y las del mapa del terreno van a saltos) y se suman las subidas y bajadas de más de 4 m.
+   Con un track real (Pico Cicueta, 12,4 km) da lo mismo que Wikiloc: +852/−882 frente a 856. */
+function suben(p){const n=p.length,c=[0];for(let i=1;i<n;i++)c.push(c[i-1]+dist(p[i-1],p[i]));const E=[];let j0=0,j1=0,s=0;
+  for(let i=0;i<n;i++){while(j1<n-1&&c[j1+1]-c[i]<=50){j1++;}while(c[i]-c[j0]>50)j0++;let t=0;for(let k=j0;k<=j1;k++)t+=p[k][2];E.push(t/(j1-j0+1))}
+  let U=0,D=0,ref=E[0];for(const x of E){const d=x-ref;if(d>=4){U+=d;ref=x}else if(d<=-4){D-=d;ref=x}}return[Math.round(U),Math.round(D)]}
+function desn(o){const p=o.pts;if(!p.length||p.some(x=>x[2]==null)){if(o.ug){o.up=o.ug[0];o.dn=o.ug[1]}else{delete o.up;delete o.dn}return}let mx=-1e9,mn=1e9;
+  for(const x of p){if(x[2]>mx)mx=x[2];if(x[2]<mn)mn=x[2]}
+  // si es grabado con la app, el desnivel sale de la altura del GPS (ug), que sigue mejor los repechos; las alturas que se ven, del mapa del terreno
+  const[U,D]=o.ug||suben(p);o.up=U;o.dn=D;o.mx=mx;o.mn=mn;o.dv=2}
 // si el GPX no trae alturas, se sacan del modelo de relieve (hace falta conexión)
 async function demAlt(id){const o=MT.find(x=>x.id===id);if(!o||!navigator.onLine)return;const p=o.pts;
   const idx=[];const step=Math.max(1,Math.ceil(p.length/1000));for(let i=0;i<p.length;i+=step)idx.push(i);if(idx[idx.length-1]!==p.length-1)idx.push(p.length-1);
@@ -382,7 +390,7 @@ sheet.addEventListener("click",e=>{if(sheet._ct==null)return;const t=MT.find(x=>
   if(window.cuentaOk&&!cuentaOk(go,esP?"puntos":"tracks"))return;go()});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-mtcar]");if(b)carpetaTrack(b.dataset.mtcar)});
 window.MISPUNTOS={get:()=>MP,verCompartidos,carpetaTrack,guardarCarpeta,fotoGet,fotoPut,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
-  addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),ptsOf,desn,demAlt,dl,
+  addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),ptsOf,desn,suben,demAlt,dl,
   saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
   importText(txt,n,prev){try{imp(String(txt),n||"track.gpx",prev)}catch(e){toast("No he podido leer ese archivo (solo GPX o KML)")}},
   importar(){if(window.cuentaOk&&!cuentaOk(()=>toast("Ya has entrado. Pulsa otra vez «Cargar GPX/KML» para elegir el archivo"),"tracks"))return;fin.value="";fin.click()},

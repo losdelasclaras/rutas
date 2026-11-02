@@ -59,6 +59,7 @@ function encuadra(t){const p=MPI.ptsOf(t);if(!p){if(window.loadTracks)loadTracks
   const b=L.latLngBounds(p.map(x=>[x[0],x[1]]));const wide=innerWidth>=860;
   map.fitBounds(b,{paddingTopLeft:[30,90],paddingBottomRight:wide?[480,30]:[30,Math.round(innerHeight*0.5)],maxZoom:15})}
 function open(id,fit){const t=T().find(x=>String(x.id)===String(id));if(!t)return;
+  if(t.pts&&t.pts.length>1&&t.dv!==2&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
   if(typeof showView==="function")showView("mapa");
   if(!LAY.mt){LAY.mt=true;saveLay();const b=document.querySelector('[data-lay="mt"]');if(b)b.setAttribute("aria-pressed",true);MPI.sync()}
   const r=routeOf(t),d=datos(t),p=MPI.ptsOf(t)||(r&&r.gx&&r.gx.st?[r.gx.st]:null);
