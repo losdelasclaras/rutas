@@ -51,6 +51,13 @@
                 <data android:scheme="ldcgrabar"/>
             </intent-filter>
         </activity>
+        <!-- la ubicación para la web (dentro de la app Chrome no se la da): la pide a Android y vuelve a la web con ella -->
+        <activity android:name=".UbicarActivity" android:exported="true" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:noHistory="true" android:excludeFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/><category android:name="android.intent.category.DEFAULT"/><category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="ldcubicar"/>
+            </intent-filter>
+        </activity>
         <!-- enviar un GPX de verdad desde la web (Chrome no deja mandar archivos .gpx) -->
         <activity android:name=".CompartirActivity" android:exported="true" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:noHistory="true" android:excludeFromRecents="true">
             <intent-filter>
