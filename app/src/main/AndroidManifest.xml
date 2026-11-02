@@ -25,6 +25,15 @@
             <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
         </activity-alias>
 
+        <!-- ubicación: Chrome pregunta a la app (servicio de delegación) y la app le pasa la de Android -->
+        <service android:name=".DelegationService" android:enabled="true" android:exported="true">
+            <intent-filter>
+                <action android:name="android.support.customtabs.trusted.TRUSTED_WEB_ACTIVITY_SERVICE"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </service>
+        <activity android:name="com.google.androidbrowserhelper.locationdelegation.PermissionRequestActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:exported="false"/>
+
         <!-- «Abrir con» y «Compartir» para archivos GPX y KML -->
         <activity android:name=".AbrirActivity" android:exported="true" android:label="@string/app_name" android:taskAffinity="" android:excludeFromRecents="true" android:noHistory="true" android:theme="@android:style/Theme.Translucent.NoTitleBar">
             <intent-filter>
