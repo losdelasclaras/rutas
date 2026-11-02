@@ -351,6 +351,7 @@ class GrabarActivity : Activity(), LocationListener {
         @JavascriptInterface fun abrir(u: String) = runOnUiThread { if (u.startsWith("https://")) try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(u))) } catch (e: Exception) {} }
         // seguir
         @JavascriptInterface fun seguir(): String = Grab.prefs(c).getString("seguir", "") ?: ""
+        @JavascriptInterface fun version(): String = try { packageManager.getPackageInfo(packageName, 0).versionName ?: "?" } catch (e: Exception) { "?" }
         @JavascriptInterface fun dejarSeguir() { Grab.prefs(c).edit().remove("seguir").apply() }
         /** Zona elegida en el mapa de la app para guardarla sin cobertura (se lee una vez). */
         @JavascriptInterface fun zona(): String { val p = Grab.prefs(c); val z = p.getString("zona", "") ?: ""; p.edit().remove("zona").apply(); return z }

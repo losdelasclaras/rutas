@@ -86,7 +86,7 @@ let FONDO=CAPAS[CAPA].l().addTo(map);
 let MALT=0,AVT=0;const vigila=l=>{l.on("tileerror",()=>{MALT++;if(MALT>=6&&Date.now()-AVT>60000){AVT=Date.now();MALT=0;toast("🗺 Sin mapa en esta zona: no hay cobertura y no estaba guardado. Con cobertura, 🗺 › Guardar lo que se ve.",6000)}});l.on("tileload",()=>{MALT=0});return l};vigila(FONDO);
 function ponCapa(k){if(!CAPAS[k])return;CAPA=k;try{localStorage.setItem("capa",k)}catch(e){}FONDO.remove();FONDO=vigila(CAPAS[k].l()).addTo(map);FONDO.bringToBack();capas()}
 function capas(){$("sh").innerHTML=`<h2>🗺 Mapa</h2>`+Object.entries(CAPAS).map(([k,c])=>`<button class="capa" aria-pressed="${k===CAPA}" onclick="ponCapa('${k}')"><span>${k===CAPA?"✓":"○"}</span><span>${c.n}<small>${c.d}</small></span></button>`).join("")+
-  (T.length?`<button class="b2 go" onclick="cierra();bajarZona()">⬇ Guardar la zona del track, para sin cobertura</button>`:"")+`<button class="b2 ${T.length?"":"go"}" onclick="cierra();bajarVista()">⬇ Guardar lo que se ve, para sin cobertura</button><p style="font-size:14px;color:#5d6b62;margin:4px 0 8px">Se guarda el mapa elegido de la zona que tienes en pantalla, con más detalle. Los mapas descargados en la app (Mis cosas › Mapas) no valen aquí: esta pantalla guarda los suyos.</p><button class="b2" onclick="cierra()">Cerrar</button>`;$("sheet").hidden=false}
+  (T.length?`<button class="b2 go" onclick="cierra();bajarZona()">⬇ Guardar la zona del track, para sin cobertura</button>`:"")+`<button class="b2 ${T.length?"":"go"}" onclick="cierra();bajarVista()">⬇ Guardar lo que se ve, para sin cobertura</button><p style="font-size:14px;color:#5d6b62;margin:4px 0 8px">Se guarda el mapa elegido de la zona que tienes en pantalla, con más detalle. Los mapas descargados en la app (Mis cosas › Mapas) no valen aquí: esta pantalla guarda los suyos.</p><button class="b2" onclick="cierra()">Cerrar</button><p style="font-size:12px;color:#8a958e;text-align:center;margin:6px 0 0">Versión ${(()=>{try{return Nativo.version()}catch(e){return"?"}})()}</p>`;$("sheet").hidden=false}
 const segB=L.polyline([],{color:"#fff",weight:9,opacity:.85}).addTo(map),segL=L.polyline([],{color:"#7b2cbf",weight:5,opacity:.95,dashArray:"10 7"}).addTo(map);
 const lineB=L.polyline([],{color:"#fff",weight:8,opacity:.9}).addTo(map),line=L.polyline([],{color:"#c3262e",weight:5}).addTo(map);
 let me=null,acc=null;const WPL=L.layerGroup().addTo(map);
@@ -141,7 +141,8 @@ function listaZona(){const L0=[];const vis=new Set();
 function bajarZona(){if(T.length)try{Nativo.bajar(JSON.stringify(listaZona()))}catch(e){}}
 const MB=(n,k)=>Math.max(1,Math.round(n*(k==="topo"?.018:k==="orto"?.035:.03)));
 // al empezar a seguir: ¿guardar el mapa de la zona del track? (si ya está guardado, no se pregunta)
-function ofreceZona(){if(!T.length)return;let f=0;try{f=+Nativo.faltan(JSON.stringify(listaZona()))}catch(e){}if(!f)return;
+function ofreceZona(){if(!T.length||ZR)return;   // si se está ofreciendo una zona elegida en la app, no se pisa
+ let f=0;try{f=+Nativo.faltan(JSON.stringify(listaZona()))}catch(e){}if(!f)return;
   $("sh").innerHTML=`<h2>🗺 ¿Guardar el mapa de la zona?</h2><p style="margin:0 0 6px">Para verlo aunque no haya cobertura en el monte. Elige el mapa:</p>`+
     Object.entries(CAPAS).map(([k,c])=>`<button class="capa" aria-pressed="${k===CAPA}" onclick="CAPA!=='${k}'&&ponCapaSin('${k}');ofreceZona()"><span>${k===CAPA?"✓":"○"}</span><span>${c.n}<small>${c.d}</small></span></button>`).join("")+
     `<button class="b2 go" onclick="cierra();bajarZona()">⬇ Guardar (unos ${MB(f,CAPA)} MB)</button><button class="b2" onclick="cierra()">Ahora no</button>
