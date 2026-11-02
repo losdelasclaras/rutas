@@ -100,7 +100,7 @@ function zona(){if(typeof showView==="function")showView("mapa");sheet.hidden=tr
       // en el APK: la zona se guarda para la pantalla de grabar (que es donde se usa sin cobertura), con el mapa que se elija allí
       if(document.documentElement.classList.contains("apk")){let nm="la zona",bd2=1e9;for(const p of PLACES){const d=(p[2]-c.lat)**2+((p[3]-c.lng)*Math.cos(c.lat*Math.PI/180))**2;if(d<bd2){bd2=d;nm=p[0]}}
         let bz=null;try{bz=localStorage.getItem("ldc-buzon")}catch(x){}
-        location.href="intent://zona"+(bz?"?b="+bz:"")+"#Intent;scheme=ldcgrabar;package=es.losdelasclaras.rutas;S.z="+[bb.getSouth(),bb.getWest(),bb.getNorth(),bb.getEast()].map(v=>v.toFixed(5)).join(",")+";S.n="+encodeURIComponent(nm)+";end";return}
+        location.href="intent://zona"+(bz?"?b="+bz:"")+"#Intent;scheme=ldcgrabar;package=es.losdelasclaras.rutas;S.z="+encodeURIComponent([bb.getSouth(),bb.getWest(),bb.getNorth(),bb.getEast()].map(v=>v.toFixed(5)).join(","))+";S.n="+encodeURIComponent(nm)+";end";return}
       let best=null,bd=1e9;for(const p of PLACES){const d=(p[2]-c.lat)**2+((p[3]-c.lng)*Math.cos(c.lat*Math.PI/180))**2;if(d<bd){bd=d;best=p[0]}}
       bajar({id:"z:"+Date.now().toString(36),ref:null,n:"Zona de "+(best||"mapa"),k:"zona",zb:[bb.getSouth(),bb.getWest(),bb.getNorth(),bb.getEast()].map(v=>Math.round(v*1e5)/1e5),z0,zmax},set)}})}
 
