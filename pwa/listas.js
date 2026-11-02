@@ -16,6 +16,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 #mlbox .mlgh .chev{width:16px;flex:none;transition:transform .15s;color:var(--muted)}#mlbox .mlgh[aria-expanded=true] .chev{transform:rotate(90deg)}
 #mlbox .mlgh[aria-expanded=true]{border-radius:12px 12px 0 0}
 #pendban{position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:500;display:flex;gap:10px;align-items:center;background:#20302a;color:#fff;border-radius:999px;padding:8px 8px 8px 16px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.3);white-space:nowrap;font-size:15px}
+#pendban[hidden]{display:none}
 #pendban button{border:0;border-radius:999px;background:#fff;color:#20302a;font-weight:800;padding:8px 14px;cursor:pointer;font-size:14px}
 </style>`);
 let MODE="quiero",POS=null;const OPEN=new Set();
@@ -83,5 +84,7 @@ function pendOff(){if(SAVED){for(const k in SAVED)setLay(k,SAVED[k]);SAVED=null}
 document.addEventListener("click",e=>{if(e.target.closest("[data-mk]"))setTimeout(()=>{render();if(window.LISTAS_CNT)LISTAS_CNT()},0)});
 // también al cambiar las marcas desde la cuenta (otro móvil) y al entrar en Mis cosas
 for(const f of ["renderCols","showView"]){const o=window[f];if(typeof o==="function")window[f]=function(){const r=o.apply(this,arguments);try{render();if(window.LISTAS_CNT)LISTAS_CNT()}catch(e){}return r}}
+// al irte del mapa (otra pestaña) se quita solo y las capas vuelven a como estaban
+setTimeout(()=>{const sv=window.showView;if(typeof sv==="function")window.showView=showView=function(v){if(v!=="mapa"&&(SAVED||PRT))pendOff();return sv.apply(this,arguments)}},0);   // después de pestanas.js, que cambia showView
 window.LISTAS={box,render,pend};
 })();
