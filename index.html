@@ -1930,6 +1930,7 @@ document.addEventListener("visibilitychange",()=>{if(F&&document.visibilityState
 const save=()=>{if(F)store.set(FK,{u:F.r.u,rev:F.rev,s:F.s,i:F.i,tt:F.t,on:F.on,t:Date.now()})};
 
 function start(r,rev,resume){if(!r||!r.gx)return;
+  if(!resume&&typeof window.SEGUIR_NATIVO==="function")return window.SEGUIR_NATIVO(r,rev);   // en la app del APK: a la pantalla de grabar del móvil
   if(!r.gx.ln){toast("Preparando el track…");loadTracks().then(ok=>{if(ok&&r.gx.ln)start(r,rev,resume);else toast("Sin conexión: no puedo cargar el track ahora")});return}
   if(!navigator.geolocation){toast("Este aparato no da la ubicación");return}
   stop(true);
@@ -2351,9 +2352,9 @@ if(enApp&&navigator.geolocation){const G=navigator.geolocation,gcp=G.getCurrentP
       else{showView("mapa");if(typeof showMe==="function")showMe(f.lat,f.lon,f.acc);map.setView([f.lat,f.lon],Math.max(map.getZoom(),15));toast(f.acc>100?"Estás por aquí (aproximado)":"Estás aquí (punto azul)")}},900)};
   addEventListener("hashchange",lee);setTimeout(lee,600)}
 /* en la app del APK, «▶ Seguir» abre la pantalla de grabar del móvil con el track (allí el GPS es el de Android y siempre funciona; se puede grabar a la vez) */
-if(enApp&&window.SEGUIR){const st0=SEGUIR.start;
-  SEGUIR.start=function(r,rev,resume){if(resume||!r||!r.gx)return st0.apply(this,arguments);
-    if(!r.gx.ln){toast("Preparando el track…");loadTracks().then(ok=>{if(ok&&r.gx.ln)SEGUIR.start(r,rev);else toast("Sin conexión: no puedo cargar el track ahora")});return}
+if(enApp){
+  window.SEGUIR_NATIVO=function(r,rev){
+    if(!r.gx.ln){toast("Preparando el track…");loadTracks().then(ok=>{if(ok&&r.gx.ln)SEGUIR_NATIVO(r,rev);else toast("Sin conexión: no puedo cargar el track ahora")});return}
     let ln=r.gx.ln.map(q=>[+(+q[0]).toFixed(6),+(+q[1]).toFixed(6),q[2]!=null&&isFinite(q[2])?Math.round(q[2]):null]);if(rev)ln.reverse();
     if(ln.length>1500&&window.COMPARTIR&&COMPARTIR.simple){let t=2;while(ln.length>1500&&t<40){ln=COMPARTIR.simple(ln,t);t*=1.5}}
     const n=(typeof routeTitle==="function"&&r.p?routeTitle(r):r.ti||r.n)||"Track";
@@ -3433,5 +3434,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="40ae815aec";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="085a4a62c9";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
