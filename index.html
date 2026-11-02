@@ -2276,14 +2276,22 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 #b-me.vivo.suelto{animation:none;background:#fff!important;color:#1a73e8!important;border-color:#1a73e8!important}
 @keyframes yov{0%,100%{box-shadow:0 0 0 3px rgba(26,115,232,.35)}50%{box-shadow:0 0 0 9px rgba(26,115,232,.12)}}
 </style>`);
-let W=null,SIGUE=true,PRIMERO=true;
-function apaga(msg){if(W!=null){navigator.geolocation.clearWatch(W);W=null}b.classList.remove("vivo","suelto");if(msg)toast(msg)}
-function fix(p){const la=p.coords.latitude,lo=p.coords.longitude;
+let W=null,W2=null,SIGUE=true,PRIMERO=true,UFINO=0;
+// dos fuentes a la vez: el GPS (preciso, pero dentro de casa puede no llegar) y la aproximada del móvil (wifi y datos, al momento, como Google Maps).
+// La aproximada solo se usa mientras no haya GPS reciente; en cuanto llega el GPS, manda él.
+const OPF={enableHighAccuracy:true,maximumAge:3000,timeout:20000},OPA={enableHighAccuracy:false,maximumAge:60000,timeout:20000};
+function gpsOk(p){UFINO=Date.now();window.__meLL=[p.coords.latitude,p.coords.longitude];fix(p)}
+function aprox(p){if(Date.now()-UFINO<30000)return;window.__meLL=[p.coords.latitude,p.coords.longitude];fix(p,true)}
+function mirar(){W=navigator.geolocation.watchPosition(gpsOk,err,OPF);W2=navigator.geolocation.watchPosition(aprox,()=>{},OPA)}
+function soltar(){if(W!=null)navigator.geolocation.clearWatch(W);if(W2!=null)navigator.geolocation.clearWatch(W2);W=W2=null}
+function apaga(msg){soltar();b.classList.remove("vivo","suelto");if(msg)toast(msg)}
+function fix(p,ap){const la=p.coords.latitude,lo=p.coords.longitude;
   if(typeof showMe==="function")showMe(la,lo,p.coords.accuracy);
-  if(PRIMERO){PRIMERO=false;try{ensureZone(zoneAt(la,lo))}catch(e){}map.flyTo([la,lo],Math.max(map.getZoom(),15),{duration:.8});toast("Estás aquí (punto azul)");return}
+  if(PRIMERO){PRIMERO=false;try{ensureZone(zoneAt(la,lo))}catch(e){}map.flyTo([la,lo],Math.max(map.getZoom(),15),{duration:.8});toast(ap?"Estás por aquí (aproximado, con wifi y datos); afinando con el GPS…":"Estás aquí (punto azul)");return}
   if(SIGUE)map.panTo([la,lo],{animate:true,duration:.5})}
 function err(e){if(e&&e.code===1)apaga("Sin permiso de ubicación: actívalo en los ajustes del móvil para el navegador");
   else if(PRIMERO)toast("Todavía no tengo tu ubicación… sigo buscando")}
+
 b.addEventListener("click",()=>{
   if(!navigator.geolocation){toast("Este móvil no da la ubicación");return}
   if(W!=null){
@@ -2291,10 +2299,10 @@ b.addEventListener("click",()=>{
     apaga("Ubicación en directo apagada");return}
   sheet.hidden=true;sheet.classList.remove("full");try{setNear(false)}catch(e){}
   toast("Buscando dónde estás… (el punto te seguirá)");PRIMERO=true;SIGUE=true;b.classList.add("vivo");b.classList.remove("suelto");
-  W=navigator.geolocation.watchPosition(p=>{window.__meLL=[p.coords.latitude,p.coords.longitude];fix(p)},err,{enableHighAccuracy:true,maximumAge:3000,timeout:20000})});
+  UFINO=0;mirar()});
 map.on("dragstart",()=>{if(W!=null&&SIGUE){SIGUE=false;b.classList.add("suelto")}});
 // al irte de la app el móvil corta el GPS; al volver, sigue solo
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&W!=null){navigator.geolocation.clearWatch(W);W=navigator.geolocation.watchPosition(p=>{window.__meLL=[p.coords.latitude,p.coords.longitude];fix(p)},err,{enableHighAccuracy:true,maximumAge:3000,timeout:20000})}});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&W!=null){soltar();mirar()}});
 window.YO={apaga,activo:()=>W!=null};
 // botón «📍 Punto» en el mapa: guarda un punto donde estás
 const fabs=document.querySelector(".fabs");
@@ -2500,7 +2508,7 @@ box.addEventListener("toggle",e=>{if(!e.target.matches("details.mlres"))return;b
 box.addEventListener("click",e=>{
   const m=e.target.closest("[data-lmode]");if(m){MODE=m.dataset.lmode;render();return}
   if(e.target.closest("[data-lnear]")){if(POS){POS=null;render();return}if(!navigator.geolocation){toast("Este móvil no da la ubicación");return}toast("Buscando dónde estás…");
-    navigator.geolocation.getCurrentPosition(p=>{POS={lat:p.coords.latitude,lon:p.coords.longitude};render()},()=>toast("No he podido saber dónde estás."),{enableHighAccuracy:true,timeout:12000,maximumAge:300000});return}
+    navigator.geolocation.getCurrentPosition(p=>{POS={lat:p.coords.latitude,lon:p.coords.longitude};render()},()=>toast("No he podido saber dónde estás."),{enableHighAccuracy:false,timeout:12000,maximumAge:300000});return}
   if(e.target.closest("[data-lmap]")){pendMap();return}
   const sg=e.target.closest("[data-lsec]");if(sg){const id=MODE+sg.dataset.lsec;if(OPEN.has(id))OPEN.delete(id);else OPEN.add(id);render();return}
   const o=e.target.closest("[data-lopen]");if(o){const x=LAST[+o.dataset.lopen];if(!x)return;
@@ -3148,7 +3156,7 @@ function ponNear(n,ir){window.NEAR=n;for(const k of ["cumbres","lugares"])COL[k]
 window.nearPick=(lat,lon,label)=>{if(!PICK)return false;PICK=false;if(typeof OVS!=="undefined"&&OVS.length)ovCloseAll();
   setTimeout(()=>ponNear({lat,lon,label,rad:radAt(lat,lon)}),150);return true};
 function geo(cb){if(!navigator.geolocation){toast("Este aparato no da la ubicación: elige un sitio");buscar();return}toast("Buscando dónde estás…");
-  navigator.geolocation.getCurrentPosition(p=>cb(p.coords.latitude,p.coords.longitude),()=>{toast("No he podido saber dónde estás: elige un sitio");buscar()},{enableHighAccuracy:true,timeout:12000,maximumAge:300000})}
+  navigator.geolocation.getCurrentPosition(p=>cb(p.coords.latitude,p.coords.longitude),()=>{toast("No he podido saber dónde estás: elige un sitio");buscar()},{enableHighAccuracy:false,timeout:12000,maximumAge:300000})}
 function buscar(){PICK=true;ovShow({t:"search"})}
 function yo(ir){geo((la,lo)=>ponNear({lat:la,lon:lo,label:"tu ubicación",rad:radAt(la,lo)},ir))}
 window.CERCA={yo,buscar,quitar:()=>ponNear(null)};
@@ -3303,5 +3311,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="0aeb781454";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="4dbab30585";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
