@@ -17,6 +17,8 @@ html,body{margin:0;height:100%;overflow:hidden;color:var(--ink);font:18px/1.4 sy
 #est.rec{background:var(--rojo);color:#fff}#est.pau{background:#fff1e0;color:#8a4b00}
 #seg{margin-top:6px;padding:7px 10px;border-radius:10px;background:#f2ebfa;color:#3d1466;font-weight:700;font-size:15px}
 #seg.fuera{background:#b3261e;color:#fff}
+#seg .ir{display:flex;gap:8px;margin-top:7px}#seg .ir button{flex:1;border:0;border-radius:10px;padding:9px 6px;font:inherit;font-size:15px;font-weight:800;background:#7b2cbf;color:#fff}
+#seg .ir button+button{background:#fff;color:#3d1466}
 #seg[hidden],#est[hidden]{display:none}
 #seg .x{float:right;border:0;background:none;color:inherit;font-weight:800;font-size:15px;padding:0 0 0 8px;text-decoration:underline}
 /* botones redondos a la derecha */
@@ -79,7 +81,9 @@ const CAPAS={topo:{n:"Topográfico",d:"OpenTopoMap, curvas de nivel, de toda Eur
   orto:{n:"IGN · Ortofoto",d:"Foto aérea PNOA, solo España",l:()=>L.tileLayer(wmts("pnoa-ma","OI.OrthoimageCoverage"),{maxZoom:17,maxNativeZoom:17,attribution:"Ortofoto PNOA © IGN"})}};
 let CAPA="topo";try{CAPA=localStorage.getItem("capa")||"topo"}catch(e){}if(!CAPAS[CAPA])CAPA="topo";
 let FONDO=CAPAS[CAPA].l().addTo(map);
-function ponCapa(k){if(!CAPAS[k])return;CAPA=k;try{localStorage.setItem("capa",k)}catch(e){}FONDO.remove();FONDO=CAPAS[k].l().addTo(map);FONDO.bringToBack();capas();if(T.length)bajarZona()}
+// si el mapa no llega (sin cobertura y sin haberlo guardado), se dice en vez de dejar el fondo gris sin más
+let MALT=0,AVT=0;const vigila=l=>{l.on("tileerror",()=>{MALT++;if(MALT>=6&&Date.now()-AVT>60000){AVT=Date.now();MALT=0;toast("🗺 Sin mapa en esta zona: no hay cobertura y no estaba guardado. Con cobertura, 🗺 › Guardar lo que se ve.",6000)}});l.on("tileload",()=>{MALT=0});return l};vigila(FONDO);
+function ponCapa(k){if(!CAPAS[k])return;CAPA=k;try{localStorage.setItem("capa",k)}catch(e){}FONDO.remove();FONDO=vigila(CAPAS[k].l()).addTo(map);FONDO.bringToBack();capas();if(T.length)bajarZona()}
 function capas(){$("sh").innerHTML=`<h2>🗺 Mapa</h2>`+Object.entries(CAPAS).map(([k,c])=>`<button class="capa" aria-pressed="${k===CAPA}" onclick="ponCapa('${k}')"><span>${k===CAPA?"✓":"○"}</span><span>${c.n}<small>${c.d}</small></span></button>`).join("")+
   `<button class="b2 go" onclick="cierra();bajarVista()">⬇ Guardar lo que se ve, para sin cobertura</button><p style="font-size:14px;color:#5d6b62;margin:4px 0 8px">Se guarda el mapa elegido de la zona que tienes en pantalla, con más detalle. Al seguir un track, el de su zona se guarda solo. Los mapas descargados en la app (Mis cosas › Mapas) no valen aquí: esta pantalla guarda los suyos.</p><button class="b2" onclick="cierra()">Cerrar</button>`;$("sheet").hidden=false}
 const segB=L.polyline([],{color:"#fff",weight:9,opacity:.85}).addTo(map),segL=L.polyline([],{color:"#7b2cbf",weight:5,opacity:.95,dashArray:"10 7"}).addTo(map);
@@ -108,6 +112,9 @@ function cargaSeguir(){let o=null;try{o=JSON.parse(Nativo.seguir()||"null")}catc
   if(nuevo){IDX=0;map.fitBounds(L.latLngBounds(ll),{padding:[40,40],paddingTopLeft:[20,150],paddingBottomRight:[80,150]});SIGUE=false;clearTimeout(VUELTA);VUELTA=setTimeout(()=>{SIGUE=true;if(YO)map.panTo([YO[0],YO[1]])},20000);bajarZona()}
   pintaSeg(null)}
 function pintaSeg(d){const e=$("seg");if(!T.length){e.hidden=true;return}e.hidden=false;
+  if(d!=null&&d>1000){const a=YO?dm(YO,T[0]):d;e.className="lejos";
+    e.innerHTML=`<button class="x" onclick="dejar()">Dejar</button>▶ ${esc(TN)}<br><span style="font-weight:600">Estás a <b>${kmT(a)} km</b> de la salida</span>`+
+      `<div class="ir"><button onclick="llegar()">🚗 Cómo llegar a la salida</button><button onclick="verTrack()">🗺 Ver el track</button></div>`;return}
   const queda=TC[TC.length-1]-TC[IDX],sub=Math.round(TU[IDX]||0);
   e.className=d!=null&&d>60?"fuera":"";
   e.innerHTML=`<button class="x" onclick="dejar()">Dejar</button>`+(d!=null&&d>60?`⚠️ Te has salido del track (a ${Math.round(d)} m)`:`▶ ${esc(TN)}`)+
@@ -117,8 +124,10 @@ function sigueA(la,lo){if(!T.length)return;
   let best=-1,bd=1e12;const p=[la,lo];
   const a=Math.max(0,IDX-60),b=Math.min(T.length,IDX+400);for(let i=a;i<b;i++){const d=dm(p,T[i]);if(d<bd){bd=d;best=i}}
   if(bd>300)for(let i=0;i<T.length;i++){const d=dm(p,T[i]);if(d<bd){bd=d;best=i}}
-  IDX=best;if(bd>60){FUERA++;if(FUERA>=2&&!AVISADO){AVISADO=true;try{Nativo.vibrar()}catch(e){}}}else{FUERA=0;AVISADO=false}
+  IDX=best;if(bd>60&&bd<=1000){FUERA++;if(FUERA>=2&&!AVISADO){AVISADO=true;try{Nativo.vibrar()}catch(e){}}}else{FUERA=0;AVISADO=false}
   pintaSeg(bd)}
+function llegar(){const q=T[0];Nativo.abrir(`https://www.google.com/maps/dir/?api=1&destination=${q[0]},${q[1]}&travelmode=driving`)}
+function verTrack(){SIGUE=false;clearTimeout(VUELTA);map.fitBounds(L.latLngBounds(T.map(p=>[p[0],p[1]])),{paddingTopLeft:[20,190],paddingBottomRight:[70,110]})}
 function dejar(){Nativo.dejarSeguir();cargaSeguir();toast("Has dejado de seguir el track")}
 // mapa sin cobertura: se bajan los trozos del mapa a lo largo del track (zoom 11 a 16)
 function bajarZona(){if(!T.length)return;const L0=[];const vis=new Set();
@@ -152,7 +161,7 @@ const dur=()=>S.activo?Math.max(0,(S.pz||Date.now())-S.t0-S.pau):0;
 function pinta(){
   $("tt").textContent=hms(dur());$("km").textContent=kmT(D);$("up").textContent="+"+sube().toLocaleString("es-ES");
   const e=$("est");
-  if(!S.activo){e.className="";e.innerHTML=(T.length?"Toca ● para grabar mientras lo sigues":"Toca ● para grabar")+(S.ultima?`<button onclick="Nativo.recuperar()">📂 Última</button>`:"")}
+  if(!S.activo){e.className="";e.innerHTML=(T.length?"Toca ● para grabar mientras lo sigues":"Toca ● para grabar")}
   else if(S.pz){e.className="pau";e.textContent="❚❚ En pausa"}
   else{e.className="rec";e.textContent=PTS.length?"● Grabando · puedes apagar la pantalla":"● Grabando · esperando la señal del GPS…"}
   $("abajo").innerHTML=!S.activo?`<button class="big go" onclick="Nativo.empezar()" aria-label="Grabar"><i></i></button>`:

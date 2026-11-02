@@ -238,7 +238,7 @@ class GrabarActivity : Activity(), LocationListener {
     private fun tesela(capa: String, z: String, x: String, y: String) = File(teselas, "$capa/$z/$x/$y" + if (capa == "topo") ".png" else ".jpg")
     private fun bajarTesela(u: String, f: File): Boolean = try {
         val k = java.net.URL(u).openConnection() as java.net.HttpURLConnection
-        k.connectTimeout = 8000; k.readTimeout = 12000; k.setRequestProperty("User-Agent", "LosDeLasClaras-Rutas/1.0 (Android; losdelasclaras.github.io/rutas)")
+        k.connectTimeout = 8000; k.readTimeout = 12000; k.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) LosDeLasClaras-Rutas/1.0"); k.setRequestProperty("Referer", "https://losdelasclaras.github.io/rutas/")
         if (k.responseCode == 200) { f.parentFile?.mkdirs(); val tmp = File(f.path + ".tmp"); k.inputStream.use { i -> tmp.outputStream().use { i.copyTo(it) } }; tmp.renameTo(f); k.disconnect(); true }
         else { k.disconnect(); false }
     } catch (e: Exception) { false }
@@ -344,6 +344,8 @@ class GrabarActivity : Activity(), LocationListener {
             catch (e: Exception) { try { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) } catch (x: Exception) {} } }
         @JavascriptInterface fun sinBateria(): Boolean = if (Build.VERSION.SDK_INT >= 23) (getSystemService(POWER_SERVICE) as PowerManager).isIgnoringBatteryOptimizations(packageName) else true
         @JavascriptInterface fun volver() = runOnUiThread { finish() }
+        /** Abrir fuera (Google Maps para «Cómo llegar»). */
+        @JavascriptInterface fun abrir(u: String) = runOnUiThread { if (u.startsWith("https://")) try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(u))) } catch (e: Exception) {} }
         // seguir
         @JavascriptInterface fun seguir(): String = Grab.prefs(c).getString("seguir", "") ?: ""
         @JavascriptInterface fun dejarSeguir() { Grab.prefs(c).edit().remove("seguir").apply() }
