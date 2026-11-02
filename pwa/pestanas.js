@@ -29,6 +29,7 @@ main.appendChild(sec);const inner=sec.firstElementChild;
 const MS={ml:document.getElementById("mlbox"),mp:document.getElementById("mpbox"),mt:document.getElementById("mtbox"),off:document.getElementById("offbox")};
 for(const k in MS)if(MS[k]){MS[k].dataset.msec=k;inner.appendChild(MS[k])}
 const MN={ml:["★","Mis listas"],mp:["📍","Puntos"],mt:["🧵","Tracks"],off:["📥","Mapas"]};
+if(document.documentElement.classList.contains("apk")){delete MN.off;if(MS.off)MS.off.hidden=true;delete MS.off}   // en el APK, los mapas sin cobertura van en la pantalla de grabar
 const cuenta=k=>k==="ml"?(window.LISTAS?LISTAS.pend()+" ★":""):k==="res"?(typeof PEAKS!=="undefined"?PEAKS.filter(p=>MARKS["c:"+norm(p.c)+(p.co?"@"+p.co.id:"")]==="hecha").length+" ⛰️":""):k==="mp"?MISPUNTOS.get().length:k==="mt"?MISPUNTOS.tracks().length:(window.OFFLINE?OFFLINE.list().length:0);
 let curM=store.get("ldc-mios","ml");if(!MN[curM])curM="ml";
 const barM=document.getElementById("st-mios");
