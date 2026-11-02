@@ -58,7 +58,7 @@ box.addEventListener("toggle",e=>{if(!e.target.matches("details.mlres"))return;b
 box.addEventListener("click",e=>{
   const m=e.target.closest("[data-lmode]");if(m){MODE=m.dataset.lmode;render();return}
   if(e.target.closest("[data-lnear]")){if(POS){POS=null;render();return}if(!navigator.geolocation){toast("Este móvil no da la ubicación");return}toast("Buscando dónde estás…");
-    navigator.geolocation.getCurrentPosition(p=>{POS={lat:p.coords.latitude,lon:p.coords.longitude};render()},()=>toast("No he podido saber dónde estás."),{enableHighAccuracy:true,timeout:12000,maximumAge:300000});return}
+    navigator.geolocation.getCurrentPosition(p=>{POS={lat:p.coords.latitude,lon:p.coords.longitude};render()},()=>toast("No he podido saber dónde estás."),{enableHighAccuracy:false,timeout:12000,maximumAge:300000});return}
   if(e.target.closest("[data-lmap]")){pendMap();return}
   const sg=e.target.closest("[data-lsec]");if(sg){const id=MODE+sg.dataset.lsec;if(OPEN.has(id))OPEN.delete(id);else OPEN.add(id);render();return}
   const o=e.target.closest("[data-lopen]");if(o){const x=LAST[+o.dataset.lopen];if(!x)return;

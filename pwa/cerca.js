@@ -11,7 +11,7 @@ function ponNear(n,ir){window.NEAR=n;for(const k of ["cumbres","lugares"])COL[k]
 window.nearPick=(lat,lon,label)=>{if(!PICK)return false;PICK=false;if(typeof OVS!=="undefined"&&OVS.length)ovCloseAll();
   setTimeout(()=>ponNear({lat,lon,label,rad:radAt(lat,lon)}),150);return true};
 function geo(cb){if(!navigator.geolocation){toast("Este aparato no da la ubicación: elige un sitio");buscar();return}toast("Buscando dónde estás…");
-  navigator.geolocation.getCurrentPosition(p=>cb(p.coords.latitude,p.coords.longitude),()=>{toast("No he podido saber dónde estás: elige un sitio");buscar()},{enableHighAccuracy:true,timeout:12000,maximumAge:300000})}
+  navigator.geolocation.getCurrentPosition(p=>cb(p.coords.latitude,p.coords.longitude),()=>{toast("No he podido saber dónde estás: elige un sitio");buscar()},{enableHighAccuracy:false,timeout:12000,maximumAge:300000})}
 function buscar(){PICK=true;ovShow({t:"search"})}
 function yo(ir){geo((la,lo)=>ponNear({lat:la,lon:lo,label:"tu ubicación",rad:radAt(la,lo)},ir))}
 window.CERCA={yo,buscar,quitar:()=>ponNear(null)};

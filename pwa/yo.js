@@ -10,14 +10,22 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 #b-me.vivo.suelto{animation:none;background:#fff!important;color:#1a73e8!important;border-color:#1a73e8!important}
 @keyframes yov{0%,100%{box-shadow:0 0 0 3px rgba(26,115,232,.35)}50%{box-shadow:0 0 0 9px rgba(26,115,232,.12)}}
 </style>`);
-let W=null,SIGUE=true,PRIMERO=true;
-function apaga(msg){if(W!=null){navigator.geolocation.clearWatch(W);W=null}b.classList.remove("vivo","suelto");if(msg)toast(msg)}
-function fix(p){const la=p.coords.latitude,lo=p.coords.longitude;
+let W=null,W2=null,SIGUE=true,PRIMERO=true,UFINO=0;
+// dos fuentes a la vez: el GPS (preciso, pero dentro de casa puede no llegar) y la aproximada del móvil (wifi y datos, al momento, como Google Maps).
+// La aproximada solo se usa mientras no haya GPS reciente; en cuanto llega el GPS, manda él.
+const OPF={enableHighAccuracy:true,maximumAge:3000,timeout:20000},OPA={enableHighAccuracy:false,maximumAge:60000,timeout:20000};
+function gpsOk(p){UFINO=Date.now();window.__meLL=[p.coords.latitude,p.coords.longitude];fix(p)}
+function aprox(p){if(Date.now()-UFINO<30000)return;window.__meLL=[p.coords.latitude,p.coords.longitude];fix(p,true)}
+function mirar(){W=navigator.geolocation.watchPosition(gpsOk,err,OPF);W2=navigator.geolocation.watchPosition(aprox,()=>{},OPA)}
+function soltar(){if(W!=null)navigator.geolocation.clearWatch(W);if(W2!=null)navigator.geolocation.clearWatch(W2);W=W2=null}
+function apaga(msg){soltar();b.classList.remove("vivo","suelto");if(msg)toast(msg)}
+function fix(p,ap){const la=p.coords.latitude,lo=p.coords.longitude;
   if(typeof showMe==="function")showMe(la,lo,p.coords.accuracy);
-  if(PRIMERO){PRIMERO=false;try{ensureZone(zoneAt(la,lo))}catch(e){}map.flyTo([la,lo],Math.max(map.getZoom(),15),{duration:.8});toast("Estás aquí (punto azul)");return}
+  if(PRIMERO){PRIMERO=false;try{ensureZone(zoneAt(la,lo))}catch(e){}map.flyTo([la,lo],Math.max(map.getZoom(),15),{duration:.8});toast(ap?"Estás por aquí (aproximado, con wifi y datos); afinando con el GPS…":"Estás aquí (punto azul)");return}
   if(SIGUE)map.panTo([la,lo],{animate:true,duration:.5})}
 function err(e){if(e&&e.code===1)apaga("Sin permiso de ubicación: actívalo en los ajustes del móvil para el navegador");
   else if(PRIMERO)toast("Todavía no tengo tu ubicación… sigo buscando")}
+
 b.addEventListener("click",()=>{
   if(!navigator.geolocation){toast("Este móvil no da la ubicación");return}
   if(W!=null){
@@ -25,10 +33,10 @@ b.addEventListener("click",()=>{
     apaga("Ubicación en directo apagada");return}
   sheet.hidden=true;sheet.classList.remove("full");try{setNear(false)}catch(e){}
   toast("Buscando dónde estás… (el punto te seguirá)");PRIMERO=true;SIGUE=true;b.classList.add("vivo");b.classList.remove("suelto");
-  W=navigator.geolocation.watchPosition(p=>{window.__meLL=[p.coords.latitude,p.coords.longitude];fix(p)},err,{enableHighAccuracy:true,maximumAge:3000,timeout:20000})});
+  UFINO=0;mirar()});
 map.on("dragstart",()=>{if(W!=null&&SIGUE){SIGUE=false;b.classList.add("suelto")}});
 // al irte de la app el móvil corta el GPS; al volver, sigue solo
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&W!=null){navigator.geolocation.clearWatch(W);W=navigator.geolocation.watchPosition(p=>{window.__meLL=[p.coords.latitude,p.coords.longitude];fix(p)},err,{enableHighAccuracy:true,maximumAge:3000,timeout:20000})}});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&W!=null){soltar();mirar()}});
 window.YO={apaga,activo:()=>W!=null};
 // botón «📍 Punto» en el mapa: guarda un punto donde estás
 const fabs=document.querySelector(".fabs");
