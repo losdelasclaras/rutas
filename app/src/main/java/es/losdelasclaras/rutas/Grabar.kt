@@ -370,8 +370,37 @@ class GrabarActivity : Activity(), LocationListener {
         @JavascriptInterface fun faltan(lista: String): Int { val a = try { JSONArray(lista) } catch (e: Exception) { return 0 }
             return (0 until a.length()).count { val (cp, z, x, y) = a.getString(it).split("/"); val f = tesela(cp, z, x, y); !(f.exists() && f.length() > 0) } }
         // mapa sin cobertura: bajar la zona del track
-        @JavascriptInterface fun bajar(lista: String) { Thread {
+        // ---------- mapas guardados: cada zona apunta sus teselas (zonas.json + zona-<id>.txt) para poder borrarla luego ----------
+        private fun zf() = File(filesDir, "zonas.json")
+        private fun zl(): JSONArray = try { JSONArray(zf().readText()) } catch (e: Exception) { JSONArray() }
+        private fun claves(o: JSONObject): List<String> = try { File(filesDir, "zona-" + o.getString("id") + ".txt").readLines().filter { it.isNotBlank() } } catch (e: Exception) { emptyList() }
+        private fun fichero(k: String): File? { val v = k.split("/"); return if (v.size == 4) tesela(v[0], v[1], v[2], v[3]) else null }
+        private fun tamDir(d: File): Long = d.walkTopDown().filter { it.isFile }.sumOf { it.length() }
+        /** Lista de zonas guardadas con lo que ocupan, y lo que ocupa todo (también lo que se ha ido viendo). */
+        @JavascriptInterface fun zonas(): String {
+            val a = zl(); val out = JSONArray()
+            for (i in 0 until a.length()) { val o = a.getJSONObject(i); var b = 0L; for (k in claves(o)) b += fichero(k)?.length() ?: 0L
+                out.put(JSONObject(o.toString()).put("b", b)) }
+            return JSONObject().put("z", out).put("total", tamDir(teselas)).toString() }
+        @JavascriptInterface fun borrarZona(id: String): Boolean {
+            val a = zl(); val quedan = JSONArray(); var esta: JSONObject? = null
+            for (i in 0 until a.length()) { val o = a.getJSONObject(i); if (o.optString("id") == id) esta = o else quedan.put(o) }
+            val z = esta ?: return false
+            // las teselas que también use otra zona guardada se quedan
+            val otras = HashSet<String>(); for (i in 0 until quedan.length()) otras.addAll(claves(quedan.getJSONObject(i)))
+            for (k in claves(z)) if (k !in otras) fichero(k)?.delete()
+            File(filesDir, "zona-$id.txt").delete(); zf().writeText(quedan.toString()); return true }
+        @JavascriptInterface fun borrarTodo() { teselas.deleteRecursively(); teselas.mkdirs(); val a = zl()
+            for (i in 0 until a.length()) File(filesDir, "zona-" + a.getJSONObject(i).optString("id") + ".txt").delete(); zf().delete() }
+        @JavascriptInterface fun bajar(lista: String) = bajar(lista, "Zona")
+        @JavascriptInterface fun bajar(lista: String, nombre: String) { Thread {
             val a = try { JSONArray(lista) } catch (e: Exception) { return@Thread }
+            // se apunta la zona (con su lista de teselas) aunque luego falte alguna
+            try { val id = System.currentTimeMillis().toString(36)
+                File(filesDir, "zona-$id.txt").writeText((0 until a.length()).joinToString("\n") { a.getString(it) })
+                val cp = a.optString(0, "topo").substringBefore("/")
+                val l = zl(); l.put(JSONObject().put("id", id).put("n", nombre.take(80)).put("capa", cp).put("t", System.currentTimeMillis()).put("nt", a.length())); zf().writeText(l.toString())
+            } catch (e: Exception) {}
             val falta = (0 until a.length()).map { a.getString(it) }.filter { k -> val (cp, z, x, y) = k.split("/"); val f = tesela(cp, z, x, y); !(f.exists() && f.length() > 0) }
             val t = a.length(); var h = t - falta.size; var mal = 0; var ultAviso = 0L
             if (falta.isEmpty()) { runOnUiThread { web.evaluateJavascript("bajando($t,$t,false)", null) }; return@Thread }
