@@ -212,7 +212,7 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
   const tx=(el,tag)=>{const n=el.getElementsByTagName(tag)[0];return n?n.textContent.trim():""};
   const base=fname.replace(/\.[^.]+$/,"");let np=0,nt=0;const have=new Set(MP.map(p=>p.lat.toFixed(4)+","+p.lon.toFixed(4)+"|"+p.n));
   const addP=(lat,lon,n,nota)=>{if(!isFinite(lat)||!isFinite(lon))return;const k=lat.toFixed(4)+","+lon.toFixed(4)+"|"+n;if(have.has(k))return;have.add(k);MP.push({id:nid(),n:n||"Punto importado",ic:"otro",nota:nota||"",lat:c5(lat),lon:c5(lon),f:new Date().toISOString()});np++};
-  const addT=(pts,n,tms)=>{if(pts.length<2)return;const t=thin(pts);let km=0;for(let i=1;i<t.length;i++)km+=dist(t[i-1],t[i]);const o={id:nid(),n:n||base,km:Math.round(km/100)/10,pts:t,src:"gpx",f:new Date().toISOString()};desn(o);
+  const addT=(pts,n,tms)=>{if(pts.length<2)return;const t=thin(pts);let km=0;for(let i=1;i<pts.length;i++){const d=dist(pts[i-1],pts[i]);if(d<2000)km+=d}const o={id:nid(),n:n||base,km:Math.round(km/100)/10,pts:t,src:"gpx",f:new Date().toISOString()};desn(o);
     // si el GPX trae la hora de cada punto: inicio, fin y tiempo en movimiento (tramos de menos de 1 min y a más de 1 km/h)
     if(tms&&tms.length===pts.length){let a=null,b=null,mov=0;for(let i=0;i<tms.length;i++){if(!tms[i])continue;if(a==null)a=tms[i];b=tms[i];
         if(i&&tms[i-1]){const dt=(tms[i]-tms[i-1])/1000;if(dt>0&&dt<=60&&dist(pts[i-1],pts[i])/dt>0.28)mov+=dt}}
