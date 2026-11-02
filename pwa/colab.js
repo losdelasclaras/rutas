@@ -126,7 +126,7 @@ function abrirR(c,i,nofit){coPill(null);const keep=!!(nofit&&TRCO&&TRCO.__i===c.
   <div class="meta"><span class="tag" style="background:${c.c};color:#fff;border-color:${c.c}">${esc(c.n)}</span>${act?`<span class="tag">${esc(act)}</span>`:""}<span class="tag">${esc(z)}</span>${(()=>{const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");return fe?`<span class="tag">📅 ${MESES[+fe[2]]?MESES[+fe[2]]+" ":""}${fe[1]}</span>`:""})()}</div>
   <div class="mkblock rmk"><span>Esta ruta</span><span class="mk" data-key="${esc(key)}"><button data-mk="hecha" aria-pressed="${st==="hecha"}" title="Hecha">✓ Hecha</button><button data-mk="quiero" aria-pressed="${st==="quiero"}" title="Quiero hacerla">★ Quiero hacerla</button></span></div>
   ${(km||de||dif)?`<div class="ficha">${km?`<div><b>${esc(km)}</b><span>Distancia</span></div>`:""}${deN?`<div><b>+${esc(deN)} m</b><span>Desnivel</span></div>`:""}${dif?`<div><b>${esc(cap1(dif))}</b><span>Dificultad</span></div>`:""}</div>`:""}
-  <div class="topacts"><button class="btn primary" data-cofol>▶ Seguir</button><button class="btn ghost" data-cosave>☆ Guardar en Mis tracks</button></div>
+  <div class="topacts"><button class="btn primary" data-cofol>▶ Seguir</button><button class="btn ghost" data-cosave>☆ Guardar en Mis tracks</button><button class="btn ghost" data-coshare>📤 Compartir</button></div>
   <div class="actions">${blog?`<a class="btn primary" href="${esc(blog)}" target="_blank" rel="noopener">Leer en el blog</a>`:""}${wl?`<a class="btn ${blog?"ghost":"primary"}" href="${esc(wl)}" target="_blank" rel="noopener">Ver en Wikiloc</a>`:""}<a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${ini[0]},${ini[1]}" target="_blank" rel="noopener">Cómo llegar a la salida</a></div>`;
   sheet._cor={c,i};if(window.showTrack)showTrack(null);nodes.classed("sel",false);sheet.hidden=false;sheet.scrollTop=0;
   if(TRCO){TRCO.remove();TRCO=null}
@@ -255,6 +255,20 @@ for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exe
 COLX.rsrc="todas";
 COLX.isRuta=ci=>RUT.some(x=>x.ci===ci);
 COLX.rutasCo=()=>ALL.filter(x=>x.rr!=null);
+/* 📤 Compartir una ruta de un colaborador: texto con nombre, km, desnivel y de quién es + enlace que la abre en la app */
+sheet.addEventListener("click",async e=>{if(!e.target.closest("[data-coshare]")||!sheet._cor)return;const{c,i}=sheet._cor,r=c.r[i];
+  const deN=(/(\d[\d.]*)/.exec(r[4])||[])[1],nums=[r[3],deN?"+"+deN+" m":""].filter(Boolean).join(" · ");
+  const url=APPURL+"#co="+c.id+"!"+encodeURIComponent(norm(r[0]).slice(0,90)),title=r[0];
+  const text="🏔️ "+r[0]+(nums?" · "+nums:"")+"\nRuta de "+c.n+(r[7]?"\n📖 "+r[7]:"")+"\n🗺 Ábrela en la app de Los de las Claras:";
+  try{if(navigator.share){await navigator.share({title,text,url});return}}catch(er){if(er&&er.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(text+"\n"+url);toast("Enlace copiado. Pégalo en WhatsApp.")}catch(er){window.open("https://wa.me/?text="+encodeURIComponent(text+"\n"+url),"_blank","noopener")}});
+/* abrir un enlace compartido #co=<colaborador>!<nombre de la ruta> */
+function abrirEnlaceCo(){const h=location.hash||"";if(!h.startsWith("#co="))return;const raw=h.slice(4),k=raw.indexOf("!");if(k<0)return;
+  const id=raw.slice(0,k),nm=decodeURIComponent(raw.slice(k+1));try{history.replaceState(null,"",location.pathname+location.search)}catch(er){}
+  const c=CO.find(x=>x.id===id),i=c&&c.r?c.r.findIndex(r=>norm(r[0]).slice(0,90)===nm):-1;
+  if(i<0){toast("No encuentro esa ruta en la app");return}
+  if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>verR(c,i),300)}
+addEventListener("hashchange",abrirEnlaceCo);setTimeout(abrirEnlaceCo,400);
 COLX.rut=()=>RUT;
 COLX.rutaItem=(c,i)=>RUT.find(x=>x.rr===i&&x.co===c);
 COLX.rKey=x=>rKeyCo(x.co,x.c);
