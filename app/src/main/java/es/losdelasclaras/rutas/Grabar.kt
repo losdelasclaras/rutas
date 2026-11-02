@@ -209,7 +209,7 @@ class GrabarActivity : Activity(), LocationListener {
         Buzon.reintentar(this)
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) permisos()
     }
-    override fun onNewIntent(i: Intent?) { super.onNewIntent(i); setIntent(i); datosDe(i); web.evaluateJavascript("cargaSeguir();refresca()", null) }
+    override fun onNewIntent(i: Intent?) { super.onNewIntent(i); setIntent(i); datosDe(i); web.evaluateJavascript("cargaSeguir();refresca();miraZona()", null) }
     override fun onResume() { super.onResume(); mirar() }
     override fun onPause() { super.onPause(); soltar() }
 
@@ -217,6 +217,9 @@ class GrabarActivity : Activity(), LocationListener {
     private fun datosDe(i: Intent?) {
         val b = i?.data?.getQueryParameter("b")
         if (b != null && Regex("[A-Za-z0-9]{12,40}").matches(b)) getSharedPreferences("buzon", MODE_PRIVATE).edit().putString("b", b).apply()
+        val z = i?.getStringExtra("z")
+        if (i?.data?.host == "zona" && z != null && Regex("^-?[\\d.]+(,-?[\\d.]+){3}$").matches(z))
+            Grab.prefs(this).edit().putString("zona", JSONObject().put("z", z).put("n", i.getStringExtra("n") ?: "la zona").toString()).apply()
         val t = i?.getStringExtra("t")
         if (i?.data?.host == "seguir" && t != null) try {
             val a = JSONArray(t); if (a.length() >= 2)
@@ -349,6 +352,8 @@ class GrabarActivity : Activity(), LocationListener {
         // seguir
         @JavascriptInterface fun seguir(): String = Grab.prefs(c).getString("seguir", "") ?: ""
         @JavascriptInterface fun dejarSeguir() { Grab.prefs(c).edit().remove("seguir").apply() }
+        /** Zona elegida en el mapa de la app para guardarla sin cobertura (se lee una vez). */
+        @JavascriptInterface fun zona(): String { val p = Grab.prefs(c); val z = p.getString("zona", "") ?: ""; p.edit().remove("zona").apply(); return z }
         @JavascriptInterface fun vibrar() { try { val v = getSystemService(VIBRATOR_SERVICE) as Vibrator
             if (Build.VERSION.SDK_INT >= 26) v.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 400, 200, 400), -1)) else @Suppress("DEPRECATION") v.vibrate(longArrayOf(0, 400, 200, 400), -1) } catch (e: Exception) {} }
         // puntos
