@@ -98,12 +98,12 @@ for(const c of CO){for(const[k]of KC(c))if(LAY[`co_${c.id}_${k}`]===undefined||n
   for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
     const m=L.marker([p[1],p[2]],{icon:L.divIcon({className:"cpt"+(cum?" cum":""),html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:p[0]+" · "+c.n,riseOnHover:true,zIndexOffset:cum?-20:-50});
     m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(p[1],p[2]);return}abrir(c,p,k)});
-    m.__n=p[0];m.__c=c.c;m.__k=coKey(c,p[0],k);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+(cum?"_c":"_l")] ||= []).push(m)}
+    m.__n=p[0];m.__c=c.c;m.__g=c.id+(cum?"_c":"_l");m.__k=coKey(c,p[0],k);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+(cum?"_c":"_l")] ||= []).push(m)}
   G[c.id+"_l"]=g;G[c.id+"_c"]=gc;
   if(c.r&&c.r.length){G[c.id+"_r"]=L.layerGroup();G[c.id+"_t"]=L.layerGroup();
     c.r.forEach((r,i)=>{const k=icoR(r);const m=L.marker(r[8],{icon:L.divIcon({className:"cpt",html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:r[0]+" · "+c.n,riseOnHover:true,zIndexOffset:-60});
       m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(r[8][0],r[8][1]);return}abrirR(c,i)});
-      m.__n=r[0];m.__c=c.c;m.__k=rKeyCo(c,r[0]);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+"_r"] ||= []).push(m)})}}
+      m.__n=r[0];m.__c=c.c;m.__g=c.id+"_r";m.__k=rKeyCo(c,r[0]);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+"_r"] ||= []).push(m)})}}
 /* ---------- rutas de colaboradores que solo traen el track (p. ej. Rutinas Varias, de Wikiloc) ---------- */
 let LNP=null;const lineas=()=>LNP||(LNP=CO0.ln?fetch(CO0.ln).then(r=>r.json()).catch(()=>{LNP=null;return{}}):Promise.resolve({}));
 function pintaTracks(c){const g=G[c.id+"_t"];if(!g||g.__ok)return;g.__ok=1;lineas().then(J=>{const ls=J[c.id]||[];
@@ -185,11 +185,14 @@ sheet.addEventListener("click",e=>{const k=sheet._cor;if(!k)return;
       if(M.desn)M.desn(o);M.saveTracks([...M.tracks(),o]);toast("Guardada en Mis cosas › Tracks")};
     if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go()})});
 map.on("click",()=>{});
-function coMarks(m){const el=m.getElement();if(!el)return;const v=MARKS[m.__k],on=(v==="hecha"&&LAY.mh)||(v==="quiero"&&LAY.mq);el.classList.toggle("mk-h",v==="hecha"&&LAY.mh);el.classList.toggle("mk-q",v==="quiero"&&LAY.mq);el.classList.toggle("co-off",!!LAY.solo&&!on);const tt=m.getTooltip();if(tt)tt.setOpacity(LAY.solo&&!on?0:1)}
-{const orig=window.refreshMarks;if(orig)window.refreshMarks=function(){orig.apply(this,arguments);for(const m of LBL)coMarks(m)}}
+function coMarks(m){const el=m.getElement();if(!el)return;const v=MARKS[m.__k],on=(v==="hecha"&&LAY.mh)||(v==="quiero"&&LAY.mq);el.classList.toggle("mk-h",v==="hecha"&&LAY.mh);el.classList.toggle("mk-q",v==="quiero"&&LAY.mq);const off=(!!LAY.solo||!!LOFF[m.__g])&&!on;el.classList.toggle("co-off",off);const tt=m.getTooltip();if(tt)tt.setOpacity(off?0:1)}
+// capa apagada: solo se ven sus puntos marcados (✓/★), como en las del grupo
+const LOFF={};const marcados=gid=>(LAY.mh||LAY.mq)&&(MKG[gid]||[]).some(m=>{const v=MARKS[m.__k];return(v==="hecha"&&LAY.mh)||(v==="quiero"&&LAY.mq)});
+const quiere=(c,k)=>{const key=`co_${c.id}_${k}`;LOFF[c.id+"_"+k]=!LAY[key]&&k!=="t";return!window.FOLONLY&&(!!LAY[key]||(k!=="t"&&marcados(c.id+"_"+k)))};
+{const orig=window.refreshMarks;if(orig)window.refreshMarks=function(){orig.apply(this,arguments);if(CO.some(c=>KC(c).some(([k])=>{const g=G[c.id+"_"+k];return g&&quiere(c,k)!==map.hasLayer(g)})))sync();for(const m of LBL)coMarks(m)}}
 // los nombres, como los del grupo: solo con el mapa cerca
 function lbls(){const on=map.getZoom()>=12;for(const m of LBL){if(!m._map){if(m.getTooltip())m.unbindTooltip();continue}if(on&&!m.getTooltip())m.bindTooltip(esc(m.__n),{permanent:true,direction:"right",offset:[10,0],className:"lbl co",interactive:false});const te=on&&m.getTooltip()&&m.getTooltip().getElement();if(te)te.style.setProperty("--cc",m.__c);else if(!on&&m.getTooltip())m.unbindTooltip()}}
-function sync(){for(const c of CO)for(const[k]of KC(c)){const key=`co_${c.id}_${k}`,on=LAY[key]&&!window.FOLONLY,g=G[c.id+"_"+k];
+function sync(){for(const c of CO)for(const[k]of KC(c)){const key=`co_${c.id}_${k}`,on=quiere(c,k),g=G[c.id+"_"+k];
     if(on&&k==="t")pintaTracks(c);
     if(on&&!map.hasLayer(g))g.addTo(map);else if(!on&&map.hasLayer(g))g.remove();
     const b=document.querySelector(`[data-lay="${key}"]`);if(b)b.setAttribute("aria-pressed",!!LAY[key])}

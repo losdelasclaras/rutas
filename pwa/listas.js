@@ -66,13 +66,12 @@ box.addEventListener("click",e=>{
     const rs=(P[p.i].rs||[]).filter(i=>R[i].u);if(rs.length)ovShow(rs.length>1?{t:"pt",i:p.i}:{t:"route",id:rs[0]});else{showView("mapa");setTimeout(()=>flyTo(p.lat,p.lon,10),100)}}});
 /* «Ver pendientes en el mapa»: el mapa enseña solo tus ★ (se apagan las demás capas); un aviso arriba deja volver a como estaba */
 let SAVED=null,PRT=null;
-const WANT={peaks:true,spots:true,tracks:false,solo:true,mp:false,mt:false,seg:false};
+const WANT={tracks:false,solo:true,mp:false,mt:false,seg:false};   // las capas de cumbres/lugares no se tocan: lo marcado se ve aunque estén apagadas
 function setLay(k,v){const b=document.querySelector(`.laypanel [data-lay="${k}"]`);if(b&&(b.getAttribute("aria-pressed")==="true")!==v)b.click()}
 function pendMap(){const md=MODE,v=LAST.filter(x=>x.m===md);if(!v.length)return;WANT.mq=md==="quiero";WANT.mh=md==="hecha";
   if(!SAVED){SAVED={};document.querySelectorAll(".laypanel [data-lay]").forEach(b=>{SAVED[b.dataset.lay]=b.getAttribute("aria-pressed")==="true"})}
   showView("mapa");
   for(const k in WANT)setLay(k,WANT[k]);
-  document.querySelectorAll('.laypanel [data-lay^="co_"]').forEach(b=>setLay(b.dataset.lay,true));
   // las rutas pendientes (no son un punto): una ★ en su salida
   if(PRT)PRT.remove();PRT=L.layerGroup(v.filter(x=>x.r).map(x=>L.marker([x.r.lat,x.r.lon],{icon:L.divIcon({className:"pt mio "+(md==="quiero"?"mk-q":"mk-h"),html:`<svg viewBox="-12 -12 24 24"><use href="#ic-senda" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:routeTitle(x.r),zIndexOffset:500}).on("click",ev=>{L.DomEvent.stopPropagation(ev);openRoute(x.r.id)}))).addTo(map);
   let ban=document.getElementById("pendban");if(!ban){ban=document.createElement("div");ban.id="pendban";document.getElementById("map").parentElement.appendChild(ban)}

@@ -33,7 +33,7 @@ rep('</style>','''html,body{height:100%;margin:0}
 #map .pt.cumbre svg{width:calc(var(--ms,24px)*1.12);height:calc(var(--ms,24px)*1.12)}
 #map .pt.sel svg{outline:3px solid var(--ink);outline-offset:1px;border-radius:50%}
 #map .pt.dim{opacity:.3;filter:grayscale(1);pointer-events:none}
-#map.hide-peaks .pt.cumbre,#map.hide-spots .pt.spot:not(.ini){display:none}
+#map.hide-peaks .pt.cumbre:not(.mio),#map.hide-spots .pt.spot:not(.ini):not(.mio){display:none}
 #map .leaflet-tooltip.lbl{background:#fff;border:1px solid rgba(0,0,0,.18);border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,.3);padding:1px 6px;font-family:var(--f-body);font-weight:700;font-size:calc(13.5px*var(--fs));line-height:1.3;color:#a3141c;white-space:nowrap}
 #map .leaflet-tooltip.lbl::before{display:none}
 #map .leaflet-tooltip.lbl .la{color:#3a3a3a;font-weight:600;font-family:var(--f-num);font-size:.9em;margin-left:2px}
