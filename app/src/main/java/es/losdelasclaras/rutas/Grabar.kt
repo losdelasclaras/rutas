@@ -193,12 +193,12 @@ class GrabarActivity : Activity(), LocationListener {
         web.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(v: WebView?, r: WebResourceRequest?): WebResourceResponse? {
                 val u = r?.url?.toString() ?: return null
-                val m = Regex("^https://[abc]\\.tile\\.opentopomap\\.org/(\\d+)/(\\d+)/(\\d+)\\.png$").find(u) ?: return null
-                val (z, x, y) = m.destructured
-                val f = tesela(z, x, y)
+                val k = teselaDe(u) ?: return null
+                val f = tesela(k[0], k[1], k[2], k[3])
                 if (!f.exists() || f.length() == 0L) bajarTesela(u, f)
-                return if (f.exists() && f.length() > 0) WebResourceResponse("image/png", null, f.inputStream())
-                else WebResourceResponse("image/png", null, 404, "Sin cobertura", emptyMap(), java.io.ByteArrayInputStream(ByteArray(0)))
+                val tipo = if (k[0] == "topo") "image/png" else "image/jpeg"
+                return if (f.exists() && f.length() > 0) WebResourceResponse(tipo, null, f.inputStream())
+                else WebResourceResponse(tipo, null, 404, "Sin cobertura", emptyMap(), java.io.ByteArrayInputStream(ByteArray(0)))
             }
         }
         web.webChromeClient = WebChromeClient()
@@ -224,7 +224,18 @@ class GrabarActivity : Activity(), LocationListener {
         } catch (e: Exception) {}
     }
 
-    private fun tesela(z: String, x: String, y: String) = File(teselas, "$z/$x/$y.png")
+    /** Mapas: topográfico (OpenTopoMap) y los del IGN (mapa ráster MTN y ortofoto PNOA), los mismos de la app. Cada uno en su carpeta. */
+    private fun urlDe(capa: String, z: String, x: String, y: String, n: Int = 0) = when (capa) {
+        "ign" -> "https://www.ign.es/wmts/mapa-raster?service=WMTS&request=GetTile&version=1.0.0&Format=image/jpeg&layer=MTN&style=default&tilematrixset=GoogleMapsCompatible&TileMatrix=$z&TileRow=$y&TileCol=$x"
+        "orto" -> "https://www.ign.es/wmts/pnoa-ma?service=WMTS&request=GetTile&version=1.0.0&Format=image/jpeg&layer=OI.OrthoimageCoverage&style=default&tilematrixset=GoogleMapsCompatible&TileMatrix=$z&TileRow=$y&TileCol=$x"
+        else -> "https://" + "abc"[n % 3] + ".tile.opentopomap.org/$z/$x/$y.png" }
+    /** [capa, z, x, y] de una dirección de tesela, o null si no es de un mapa. */
+    private fun teselaDe(u: String): List<String>? {
+        Regex("^https://[abc]\\.tile\\.opentopomap\\.org/(\\d+)/(\\d+)/(\\d+)\\.png$").find(u)?.let { val (z, x, y) = it.destructured; return listOf("topo", z, x, y) }
+        Regex("^https://www\\.ign\\.es/wmts/(mapa-raster|pnoa-ma)\\?.*TileMatrix=(\\d+)&TileRow=(\\d+)&TileCol=(\\d+)$").find(u)?.let {
+            val (sv, z, y, x) = it.destructured; return listOf(if (sv == "pnoa-ma") "orto" else "ign", z, x, y) }
+        return null }
+    private fun tesela(capa: String, z: String, x: String, y: String) = File(teselas, "$capa/$z/$x/$y" + if (capa == "topo") ".png" else ".jpg")
     private fun bajarTesela(u: String, f: File): Boolean = try {
         val k = java.net.URL(u).openConnection() as java.net.HttpURLConnection
         k.connectTimeout = 8000; k.readTimeout = 12000; k.setRequestProperty("User-Agent", "LosDeLasClaras-Rutas/1.0 (Android; losdelasclaras.github.io/rutas)")
@@ -350,11 +361,11 @@ class GrabarActivity : Activity(), LocationListener {
         // mapa sin cobertura: bajar la zona del track
         @JavascriptInterface fun bajar(lista: String) { Thread {
             val a = try { JSONArray(lista) } catch (e: Exception) { return@Thread }
-            val falta = (0 until a.length()).map { a.getString(it) }.filter { k -> val (z, x, y) = k.split("/"); val f = tesela(z, x, y); !(f.exists() && f.length() > 0) }
+            val falta = (0 until a.length()).map { a.getString(it) }.filter { k -> val (cp, z, x, y) = k.split("/"); val f = tesela(cp, z, x, y); !(f.exists() && f.length() > 0) }
             val t = a.length(); var h = t - falta.size; var mal = 0; var ultAviso = 0L
             if (falta.isEmpty()) { runOnUiThread { web.evaluateJavascript("bajando($t,$t,false)", null) }; return@Thread }
             for ((n, k) in falta.withIndex()) {
-                val (z, x, y) = k.split("/"); val ok = bajarTesela("https://" + "abc"[n % 3] + ".tile.opentopomap.org/$z/$x/$y.png", tesela(z, x, y))
+                val (cp, z, x, y) = k.split("/"); val ok = bajarTesela(urlDe(cp, z, x, y, n), tesela(cp, z, x, y))
                 if (ok) h++ else mal++
                 if (mal >= 10 && h == t - falta.size) { runOnUiThread { web.evaluateJavascript("sinRed()", null) }; return@Thread }
                 if (System.currentTimeMillis() - ultAviso > 2500) { ultAviso = System.currentTimeMillis(); val hh = h; runOnUiThread { web.evaluateJavascript("bajando($hh,$t,true)", null) } }
