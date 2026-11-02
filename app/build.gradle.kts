@@ -16,8 +16,4 @@ android {
     kotlinOptions { jvmTarget = "17" }
     lint { checkReleaseBuilds = false; abortOnError = false }
 }
-dependencies {
-    implementation("com.google.androidbrowserhelper:androidbrowserhelper:2.5.0")
-    // ubicación dentro de la app: Chrome le pide permiso a la app y esta se lo pasa (sin esto, «Yo» no recibe nada desde el icono)
-    implementation("com.google.androidbrowserhelper:locationdelegation:1.1.1")
-}
+dependencies { implementation("com.google.androidbrowserhelper:androidbrowserhelper:2.5.0") }

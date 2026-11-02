@@ -11,30 +11,14 @@
         android:allowBackup="true" android:supportsRtl="true" android:theme="@android:style/Theme.Translucent.NoTitleBar">
         <meta-data android:name="asset_statements" android:resource="@string/asset_statements"/>
 
-        <!-- la app: abre la web en Chrome a pantalla completa (Trusted Web Activity), con vigía anti-cuelgues -->
-        <activity android:name=".InicioActivity" android:exported="false" android:label="@string/app_name">
-            <meta-data android:name="android.support.customtabs.trusted.DEFAULT_URL" android:value="https://losdelasclaras.github.io/rutas/"/>
-            <meta-data android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR" android:resource="@color/rojo"/>
-            <meta-data android:name="android.support.customtabs.trusted.NAVIGATION_BAR_COLOR" android:resource="@color/fondo"/>
-            <meta-data android:name="android.support.customtabs.trusted.FILE_PROVIDER_AUTHORITY" android:value="es.losdelasclaras.rutas.fileprovider"/>
-        </activity>
-        <!-- el icono conserva su nombre de siempre, para que no desaparezca del escritorio al actualizar -->
-        <activity-alias android:name="com.google.androidbrowserhelper.trusted.LauncherActivity" android:targetActivity=".InicioActivity" android:exported="true" android:label="@string/app_name">
+        <!-- la app: abre la web en Chrome a pantalla completa (Trusted Web Activity) -->
+        <activity android:name="com.google.androidbrowserhelper.trusted.LauncherActivity" android:exported="true" android:label="@string/app_name">
             <meta-data android:name="android.support.customtabs.trusted.DEFAULT_URL" android:value="https://losdelasclaras.github.io/rutas/"/>
             <meta-data android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR" android:resource="@color/rojo"/>
             <meta-data android:name="android.support.customtabs.trusted.NAVIGATION_BAR_COLOR" android:resource="@color/fondo"/>
             <meta-data android:name="android.support.customtabs.trusted.FILE_PROVIDER_AUTHORITY" android:value="es.losdelasclaras.rutas.fileprovider"/>
             <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
-        </activity-alias>
-
-        <!-- ubicación: Chrome pregunta a la app (servicio de delegación) y, si hace falta, la app pide el permiso de Android -->
-        <service android:name=".DelegationService" android:enabled="true" android:exported="true">
-            <intent-filter>
-                <action android:name="android.support.customtabs.trusted.TRUSTED_WEB_ACTIVITY_SERVICE"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </service>
-        <activity android:name="com.google.androidbrowserhelper.locationdelegation.PermissionRequestActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:exported="false"/>
+        </activity>
 
         <!-- «Abrir con» y «Compartir» para archivos GPX y KML -->
         <activity android:name=".AbrirActivity" android:exported="true" android:label="@string/app_name" android:taskAffinity="" android:excludeFromRecents="true" android:noHistory="true" android:theme="@android:style/Theme.Translucent.NoTitleBar">
