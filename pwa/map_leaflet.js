@@ -49,8 +49,11 @@ document.documentElement.style.setProperty("--fs",FS);document.documentElement.s
 document.getElementById("fsbtn").textContent=["Aa","Aa+","Aa++"][FSV.indexOf(FS)];
 // capas: la primera vez, solo las cumbres del grupo (y mis marcas); después, lo que dejó la última vez
 // la primera vez (y una vez a todos, nov 2026): solo las cumbres del grupo; lo demás se enciende en Capas
-const LAY=Object.assign({peaks:true,spots:false,tracks:false,mh:true,mq:true,solo:false},store.get("ldc-capas",{}));
+const LAY=Object.assign({peaks:true,spots:true,tracks:false,mh:true,mq:true,solo:false},store.get("ldc-capas",{}));
 if(store.get("ldc-capas2","0")!=="1"){LAY.peaks=true;LAY.spots=false;LAY.tracks=false;LAY.solo=false;store.set("ldc-capas2","1")}
+// nov 2026 (4): una vez a todos y a los nuevos: cumbres y lugares encendidos, tracks apagados; después, lo que deje cada uno
+// (para volver a lo de antes: quitar esta línea y la de colab.js con «ldc-capas3»)
+if(store.get("ldc-capas3","0")!=="1"){LAY.peaks=true;LAY.spots=true;LAY.tracks=false;LAY.solo=false;store.set("ldc-capas3","1");store.set("ldc-capas",LAY)}
 const saveLay=()=>store.set("ldc-capas",LAY);
 function sizeMarks(){
   const z=map.getZoom(); k=2**(z-8);

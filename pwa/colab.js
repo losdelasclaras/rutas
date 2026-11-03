@@ -92,7 +92,9 @@ function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);const deR=k==="c
     pintaCo(c,ls,p[9].filter(i=>((J[c.id]||[])[i]||[]).length>1).map(i=>c.r[i][0]),[la,lo])});
   else flyTo(la,lo)}
 const nuevo2=store.get("ldc-capas2co","0")!=="1";store.set("ldc-capas2co","1");
-for(const c of CO){for(const[k]of KC(c))if(LAY[`co_${c.id}_${k}`]===undefined||nuevo2)LAY[`co_${c.id}_${k}`]=false;delete LAY["co_"+c.id];
+// nov 2026 (4): colaboradores visibles: cumbres, lugares y rutas encendidos, tracks apagados (una vez a todos; después, lo que deje cada uno)
+const nuevo3=store.get("ldc-capas3co","0")!=="1";store.set("ldc-capas3co","1");
+for(const c of CO){for(const[k]of KC(c))if(LAY[`co_${c.id}_${k}`]===undefined||nuevo2||nuevo3)LAY[`co_${c.id}_${k}`]=k!=="t";delete LAY["co_"+c.id];
   const g=L.layerGroup(),gc=L.layerGroup();
   for(const ln of c.l){const ll=ln[1];
     g.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.85,interactive:false,renderer:TRC}));
