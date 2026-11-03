@@ -265,7 +265,7 @@ function pinta(){
   $("b-bat").hidden=!S.activo||Nativo.sinBateria()}
 function nuevos(){const n=JSON.parse(Nativo.puntos(PTS.length));for(const p of n){if(PTS.length)D+=dm(PTS[PTS.length-1],p);PTS.push(p)}
   if(n.length){const ll=PTS.map(p=>[p[0],p[1]]);line.setLatLngs(ll);lineB.setLatLngs(ll)}}
-function refresca(){S=JSON.parse(Nativo.estado());if(!S.activo){PTS=[];D=0;line.setLatLngs([]);lineB.setLatLngs([])}nuevos();pinta();pintaPuntos()}
+function refresca(){const antes=S&&S.activo;S=JSON.parse(Nativo.estado());if(S.activo&&!antes&&!T.length){const q=YO||(()=>{try{return JSON.parse(localStorage.getItem("ultpos")||"null")}catch(e){return null}})();if(q){SIGUE=true;map.setView([q[0],q[1]],Math.max(15,map.getZoom()),{animate:false})}}if(!S.activo){PTS=[];D=0;line.setLatLngs([]);lineB.setLatLngs([])}nuevos();pinta();pintaPuntos()}
 function fin(){const d=new Date(S.t0),np=+(Nativo.nPuntos()||0);
   $("sh").innerHTML=`<h2>■ Terminar la grabación</h2><p><b>${hms(dur())}</b> · <b>${kmT(D)} km</b> · <b>+${sube()} m</b>${np?` · <b>${np}</b> punto${np>1?"s":""}`:""}</p>
   <label>Nombre</label><input id="nm" maxlength="80" value="Recorrido del ${d.toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}">
@@ -287,9 +287,9 @@ function aviso(t){toast(t,6000)}
 function cierra(){$("sheet").hidden=true;DATOS=false}
 // al abrir: el mapa donde lo dejaste (si hace menos de 12 h) o en lo último grabado / tu última posición, cerca
 (()=>{let v=null;try{v=JSON.parse(localStorage.getItem("vista")||"null")}catch(e){}
-  if(v&&Date.now()-v.t<12*3600e3)map.setView([v.la,v.lo],v.z,{animate:false});
+  if(v&&v.z>=13&&Date.now()-v.t<12*3600e3)map.setView([v.la,v.lo],v.z,{animate:false});
   else{let u=null;try{u=JSON.parse(localStorage.getItem("ultpos")||"null")}catch(e){}if(u)map.setView([u[0],u[1]],15,{animate:false})}})();
-map.on("moveend zoomend",()=>{const c=map.getCenter();try{localStorage.setItem("vista",JSON.stringify({la:c.lat,lo:c.lng,z:map.getZoom(),t:Date.now()}))}catch(e){}});
+map.on("moveend zoomend",()=>{if(map.getZoom()<13)return;const c=map.getCenter();try{localStorage.setItem("vista",JSON.stringify({la:c.lat,lo:c.lng,z:map.getZoom(),t:Date.now()}))}catch(e){}});
 cargaSeguir();refresca();setTimeout(miraZona,300);
 if(PTS.length&&!T.length){const q=PTS[PTS.length-1];map.setView([q[0],q[1]],Math.max(map.getZoom(),15),{animate:false})}
 setInterval(()=>{if(document.visibilityState!=="visible")return;S=JSON.parse(Nativo.estado());nuevos();pinta()},2000);

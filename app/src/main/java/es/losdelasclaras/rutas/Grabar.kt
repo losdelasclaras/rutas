@@ -310,7 +310,7 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         var mejor: Location? = null
         for (pr in listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)) try { val l = m.getLastKnownLocation(pr)
             if (l != null && (mejor == null || l.time > mejor.time)) mejor = l } catch (e: Exception) {}
-        mejor?.let { if (System.currentTimeMillis() - it.time < 30 * 60000) mandar(it) }
+        mejor?.let { if (System.currentTimeMillis() - it.time < 24 * 3600000L) mandar(it) }
         try { m.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 0f, this, Looper.getMainLooper()) } catch (e: Exception) {}
         try { m.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 3000L, 0f, this, Looper.getMainLooper()) } catch (e: Exception) {}
     }
