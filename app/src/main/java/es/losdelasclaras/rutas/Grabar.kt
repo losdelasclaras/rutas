@@ -60,7 +60,7 @@ fun guardarGpx(c: Context, pts: List<DoubleArray>, nombre: String, wps: JSONArra
     val sb = StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<gpx version=\"1.1\" creator=\"Los de las Claras\" xmlns=\"http://www.topografix.com/GPX/1/1\">\n")
     for (i in 0 until wps.length()) { val w = wps.optJSONArray(i) ?: continue
         sb.append("<wpt lat=\"${w.optDouble(1)}\" lon=\"${w.optDouble(2)}\">"); if (!w.isNull(3) && !w.optDouble(3).isNaN()) sb.append("<ele>${Math.round(w.optDouble(3))}</ele>")
-        sb.append("<name>${x(w.optString(0, "Punto"))}</name></wpt>\n") }
+        sb.append("<name>${x(w.optString(0, "Punto"))}</name>"); val nt = w.optString(6, ""); if (nt.isNotEmpty()) sb.append("<desc>${x(nt)}</desc>"); sb.append("</wpt>\n") }
     sb.append("<trk><name>${x(nombre)}</name><trkseg>\n")
     for (q in pts) { sb.append("<trkpt lat=\"${q[0]}\" lon=\"${q[1]}\">"); if (!q[2].isNaN()) sb.append("<ele>${Math.round(q[2])}</ele>"); if (q[3] > 0) sb.append("<time>${iso.format(java.util.Date(q[3].toLong()))}</time>"); sb.append("</trkpt>\n") }
     sb.append("</trkseg></trk>\n</gpx>\n")
@@ -101,6 +101,11 @@ object Buzon {
         if (c0 == 200) try { val prev = JSONArray(JSONObject(t0).getJSONObject("fields").getJSONObject("j").getString("stringValue")); for (i in 0 until prev.length()) todos.put(prev.get(i)) } catch (e: Exception) {}
         else if (c0 != 404) return false
         for (i in 0 until nuevos.length()) todos.put(nuevos.get(i))
+        var i0 = 0
+        while (todos.toString().length > 900_000 && i0 < todos.length()) {
+            val it = todos.optJSONObject(i0); val w = it?.optJSONArray("w")
+            if (w != null) for (k in 0 until w.length()) { val q = w.optJSONArray(k); if (q != null && q.length() > 7 && q.optString(7).isNotEmpty()) q.put(7, "") }
+            i0++ }
         val cuerpo = JSONObject().put("fields", JSONObject().put("j", JSONObject().put("stringValue", todos.toString()))
             .put("t", JSONObject().put("integerValue", System.currentTimeMillis().toString()))).toString()
         return pedir(url, "PATCH", cuerpo).first == 200
@@ -181,6 +186,17 @@ class GrabarService : Service(), LocationListener {
  * Los trozos del mapa topográfico se guardan en el móvil (files/teselas) y se ven sin cobertura.
  */
 class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEventListener {
+    private var fotoCb: android.webkit.ValueCallback<Array<Uri>>? = null
+    private var fotoCam: Uri? = null
+    private var fotoFile: File? = null
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(rq: Int, rs: Int, data: Intent?) {
+        if (rq == 77) { val cb = fotoCb; fotoCb = null
+            val cam = fotoFile?.takeIf { it.exists() && it.length() > 0 }?.let { fotoCam }
+            val u: Uri? = if (rs != RESULT_OK) null else (data?.data ?: cam)
+            cb?.onReceiveValue(if (u != null) arrayOf(u) else null); return }
+        @Suppress("DEPRECATION") super.onActivityResult(rq, rs, data)
+    }
     private lateinit var web: WebView
     private var empezarTrasPermiso = false
     private var lm: LocationManager? = null
@@ -208,7 +224,22 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
                 else WebResourceResponse(tipo, null, 404, "Sin cobertura", emptyMap(), java.io.ByteArrayInputStream(ByteArray(0)))
             }
         }
-        web.webChromeClient = WebChromeClient()
+        // 📷 foto de un punto (3 nov): el <input type=file> de la página abre la cámara o la galería
+        web.webChromeClient = object : WebChromeClient() {
+            override fun onShowFileChooser(v: WebView?, cb: android.webkit.ValueCallback<Array<Uri>>?, p: FileChooserParams?): Boolean {
+                fotoCb?.onReceiveValue(null); fotoCb = cb
+                val galeria = Intent(Intent.ACTION_GET_CONTENT).setType("image/*").addCategory(Intent.CATEGORY_OPENABLE)
+                val extra = mutableListOf<Intent>()
+                try {
+                    val d = File(cacheDir, "compartir").apply { mkdirs() }; val f = File(d, "foto-${System.currentTimeMillis()}.jpg"); fotoFile = f
+                    fotoCam = androidx.core.content.FileProvider.getUriForFile(this@GrabarActivity, "es.losdelasclaras.rutas.fileprovider", f)
+                    extra.add(Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE).putExtra(android.provider.MediaStore.EXTRA_OUTPUT, fotoCam)
+                        .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION))
+                } catch (e: Exception) { fotoCam = null; fotoFile = null }
+                val ch = Intent.createChooser(galeria, "Foto del punto").putExtra(Intent.EXTRA_INITIAL_INTENTS, extra.toTypedArray())
+                return try { startActivityForResult(ch, 77); true } catch (e: Exception) { fotoCb = null; false }
+            }
+        }
         web.addJavascriptInterface(Puente(), "Nativo")
         setContentView(web)
         desdeIcono = intent?.getBooleanExtra("desdeIcono", false) == true
@@ -450,6 +481,15 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         // puntos
         @JavascriptInterface fun nPuntos(): Int = Puntos.leer(c).length()
         @JavascriptInterface fun listaPuntos(): String = Puntos.leer(c).toString()
+        /** Punto con icono, nota y foto (como en la app): [nombre, lat, lon, alt, ms, icono, nota, foto (jpeg en base64)] */
+        @JavascriptInterface fun punto2(j: String): Boolean {
+            val o = try { JSONObject(j) } catch (e: Exception) { return false }
+            val al = o.optDouble("al", Double.NaN)
+            val w = JSONArray().put(o.optString("n", "Punto").take(80)).put(o.getDouble("la")).put(o.getDouble("lo")).put(if (al.isNaN()) JSONObject.NULL else al).put(System.currentTimeMillis())
+                .put(o.optString("ic", "otro").take(20)).put(o.optString("nota", "").take(1000)).put(o.optString("fo", ""))
+            val l = Puntos.leer(c); l.put(w); Puntos.poner(c, l)
+            if (!Grab.prefs(c).getBoolean("activo", false)) Buzon.enviar(c, emptyList(), "Puntos", JSONArray().put(w)) {}
+            return true }
         @JavascriptInterface fun punto(n: String, la: Double, lo: Double, al: Double): Boolean {
             val w = JSONArray().put(n.take(80)).put(la).put(lo).put(if (al.isNaN()) JSONObject.NULL else al).put(System.currentTimeMillis())
             // grabando: se guarda para el GPX y se pasa a la app al terminar. Sin grabar: a la app ya (y se queda en el mapa de esta pantalla hasta grabar)

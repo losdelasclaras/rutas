@@ -52,6 +52,9 @@ body.segab #top{z-index:1100}
 .sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;z-index:3000}.sheet[hidden]{display:none}
 .sh{background:var(--card);width:100%;max-height:88%;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px 22px}
 .sh h2{margin:0 0 8px;font-size:22px}
+.pics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 12px}.pics button{border:1px solid var(--edge);background:#fff;border-radius:12px;padding:8px 2px;font:inherit;font-size:14px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--ink)}.pics button span{font-size:24px}.pics button[aria-pressed=true]{border:2px solid #c3262e;background:#fdeeee}
+.sh textarea{width:100%;box-sizing:border-box;font:inherit;font-size:17px;padding:12px;border:1px solid var(--edge);border-radius:12px;margin:6px 0 12px}.pfb{text-align:center;cursor:pointer}
+.wp2{position:relative}.wp2 b{transform:rotate(45deg);font-weight:400}.wp2 span{position:absolute;left:-17px;top:-38px;width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#fff;border:2.5px solid #c3262e;box-shadow:0 2px 5px rgba(0,0,0,.35);display:grid;place-items:center;font-size:18px}
 .sh input{width:100%;font:inherit;font-size:18px;padding:12px;border:1px solid var(--edge);border-radius:12px;margin:6px 0 12px}
 .b2{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:19px;font-weight:800;margin:8px 0;background:#eceeea;color:var(--ink)}
 .b2.go{background:var(--rojo);color:#fff}
@@ -277,15 +280,32 @@ function bajarVista(){const L0=listaVista(map.getBounds());
 function bajando(h,t,falta){if(falta&&h<t)toast(`🗺 Guardando el mapa de la zona para sin cobertura: ${h} de ${t}`,2500);else if(h>=t)toast(falta?"🗺 Mapa de la zona guardado: se verá sin cobertura":"🗺 El mapa de la zona ya estaba guardado",3000)}
 function sinRed(){toast("Sin cobertura: el mapa de la zona no se ha podido guardar. Se verán las partes que ya hayas visto.",5000)}
 /* ---------- puntos ---------- */
+/* el mismo formulario que en la app (3 nov): nombre, icono, foto y nota. Al pasar a la app sale igual en Mis cosas › Puntos */
+const ICOS=[["otro","📍","Punto"],["fuente","💧","Fuente"],["parking","🅿️","Aparcamiento"],["refugio","🏠","Refugio"],["cabana","🛖","Cabaña"],["cumbre","⛰️","Cumbre"],["collado","🥾","Collado / paso"],["vista","👀","Mirador"],["foto","📷","Foto"],["peligro","⚠️","Peligro"],["agua","🏊","Baño / poza"]];
+const EMOP=k=>(ICOS.find(x=>x[0]===k)||ICOS[0])[1];
+let NP=null;
 function nuevoPunto(){if(!YO){toast("Todavía no sé dónde estás: espera a que salga el punto azul");return}
-  const n=+(Nativo.nPuntos()||0)+1;
+  const n=+(Nativo.nPuntos()||0)+1;NP={ic:"otro",fo:null,la:YO[0],lo:YO[1],al:YO[2]};
   $("sh").innerHTML=`<h2>📍 Guardar un punto aquí</h2><label>Nombre</label><input id="pn" maxlength="80" value="Punto ${n}">
+  <label>Icono</label><div class="pics">${ICOS.map(x=>`<button type="button" data-pic="${x[0]}" aria-pressed="${x[0]==="otro"}"><span>${x[1]}</span>${x[2]}</button>`).join("")}</div>
+  <label>Foto (opcional)</label><div id="pfprev"></div><label class="b2 pfb">📷 <span id="pfl">Añadir foto</span><input type="file" accept="image/*" id="pfin" style="display:none"></label>
+  <label>Nota (opcional)</label><textarea id="pnota" rows="3" maxlength="1000" placeholder="Agua todo el año, sitio para aparcar 5 coches…"></textarea>
   <button class="b2 go" onclick="guardaPunto()">✓ Guardar punto</button><button class="b2" onclick="cierra()">Cancelar</button>
   <p style="font-size:14px;color:#5d6b62">Pasa a tu app, en <b>Mis cosas › Puntos</b>${S.activo?", y va también dentro del GPX del recorrido":""}.</p>`;
-  $("sheet").hidden=false;setTimeout(()=>{const i=$("pn");i.focus();i.select()},50)}
-function guardaPunto(){const n=($("pn").value||"").trim()||"Punto";Nativo.punto(n,YO[0],YO[1],YO[2]==null?NaN:YO[2]);cierra();pintaPuntos();toast("📍 «"+n+"» guardado")}
+  $("sheet").hidden=false;
+  $("sh").querySelectorAll("[data-pic]").forEach(b=>b.onclick=()=>{NP.ic=b.dataset.pic;$("sh").querySelectorAll("[data-pic]").forEach(x=>x.setAttribute("aria-pressed",x===b))});
+  $("pfin").onchange=async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;try{toast("Preparando la foto…");NP.fo=await reduceFoto(f,1000,.62);
+    $("pfprev").innerHTML=`<img src="${NP.fo}" alt="" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;display:block;margin:4px 0">`;$("pfl").textContent="Cambiar foto"}catch(er){toast("No he podido leer esa foto")}};
+  setTimeout(()=>{const i=$("pn");i.focus();i.select()},50)}
+// foto reducida (como en la app) para que viaje bien a la app aunque haya poca cobertura
+function reduceFoto(f,max,q){return new Promise((ok,ko)=>{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{let w=im.naturalWidth,h=im.naturalHeight;const k=Math.min(1,max/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);
+  const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",q))};im.onerror=()=>{URL.revokeObjectURL(u);ko()};im.src=u})}
+function guardaPunto(){const n=($("pn").value||"").trim()||"Punto",d=NP||{ic:"otro"},nota=($("pnota")&&$("pnota").value||"").trim();
+  const la=d.la!=null?d.la:YO[0],lo=d.lo!=null?d.lo:YO[1],al=d.al!=null?d.al:YO[2];
+  if(Nativo.punto2)Nativo.punto2(JSON.stringify({n,la,lo,al:al==null?null:al,ic:d.ic||"otro",nota,fo:d.fo||""}));else Nativo.punto(n,la,lo,al==null?NaN:al);
+  NP=null;cierra();pintaPuntos();toast("📍 «"+n+"» guardado")}
 function pintaPuntos(){WPL.clearLayers();let l=[];try{l=JSON.parse(Nativo.listaPuntos()||"[]")}catch(e){}
-  for(const w of l)WPL.addLayer(L.marker([w[1],w[2]],{icon:L.divIcon({className:"wp",html:"<i></i>",iconSize:[0,0]})}).bindTooltip(esc(w[0]),{direction:"top",offset:[0,-28]}))}
+  for(const w of l)WPL.addLayer(L.marker([w[1],w[2]],{icon:L.divIcon({className:"wp2",html:`<span><b>${EMOP(w[5]||"otro")}</b></span>`,iconSize:[0,0]})}).bindTooltip(esc(w[0]),{direction:"top",offset:[0,-26]}))}
 /* ---------- grabar ---------- */
 function sube(){let up=0,ref=null;for(const p of PTS){if(p[2]==null)continue;if(ref==null){ref=p[2];continue}if(p[2]-ref>5){up+=p[2]-ref;ref=p[2]}else if(ref-p[2]>5)ref=p[2]}return Math.round(up)}
 const dur=()=>S.activo?Math.max(0,(S.pz||Date.now())-S.t0-S.pau):0;
