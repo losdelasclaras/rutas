@@ -6,6 +6,7 @@ document.documentElement.classList.toggle("pc",pc);
 document.head.insertAdjacentHTML("beforeend",`<style>
 #b-home,#b-rutas,#b-wiz2,#b-near,#rmenu,.laypanel [data-lay="solo"]{display:none!important}
 .fabs{flex-direction:row!important;align-items:flex-end!important;gap:8px!important}
+#b-me{display:none!important}   /* «Yo» quitado (3 nov): «Punto» ya te centra donde estás */
 html.pc .sosbtn,html.pc #b-pt,html.pc #b-me,html.pc #b-grab,html.pc [data-follow],html.pc [data-mtfol],html.pc [data-segfol],html.pc [data-tmpfol]{display:none!important}
 </style>`);
 // «Ver solo los míos» fuera de Capas (confundía: se quedaba puesto y parecía que faltaban puntos). Lo mismo, con aviso visible, en Mis listas › Ver en el mapa

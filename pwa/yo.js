@@ -88,8 +88,8 @@ async function recoger(){let b=null;try{b=localStorage.getItem("ldc-buzon")}catc
   try{const a=await LDCFB.load(),fs=a.fs,ref=fs.doc(a.db,"buzon",b),d=await fs.getDoc(ref);
     if(d.exists()){const l=JSON.parse(d.data().j||"[]"),MPI=window.MISPUNTOS,ts=MPI.tracks().slice();let ult=null,n=0;
       let np=0;const MP0=MPI.get();
-      for(const it of l){for(const w of it.w||[]){const[n,la,lo,al,t]=w;if(!isFinite(la)||!isFinite(lo))continue;if(MP0.some(q=>Math.abs(q.lat-la)<1e-5&&Math.abs(q.lon-lo)<1e-5&&q.n===n))continue;
-          const p={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),n:n||"Punto",ic:"otro",nota:it.n&&it.p&&it.p.length?"En «"+it.n+"»":"",lat:Math.round(la*1e5)/1e5,lon:Math.round(lo*1e5)/1e5,f:new Date(t||Date.now()).toISOString()};if(al!=null&&isFinite(al))p.a=Math.round(al);MPI.addPoint(p);np++}
+      for(const it of l){for(const w of it.w||[]){const[n,la,lo,al,t,ic,nt,fo]=w;if(!isFinite(la)||!isFinite(lo))continue;if(MP0.some(q=>Math.abs(q.lat-la)<1e-5&&Math.abs(q.lon-lo)<1e-5&&q.n===n))continue;
+          const p={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),n:n||"Punto",ic:ic||"otro",nota:[nt||"",it.n&&it.p&&it.p.length?"En «"+it.n+"»":""].filter(Boolean).join("\n"),lat:Math.round(la*1e5)/1e5,lon:Math.round(lo*1e5)/1e5,f:new Date(t||Date.now()).toISOString()};if(al!=null&&isFinite(al))p.a=Math.round(al);if(fo&&/^data:image\//.test(fo)&&MPI.fotoPut){p.fo=1;MPI.fotoPut(p.id,fo)}MPI.addPoint(p);np++}
         const pts=(it.p||[]).map(q=>[q[0],q[1]]);if(pts.length<2)continue;
         if(ts.some(t=>t.src==="grab"&&t.f===new Date(it.t0).toISOString()))continue;   // ya estaba
         let km=0;for(let i=1;i<pts.length;i++)km+=map.distance(pts[i-1],pts[i]);
