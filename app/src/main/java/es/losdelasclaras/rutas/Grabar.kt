@@ -180,7 +180,7 @@ class GrabarService : Service(), LocationListener {
  * La posición la da Android directamente (GPS y red del móvil), así que aquí siempre funciona aunque dentro de la web no llegue.
  * Los trozos del mapa topográfico se guardan en el móvil (files/teselas) y se ven sin cobertura.
  */
-class GrabarActivity : Activity(), LocationListener {
+class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEventListener {
     private lateinit var web: WebView
     private var empezarTrasPermiso = false
     private var lm: LocationManager? = null
@@ -217,8 +217,37 @@ class GrabarActivity : Activity(), LocationListener {
     }
     private var desdeIcono = false
     override fun onNewIntent(i: Intent?) { super.onNewIntent(i); setIntent(i); desdeIcono = i?.getBooleanExtra("desdeIcono", false) == true; datosDe(i); web.evaluateJavascript("cargaSeguir();refresca();miraZona()", null) }
-    override fun onResume() { super.onResume(); mirar() }
-    override fun onPause() { super.onPause(); soltar() }
+    override fun onResume() { super.onResume(); mirar(); brujula(true) }
+    override fun onPause() { super.onPause(); soltar(); brujula(false) }
+
+    // ---------- brújula: hacia dónde mira el móvil (sensor de rotación), corregida al norte geográfico ----------
+    private var sm: android.hardware.SensorManager? = null
+    private var hayBrujula = false
+    private var decl = 0f
+    private var ultRumbo = -999f
+    private var ultEnvio = 0L
+    private val rm = FloatArray(9); private val ori = FloatArray(3)
+    private fun brujula(on: Boolean) {
+        val m = sm ?: (getSystemService(SENSOR_SERVICE) as android.hardware.SensorManager).also { sm = it }
+        if (!on) { m.unregisterListener(this); return }
+        val s = m.getDefaultSensor(android.hardware.Sensor.TYPE_ROTATION_VECTOR) ?: m.getDefaultSensor(android.hardware.Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
+        hayBrujula = s != null
+        if (s != null) m.registerListener(this, s, android.hardware.SensorManager.SENSOR_DELAY_UI)
+    }
+    override fun onSensorChanged(e: android.hardware.SensorEvent) {
+        android.hardware.SensorManager.getRotationMatrixFromVector(rm, e.values)
+        android.hardware.SensorManager.getOrientation(rm, ori)
+        var g = Math.toDegrees(ori[0].toDouble()).toFloat() + decl
+        // con la pantalla girada (apaisado) el norte del móvil cambia
+        @Suppress("DEPRECATION") val rot = windowManager.defaultDisplay.rotation
+        g += when (rot) { android.view.Surface.ROTATION_90 -> 90f; android.view.Surface.ROTATION_180 -> 180f; android.view.Surface.ROTATION_270 -> 270f; else -> 0f }
+        g = ((g % 360f) + 360f) % 360f
+        val ahora = System.currentTimeMillis(); val d = Math.abs(((g - ultRumbo + 540f) % 360f) - 180f)
+        if (ahora - ultEnvio < 150 || d < 1.5f) return
+        ultEnvio = ahora; ultRumbo = g
+        web.evaluateJavascript("rumbo($g)", null)
+    }
+    override fun onAccuracyChanged(s: android.hardware.Sensor?, a: Int) {}
 
     /** La web pasa su «buzón» (…?b=CÓDIGO) y, al seguir, el track (extras «t» = [[lat,lon,alt]…] y «n» = nombre). */
     private fun datosDe(i: Intent?) {
@@ -291,6 +320,9 @@ class GrabarActivity : Activity(), LocationListener {
         mandar(l)
     }
     private fun mandar(l: Location) {
+        try { decl = android.hardware.GeomagneticField(l.latitude.toFloat(), l.longitude.toFloat(), l.altitude.toFloat(), System.currentTimeMillis()).declination } catch (e: Exception) {}
+        // sin brújula: la flecha, hacia donde caminas
+        if (!hayBrujula && l.hasBearing() && l.hasSpeed() && l.speed > 0.8f) web.evaluateJavascript("rumbo(${l.bearing})", null)
         val alt = if (l.hasAltitude()) l.altitude.toString() else "null"
         web.evaluateJavascript("pos(${l.latitude},${l.longitude},${if (l.hasAccuracy()) l.accuracy else 0f},$alt)", null)
     }

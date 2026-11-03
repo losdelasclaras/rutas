@@ -54,7 +54,10 @@ html,body{margin:0;height:100%;overflow:hidden;color:var(--ink);font:18px/1.4 sy
 .b2.go{background:var(--rojo);color:#fff}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:130px;z-index:2500;background:rgba(20,28,24,.92);color:#fff;padding:10px 16px;border-radius:14px;font-size:16px;font-weight:700;max-width:86%;text-align:center}
 #toast[hidden]{display:none}
-.me{position:relative}.me i{position:absolute;left:-12px;top:-12px;width:24px;height:24px;border-radius:50%;background:#1a73e8;border:4px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.5)}
+.me{position:relative}.me i{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.5)}
+.me b{position:absolute;left:-36px;top:-36px;width:72px;height:72px;display:none;transform-origin:36px 36px}
+.me.rumbo b{display:block}.me b svg{width:72px;height:72px;display:block}
+#b-nor b{display:block;transition:transform .2s}
 .wp{position:relative}.wp i{position:absolute;left:-11px;top:-28px;width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#e8711a;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
 </style></head><body>
 <div id="map"></div>
@@ -67,12 +70,14 @@ html,body{margin:0;height:100%;overflow:hidden;color:var(--ink);font:18px/1.4 sy
   <button class="rd" id="b-bat" hidden onclick="Nativo.bateria()" aria-label="Sin límite de batería">🔋</button>
   <button class="rd" id="b-pt" onclick="nuevoPunto()" aria-label="Guardar un punto">📍</button>
   <button class="rd" id="b-capa" onclick="capas()" aria-label="Elegir el mapa">🗺</button>
+  <button class="rd" id="b-nor" onclick="cambiaOri()" aria-label="Orientación del mapa"><b>🧭</b></button>
   <button class="rd" id="b-me" onclick="centrar()" aria-label="Centrar en mí">◎</button>
 </div>
 <div id="abajo"></div>
 <div id="toast" hidden></div>
 <div class="sheet" id="sheet" hidden><div class="sh" id="sh"></div></div>
 <script src="leaflet.js"></script>
+<script src="leaflet-rotate.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const toR=Math.PI/180,dm=(a,b)=>{const dl=(b[0]-a[0])*toR,dn=(b[1]-a[1])*toR;const h=Math.sin(dl/2)**2+Math.cos(a[0]*toR)*Math.cos(b[0]*toR)*Math.sin(dn/2)**2;return 12742000*Math.asin(Math.min(1,Math.sqrt(h)))};
@@ -81,7 +86,7 @@ const kmT=m=>(m/1000).toLocaleString("es-ES",{minimumFractionDigits:m<10000?2:1,
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let S={activo:false},PTS=[],D=0,YO=null,SIGUE=true,PRIM=true;
 // mapa: el topográfico de la app; los trozos que se ven (y los de la zona del track) se guardan en el móvil y se ven sin cobertura
-const map=L.map("map",{zoomControl:false,attributionControl:true}).setView([43.1,-5.8],9);
+const map=L.map("map",{zoomControl:false,attributionControl:true,rotate:true,bearing:0,rotateControl:false,touchRotate:false,shiftKeyRotate:false,pitchDrag:false}).setView([43.1,-5.8],9);
 map.attributionControl.setPrefix(false);
 const wmts=(svc,layer)=>`https://www.ign.es/wmts/${svc}?service=WMTS&request=GetTile&version=1.0.0&Format=image/jpeg&layer=${layer}&style=default&tilematrixset=GoogleMapsCompatible&TileMatrix={z}&TileRow={y}&TileCol={x}`;
 const CAPAS={topo:{n:"Topográfico",d:"OpenTopoMap, curvas de nivel, de toda Europa",l:()=>L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17,maxNativeZoom:17,subdomains:"abc",attribution:"© OpenTopoMap (CC-BY-SA) · © OpenStreetMap"})},
@@ -114,10 +119,27 @@ map.on("dragend",()=>{clearTimeout(VUELTA);VUELTA=setTimeout(()=>{SIGUE=true;if(
 function toast(t,ms){const e=$("toast");e.textContent=t;e.hidden=false;clearTimeout(e._t);e._t=setTimeout(()=>e.hidden=true,ms||3500)}
 // posición en directo (la manda Android, con el GPS del móvil)
 function pos(la,lo,ac,al){YO=[la,lo,al];
-  if(!me)me=L.marker([la,lo],{icon:L.divIcon({className:"me",html:"<i></i>",iconSize:[0,0]}),zIndexOffset:1000,interactive:false}).addTo(map);else me.setLatLng([la,lo]);
+  if(!me)me=L.marker([la,lo],{icon:L.divIcon({className:"me",html:'<b><svg viewBox="0 0 72 72"><defs><radialGradient id="hz" cx="36" cy="36" r="34" gradientUnits="userSpaceOnUse"><stop offset=".25" stop-color="#1a73e8" stop-opacity=".55"/><stop offset="1" stop-color="#1a73e8" stop-opacity="0"/></radialGradient></defs><path d="M36 36 L20 4 A34 34 0 0 1 52 4 Z" fill="url(#hz)"/><path d="M36 10 L44 24 Q36 21 28 24 Z" fill="#1a73e8" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg></b><i></i>',iconSize:[0,0]}),zIndexOffset:1000,interactive:false,rotation:0,rotateWithView:false}).addTo(map);else me.setLatLng([la,lo]);
+  pintaRumbo();
   if(ac>25&&ac<3000){if(!acc)acc=L.circle([la,lo],{radius:ac,color:"#1a73e8",weight:1,fillOpacity:.1,interactive:false}).addTo(map);else{acc.setLatLng([la,lo]);acc.setRadius(ac)}}else if(acc){acc.remove();acc=null}
   if(PRIM){PRIM=false;if(!T.length)map.setView([la,lo],15)}else if(SIGUE)map.panTo([la,lo],{animate:true});
   sigueA(la,lo)}
+/* rumbo: la flecha apunta hacia donde miras (brújula del móvil; si no hay, hacia donde caminas) y,
+   en el modo «hacia donde vas», el mapa gira para que eso quede siempre arriba */
+let RUMBO=null,ORI="norte";try{ORI=localStorage.getItem("orienta")||"norte"}catch(e){}
+function pintaRumbo(){if(!me)return;const el=me.getElement();if(!el)return;el.classList.toggle("rumbo",RUMBO!=null);
+  const b=el.querySelector("b");if(b&&RUMBO!=null)b.style.transform=`rotate(${(RUMBO+map.getBearing())%360}deg)`;
+  const n=$("b-nor").querySelector("b");n.style.transform=`rotate(${map.getBearing()}deg)`}
+let ULTB=0;
+function rumbo(g){if(!isFinite(g))return;g=(g%360+360)%360;
+  // se suaviza (la brújula tiembla) y no se toca el mapa por menos de 3°
+  RUMBO=RUMBO==null?g:(RUMBO+((((g-RUMBO)%360)+540)%360-180)*.35+360)%360;
+  if(ORI==="rumbo"){const nb=(360-RUMBO)%360,d=Math.abs((((nb-map.getBearing())%360)+540)%360-180);if(d>3&&Date.now()-ULTB>120){ULTB=Date.now();map.setBearing(nb)}}
+  pintaRumbo()}
+function cambiaOri(){ORI=ORI==="norte"?"rumbo":"norte";try{localStorage.setItem("orienta",ORI)}catch(e){}
+  if(ORI==="norte"){map.setBearing(0);toast("🧭 Norte arriba")}else{if(RUMBO!=null)map.setBearing((360-RUMBO)%360);toast(RUMBO!=null?"🧭 El mapa gira: arriba, hacia donde miras":"🧭 El mapa girará en cuanto el móvil sepa hacia dónde miras");SIGUE=true;if(YO)map.panTo([YO[0],YO[1]])}
+  pintaRumbo()}
+map.on("rotate",pintaRumbo);
 function sinPermiso(){toast("⛔ Sin permiso de ubicación. Ábrelo en Ajustes › Aplicaciones › Los de las Claras › Permisos › Ubicación.",8000)}
 /* ---------- seguir un track ---------- */
 let T=[],TC=[],UPC=[],DNC=[],TN="",FUERA=0,AVISADO=false,IDX=0,REV=false,SEGOPEN=false,SEGD=null,T0=[];
