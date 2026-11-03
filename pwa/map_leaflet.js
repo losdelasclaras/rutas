@@ -1,6 +1,6 @@
 /* ---------- map (Leaflet, mapa topográfico) ---------- */
 const ZONES={
- cant:{n:"Cantábrica",home:[-7.15,43.72,-4.35,42.5]},
+ cant:{n:"Norte",home:[-7.9,43.72,-4.35,42.4]},
  pir:{n:"Pirineos",home:[-0.85,43.0,1.12,42.55]},
  alp:{n:"Alpes y Dolomitas",s:"Alpes",home:[6.0,46.8,12.4,44.85]}};
 const zoneOf=r=>r==="Pirineos"?"pir":(r==="Alpes"||r==="Dolomitas")?"alp":"cant";
@@ -29,7 +29,7 @@ P.forEach((p,i)=>{
 __mk("puntos creados");
 // pequeñas ayudas con la misma forma que usaba el mapa anterior
 // las etiquetas de nombre solo existen cuando se ven (zoom 12 o más); así el mapa no arrastra cientos de rótulos ocultos
-const LBLZ=11.5;
+const LBLZ=12.5; // nov 2026: antes 11.5
 function bindLbl(i){const m=MK[i],p=P[i];if(m.getTooltip())return;m.bindTooltip(esc(p.c)+(p.t==="cumbre"&&p.a?` <span class="la">${p.a.toLocaleString("es-ES")} m</span>`:""),{permanent:true,direction:"right",offset:[10,0],className:"lbl "+(p.t==="cumbre"?"pk":p.x?"ini":"sp"),interactive:false});clearTimeout(RMT);RMT=setTimeout(refreshMarks,30)}
 let LBLON=null;function syncLbls(){const on=map.getZoom()>=LBLZ;if(on===LBLON)return;LBLON=on;for(const i in MK){const m=MK[i];if(on){if(map.hasLayer(m))bindLbl(i)}else if(m.getTooltip())m.unbindTooltip()}}
 map.on("zoomend",syncLbls);
@@ -58,8 +58,8 @@ const saveLay=()=>store.set("ldc-capas",LAY);
 function sizeMarks(){
   const z=map.getZoom(); k=2**(z-8);
   mapEl.style.setProperty("--ms",((z<7.5?11:z<8.5?14:z<10?19:z<12?24:28)*FS)+"px");
-  mapEl.classList.toggle("lbl-peaks",LAY.peaks&&z>=12);
-  mapEl.classList.toggle("lbl-spots",LAY.spots&&z>=13);
+  mapEl.classList.toggle("lbl-peaks",LAY.peaks&&z>=13); // nov 2026: antes 12
+  mapEl.classList.toggle("lbl-spots",LAY.spots&&z>=14); // nov 2026: antes 13
   mapEl.classList.toggle("hide-peaks",!LAY.peaks);
   mapEl.classList.toggle("hide-spots",!LAY.spots);
   setTimeout(syncAllTracks,0);setTimeout(refreshMarks,0);saveLay();

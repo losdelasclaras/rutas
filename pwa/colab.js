@@ -216,7 +216,8 @@ const LOFF={};const marcados=gid=>(LAY.mh||LAY.mq)&&(MKG[gid]||[]).some(m=>{cons
 const quiere=(c,k)=>{const key=`co_${c.id}_${k}`;LOFF[c.id+"_"+k]=!LAY[key]&&k!=="t";return!window.FOLONLY&&(!!LAY[key]||(k!=="t"&&marcados(c.id+"_"+k)))};
 {const orig=window.refreshMarks;if(orig)window.refreshMarks=function(){orig.apply(this,arguments);if(CO.some(c=>KC(c).some(([k])=>{const g=G[c.id+"_"+k];return g&&quiere(c,k)!==map.hasLayer(g)})))sync();for(const m of LBL)coMarks(m)}}
 // los nombres, como los del grupo: solo con el mapa cerca
-function lbls(){const on=map.getZoom()>=12;for(const m of LBL){if(!m._map){if(m.getTooltip())m.unbindTooltip();continue}if(on&&!m.getTooltip())m.bindTooltip(esc(m.__n),{permanent:true,direction:"right",offset:[10,0],className:"lbl co",interactive:false});const te=on&&m.getTooltip()&&m.getTooltip().getElement();if(te)te.style.setProperty("--cc",m.__c);else if(!on&&m.getTooltip())m.unbindTooltip()}}
+function lbls(){const z=map.getZoom();for(const m of LBL){const on=z>=(m.__cum?13:14); // nov 2026: antes 12 para todo
+  if(!m._map){if(m.getTooltip())m.unbindTooltip();continue}if(on&&!m.getTooltip())m.bindTooltip(esc(m.__n),{permanent:true,direction:"right",offset:[10,0],className:"lbl co"+(m.__cum?" cum":""),interactive:false});const te=on&&m.getTooltip()&&m.getTooltip().getElement();if(te)te.style.setProperty("--cc",m.__c);else if(!on&&m.getTooltip())m.unbindTooltip()}}
 function sync(){for(const c of CO)for(const[k]of KC(c)){const key=`co_${c.id}_${k}`,on=quiere(c,k),g=G[c.id+"_"+k];
     if(on&&k==="t")pintaTracks(c);
     if(on&&!map.hasLayer(g))g.addTo(map);else if(!on&&map.hasLayer(g))g.remove();

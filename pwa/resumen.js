@@ -15,7 +15,7 @@ const fila=(t,a,b)=>`<div class="rw"><div class="t"><span>${t}</span><small>${a}
 function render(){if(box.hidden)return;
   const C=PEAKS,hechas=C.filter(p=>MARKS[key(p)]==="hecha"),quiero=C.filter(p=>MARKS[key(p)]==="quiero");
   const zona=p=>{const z=zoneOf(p.r);return z==="dol"?"alp":z};
-  const Z=[["cant","Cordillera Cantábrica"],["pir","Pirineos"],["alp","Alpes y Dolomitas"]].map(([z,n])=>{const all=C.filter(p=>zona(p)===z);return[n,all.filter(p=>MARKS[key(p)]==="hecha").length,all.length]}).filter(x=>x[2]);
+  const Z=[["cant","Norte"],["pir","Pirineos"],["alp","Alpes y Dolomitas"]].map(([z,n])=>{const all=C.filter(p=>zona(p)===z);return[n,all.filter(p=>MARKS[key(p)]==="hecha").length,all.length]}).filter(x=>x[2]);
   const B=[["Más de 2.000 m",p=>p.a>=2000],["De 1.500 a 2.000 m",p=>p.a>=1500&&p.a<2000],["Menos de 1.500 m",p=>!(p.a>=1500)]].map(([n,f])=>{const all=C.filter(f);return[n,all.filter(p=>MARKS[key(p)]==="hecha").length,all.length]});
   const techos=C.filter(p=>p.techo),th=techos.filter(p=>MARKS[key(p)]==="hecha");
   const alta=hechas.slice().sort((a,b)=>(b.a||0)-(a.a||0))[0];
