@@ -15,7 +15,7 @@ if(G){const guarda=p=>{try{const c=p&&p.coords;if(!c)return;const n={lat:c.latit
   try{G.getCurrentPosition=(ok,err,o)=>gcp(p=>{guarda(p);ok&&ok(p)},err,o);G.watchPosition=(ok,err,o)=>wp(p=>{guarda(p);ok&&ok(p)},err,o)}catch(e){}}
 document.head.insertAdjacentHTML("beforeend",`<style>
 .ordrow{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:2px 0 10px;border:2px solid #20302a;border-radius:14px;overflow:hidden}
-.ordrow button{border:0;background:var(--card,#fff);color:var(--ink,#222);padding:11px 6px;font:inherit;font-weight:800;cursor:pointer;white-space:nowrap}
+.ordrow button{border:0;background:var(--card,#fff);color:var(--ink,#222);padding:11px 6px;font:inherit;font-weight:800;cursor:pointer;min-width:0;line-height:1.2}
 .ordrow button[aria-pressed=true]{background:#20302a;border-color:#20302a;color:#fff}
 .ordnote{font-size:.85em;color:var(--muted,#666);margin:-4px 0 10px}
 </style>`);

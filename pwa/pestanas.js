@@ -5,9 +5,11 @@ const main=document.querySelector("main"),nav=document.querySelector("nav.tabs")
 document.head.insertAdjacentHTML("beforeend",`<style>
 nav.tabs{grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:1fr;zoom:1!important}
 nav.tabs button[hidden]{display:none!important}
-nav.tabs button{font-size:12.5px!important;letter-spacing:0!important;padding:9px 0 11px!important;min-width:0;white-space:nowrap}
-nav.tabs button svg{width:25px!important;height:25px!important}
-@media(max-width:360px){nav.tabs button{font-size:11px!important}}
+/* tamaño mínimo como Wikiloc (texto 12-13 px, iconos 24 px); en minúsculas para que quepan 5 aunque el móvil tenga la letra grande */
+nav.tabs button{font-size:13px!important;letter-spacing:0!important;text-transform:none!important;padding:9px 0 11px!important;min-width:0;white-space:nowrap}
+nav.tabs button svg{width:26px!important;height:26px!important}
+@media(max-width:340px){nav.tabs button{font-size:12px!important}}
+@media(max-width:310px){nav.tabs button{white-space:normal;hyphens:auto;-webkit-hyphens:auto;overflow-wrap:anywhere;line-height:1.1;text-align:center}}
 .subtabs{position:sticky;top:0;z-index:5;background:var(--paper);display:grid;gap:6px;padding:8px 0 10px;margin:0 0 4px}
 .subtabs button{border:1px solid var(--edge);background:var(--card);color:var(--ink);border-radius:12px;padding:7px 2px 6px;font-weight:700;font-size:13px;line-height:1.15;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;white-space:nowrap}
 .subtabs button .i{font-size:19px;line-height:1}
