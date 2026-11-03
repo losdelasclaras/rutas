@@ -54,6 +54,7 @@ i=t.rindex('</script>'); t=t[:i]+'\n'+'\n'.join(_w(n) for n in _mods)+'\n'+t[i:]
 _CO=[]
 for _c in (json.load(open(A+'colaboradores.json')) if os.path.exists(A+'colaboradores.json') else []):
     _f=A+f"colab/{_c['id']}.json"
+    if _c.get('activo') is False: continue   # apartado: sus datos se guardan en la rama datos, pero no salen en la app
     if not os.path.exists(_f): continue
     _d=json.load(open(_f))
     _CO.append({'id':_c['id'],'n':_c.get('nombre') or _d.get('t') or 'Colaborador','c':_c.get('color') or '#e8710a','p':_d.get('p',[]),'l':_d.get('l',[])+[[x[1],x[2]] for x in _d.get('d',[])],

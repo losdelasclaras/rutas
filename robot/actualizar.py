@@ -533,6 +533,7 @@ def colaboradores():
     if not os.path.exists(cf): return
     os.makedirs(APP + 'colab', exist_ok=True)
     for co in json.load(open(cf)):
+        if co.get('activo') is False: continue   # apartado (no sale en la app): no se lee su mapa
         fo = APP + f'colab/{co["id"]}.json'
         old = json.load(open(fo)) if os.path.exists(fo) else {}
         new = dict(old)

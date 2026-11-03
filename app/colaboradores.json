@@ -11,7 +11,9 @@
   "quitar_capas_salvo": {
    "ALOJAMIENTOS Y REFUGIOS": "refugio"
   },
-  "quitar_nombres": "restaurante|sidrer[ií]a|\\bhotel|casa rural|casa de aldea|apartamentos|camping|hostal|posada|cafeter[ií]a|\\bbar\\b|tienda|multiaventura"
+  "quitar_nombres": "restaurante|sidrer[ií]a|\\bhotel|casa rural|casa de aldea|apartamentos|camping|hostal|posada|cafeter[ií]a|\\bbar\\b|tienda|multiaventura",
+  "activo": false,
+  "nota": "Apartado el 3 nov 2026: prefiere que sus puntos solo se vean en su mapa, con su enlace. Para volver a ponerlo: quitar \"activo\": false."
  },
  {
   "id": "c2",
