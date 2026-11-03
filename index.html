@@ -1597,6 +1597,7 @@ COLX.rut=()=>RUT;
 COLX.rutaItem=(c,i)=>RUT.find(x=>x.rr===i&&x.co===c);
 COLX.rKey=x=>rKeyCo(x.co,x.c);
 COLX.byP=p=>ALL.find(x=>x.pp===p);
+COLX.ln=(c,i)=>lineas().then(J=>(J[c.id]||[])[i]);
 COLX.findPt=(n,lat,lon)=>{const k=norm(n);let b=-1,bd=.4;for(const x of ALL){if(!x.pp||norm(x.c)!==k)continue;const d=km({lat,lon},x);if(d<bd){bd=d;b=x.ci}}return b};
 COLX.trkOf=k=>GXC&&GXC.c===k.c&&GXC.i===k.i?{ln:GXC.g.ln,km:GXC.g.km}:null;
 // en la ficha de una ruta del grupo: «También en <colaborador>» con su tarjeta
@@ -3239,6 +3240,21 @@ for(const id of ["sheet","ov"]){const el=document.getElementById(id);if(!el)cont
     const url=APPURL+"#pt="+d.lat.toFixed(5)+","+d.lon.toFixed(5)+"!"+encodeURIComponent(d.n);
     mandar(d.n,(d.cum?"⛰️ ":"📍 ")+d.n+(a?" · "+a:"")+(d.co?"\nDe "+d.co:"")+"\n🗺 Ábrelo en la app de Los de las Claras:",url)})}
 
+/* ---- ⌚ Enviar al reloj: el GPX de la ruta al menú de compartir del móvil, para elegir la app del reloj (Suunto, COROS…) ---- */
+{const sh=document.getElementById("sheet");let t=0;
+ const pon3=()=>{if(sh.hidden||sh.querySelector("[data-reloj]"))return;const ta=sh.querySelector(".topacts");if(!ta)return;
+   const g=sh.querySelector("[data-share]"),c=sh.querySelector("[data-coshare]")&&sh._cor;if(!g&&!c)return;
+   ta.insertAdjacentHTML("beforeend",`<button class="btn ghost" data-reloj>⌚ Enviar al reloj</button>`)};
+ new MutationObserver(()=>{clearTimeout(t);t=setTimeout(pon3,60)}).observe(sh,{childList:true});
+ sh.addEventListener("click",async e=>{if(!e.target.closest("[data-reloj]"))return;if(!window.enviaGpx){toast("No se ha podido preparar el GPX");return}
+   const aviso=()=>setTimeout(()=>toast("Elige la app de tu reloj (Suunto, COROS…). Garmin y Polar: importa el GPX en su web (Garmin Connect › Cursos, Polar Flow › Rutas).",7000),900);
+   const g=sh.querySelector("[data-share]");
+   if(g){const r=R[+g.dataset.share];if(!r||!r.gx){toast("Esta ruta no tiene track");return}
+     if(!r.gx.ln){toast("Preparando el track…");const ok=window.loadTracks?await loadTracks():false;if(!ok||!r.gx.ln){toast("Sin conexión: no puedo preparar el GPX ahora");return}}
+     enviaGpx(routeTitle(r),r.gx.ln);aviso();return}
+   const k=sh._cor;if(!k||!window.COLX||!COLX.ln)return;const ll=await COLX.ln(k.c,k.i);if(!ll||ll.length<2){toast("No tengo el track de esta ruta");return}
+   enviaGpx(k.c.r[k.i][0],ll);aviso()})}
+
 /* ---- abrir #pt=lat,lon!nombre ---- */
 function abrirPunto(lat,lon,n,tries){
   const k=nrm(n);
@@ -3598,5 +3614,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="fcc7f3dfeb";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="62da603c8f";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
