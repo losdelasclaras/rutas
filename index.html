@@ -1324,7 +1324,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-1e71e787.json", "ln": "colab-ln-56ab5cb9.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-c0015df1.json", "ln": "colab-ln-49a867d1.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -1422,13 +1422,33 @@ for(const c of CO){for(const[k]of KC(c))if(LAY[`co_${c.id}_${k}`]===undefined||n
     g.addLayer(L.polyline(ll,{color:c.c,weight:3.5,opacity:.95,renderer:TRC}).bindTooltip(esc(ln[0])+" · "+esc(c.n),{sticky:true}))}
   for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
     const m=L.marker([p[1],p[2]],{icon:L.divIcon({className:"cpt"+(cum?" cum":""),html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:p[0]+" · "+c.n,riseOnHover:true,zIndexOffset:cum?-20:-50});
-    m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(p[1],p[2]);return}abrirCum(c,p,k)});
-    m.__n=p[0];m.__c=c.c;m.__g=c.id+(cum?"_c":"_l");m.__k=coKey(c,p[0],k);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+(cum?"_c":"_l")] ||= []).push(m)}
+    m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(p[1],p[2]);return}abrirCum(c,p,k);setTimeout(()=>tambien(m),0)});
+    m.__p=p;m.__co=c;m.__cum=cum;m.__n=p[0];m.__c=c.c;m.__g=c.id+(cum?"_c":"_l");m.__k=coKey(c,p[0],k);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+(cum?"_c":"_l")] ||= []).push(m)}
   G[c.id+"_l"]=g;G[c.id+"_c"]=gc;
   if(c.r&&c.r.length){G[c.id+"_r"]=L.layerGroup();G[c.id+"_t"]=L.layerGroup();
     c.r.forEach((r,i)=>{const k=icoR(r);const m=L.marker(r[8],{icon:L.divIcon({className:"cpt",html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:r[0]+" · "+c.n,riseOnHover:true,zIndexOffset:-60});
       m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(r[8][0],r[8][1]);return}abrirR(c,i)});
       m.__n=r[0];m.__c=c.c;m.__g=c.id+"_r";m.__k=rKeyCo(c,r[0]);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+"_r"] ||= []).push(m)})}}
+/* ---------- cumbres repetidas: un solo icono en el mapa (3 nov) ----------
+   Si la misma cumbre la tienen el grupo y uno o varios colaboradores, en el mapa sale UN icono: el del grupo si su capa
+   Cumbres está encendida; si no, el del primer colaborador encendido. Al tocarlo, la ficha dice «También en …» con los demás. */
+const CUMM=[];for(const c of CO)for(const m of (MKG[c.id+"_c"]||[]))CUMM.push(m);
+{const pal=n=>new Set(norm(n).replace(/[^a-z0-9 ]+/g," ").split(" ").filter(w=>w.length>=4&&!/^(pico|pena|picu|monte|alto|cueto|torre|desde)$/.test(w)));
+ const igual=(a,b)=>{const x=a.getLatLng(),y=b.getLatLng(),d=Math.hypot(x.lat-y.lat,(x.lng-y.lng)*.73)*111;
+   if(d<.15)return true;if(norm(a.__n)===norm(b.__n)&&d<3)return true;if(d<.35){const pa=pal(a.__n);return[...pal(b.__n)].some(w=>pa.has(w))}return false};
+ CUMM.forEach((m,i)=>{for(let j=0;j<i;j++){const n=CUMM[j];if(n.__co!==m.__co&&igual(m,n)){m.__sup=n.__sup||n;break}}})}
+const grpDe=m=>{if(m.__grp===undefined){const it=window.COLX&&COLX.byP&&COLX.byP(m.__p);if(!it)return null;m.__grp=it.par||null}return m.__grp};
+const tapado=m=>{if(!m.__cum)return false;const r=m.__sup;
+  if(LAY.peaks&&!LAY.solo&&(grpDe(m)||(r&&grpDe(r))))return true;     // ya la enseña el grupo
+  return !!(r&&G[r.__co.id+"_c"]&&map.hasLayer(G[r.__co.id+"_c"]))};   // ya la enseña otro colaborador
+const grupoDe=m=>CUMM.filter(x=>x!==m&&(x.__sup||x)===(m.__sup||m));
+function tambien(m){if(!m.__cum||sheet.hidden||!sheet.querySelector("h2"))return;
+  const otros=grupoDe(m),rows=[];
+  for(const x of otros){const it=window.COLX&&COLX.byP(x.__p);if(it)rows.push([x.__co.n,COLX.rrow(it)])}
+  const g=grpDe(m)||otros.map(grpDe).find(Boolean);
+  if(g&&!/También del grupo/.test(sheet.innerHTML)){const rs=(P[g.i].rs||[]).filter(ri=>R[ri].u);if(rs.length)sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>También en Los de las Claras</h3><div class="rows">${rs.map(ri=>rowHTML(R[ri],"",true)).join("")}</div></div>`)}
+  const by={};for(const[n,h]of rows)(by[n] ||= []).push(h);
+  for(const[n,hs]of Object.entries(by))sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>También en ${esc(n)}</h3><div class="rows">${hs.join("")}</div></div>`)}
 /* ---------- rutas de colaboradores que solo traen el track (p. ej. Rutinas Varias, de Wikiloc) ---------- */
 let LNP=null;const lineas=()=>LNP||(LNP=CO0.ln?fetch(CO0.ln).then(r=>r.json()).catch(()=>{LNP=null;return{}}):Promise.resolve({}));
 function pintaTracks(c){const g=G[c.id+"_t"];if(!g||g.__ok)return;g.__ok=1;lineas().then(J=>{const ls=J[c.id]||[];
@@ -1525,7 +1545,7 @@ function sync(){for(const c of CO)for(const[k]of KC(c)){const key=`co_${c.id}_${
   cull();if(window.capasSum)capasSum()}
 // como los puntos del grupo: solo se dibujan los que caen en pantalla (y un margen); el mapa va igual de fluido con más colaboradores
 function cull(){const b=map.getBounds().pad(.35);for(const gid in MKG){const g=G[gid];if(!map.hasLayer(g))continue;
-  for(const m of MKG[gid]){const inb=b.contains(m.getLatLng());if(inb&&!g.hasLayer(m))g.addLayer(m);else if(!inb&&g.hasLayer(m))g.removeLayer(m)}}lbls()}
+  for(const m of MKG[gid]){const inb=b.contains(m.getLatLng())&&!tapado(m);if(inb&&!g.hasLayer(m))g.addLayer(m);else if(!inb&&g.hasLayer(m))g.removeLayer(m)}}lbls()}
 map.on("moveend",cull);
 map.on("zoomend",lbls);
 document.querySelector(".legend").addEventListener("click",()=>setTimeout(()=>{sync();for(const m of LBL)coMarks(m)},0));
@@ -3664,13 +3684,14 @@ try{
 let PICK=false;      // esperando a que se elija sitio en la pantalla de búsqueda
 window.NEAR=null;    // {lat,lon,label,rad}
 // aviso fino de una línea (antes era un cuadro grande que tapaba la lista): «📍 Lugo · a menos de 15 km  [Cambiar] [✕]»
-const banner=()=>NEAR?`<div class="nearchip"><span>📍 <b>${esc(NEAR.label)}</b> · a menos de ${NEAR.rad} km</span><button data-cnear>Cambiar</button><button class="x" data-cnoff aria-label="Quitar «cerca de»" title="Ver todo">✕</button></div>`:"";
+const banner=()=>NEAR?`<div class="nearchip"><span>📍 <b>${esc(NEAR.label)}</b> · a menos de ${NEAR.rad} km${NEAR.amp?" (ampliado)":""}</span><button data-cnear>Cambiar</button><button class="x" data-cnoff aria-label="Quitar «cerca de»" title="Ver todo">✕</button></div>`:"";
 // Wikiloc al final de la lista de rutas: primero lo nuestro, y si no basta, «más rutas por aquí»
 const wkFin=()=>NEAR&&window.wkUrl?`<a class="btn ghost wkbtn" href="${wkUrl(NEAR.lat,NEAR.lon,Math.min(NEAR.rad||8,8))}" target="_blank" rel="noopener">🔎 Más rutas por esta zona en Wikiloc</a>`:"";
 document.head.insertAdjacentHTML("beforeend",`<style>.nearchip{display:flex;align-items:center;gap:8px;margin:6px 0 4px;padding:6px 6px 6px 12px;border:1.5px solid var(--mark);border-radius:999px;font-size:15px}
 .nearchip span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nearchip button{flex:none;border:0;border-radius:999px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer;background:rgba(127,127,127,.18);color:inherit}
 .nearchip button.x{padding:8px 12px}
+.wizrow.cerca,.wizrow:has(#b-filt){grid-template-columns:repeat(3,1fr)}.wizrow.cerca .wizbtn,.wizrow:has(#b-filt) .wizbtn{font-size:15px;padding:11px 4px;line-height:1.2;white-space:normal;text-align:center}
 a.wkbtn{display:flex;justify-content:center;width:100%;box-sizing:border-box;margin:14px 0 4px}</style>`);
 window.cercaBar=(kind,C)=>`<div class="wizrow cerca"><button class="btn ghost wizbtn" data-cnear>📍 Cerca de un lugar</button><button class="btn ghost wizbtn" data-cme>🎯 Cerca de mí</button><button class="btn ghost wizbtn" data-fpopen>⚙ Filtros${fpN(C)?" ("+fpN(C)+")":""}</button></div>`+banner();
 window.cercaTit=()=>PICK?"¿Cerca de dónde?":"Rutas cerca de…";
@@ -3707,7 +3728,10 @@ window.renderList=function(){if(!NEAR)return RL.apply(this,arguments);if(window.
   const s=norm(document.getElementById("q").value.trim()),o=window.COLX?COLX.rsrc:"todas";
   const g=o!=="todas"&&o!=="grupo"?[]:R.filter(r=>r.u&&routeOk(r)&&(!s||norm((r.ti||"")+" "+r.p.map(i=>P[i].n).join(" ")+" "+r.r+" "+(r.sal||"")).includes(s))).map(r=>({r,d:km(NEAR,r)}));
   const c=o==="grupo"||!window.COLX||!COLX.near?[]:COLX.near(NEAR.lat,NEAR.lon).filter(x=>(o==="todas"||o==="co_"+x.r.co.id)&&(!s||x.r.txt.includes(s)));
-  const L=g.concat(c).filter(x=>x.d<=NEAR.rad).sort((a,b)=>a.d-b.d);
+  const all=g.concat(c);let L=all.filter(x=>x.d<=NEAR.rad);
+  // si salen menos de 3, se amplía solo a 30 km (y lo dice el aviso)
+  if(L.length<3&&NEAR.rad<30){const L2=all.filter(x=>x.d<=30);if(L2.length>L.length){NEAR.rad=30;NEAR.amp=1;L=L2}}
+  L.sort((a,b)=>a.d-b.d);
   const row=x=>{const dd=(x.d<10?x.d.toFixed(1).replace(".",","):x.d.toFixed(0))+" km";return x.r.cox?COLX.rrow(x.r,dd):rowHTML(x.r,dd)};
   document.getElementById("list").innerHTML=banner()+(window.COLX?COLX.rchips():"")+`<p class="count">${L.length} ${L.length===1?"ruta":"rutas"}</p>`+(L.length?`<div class="rows">${L.map(row).join("")}</div>`:`<p class="empty">No hay rutas a menos de ${NEAR.rad} km con esa búsqueda y esos filtros.</p>`)+wkFin()};
 
@@ -3883,5 +3907,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="5dbb92aeb6";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="37f1ec9f03";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
