@@ -29,7 +29,9 @@ function datosFicha(c){
   const co=c.querySelector(".meta .tag[style]");
   return{n:h2.textContent.trim(),lat,lon,alt,cum:key[0]==="c",co:co?co.textContent.trim():""}}
 function pon(c){const d=datosFicha(c);if(!d)return;c._pt=d;
-  const b=`<button class="btn ghost" data-ptshare>📤 Compartir</button>`;
+  // 🔎 más rutas por aquí en Wikiloc: su mapa centrado en este punto (unos 3 km alrededor). No se saca nada de Wikiloc: solo se enlaza
+  const wk=`https://es.wikiloc.com/wikiloc/map.do?sw=${(d.lat-.03).toFixed(4)}%2C${(d.lon-.04).toFixed(4)}&ne=${(d.lat+.03).toFixed(4)}%2C${(d.lon+.04).toFixed(4)}&page=1`;
+  const b=`<button class="btn ghost" data-ptshare>📤 Compartir</button><a class="btn ghost" href="${wk}" target="_blank" rel="noopener">🔎 Más rutas por aquí (Wikiloc)</a>`;
   const acts=c.querySelector(".actions");if(acts)acts.insertAdjacentHTML("beforeend",b);
   else c.querySelector(".mkblock").insertAdjacentHTML("afterend",`<div class="actions" style="margin-top:8px">${b}</div>`)}
 for(const id of ["sheet","ov"]){const el=document.getElementById(id);if(!el)continue;
