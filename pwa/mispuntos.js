@@ -155,8 +155,7 @@ map.on("contextmenu",e=>{if(crossOn)return;closeLegend();newAt(e.latlng.lat,e.la
 const lp=document.querySelector(".laypanel");
 if(lp){const solo=lp.querySelector('[data-lay="solo"]');
   const add=`<button class="lay" data-lay="mp" aria-pressed="${LAY.mp}"><span class="lico mp">📍</span>Mis puntos</button><button class="lay" data-lay="mt" aria-pressed="${LAY.mt}" ${MT.length?"":"hidden"}><span class="lico" style="background:#e8711a"></span>Mis tracks</button>`;
-  if(solo)solo.insertAdjacentHTML("beforebegin",add);
-  lp.insertAdjacentHTML("beforeend",`<p class="laygh">Añadir</p><button class="lay" data-mpact="gps"><span class="lico">🎯</span>Guardar dónde estoy</button><button class="lay" data-mpact="cross"><span class="lico">✛</span>Marcar en el mapa</button><p class="note" style="font-size:12px;margin:2px 10px 4px;max-width:220px">También puedes mantener pulsado (o clic derecho) en cualquier sitio del mapa.</p>`)}
+  if(solo)solo.insertAdjacentHTML("beforebegin",add)}   /* «Añadir» quitado de Capas (3 nov): ya está en el botón 📍 Punto del mapa */
 document.querySelector(".legend").addEventListener("click",e=>{const a=e.target.closest("[data-mpact]");if(a){closeLegend();if(a.dataset.mpact==="gps")gps();else cross();return}
   const b=e.target.closest('[data-lay="mp"],[data-lay="mt"]');if(b)syncMP()});
 
