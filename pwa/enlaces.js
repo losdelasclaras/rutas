@@ -44,11 +44,15 @@ for(const id of ["sheet","ov"]){const el=document.getElementById(id);if(!el)cont
 /* ---- ⌚ Enviar al reloj: el GPX de la ruta al menú de compartir del móvil, para elegir la app del reloj (Suunto, COROS…) ---- */
 {const sh=document.getElementById("sheet");let t=0;
  const pon3=()=>{if(sh.hidden||sh.querySelector("[data-reloj]"))return;const ta=sh.querySelector(".topacts");if(!ta)return;
-   const g=sh.querySelector("[data-share]"),c=sh.querySelector("[data-coshare]")&&sh._cor;if(!g&&!c)return;
+   const g=sh.querySelector("[data-share]"),c=sh.querySelector("[data-coshare]")&&sh._cor,m=sh.querySelector("[data-mtfol]");if(!g&&!c&&!m)return;
    ta.insertAdjacentHTML("beforeend",`<button class="btn ghost" data-reloj>⌚ Enviar al reloj</button>`)};
  new MutationObserver(()=>{clearTimeout(t);t=setTimeout(pon3,60)}).observe(sh,{childList:true});
  sh.addEventListener("click",async e=>{if(!e.target.closest("[data-reloj]"))return;if(!window.enviaGpx){toast("No se ha podido preparar el GPX");return}
    const aviso=()=>setTimeout(()=>toast("Elige la app de tu reloj (Suunto, COROS…). Garmin y Polar: importa el GPX en su web (Garmin Connect › Cursos, Polar Flow › Rutas).",7000),900);
+   const m=sh.querySelector("[data-mtfol]");
+   if(m&&MPI){const t=MPI.tracks().find(x=>String(x.id)===m.dataset.mtfol);if(!t)return;let ll=MPI.ptsOf(t);   // Mis cosas › Tracks
+     if(!ll&&window.loadTracks){toast("Preparando el track…");await loadTracks();ll=MPI.ptsOf(t)}
+     if(!ll||ll.length<2){toast("Sin conexión: no puedo preparar el GPX ahora");return}enviaGpx(t.n,ll);aviso();return}
    const g=sh.querySelector("[data-share]");
    if(g){const r=R[+g.dataset.share];if(!r||!r.gx){toast("Esta ruta no tiene track");return}
      if(!r.gx.ln){toast("Preparando el track…");const ok=window.loadTracks?await loadTracks():false;if(!ok||!r.gx.ln){toast("Sin conexión: no puedo preparar el GPX ahora");return}}
