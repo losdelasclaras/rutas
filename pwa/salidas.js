@@ -61,13 +61,13 @@ function pinta(){
   // administrador: solicitudes y clubes
   if(esAdm()){$("sal-adm").innerHTML=`<div class="salbox adm"><h2>🛡 Clubes (solo lo ves tú)</h2>
     ${PEND.length?`<p style="margin:0 0 4px"><b>Solicitudes pendientes</b></p>`+PEND.map(c=>`<div class="salrow"><span><b>${esc(c.n)}</b><br><small>${esc(c.web||"")} ${esc(c.contacto||"")}${c.msg?"<br>"+esc(c.msg):""}<br>${esc(c.email||"")}</small></span><button class="btn primary" data-scok="${c.id}">✓ Aprobar</button><button class="btn ghost" data-scno="${c.id}">✕</button></div>`).join(""):`<p class="note" style="margin:0 0 6px">No hay solicitudes pendientes.</p>`}
-    <p style="margin:10px 0 4px"><b>Clubes aprobados (${CLUBS.length})</b></p>${CLUBS.map(c=>`<div class="salrow"><span>${esc(c.n)}${c.prueba?" <small>(prueba)</small>":""}</span><button class="btn ghost" data-scdel="${c.id}">Quitar</button></div>`).join("")||`<p class="note">Ninguno todavía.</p>`}
+    <p style="margin:10px 0 4px"><b>Clubes aprobados (${CLUBS.length})</b></p>${CLUBS.map(c=>`<div class="salrow"><span>${esc(c.n)}${c.prueba?" <small>(prueba)</small>":""}</span><button class="btn ghost" data-scedit="${c.id}">✏️</button><button class="btn ghost" data-scdel="${c.id}">Quitar</button></div>`).join("")||`<p class="note">Ninguno todavía.</p>`}
     <div class="salbtns"><button class="btn ghost" data-scnew>＋ Crear un club</button><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>`}
   else $("sal-adm").innerHTML="";
   // tú: club aprobado, pendiente, o pedir
   const u=usr();
   if(esAdm())$("sal-yo").innerHTML="";
-  else if(MIO&&MIO.estado==="ok")$("sal-yo").innerHTML=`<div class="salbox"><h2>🏔 ${esc(MIO.n)}</h2><p class="note" style="margin:0 0 8px">Tu club está dado de alta: lo que publiques sale al momento.</p><div class="salbtns" style="grid-template-columns:1fr"><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>`;
+  else if(MIO&&MIO.estado==="ok")$("sal-yo").innerHTML=`<div class="salbox"><h2>🏔 ${esc(MIO.n)}</h2><p class="note" style="margin:0 0 8px">Tu club está dado de alta: lo que publiques sale al momento.</p><div class="salbtns"><button class="btn ghost" data-scedit="${MIO.id}">✏️ Datos del club</button><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>`;
   else if(MIO&&MIO.estado==="pend")$("sal-yo").innerHTML=`<div class="salbox"><h2>⏳ Solicitud enviada</h2><p class="note" style="margin:0">«${esc(MIO.n)}» está pendiente de que Los de las Claras lo apruebe. Cuando esté, aquí te saldrá «Nueva salida».</p></div>`;
   else $("sal-yo").innerHTML=`<div class="salbtns" style="grid-template-columns:1fr;margin:0 0 12px"><button class="btn ghost" data-sclub>🏔 Soy un club: quiero publicar salidas</button></div>`;
   // filtro por club
@@ -79,13 +79,16 @@ function pinta(){
     :`<p class="note">No hay salidas anunciadas todavía.${esAdm()||(MIO&&MIO.estado==="ok")?"":" Si eres de un club, pulsa «Soy un club» para publicar las vuestras."}</p>`}
 
 /* --- formularios --- */
-function formClub(adm){$("sal-form").innerHTML=`<div class="salbox salform"><h2>${adm?"＋ Crear un club":"🏔 Soy un club"}</h2>
-  ${adm?"":`<p class="note" style="margin:0">Solo para clubes y grupos de montaña sin ánimo de lucro (no empresas de turismo activo ni guías de pago). Los de las Claras lo aprueba una vez y luego publicáis solos.</p>`}
+let EDIT=null;
+function formClub(adm,ed){EDIT=ed||null;$("sal-form").innerHTML=`<div class="salbox salform"><h2>${ed?"✏️ Datos del club":adm?"＋ Crear un club":"🏔 Soy un club"}</h2>
+  ${adm||ed?"":`<p class="note" style="margin:0">Solo para clubes y grupos de montaña sin ánimo de lucro (no empresas de turismo activo ni guías de pago). Los de las Claras lo aprueba una vez y luego publicáis solos.</p>`}
   <label>Nombre del club</label><input id="sc-n" maxlength="80">
   <label>Web, Facebook o Instagram</label><input id="sc-w" maxlength="200" placeholder="https://…">
   <label>Contacto (lo que verá la gente)</label><input id="sc-c" maxlength="120" placeholder="Teléfono, correo o WhatsApp del club">
-  ${adm?`<label><input type="checkbox" id="sc-p" style="width:auto"> Es un club de prueba</label>`:`<label>Algo más (opcional)</label><textarea id="sc-m" maxlength="400"></textarea>`}
-  <div class="salbtns"><button class="btn ghost" data-sfx>Cancelar</button><button class="btn primary" data-scsave="${adm?1:0}">${adm?"Crear":"Enviar solicitud"}</button></div></div>`;$("sal-form").scrollIntoView({block:"start",behavior:"smooth"})}
+  ${ed?`<p class="note" style="margin:6px 0 0">Los cambios salen también en las salidas que ya tenéis publicadas.</p>`:adm?`<label><input type="checkbox" id="sc-p" style="width:auto"> Es un club de prueba</label>`:`<label>Algo más (opcional)</label><textarea id="sc-m" maxlength="400"></textarea>`}
+  <div class="salbtns"><button class="btn ghost" data-sfx>Cancelar</button><button class="btn primary" data-scsave="${adm?1:0}">${ed?"Guardar cambios":adm?"Crear":"Enviar solicitud"}</button></div></div>`;
+  if(ed){$("sc-n").value=ed.n||"";$("sc-w").value=ed.web||"";$("sc-c").value=ed.contacto||""}
+  $("sal-form").scrollIntoView({block:"start",behavior:"smooth"})}
 let GPX=null;
 function formSalida(){const adm=esAdm(),cl=adm?CLUBS:[MIO];GPX=null;
   if(!cl.length){toast("Primero crea un club");return}
@@ -122,7 +125,11 @@ function leeTrack(t){try{const x=new DOMParser().parseFromString(t,"application/
 async function guardaClub(adm){const n=$("sc-n").value.trim();if(n.length<3){toast("Pon el nombre del club");return}
   const d={n,web:$("sc-w").value.trim(),contacto:$("sc-c").value.trim(),t:Date.now()};
   try{await base();const F=fs(),u=usr();
-    if(adm){d.estado="ok";d.prueba=!!($("sc-p")&&$("sc-p").checked);d.por=u.uid;await F.addDoc(F.collection(db(),"clubes"),d);toast("Club creado")}
+    if(EDIT){await F.updateDoc(F.doc(db(),"clubes",EDIT.id),d);
+      // sus salidas ya publicadas llevan el nombre, la web y el contacto del club: se ponen al día
+      for(const x of SALS.filter(x=>x.club===EDIT.id))await F.updateDoc(F.doc(db(),"salidas",x.id),{cn:d.n,cc:d.contacto,cw:d.web}).catch(()=>{});
+      toast("Datos del club guardados");EDIT=null}
+    else if(adm){d.estado="ok";d.prueba=!!($("sc-p")&&$("sc-p").checked);d.por=u.uid;await F.addDoc(F.collection(db(),"clubes"),d);toast("Club creado")}
     else{d.estado="pend";d.msg=($("sc-m")||{}).value||"";d.email=u.email||"";await F.setDoc(F.doc(db(),"clubes",u.uid),d);toast("Solicitud enviada")}
     $("sal-form").innerHTML="";carga(true)}catch(e){console.warn(e);toast(/permission/i.test(String(e))?"Faltan los permisos en la base de datos":"No se ha podido guardar")}}
 async function guardaSalida(){const adm=esAdm(),cid=adm?$("ss-c").value:MIO.id,club=(adm?CLUBS.find(c=>c.id===cid):MIO);
@@ -183,6 +190,7 @@ sec.addEventListener("click",async e=>{const t=e.target;
   if(t.closest("[data-sfx]")){$("sal-form").innerHTML="";return}
   if(t.closest("[data-sclub]")){if(window.cuentaOk&&!cuentaOk(()=>{showView("salidas");carga(true).then(()=>formClub(false))},"club"))return;formClub(false);return}
   if(t.closest("[data-scnew]")){formClub(true);return}
+  const ce=t.closest("[data-scedit]");if(ce){const c=CLUBS.find(x=>x.id===ce.dataset.scedit)||(MIO&&MIO.id===ce.dataset.scedit?MIO:null);if(c)formClub(esAdm(),c);return}
   const sv=t.closest("[data-scsave]");if(sv){guardaClub(sv.dataset.scsave==="1");return}
   if(t.closest("[data-snew]")){formSalida();return}
   if(t.closest("[data-sssave]")){guardaSalida();return}
