@@ -174,6 +174,7 @@ function cargaSeguir(){const p0=TR[0];
   if(TR[0]!==p0){ACT=0;act(0);IDX=0;const ll=TR[0].t.map(p=>[p[0],p[1]]).concat(TR[1]?TR[1].t.map(p=>[p[0],p[1]]):[]);
     map.fitBounds(L.latLngBounds(ll),{padding:[40,40],paddingTopLeft:[20,150],paddingBottomRight:[80,150]});SIGUE=false;clearTimeout(VUELTA);VUELTA=setTimeout(()=>{SIGUE=true;if(YO)map.panTo([YO[0],YO[1]])},20000);setTimeout(ofreceZona,700)}
   if(YO)sigueA(YO[0],YO[1]);else pintaSeg(null);
+  if(TR[1]&&Nativo.anadido2&&Nativo.anadido2())toast("➕ «"+TR[1].n+"» añadido como secundario (en naranja)",4000);
   preguntaNuevo()}
 // llega otro track mientras ya sigues uno: ¿cambiarlo o añadirlo como secundario?
 function preguntaNuevo(){const nu=rdJ(Nativo.nuevoSeguir?Nativo.nuevoSeguir():"");if(!nu||!nu.t)return;
@@ -207,7 +208,8 @@ function pintaSeg(d){if(d!==undefined)SEGD=d;d=SEGD;const e=$("seg");if(!T.lengt
    <div><b>+${fmM(UPC[IDX]||0)}</b><small>subida hecha</small></div><div><b>+${fmM(upQ)}</b><small>subida que falta</small></div><div><b>−${fmM(dnQ)}</b><small>bajada que falta</small></div></div>
    <div class="ir">${lejos||IDX<3?`<button onclick="llegar()">🚗 Cómo llegar a la salida</button>`:""}<button class="b" onclick="alReves()">⇄ Al revés</button><button class="b" onclick="verTrack()">🗺 Ver ${TR[1]?"los tracks":"el track"}</button><button class="x" onclick="dejar()">✕ Dejar de seguir</button></div>
    <div style="margin-top:8px">${TR.map((r,i)=>r?fila(r,i):"").join("")}</div>
-   <p style="font-size:13px;margin:8px 0 0;opacity:.8">${TR[1]?"Solo avisa si te sales de los dos, y antes de donde se separan.":"¿Llevas una variante? En la app, «▶ Seguir» en otra ruta y añádela como secundario."} «Al revés» si lo empiezas por el final.</p>`}
+   ${TR[1]?"":`<button class="b2" style="margin:8px 0 0;font-size:16px;padding:11px" onclick="anadir2()">➕ Añadir un segundo track (variante)</button>`}
+   <p style="font-size:13px;margin:8px 0 0;opacity:.8">${TR[1]?"Solo avisa si te sales de los dos, y antes de donde se separan.":"Con «➕ Añadir un segundo track» vas a la app: elige la ruta o el track y toca «▶ Seguir»; vuelve aquí como secundario."} «Al revés» si lo empiezas por el final.</p>`}
 function abreSeg(){SEGOPEN=!SEGOPEN;document.body.classList.toggle("segab",SEGOPEN);pintaSeg()}
 function alReves(){REV=!REV;lsS("rev:"+TN,REV?"1":null);prepara();TR[ACT].idx=0;IDX=0;FUERA=0;AVISADO=false;cruces();pintaLineas();SEPAV.clear();if(YO)sigueA(YO[0],YO[1]);else pintaSeg();toast(REV?"Track al revés: empiezas por el final":"Track en el sentido normal")}
 function cercaDe(r,p){let best=-1,bd=1e12;const a=Math.max(0,r.idx-60),b=Math.min(r.t.length,r.idx+400);for(let i=a;i<b;i++){const d=dm(p,r.t[i]);if(d<bd){bd=d;best=i}}
@@ -223,6 +225,7 @@ function sigueA(la,lo){if(!TR[0])return;const p=[la,lo];
   const r=TR[on];if(TR[1]&&bd<=60&&r.sep)for(const k of r.sep){const falta=r.tc[k]-r.tc[r.idx],key=on+":"+k;if(falta>0&&falta<=150&&!SEPAV.has(key)){SEPAV.add(key);try{Nativo.vibrar()}catch(e){}
       toast(`⚠️ En ${Math.round(falta/10)*10} m se separan los dos tracks: «${TR[0].n}» (morado) y «${TR[1].n}» (naranja)`,8000)}}
   pintaSeg(bd)}
+function anadir2(){Nativo.anadir2();toast("Elige la ruta o el track y toca «▶ Seguir»",3000)}
 function haceP(){const a=rdJ(Nativo.seguir()),b=rdJ(Nativo.seguir2());if(!a||!b)return;Nativo.ponSeguir("p",JSON.stringify(b));Nativo.ponSeguir("s",JSON.stringify(a));TR=[TR[1],TR[0]];ACT=ACT?0:1;cruces();pintaLineas();act(ACT);pintaSeg();toast("⇅ «"+TR[0].n+"» es ahora el principal")}
 function quita2(){Nativo.ponSeguir("s","");TR[1]=null;cruces();pintaLineas();act(0);if(YO)sigueA(YO[0],YO[1]);else pintaSeg();toast("Secundario quitado")}
 function llegar(){const q=T[0];Nativo.abrir(`https://www.google.com/maps/dir/?api=1&destination=${q[0]},${q[1]}&travelmode=driving`)}

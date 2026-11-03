@@ -267,6 +267,8 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
                 val mismo = ya != null && ya.optString("n") == (i.getStringExtra("n") ?: "Track") && (ya.optJSONArray("t")?.length() ?: 0) == a.length()
                 val mismo2 = try { JSONObject(p.getString("seguir2", "") ?: "").optString("n") == (i.getStringExtra("n") ?: "Track") } catch (e: Exception) { false }
                 if (ya == null) p.edit().putString("seguir", nuevo).remove("seguir_nuevo").apply()
+                // pedido con «➕ Añadir un segundo track» (hace menos de 10 min): entra directo como secundario
+                else if (!mismo && System.currentTimeMillis() - p.getLong("anadir2", 0L) < 600000) { p.edit().putString("seguir2", nuevo).remove("seguir_nuevo").remove("anadir2").putBoolean("anadido2", true).apply() }
                 else if (!mismo && !mismo2) p.edit().putString("seguir_nuevo", nuevo).apply()
             }
         } catch (e: Exception) {}
@@ -431,6 +433,10 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         @JavascriptInterface fun version(): String = try { packageManager.getPackageInfo(packageName, 0).versionName ?: "?" } catch (e: Exception) { "?" }
         @JavascriptInterface fun dejarSeguir() { Grab.prefs(c).edit().remove("seguir").remove("seguir_nuevo").apply() }
         // dos tracks: principal («seguir»), secundario («seguir2») y el que acaba de llegar mientras ya se seguía otro («seguir_nuevo»)
+        /** «➕ Añadir un segundo track»: a la app a elegirlo; el próximo «▶ Seguir» entra como secundario. */
+        @JavascriptInterface fun anadir2() = runOnUiThread { Grab.prefs(c).edit().putLong("anadir2", System.currentTimeMillis()).putLong("volver_t", System.currentTimeMillis()).apply()
+            try { startActivity(packageManager.getLaunchIntentForPackage(packageName)!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) {} }
+        @JavascriptInterface fun anadido2(): Boolean { val p = Grab.prefs(c); val v = p.getBoolean("anadido2", false); if (v) p.edit().remove("anadido2").apply(); return v }
         @JavascriptInterface fun seguir2(): String = Grab.prefs(c).getString("seguir2", "") ?: ""
         @JavascriptInterface fun nuevoSeguir(): String = Grab.prefs(c).getString("seguir_nuevo", "") ?: ""
         @JavascriptInterface fun ponSeguir(rol: String, json: String) { val e = Grab.prefs(c).edit().remove("seguir_nuevo")
