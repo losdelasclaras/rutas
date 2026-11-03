@@ -2,10 +2,15 @@
 (function(){
 let PICK=false;      // esperando a que se elija sitio en la pantalla de búsqueda
 window.NEAR=null;    // {lat,lon,label,rad}
-const banner=()=>NEAR?`<div class="wzban nearban"><b>📍 Cerca de ${esc(NEAR.label)}</b><span>A menos de ${NEAR.rad} km, de lo más cercano a lo más lejano.</span><div class="nb2"><button class="btn primary" data-cnear>Cambiar sitio</button><button class="btn ghost" data-cnoff>Ver todo</button></div></div>`+
-  (window.wkUrl?`<a class="btn ghost wkbtn" href="${wkUrl(NEAR.lat,NEAR.lon,Math.min(NEAR.rad||8,8))}" target="_blank" rel="noopener">🔎 Más rutas por esta zona en Wikiloc</a>`:""):"";
-document.head.insertAdjacentHTML("beforeend",`<style>.nearban .nb2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.nearban .nb2 .btn{width:100%;justify-content:center;margin:0}
-a.wkbtn{display:flex;justify-content:center;width:100%;box-sizing:border-box;margin:8px 0 4px}</style>`);
+// aviso fino de una línea (antes era un cuadro grande que tapaba la lista): «📍 Lugo · a menos de 15 km  [Cambiar] [✕]»
+const banner=()=>NEAR?`<div class="nearchip"><span>📍 <b>${esc(NEAR.label)}</b> · a menos de ${NEAR.rad} km</span><button data-cnear>Cambiar</button><button class="x" data-cnoff aria-label="Quitar «cerca de»" title="Ver todo">✕</button></div>`:"";
+// Wikiloc al final de la lista de rutas: primero lo nuestro, y si no basta, «más rutas por aquí»
+const wkFin=()=>NEAR&&window.wkUrl?`<a class="btn ghost wkbtn" href="${wkUrl(NEAR.lat,NEAR.lon,Math.min(NEAR.rad||8,8))}" target="_blank" rel="noopener">🔎 Más rutas por esta zona en Wikiloc</a>`:"";
+document.head.insertAdjacentHTML("beforeend",`<style>.nearchip{display:flex;align-items:center;gap:8px;margin:6px 0 4px;padding:6px 6px 6px 12px;border:1.5px solid var(--mark);border-radius:999px;font-size:15px}
+.nearchip span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nearchip button{flex:none;border:0;border-radius:999px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer;background:rgba(127,127,127,.18);color:inherit}
+.nearchip button.x{padding:8px 12px}
+a.wkbtn{display:flex;justify-content:center;width:100%;box-sizing:border-box;margin:14px 0 4px}</style>`);
 window.cercaBar=(kind,C)=>`<div class="wizrow cerca"><button class="btn ghost wizbtn" data-cnear>📍 Cerca de un lugar</button><button class="btn ghost wizbtn" data-cme>🎯 Cerca de mí</button><button class="btn ghost wizbtn" data-fpopen>⚙ Filtros${fpN(C)?" ("+fpN(C)+")":""}</button></div>`+banner();
 window.cercaTit=()=>PICK?"¿Cerca de dónde?":"Rutas cerca de…";
 const vistaX=()=>["rutas","cumbres","lugares"].find(k=>{const v=document.getElementById("v-"+k);return v&&!v.hidden});
@@ -43,7 +48,7 @@ window.renderList=function(){if(!NEAR)return RL.apply(this,arguments);if(window.
   const c=o==="grupo"||!window.COLX||!COLX.near?[]:COLX.near(NEAR.lat,NEAR.lon).filter(x=>(o==="todas"||o==="co_"+x.r.co.id)&&(!s||x.r.txt.includes(s)));
   const L=g.concat(c).filter(x=>x.d<=NEAR.rad).sort((a,b)=>a.d-b.d);
   const row=x=>{const dd=(x.d<10?x.d.toFixed(1).replace(".",","):x.d.toFixed(0))+" km";return x.r.cox?COLX.rrow(x.r,dd):rowHTML(x.r,dd)};
-  document.getElementById("list").innerHTML=banner()+(window.COLX?COLX.rchips():"")+`<p class="count">${L.length} ${L.length===1?"ruta":"rutas"}</p>`+(L.length?`<div class="rows">${L.map(row).join("")}</div>`:`<p class="empty">No hay rutas a menos de ${NEAR.rad} km con esa búsqueda y esos filtros.</p>`)};
+  document.getElementById("list").innerHTML=banner()+(window.COLX?COLX.rchips():"")+`<p class="count">${L.length} ${L.length===1?"ruta":"rutas"}</p>`+(L.length?`<div class="rows">${L.map(row).join("")}</div>`:`<p class="empty">No hay rutas a menos de ${NEAR.rad} km con esa búsqueda y esos filtros.</p>`)+wkFin()};
 
 /* ---------- ⚙ Filtros: panel desde abajo en Rutas, Cumbres y Lugares ---------- */
 document.head.insertAdjacentHTML("beforeend",`<style>
