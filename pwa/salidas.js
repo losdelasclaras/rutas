@@ -191,7 +191,12 @@ sec.addEventListener("click",async e=>{const t=e.target;
     if(ok)await F.updateDoc(F.doc(db(),"clubes",id),{estado:"ok"});
     else{if(dl&&!confirm("¿Quitar este club? Sus salidas dejarán de verse cuando pasen o si las borras."))return;await F.deleteDoc(F.doc(db(),"clubes",id))}
     toast(ok?"Club aprobado":"Hecho");carga(true)}catch(er){console.warn(er);toast("No se ha podido")}}});
-addEventListener("ldc-user",()=>{if(!sec.hidden)carga(true);else CARGADO=0});
+/* EN PRUEBAS (3 nov): la pestaña Salidas solo la ven los administradores hasta que él decida abrirla a todos.
+   Para abrirla a todos: PUBLICO=true. */
+const PUBLICO=false;
+const visTab=()=>{const t=document.querySelector('nav.tabs [data-v="salidas"]');if(t)t.hidden=!(PUBLICO||esAdm())};
+setTimeout(visTab,0);
+addEventListener("ldc-user",()=>{visTab();if(!sec.hidden)carga(true);else CARGADO=0});
 // cargar al entrar en la pestaña
 new MutationObserver(()=>{if(!sec.hidden)carga(false)}).observe(sec,{attributes:true,attributeFilter:["hidden"]});
 // enlace compartido: #sal=<id>
