@@ -427,7 +427,8 @@ class GrabarActivity : Activity(), LocationListener {
             // se apunta la zona (con su lista de teselas) aunque luego falte alguna
             try { val id = System.currentTimeMillis().toString(36)
                 File(filesDir, "zona-$id.txt").writeText((0 until a.length()).joinToString("\n") { a.getString(it) })
-                val cp = a.optString(0, "topo").substringBefore("/")
+                val cps = (0 until a.length()).map { a.getString(it).substringBefore("/") }.toSet()
+                val cp = if (cps.size > 1) "varios" else cps.firstOrNull() ?: "topo"
                 val l = zl(); l.put(JSONObject().put("id", id).put("n", nombre.take(80)).put("capa", cp).put("t", System.currentTimeMillis()).put("nt", a.length())); zf().writeText(l.toString())
             } catch (e: Exception) {}
             val falta = (0 until a.length()).map { a.getString(it) }.filter { k -> val (cp, z, x, y) = k.split("/"); val f = tesela(cp, z, x, y); !(f.exists() && f.length() > 0) }
