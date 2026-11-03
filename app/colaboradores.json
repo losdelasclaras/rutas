@@ -61,6 +61,7 @@
   "sin_lineas": true,
   "fotos_blog": true,
   "blog_web": "https://camudandolcamin.blogspot.com",
-  "foto_sin_mapas": true
+  "foto_sin_mapas": true,
+  "foto_desde": 3
  }
 ]

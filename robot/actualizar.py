@@ -545,7 +545,7 @@ def fotos_puntos_blog(co, new):
     nuevas = mal = 0; sin = co.get('foto_sin_mapas')
     for p in new['p']:
         if p[5] or not p[4] or not re.search(r'blogspot\.|/20\d\d/', p[4]): continue
-        fn = f'{co["id"]}p{"f" if sin else ""}-{hashlib.md5(p[4].encode()).hexdigest()[:12]}.jpg'
+        fn = f'{co["id"]}p{"f" + str(co.get("foto_desde") or "") if sin else ""}-{hashlib.md5(p[4].encode()).hexdigest()[:12]}.jpg'
         if not os.path.exists(d + fn):
             if mal >= 8 and not nuevas: continue
             try:
@@ -562,7 +562,8 @@ def fotos_puntos_blog(co, new):
                         if not u: continue
                         u = html.unescape(u.group(1)); k = re.sub(r'/[swh]\d+[^/]*/', '/', re.sub(r'=[swh]\d+[^/]*$', '', u))
                         if k not in [x[0] for x in vis]: vis.append((k, u))
-                    for k, u in vis[:8]:
+                    desde = (co.get('foto_desde') or 1) - 1   # Camudando'l camín: 1.ª el mapa, 2.ª la vista de Google Earth; las fotos, desde la 3.ª
+                    for k, u in (vis[desde:desde + 8] or vis[:8]):
                         big = re.sub(r'/s\d+(-[a-z0-9-]+)?/', '/s1000/', re.sub(r'=s\d+(-[a-z0-9-]+)?$', '=s1000', u))
                         try: x = Image.open(io.BytesIO(get(big, True))).convert('RGB')
                         except Exception: continue
