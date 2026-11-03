@@ -297,6 +297,7 @@ COLX.rut=()=>RUT;
 COLX.rutaItem=(c,i)=>RUT.find(x=>x.rr===i&&x.co===c);
 COLX.rKey=x=>rKeyCo(x.co,x.c);
 COLX.byP=p=>ALL.find(x=>x.pp===p);
+COLX.todo=()=>ALL;
 COLX.ln=(c,i)=>lineas().then(J=>(J[c.id]||[])[i]);
 COLX.findPt=(n,lat,lon)=>{const k=norm(n);let b=-1,bd=.4;for(const x of ALL){if(!x.pp||norm(x.c)!==k)continue;const d=km({lat,lon},x);if(d<bd){bd=d;b=x.ci}}return b};
 COLX.trkOf=k=>GXC&&GXC.c===k.c&&GXC.i===k.i?{ln:GXC.g.ln,km:GXC.g.km}:null;
