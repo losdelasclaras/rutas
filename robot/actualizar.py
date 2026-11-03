@@ -619,6 +619,18 @@ def colaboradores():
                     cumbres_osm(co, new)
             except Exception as e:
                 log(f'⚠ No he podido leer los mapas de rutas del colaborador {co["id"]}: {e} (se queda como estaba)')
+        if co.get('wp_rutas'):
+            # colaborador con web en WordPress (complemento CM Maps Routes Manager): rutas nuevas de su web, con su GPX
+            try:
+                sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+                import wp_rutas as WP
+                res = WP.leer(co, old, get, log)
+                if res:
+                    rutas, cps, salt = res
+                    new.update(t=co.get('nombre') or co['id'], p=cps, r=rutas, l=[], x=salt)
+                    cumbres_osm(co, new)
+            except Exception as e:
+                log(f'⚠ No he podido leer la web del colaborador {co["id"]}: {e} (se queda como estaba)')
         if co.get('drive_carpeta'):
             try:
                 h = get(f'https://drive.google.com/embeddedfolderview?id={co["drive_carpeta"]}')
@@ -642,7 +654,7 @@ def colaboradores():
         if new.get('r'): new['r'] = json.loads(json.dumps(new['r'])); new['p'] = json.loads(json.dumps(new.get('p', [])))
         fotos_rutas(co, new)
         if co.get('fotos_blog'): fotos_puntos_blog(co, new)
-        fechas_rutas(co, new)
+        if not co.get('wp_rutas'): fechas_rutas(co, new)   # las de WordPress ya traen su «Fecha de realización»
         nom = co.get('nombre') or new.get('t') or co['id']
         if new != old:
             json.dump(new, open(fo, 'w'), ensure_ascii=False, separators=(',', ':'))

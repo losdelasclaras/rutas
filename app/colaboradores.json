@@ -63,5 +63,119 @@
   "blog_web": "https://camudandolcamin.blogspot.com",
   "foto_sin_mapas": true,
   "foto_desde": 3
+ },
+ {
+  "id": "c4",
+  "nombre": "Gata con botas",
+  "color": "#9c27b0",
+  "mapa_mid": "",
+  "drive_carpeta": "",
+  "capas": [
+   "c",
+   "r",
+   "t"
+  ],
+  "fuente": "Su web en WordPress (CM Maps Routes Manager): el robot lee cada noche las entradas nuevas de sus zonas y baja su GPX (3 nov 2026)",
+  "wp_rutas": {
+   "web": "https://gataconbotas.com",
+   "tope": 120,
+   "zonas": {
+    "rutas/galicia/a-coruna": [
+     "A Coruña",
+     41,
+     44.5
+    ],
+    "rutas/galicia/lugo": [
+     "Lugo",
+     41,
+     44.5
+    ],
+    "rutas/galicia/ourense": [
+     "Ourense",
+     41,
+     44.5
+    ],
+    "rutas/galicia/pontevedra": [
+     "Pontevedra",
+     41,
+     44.5
+    ],
+    "rutas/resto-de-espana/asturias": [
+     "Asturias",
+     42,
+     44.5
+    ],
+    "rutas/resto-de-espana/cantabria": [
+     "Cantabria",
+     42,
+     44.5
+    ],
+    "rutas/resto-de-espana/vizcaya": [
+     "Vizcaya",
+     42,
+     44.5
+    ],
+    "rutas/resto-de-espana/guipuzcoa": [
+     "Guipúzcoa",
+     42,
+     44.5
+    ],
+    "rutas/resto-de-espana/alava": [
+     "Álava",
+     42,
+     44.5
+    ],
+    "rutas/resto-de-espana/leon": [
+     "León",
+     42.6,
+     44.5
+    ],
+    "rutas/resto-de-espana/palencia": [
+     "Palencia",
+     42.7,
+     44.5
+    ],
+    "rutas/resto-de-espana/burgos": [
+     "Burgos",
+     42.6,
+     44.5
+    ],
+    "rutas/resto-de-espana/navarra": [
+     "Pirineos",
+     42.75,
+     44
+    ],
+    "rutas/resto-de-espana/huesca": [
+     "Pirineos",
+     42.3,
+     43.5
+    ],
+    "rutas/resto-de-espana/lleida": [
+     "Pirineos",
+     42.15,
+     43.5
+    ],
+    "rutas/resto-de-espana/girona": [
+     "Pirineos",
+     42.15,
+     43.5
+    ],
+    "rutas/andorra": [
+     "Pirineos",
+     42,
+     43
+    ],
+    "rutas/francia/nueva-aquitania": [
+     "Pirineos",
+     42,
+     43.35
+    ],
+    "rutas/occitania": [
+     "Pirineos",
+     42,
+     43.2
+    ]
+   }
+  }
  }
 ]
