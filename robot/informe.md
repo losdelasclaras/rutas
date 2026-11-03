@@ -1,6 +1,6 @@
-# Informe del robot · 03/11/2026 13:15
+# Informe del robot · 03/11/2026 16:10
 
-**Cambios:** regeneración forzada
+Sin cambios.
 
 - Blog: sin entradas nuevas.
 - Mapa: sin cambios.
@@ -11,7 +11,3 @@
 - 📷 Fotos de rutas de Rutinas Varias (de su blog): 0 nuevas, 139 en total, 7 sin foto
 - 📅 Fechas de rutas de Rutinas Varias: 0 nuevas (146 de 401 con fecha); Wikiloc no responde (8 fallos).
 - Colaborador «Rutinas Varias»: sin cambios.
-- ⚠ Track de Drive sin ruta: drive__CicuetadesdeRuayer.gpx
-- ⚠ Track de Drive sin ruta: drive__cabeza-de-arco-desde-caleao-por-la-cabriterina.gpx · mejor opción:  (ya tenía track o poco segura)
-- ⚠ Track de Drive sin ruta: drive__canton-de-texeu-y-majadas-del-cornion.gpx · mejor opción: Canton de Texeu y Majadas del Cornión. (ya tenía track o poco segura)
-- App regenerada: 375 rutas, 164 con track.
