@@ -3209,6 +3209,9 @@ try{
        así que se explica cómo bajar el GPX en esa app y abrirlo aquí. */
 (function(){
 const MPI=window.MISPUNTOS;
+// el mapa de Wikiloc en una zona (km = mitad del lado del recuadro, unos 3 km por defecto)
+const wkUrl=window.wkUrl=(la,lo,km)=>{const dy=(km||3.3)/111.2,dx=dy/Math.cos(la*Math.PI/180);
+  return`https://es.wikiloc.com/wikiloc/map.do?sw=${(la-dy).toFixed(4)}%2C${(lo-dx).toFixed(4)}&ne=${(la+dy).toFixed(4)}%2C${(lo+dx).toFixed(4)}&page=1`};
 const nrm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();
 const dkm=(a,b,c,d)=>Math.hypot((a-c)*111.2,(b-d)*111.2*Math.cos(a*Math.PI/180));
 async function mandar(title,text,url){
@@ -3232,7 +3235,7 @@ function datosFicha(c){
   return{n:h2.textContent.trim(),lat,lon,alt,cum:key[0]==="c",co:co?co.textContent.trim():""}}
 function pon(c){const d=datosFicha(c);if(!d)return;c._pt=d;
   // 🔎 más rutas por aquí en Wikiloc: su mapa centrado en este punto (unos 3 km alrededor). No se saca nada de Wikiloc: solo se enlaza
-  const wk=`https://es.wikiloc.com/wikiloc/map.do?sw=${(d.lat-.03).toFixed(4)}%2C${(d.lon-.04).toFixed(4)}&ne=${(d.lat+.03).toFixed(4)}%2C${(d.lon+.04).toFixed(4)}&page=1`;
+  const wk=wkUrl(d.lat,d.lon);
   const b=`<button class="btn ghost" data-ptshare>📤 Compartir</button><a class="btn ghost" href="${wk}" target="_blank" rel="noopener">🔎 Más rutas por aquí (Wikiloc)</a>`;
   const acts=c.querySelector(".actions");if(acts)acts.insertAdjacentHTML("beforeend",b);
   else c.querySelector(".mkblock").insertAdjacentHTML("afterend",`<div class="actions" style="margin-top:8px">${b}</div>`)}
@@ -3266,12 +3269,19 @@ const ORD=[
   ["llegar",el=>href(el,/google\.[a-z.]+\/maps\/dir/),"🚗 Cómo llegar a la salida"],
   ["mapa",el=>el.matches("[data-ovmap]"),null],
   ["ruta",el=>el.matches("[data-mtroute]"),null],
-  ["wl",el=>href(el,/wikiloc\./i),"Ver en Wikiloc"],
+  ["wl",el=>href(el,/wikiloc\./i)&&!el.matches("[data-wkz]"),"Ver en Wikiloc"],
+  ["wkz",el=>el.matches("[data-wkz]"),null],
   ["gm",el=>href(el,/google\.[a-z.]+\/maps\/search/),"📍 Google Maps"]];
 function ordena(c){if(!c||c.hidden)return;
   const pr=[...c.querySelectorAll(PRIM)].find(x=>!x.closest(FUERA));if(!pr)return;
   // ⌚ si no está
   if(!c.querySelector("[data-reloj]")&&(pr.matches("[data-follow],[data-mtfol]")||(pr.matches("[data-cofol]")&&c.id==="sheet")))pr.insertAdjacentHTML("afterend",`<button class="btn ghost" data-reloj></button>`);
+  // 🔎 más rutas por esta zona en Wikiloc (en su mapa), desde la salida de la ruta
+  if(!c.querySelector("[data-wkz]")){let ll=null;
+    if(pr.matches("[data-follow]")){const r=R[+pr.dataset.follow];if(r)ll=[r.lat,r.lon]}
+    else if(pr.matches("[data-cofol]")&&c.id==="sheet"&&sheet._cor){ll=sheet._cor.c.r[sheet._cor.i][8]}
+    else if(pr.matches("[data-mtfol]")&&MPI){const t=MPI.tracks().find(x=>String(x.id)===pr.dataset.mtfol),q=t&&MPI.ptsOf(t);if(q&&q.length)ll=q[0]}
+    if(ll)pr.insertAdjacentHTML("afterend",`<a class="btn ghost" data-wkz href="${wkUrl(ll[0],ll[1])}" target="_blank" rel="noopener">🔎 Más rutas por aquí (Wikiloc)</a>`)}
   let box=c.querySelector(".acts2");
   if(!box){const ta=pr.closest(".topacts")||pr.parentNode;ta.insertAdjacentHTML("beforebegin",`<div class="acts2"><div class="aprim"></div><div class="agrid"></div></div>`);box=ta.previousElementSibling;
     // debajo de los datos de la ruta (km, desnivel, dificultad y salida), no encima de la descripción
@@ -3448,7 +3458,7 @@ try{
 (function(){
 let PICK=false;      // esperando a que se elija sitio en la pantalla de búsqueda
 window.NEAR=null;    // {lat,lon,label,rad}
-const banner=()=>NEAR?`<div class="wzban"><b>📍 Cerca de ${esc(NEAR.label)}</b><span>A menos de ${NEAR.rad} km, de lo más cercano a lo más lejano. Arriba cambias entre Rutas, Cumbres y Lugares.</span><div><button class="btn primary" data-cnear>Cambiar</button> <button class="linkbtn" data-cnoff>Ver todo</button></div></div>`:"";
+const banner=()=>NEAR?`<div class="wzban"><b>📍 Cerca de ${esc(NEAR.label)}</b><span>A menos de ${NEAR.rad} km, de lo más cercano a lo más lejano. Arriba cambias entre Rutas, Cumbres y Lugares.</span><div><button class="btn primary" data-cnear>Cambiar</button> <button class="linkbtn" data-cnoff>Ver todo</button>${window.wkUrl?` <a class="linkbtn" href="${wkUrl(NEAR.lat,NEAR.lon,Math.min(NEAR.rad||8,8))}" target="_blank" rel="noopener">🔎 Más rutas por aquí en Wikiloc</a>`:""}</div></div>`:"";
 window.cercaBar=(kind,C)=>`<div class="wizrow cerca"><button class="btn ghost wizbtn" data-cnear>📍 Cerca de un lugar</button><button class="btn ghost wizbtn" data-cme>🎯 Cerca de mí</button><button class="btn ghost wizbtn" data-fpopen>⚙ Filtros${fpN(C)?" ("+fpN(C)+")":""}</button></div>`+banner();
 window.cercaTit=()=>PICK?"¿Cerca de dónde?":"Rutas cerca de…";
 const vistaX=()=>["rutas","cumbres","lugares"].find(k=>{const v=document.getElementById("v-"+k);return v&&!v.hidden});
@@ -3660,5 +3670,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="45f0f628a7";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="5e101e6784";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
