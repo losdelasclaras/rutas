@@ -44,9 +44,9 @@ const probe={attr(a,v){if(a==="r"&&!v&&probeC){probeC.remove();probeC=null}retur
 let k=1, meDot=null;
 function drawZone(zk){ZK=zk;store.set("ldc-zona",zk);renderMapbar();fitHome(true)}
 function ensureZone(zk){if(zk!==ZK){ZK=zk;store.set("ldc-zona",zk);renderMapbar()}}
-const FSV=[1,1.15,1.3,1.45];let FS=+store.get("ldc-fs",1.15);if(!FSV.includes(FS))FS=1.15;
-document.documentElement.style.setProperty("--fs",FS);
-document.getElementById("fsbtn").textContent=["Aa","Aa+","Aa++","Aa+++"][FSV.indexOf(FS)];
+const FSV=[1,1.15,1.3];let FS=+store.get("ldc-fs",1.15);if(FS>1.3)FS=1.3;if(!FSV.includes(FS))FS=1.15;
+document.documentElement.style.setProperty("--fs",FS);document.documentElement.style.setProperty("--fsi",(1.15/FS).toFixed(4));
+document.getElementById("fsbtn").textContent=["Aa","Aa+","Aa++"][FSV.indexOf(FS)];
 // capas: la primera vez, solo las cumbres del grupo (y mis marcas); después, lo que dejó la última vez
 // la primera vez (y una vez a todos, nov 2026): solo las cumbres del grupo; lo demás se enciende en Capas
 const LAY=Object.assign({peaks:true,spots:false,tracks:false,mh:true,mq:true,solo:false},store.get("ldc-capas",{}));
