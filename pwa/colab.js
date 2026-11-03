@@ -99,13 +99,33 @@ for(const c of CO){for(const[k]of KC(c))if(LAY[`co_${c.id}_${k}`]===undefined||n
     g.addLayer(L.polyline(ll,{color:c.c,weight:3.5,opacity:.95,renderer:TRC}).bindTooltip(esc(ln[0])+" · "+esc(c.n),{sticky:true}))}
   for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
     const m=L.marker([p[1],p[2]],{icon:L.divIcon({className:"cpt"+(cum?" cum":""),html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:p[0]+" · "+c.n,riseOnHover:true,zIndexOffset:cum?-20:-50});
-    m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(p[1],p[2]);return}abrirCum(c,p,k)});
-    m.__n=p[0];m.__c=c.c;m.__g=c.id+(cum?"_c":"_l");m.__k=coKey(c,p[0],k);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+(cum?"_c":"_l")] ||= []).push(m)}
+    m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(p[1],p[2]);return}abrirCum(c,p,k);setTimeout(()=>tambien(m),0)});
+    m.__p=p;m.__co=c;m.__cum=cum;m.__n=p[0];m.__c=c.c;m.__g=c.id+(cum?"_c":"_l");m.__k=coKey(c,p[0],k);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+(cum?"_c":"_l")] ||= []).push(m)}
   G[c.id+"_l"]=g;G[c.id+"_c"]=gc;
   if(c.r&&c.r.length){G[c.id+"_r"]=L.layerGroup();G[c.id+"_t"]=L.layerGroup();
     c.r.forEach((r,i)=>{const k=icoR(r);const m=L.marker(r[8],{icon:L.divIcon({className:"cpt",html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:r[0]+" · "+c.n,riseOnHover:true,zIndexOffset:-60});
       m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(r[8][0],r[8][1]);return}abrirR(c,i)});
       m.__n=r[0];m.__c=c.c;m.__g=c.id+"_r";m.__k=rKeyCo(c,r[0]);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+"_r"] ||= []).push(m)})}}
+/* ---------- cumbres repetidas: un solo icono en el mapa (3 nov) ----------
+   Si la misma cumbre la tienen el grupo y uno o varios colaboradores, en el mapa sale UN icono: el del grupo si su capa
+   Cumbres está encendida; si no, el del primer colaborador encendido. Al tocarlo, la ficha dice «También en …» con los demás. */
+const CUMM=[];for(const c of CO)for(const m of (MKG[c.id+"_c"]||[]))CUMM.push(m);
+{const pal=n=>new Set(norm(n).replace(/[^a-z0-9 ]+/g," ").split(" ").filter(w=>w.length>=4&&!/^(pico|pena|picu|monte|alto|cueto|torre|desde)$/.test(w)));
+ const igual=(a,b)=>{const x=a.getLatLng(),y=b.getLatLng(),d=Math.hypot(x.lat-y.lat,(x.lng-y.lng)*.73)*111;
+   if(d<.15)return true;if(norm(a.__n)===norm(b.__n)&&d<3)return true;if(d<.35){const pa=pal(a.__n);return[...pal(b.__n)].some(w=>pa.has(w))}return false};
+ CUMM.forEach((m,i)=>{for(let j=0;j<i;j++){const n=CUMM[j];if(n.__co!==m.__co&&igual(m,n)){m.__sup=n.__sup||n;break}}})}
+const grpDe=m=>{if(m.__grp===undefined){const it=window.COLX&&COLX.byP&&COLX.byP(m.__p);if(!it)return null;m.__grp=it.par||null}return m.__grp};
+const tapado=m=>{if(!m.__cum)return false;const r=m.__sup;
+  if(LAY.peaks&&!LAY.solo&&(grpDe(m)||(r&&grpDe(r))))return true;     // ya la enseña el grupo
+  return !!(r&&G[r.__co.id+"_c"]&&map.hasLayer(G[r.__co.id+"_c"]))};   // ya la enseña otro colaborador
+const grupoDe=m=>CUMM.filter(x=>x!==m&&(x.__sup||x)===(m.__sup||m));
+function tambien(m){if(!m.__cum||sheet.hidden||!sheet.querySelector("h2"))return;
+  const otros=grupoDe(m),rows=[];
+  for(const x of otros){const it=window.COLX&&COLX.byP(x.__p);if(it)rows.push([x.__co.n,COLX.rrow(it)])}
+  const g=grpDe(m)||otros.map(grpDe).find(Boolean);
+  if(g&&!/También del grupo/.test(sheet.innerHTML)){const rs=(P[g.i].rs||[]).filter(ri=>R[ri].u);if(rs.length)sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>También en Los de las Claras</h3><div class="rows">${rs.map(ri=>rowHTML(R[ri],"",true)).join("")}</div></div>`)}
+  const by={};for(const[n,h]of rows)(by[n] ||= []).push(h);
+  for(const[n,hs]of Object.entries(by))sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>También en ${esc(n)}</h3><div class="rows">${hs.join("")}</div></div>`)}
 /* ---------- rutas de colaboradores que solo traen el track (p. ej. Rutinas Varias, de Wikiloc) ---------- */
 let LNP=null;const lineas=()=>LNP||(LNP=CO0.ln?fetch(CO0.ln).then(r=>r.json()).catch(()=>{LNP=null;return{}}):Promise.resolve({}));
 function pintaTracks(c){const g=G[c.id+"_t"];if(!g||g.__ok)return;g.__ok=1;lineas().then(J=>{const ls=J[c.id]||[];
@@ -202,7 +222,7 @@ function sync(){for(const c of CO)for(const[k]of KC(c)){const key=`co_${c.id}_${
   cull();if(window.capasSum)capasSum()}
 // como los puntos del grupo: solo se dibujan los que caen en pantalla (y un margen); el mapa va igual de fluido con más colaboradores
 function cull(){const b=map.getBounds().pad(.35);for(const gid in MKG){const g=G[gid];if(!map.hasLayer(g))continue;
-  for(const m of MKG[gid]){const inb=b.contains(m.getLatLng());if(inb&&!g.hasLayer(m))g.addLayer(m);else if(!inb&&g.hasLayer(m))g.removeLayer(m)}}lbls()}
+  for(const m of MKG[gid]){const inb=b.contains(m.getLatLng())&&!tapado(m);if(inb&&!g.hasLayer(m))g.addLayer(m);else if(!inb&&g.hasLayer(m))g.removeLayer(m)}}lbls()}
 map.on("moveend",cull);
 map.on("zoomend",lbls);
 document.querySelector(".legend").addEventListener("click",()=>setTimeout(()=>{sync();for(const m of LBL)coMarks(m)},0));
