@@ -19,7 +19,7 @@ function datosFicha(c){
   if(c.querySelector("[data-share],[data-coshare],[data-follow],[data-cofol],[data-mtfol],[data-mpedit],[data-tmpcs],[data-ptshare]"))return null;
   const mk=c.querySelector(".mkblock .mk[data-key]");if(!mk)return null;const key=mk.dataset.key;if(!/^[cl]:/.test(key))return null;
   // sitio: el enlace de Google Maps de la ficha o, si no, el punto del grupo con ese nombre
-  const g=c.querySelector('a[href*="google.com/maps"]');let m=g&&/(?:query|destination)=(-?\d+\.\d+),(-?\d+\.\d+)/.exec(g.getAttribute("href"));
+  const g=c.querySelector('a[href*="google.com/maps"]'),dl=c.querySelector("[data-ll]");let m=dl?/(-?\d+\.\d+),(-?\d+\.\d+)/.exec(dl.dataset.ll):g&&/(?:query|destination)=(-?\d+\.\d+),(-?\d+\.\d+)/.exec(g.getAttribute("href"));
   let lat,lon,alt=null;
   if(m){lat=+m[1];lon=+m[2]}
   else if(typeof P!=="undefined"){const k=key.slice(2).split("@")[0];const ps=P.filter(p=>nrm(p.c)===k);if(!ps.length)return null;const ce=map.getCenter();
