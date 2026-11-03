@@ -41,24 +41,63 @@ for(const id of ["sheet","ov"]){const el=document.getElementById(id);if(!el)cont
     const url=APPURL+"#pt="+d.lat.toFixed(5)+","+d.lon.toFixed(5)+"!"+encodeURIComponent(d.n);
     mandar(d.n,(d.cum?"⛰️ ":"📍 ")+d.n+(a?" · "+a:"")+(d.co?"\nDe "+d.co:"")+"\n🗺 Ábrelo en la app de Los de las Claras:",url)})}
 
-/* ---- ⌚ Enviar al reloj: el GPX de la ruta al menú de compartir del móvil, para elegir la app del reloj (Suunto, COROS…) ---- */
-{const sh=document.getElementById("sheet");let t=0;
- const pon3=()=>{if(sh.hidden||sh.querySelector("[data-reloj]"))return;const ta=sh.querySelector(".topacts");if(!ta)return;
-   const g=sh.querySelector("[data-share]"),c=sh.querySelector("[data-coshare]")&&sh._cor,m=sh.querySelector("[data-mtfol]");if(!g&&!c&&!m)return;
-   ta.insertAdjacentHTML("beforeend",`<button class="btn ghost" data-reloj>⌚ Enviar al reloj</button>`)};
- new MutationObserver(()=>{clearTimeout(t);t=setTimeout(pon3,60)}).observe(sh,{childList:true});
- sh.addEventListener("click",async e=>{if(!e.target.closest("[data-reloj]"))return;if(!window.enviaGpx){toast("No se ha podido preparar el GPX");return}
-   const aviso=()=>setTimeout(()=>toast("Elige la app de tu reloj (Suunto, COROS…). Garmin y Polar: importa el GPX en su web (Garmin Connect › Cursos, Polar Flow › Rutas).",7000),900);
-   const m=sh.querySelector("[data-mtfol]");
-   if(m&&MPI){const t=MPI.tracks().find(x=>String(x.id)===m.dataset.mtfol);if(!t)return;let ll=MPI.ptsOf(t);   // Mis cosas › Tracks
-     if(!ll&&window.loadTracks){toast("Preparando el track…");await loadTracks();ll=MPI.ptsOf(t)}
-     if(!ll||ll.length<2){toast("Sin conexión: no puedo preparar el GPX ahora");return}enviaGpx(t.n,ll);aviso();return}
-   const g=sh.querySelector("[data-share]");
-   if(g){const r=R[+g.dataset.share];if(!r||!r.gx){toast("Esta ruta no tiene track");return}
-     if(!r.gx.ln){toast("Preparando el track…");const ok=window.loadTracks?await loadTracks():false;if(!ok||!r.gx.ln){toast("Sin conexión: no puedo preparar el GPX ahora");return}}
-     enviaGpx(routeTitle(r),r.gx.ln);aviso();return}
-   const k=sh._cor;if(!k||!window.COLX||!COLX.ln)return;const ll=await COLX.ln(k.c,k.i);if(!ll||ll.length<2){toast("No tengo el track de esta ruta");return}
-   enviaGpx(k.c.r[k.i][0],ll);aviso()})}
+/* ---- fichas de ruta ordenadas: ▶ Seguir arriba a lo ancho y el resto en una rejilla de dos columnas, sin botones cortados ni repetidos.
+   Vale para las rutas del grupo (en el mapa y a pantalla completa), las de los colaboradores y Mis cosas › Tracks.
+   Incluye ⌚ Enviar al reloj: el GPX al menú de compartir del móvil, para elegir la app del reloj (Suunto, COROS…) ---- */
+document.head.insertAdjacentHTML("beforeend",`<style>
+.acts2{margin:12px 0 8px}
+.acts2 .aprim .btn{display:flex;width:100%;justify-content:center;font-size:17px;padding:13px;box-sizing:border-box;margin:0}
+.acts2 .agrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.acts2 .agrid>*{display:flex;align-items:center;justify-content:center;text-align:center;width:100%;min-height:48px;margin:0;padding:8px 6px;box-sizing:border-box;white-space:normal;line-height:1.2;font-size:15px}
+.acts2 .agrid>.blogb{border-color:var(--mark,#c3262e);color:var(--mark,#c3262e);font-weight:800}
+</style>`);
+const PRIM="[data-follow],[data-cofol],[data-mtfol]";
+const FUERA=".rows,.plist,.mk,.sheet-head,.ovbar,.rest,.near,.mbw,.wx";
+const href=(el,re)=>el.tagName==="A"&&re.test(el.getAttribute("href")||"");
+const ORD=[
+  ["blog",el=>el.tagName==="A"&&!href(el,/wikiloc|google/i)&&/blog|leer/i.test(el.textContent),"📖 Leer en el blog"],
+  ["save",el=>el.matches("[data-mtsave],[data-cosave]"),"☆ Guardar en mis tracks"],
+  ["share",el=>el.matches("[data-share],[data-coshare],[data-mtshare]"),"📤 Compartir"],
+  ["reloj",el=>el.matches("[data-reloj]"),"⌚ Enviar al reloj"],
+  ["gpx",el=>el.matches("[data-gpx],[data-cogpx]"),"⬇ Descargar GPX"],
+  ["off",el=>el.matches("[data-offr]"),null],
+  ["llegar",el=>href(el,/google\.[a-z.]+\/maps\/dir/),"🚗 Cómo llegar a la salida"],
+  ["mapa",el=>el.matches("[data-ovmap]"),null],
+  ["ruta",el=>el.matches("[data-mtroute]"),null],
+  ["wl",el=>href(el,/wikiloc\./i),"Ver en Wikiloc"],
+  ["gm",el=>href(el,/google\.[a-z.]+\/maps\/search/),"📍 Google Maps"]];
+function ordena(c){if(!c||c.hidden)return;
+  const pr=[...c.querySelectorAll(PRIM)].find(x=>!x.closest(FUERA));if(!pr)return;
+  // ⌚ si no está
+  if(!c.querySelector("[data-reloj]")&&(pr.matches("[data-follow],[data-mtfol]")||(pr.matches("[data-cofol]")&&c.id==="sheet")))pr.insertAdjacentHTML("afterend",`<button class="btn ghost" data-reloj></button>`);
+  let box=c.querySelector(".acts2");
+  if(!box){const ta=pr.closest(".topacts")||pr.parentNode;ta.insertAdjacentHTML("beforebegin",`<div class="acts2"><div class="aprim"></div><div class="agrid"></div></div>`);box=ta.previousElementSibling;
+    // debajo de los datos de la ruta (km, desnivel, dificultad y salida), no encima de la descripción
+    const base=ta.parentNode,dat=[...base.children].filter(x=>x.matches(".ficha,.salida"));if(dat.length){const ul=dat[dat.length-1];if(ul.compareDocumentPosition(box)&Node.DOCUMENT_POSITION_PRECEDING)ul.after(box)}}
+  const ap=box.querySelector(".aprim"),ag=box.querySelector(".agrid");if(pr.parentNode!==ap){pr.textContent="▶ Seguir";ap.appendChild(pr)}
+  const els=[...c.querySelectorAll("button,a")].filter(x=>!x.closest(FUERA)&&!ap.contains(x));
+  const vistos=new Set(),orden=[];
+  for(const[k,f,lab]of ORD)for(const el of els){if(!f(el))continue;
+    if(vistos.has(k)){if(!ag.contains(el)||true){el.remove()}continue}   // repetido (p. ej. «Compartir esta ruta» al final)
+    vistos.add(k);if(lab)el.textContent=lab;el.classList.remove("primary");el.classList.add("btn","ghost");el.classList.toggle("blogb",k==="blog");orden.push(el)}
+  for(const el of orden)if(el.parentNode!==ag||ag.lastElementChild!==el)ag.appendChild(el);
+  // contenedores que se han quedado vacíos
+  c.querySelectorAll(".topacts,.actions").forEach(x=>{if(!x.closest(".acts2")&&!x.children.length)x.remove()})}
+for(const id of ["sheet","ov"]){const el=document.getElementById(id);if(!el)continue;let t=0,ocupado=false;
+  new MutationObserver(()=>{if(ocupado)return;clearTimeout(t);t=setTimeout(()=>{ocupado=true;try{ordena(el)}catch(e){console.error(e)}setTimeout(()=>ocupado=false,0)},50)}).observe(el,{childList:true,subtree:true})}
+document.addEventListener("click",async e=>{if(!e.target.closest("[data-reloj]"))return;const c=e.target.closest("#sheet,#ov");if(!c)return;
+  if(!window.enviaGpx){toast("No se ha podido preparar el GPX");return}
+  const aviso=()=>setTimeout(()=>toast("Elige la app de tu reloj (Suunto, COROS…). Garmin y Polar: importa el GPX en su web (Garmin Connect › Cursos, Polar Flow › Rutas).",7000),900);
+  const m=c.querySelector("[data-mtfol]");
+  if(m&&MPI){const t=MPI.tracks().find(x=>String(x.id)===m.dataset.mtfol);if(!t)return;let ll=MPI.ptsOf(t);   // Mis cosas › Tracks
+    if(!ll&&window.loadTracks){toast("Preparando el track…");await loadTracks();ll=MPI.ptsOf(t)}
+    if(!ll||ll.length<2){toast("Sin conexión: no puedo preparar el GPX ahora");return}enviaGpx(t.n,ll);aviso();return}
+  const g=c.querySelector("[data-follow]");
+  if(g){const r=R[+g.dataset.follow];if(!r||!r.gx){toast("Esta ruta no tiene track");return}
+    if(!r.gx.ln){toast("Preparando el track…");const ok=window.loadTracks?await loadTracks():false;if(!ok||!r.gx.ln){toast("Sin conexión: no puedo preparar el GPX ahora");return}}
+    enviaGpx(routeTitle(r),r.gx.ln);aviso();return}
+  const k=sheet._cor;if(!k||!window.COLX||!COLX.ln)return;const ll=await COLX.ln(k.c,k.i);if(!ll||ll.length<2){toast("No tengo el track de esta ruta");return}
+  enviaGpx(k.c.r[k.i][0],ll);aviso()});
 
 /* ---- abrir #pt=lat,lon!nombre ---- */
 function abrirPunto(lat,lon,n,tries){
