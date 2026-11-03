@@ -350,8 +350,16 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         if (accion == "parar") { startService(i); return }
         if (Build.VERSION.SDK_INT >= 26) startForegroundService(i) else startService(i)
     }
+    /** Mientras se graba, el icono tiene que llevar aquí: se cierra la app principal (la web) que quedaba detrás,
+     *  así al tocar el icono Android no la trae a ella sino que arranca de nuevo y salta a esta pantalla. */
+    private fun cerrarAppDetras() { try { val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        for (t in am.appTasks) { val b = t.taskInfo.baseIntent.component?.className ?: continue
+            if (!b.contains("Grabar") && (b.contains("LauncherActivity") || b.contains("WebActivity"))) t.finishAndRemoveTask() } } catch (e: Exception) {} }
+    private fun hayAppDetras(): Boolean = try { (getSystemService(ACTIVITY_SERVICE) as ActivityManager).appTasks.any { val b = it.taskInfo.baseIntent.component?.className ?: ""
+        b.contains("LauncherActivity") || b.contains("WebActivity") } } catch (e: Exception) { false }
     private fun arrancar() {
         val p = Grab.prefs(this)
+        cerrarAppDetras()
         if (!p.getBoolean("activo", false)) { Grab.archivo(this).delete(); Puntos.borrar(this)
             p.edit().putBoolean("activo", true).putLong("t0", System.currentTimeMillis()).putLong("pau", 0).putLong("pz", 0).apply() }
         servicio(null); web.evaluateJavascript("refresca()", null)
@@ -402,7 +410,7 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         @JavascriptInterface fun sinBateria(): Boolean = if (Build.VERSION.SDK_INT >= 23) (getSystemService(POWER_SERVICE) as PowerManager).isIgnoringBatteryOptimizations(packageName) else true
         /** 🏠: si esta pantalla se abrió sola desde el icono (porque se estaba grabando), detrás no está la app: se abre como al tocar el icono. */
         @JavascriptInterface fun volver() = runOnUiThread {
-            if (desdeIcono) {
+            if (desdeIcono || !hayAppDetras()) {
                 Grab.prefs(c).edit().putLong("volver_t", System.currentTimeMillis()).apply()
                 try { startActivity(packageManager.getLaunchIntentForPackage(packageName)!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) {}
             }
