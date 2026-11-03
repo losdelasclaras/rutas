@@ -229,7 +229,8 @@ for(const c of CO)for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
   // ¿lo tenéis también en el grupo? mismo nombre, o muy cerca y con una palabra del nombre en común
   const lista=cum?PEAKS:SPOTS,sw=sig(it.c);
   for(const g of lista){if(g.co)continue;const d=kmd(g,it);
-    if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))){it.both="grupo";it.par=g;g.both=g.both||c.n;(PAR[g.i]=PAR[g.i]||[]).push(it);if(!it.a&&g.a)it.a=g.a;break}}
+    // (dos cimas a menos de 150 m son la misma aunque el nombre vaya en asturiano: Penubina = Peña Ubiña)
+    if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))||(cum&&d<.15)){it.both="grupo";it.par=g;g.both=g.both||c.n;(PAR[g.i]=PAR[g.i]||[]).push(it);if(!it.a&&g.a)it.a=g.a;break}}
   ALL.push(it);lista.push(it)}
 for(const c of CO)(c.r||[]).forEach((r,i)=>{ALL.push({c:r[0],r:r[1],lat:r[8][0],lon:r[8][1],co:c,ci:ALL.length,rr:i,k:icoR(r),a:null})});
 PEAKS.sort((a,b)=>(b.a||0)-(a.a||0));SPOTS.sort((a,b)=>a.c.localeCompare(b.c,"es"));
