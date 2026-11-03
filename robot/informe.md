@@ -1,12 +1,10 @@
-# Informe del robot · 03/11/2026 05:14
+# Informe del robot · 03/11/2026 08:48
 
-**Cambios:** drive: 1 tracks nuevos
+**Cambios:** regeneración forzada
 
 - Blog: sin entradas nuevas.
 - Mapa: sin cambios.
-- 🧵 Track nuevo en Drive: «CicuetadesdeRuayer.gpx»
--    (quitados 30 puntos de publicidad: capas o nombres que no queremos)
-- Colaborador «Hiking Asturias»: sin cambios.
+- Drive: sin tracks nuevos.
 - ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Rutinas Varias con lo guardado de otras noches.
 - ⛰ Cumbres de Rutinas Varias: 76 de 96 colocadas en el pico de OpenStreetMap; 20 siguen en el punto más alto de su track (lista en robot/cumbres_c2.txt).
 - 📝 Blog de Rutinas Varias: 11 rutas emparejadas con su entrada (146 de 401 con enlace al blog; índice con 315 entradas).
