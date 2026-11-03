@@ -193,6 +193,8 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         web = WebView(this)
         web.settings.javaScriptEnabled = true; web.settings.domStorageEnabled = true
         web.webViewClient = object : WebViewClient() {
+            // al terminar de cargar la página, se le manda ya la última posición conocida (antes se perdía si llegaba antes de cargar)
+            override fun onPageFinished(v: WebView?, u: String?) { super.onPageFinished(v, u); mirar() }
             override fun shouldInterceptRequest(v: WebView?, r: WebResourceRequest?): WebResourceResponse? {
                 val u = r?.url?.toString() ?: return null
                 val k = teselaDe(u) ?: return null

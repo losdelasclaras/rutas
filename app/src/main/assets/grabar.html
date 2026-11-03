@@ -118,11 +118,11 @@ let VUELTA=null;map.on("dragstart zoomstart",e=>{if(e.type==="zoomstart"&&SIGUE)
 map.on("dragend",()=>{clearTimeout(VUELTA);VUELTA=setTimeout(()=>{SIGUE=true;if(YO)map.panTo([YO[0],YO[1]])},20000)});
 function toast(t,ms){const e=$("toast");e.textContent=t;e.hidden=false;clearTimeout(e._t);e._t=setTimeout(()=>e.hidden=true,ms||3500)}
 // posición en directo (la manda Android, con el GPS del móvil)
-function pos(la,lo,ac,al){YO=[la,lo,al];
+function pos(la,lo,ac,al){YO=[la,lo,al];try{localStorage.setItem("ultpos",JSON.stringify([la,lo]))}catch(e){}
   if(!me)me=L.marker([la,lo],{icon:L.divIcon({className:"me",html:'<b><svg viewBox="0 0 72 72"><defs><radialGradient id="hz" cx="36" cy="36" r="34" gradientUnits="userSpaceOnUse"><stop offset=".25" stop-color="#1a73e8" stop-opacity=".55"/><stop offset="1" stop-color="#1a73e8" stop-opacity="0"/></radialGradient></defs><path d="M36 36 L20 4 A34 34 0 0 1 52 4 Z" fill="url(#hz)"/><path d="M36 10 L44 24 Q36 21 28 24 Z" fill="#1a73e8" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg></b><i></i>',iconSize:[0,0]}),zIndexOffset:1000,interactive:false,rotation:0,rotateWithView:false}).addTo(map);else me.setLatLng([la,lo]);
   pintaRumbo();
   if(ac>25&&ac<3000){if(!acc)acc=L.circle([la,lo],{radius:ac,color:"#1a73e8",weight:1,fillOpacity:.1,interactive:false}).addTo(map);else{acc.setLatLng([la,lo]);acc.setRadius(ac)}}else if(acc){acc.remove();acc=null}
-  if(PRIM){PRIM=false;if(!T.length)map.setView([la,lo],15)}else if(SIGUE)map.panTo([la,lo],{animate:true});
+  if(PRIM){PRIM=false;if(!T.length||map.getZoom()<12)map.setView([la,lo],Math.max(15,map.getZoom()))}else if(SIGUE)map.panTo([la,lo],{animate:true});
   sigueA(la,lo)}
 /* rumbo: la flecha apunta hacia donde miras (brújula del móvil; si no hay, hacia donde caminas) y,
    en el modo «hacia donde vas», el mapa gira para que eso quede siempre arriba */
@@ -285,7 +285,13 @@ function hecho(n,donde,est){const e=esc(n);
   <p style="font-size:14px;color:#5d6b62">Copia en ${esc(donde)}.</p>`;$("sheet").hidden=false;refresca()}
 function aviso(t){toast(t,6000)}
 function cierra(){$("sheet").hidden=true;DATOS=false}
+// al abrir: el mapa donde lo dejaste (si hace menos de 12 h) o en lo último grabado / tu última posición, cerca
+(()=>{let v=null;try{v=JSON.parse(localStorage.getItem("vista")||"null")}catch(e){}
+  if(v&&Date.now()-v.t<12*3600e3)map.setView([v.la,v.lo],v.z,{animate:false});
+  else{let u=null;try{u=JSON.parse(localStorage.getItem("ultpos")||"null")}catch(e){}if(u)map.setView([u[0],u[1]],15,{animate:false})}})();
+map.on("moveend zoomend",()=>{const c=map.getCenter();try{localStorage.setItem("vista",JSON.stringify({la:c.lat,lo:c.lng,z:map.getZoom(),t:Date.now()}))}catch(e){}});
 cargaSeguir();refresca();setTimeout(miraZona,300);
+if(PTS.length&&!T.length){const q=PTS[PTS.length-1];map.setView([q[0],q[1]],Math.max(map.getZoom(),15),{animate:false})}
 setInterval(()=>{if(document.visibilityState!=="visible")return;S=JSON.parse(Nativo.estado());nuevos();pinta()},2000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){refresca();cargaSeguir()}});
 </script></body></html>
