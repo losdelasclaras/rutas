@@ -80,26 +80,6 @@
    "web": "https://gataconbotas.com",
    "tope": 60,
    "zonas": {
-    "rutas/galicia/a-coruna": [
-     "A Coruña",
-     41,
-     44.5
-    ],
-    "rutas/galicia/lugo": [
-     "Lugo",
-     41,
-     44.5
-    ],
-    "rutas/galicia/ourense": [
-     "Ourense",
-     41,
-     44.5
-    ],
-    "rutas/galicia/pontevedra": [
-     "Pontevedra",
-     41,
-     44.5
-    ],
     "rutas/resto-de-espana/asturias": [
      "Asturias",
      42,
@@ -107,21 +87,6 @@
     ],
     "rutas/resto-de-espana/cantabria": [
      "Cantabria",
-     42,
-     44.5
-    ],
-    "rutas/resto-de-espana/vizcaya": [
-     "Vizcaya",
-     42,
-     44.5
-    ],
-    "rutas/resto-de-espana/guipuzcoa": [
-     "Guipúzcoa",
-     42,
-     44.5
-    ],
-    "rutas/resto-de-espana/alava": [
-     "Álava",
      42,
      44.5
     ],
@@ -138,6 +103,21 @@
     "rutas/resto-de-espana/burgos": [
      "Burgos",
      42.6,
+     44.5
+    ],
+    "rutas/resto-de-espana/vizcaya": [
+     "Vizcaya",
+     42,
+     44.5
+    ],
+    "rutas/resto-de-espana/guipuzcoa": [
+     "Guipúzcoa",
+     42,
+     44.5
+    ],
+    "rutas/resto-de-espana/alava": [
+     "Álava",
+     42,
      44.5
     ],
     "rutas/resto-de-espana/navarra": [
@@ -174,6 +154,26 @@
      "Pirineos",
      42,
      43.2
+    ],
+    "rutas/galicia/a-coruna": [
+     "A Coruña",
+     41,
+     44.5
+    ],
+    "rutas/galicia/lugo": [
+     "Lugo",
+     41,
+     44.5
+    ],
+    "rutas/galicia/ourense": [
+     "Ourense",
+     41,
+     44.5
+    ],
+    "rutas/galicia/pontevedra": [
+     "Pontevedra",
+     41,
+     44.5
     ]
    }
   }

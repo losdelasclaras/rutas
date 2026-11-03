@@ -136,6 +136,7 @@ def _getter(get, log, nom):
                     return b if binary else b.decode('utf-8', 'replace')
             except urllib.error.HTTPError as e:
                 if e.code == 404: raise
+                if e.code == 429: st['mal'] = 99; raise _Corte('su web pide ir más despacio (429)')
                 last = e
             except Exception as e:
                 last = e
@@ -189,7 +190,7 @@ def leer(co, old, get, log):
             log(f'⚠ {nom}: paro de leer su web ({e}); sigo otra noche.'); pedidas = tope
         except Exception as e:
             sin_track.append(f'{u} ({e})')
-        time.sleep(1)
+        time.sleep(2.5)
     # las que ya no están en su web (o han cambiado de zona) se quitan, salvo las de zonas que no se han podido leer
     for u, r in previas.items():
         if u not in vistas and any(r[1] == zonas[c][0] for c in fallo): rutas.append(r)
