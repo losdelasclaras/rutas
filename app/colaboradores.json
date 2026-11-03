@@ -78,7 +78,7 @@
   "fuente": "Su web en WordPress (CM Maps Routes Manager): el robot lee cada noche las entradas nuevas de sus zonas y baja su GPX (3 nov 2026)",
   "wp_rutas": {
    "web": "https://gataconbotas.com",
-   "tope": 120,
+   "tope": 60,
    "zonas": {
     "rutas/galicia/a-coruna": [
      "A Coruña",

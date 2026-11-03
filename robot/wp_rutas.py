@@ -119,15 +119,41 @@ def _cimas(n, pts, idx):
     if hi[2] - min(q[2] for q in ele) < 150: return None
     return (ds[0], hi[0], hi[1], round(hi[2]), None, idx)
 
+class _Corte(Exception): pass
+
+def _getter(get, log, nom):
+    import urllib.request
+    UA = {'User-Agent': 'Mozilla/5.0 (robot app Los de las Claras)'}
+    st = {'mal': 0, 'n': 0, 't0': time.time()}
+    def g(url, binary=False, tries=2):
+        if st['mal'] >= 6: raise _Corte('su web no responde')
+        if time.time() - st['t0'] > 15 * 60: raise _Corte('más de 15 minutos')
+        st['n'] += 1
+        for i in range(tries):
+            try:
+                with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=25) as r:
+                    b = r.read(); st['mal'] = 0
+                    return b if binary else b.decode('utf-8', 'replace')
+            except urllib.error.HTTPError as e:
+                if e.code == 404: raise
+                last = e
+            except Exception as e:
+                last = e
+        st['mal'] += 1; raise last
+    g.st = st
+    return g
+
 def leer(co, old, get, log):
     """Devuelve (rutas, cumbres, saltadas) o None si no se ha podido leer bien su web (entonces no se toca nada)."""
     cf = co['wp_rutas']; web = cf['web'].rstrip('/'); nom = co.get('nombre') or co['id']
+    get = _getter(get, log, nom)
     zonas = cf['zonas']   # categoría (ruta en su web) -> [zona en la app, lat_min, lat_max]
     previas = {r[7]: r for r in old.get('r', [])}
     saltar = set(old.get('x', []))   # entradas fuera de la parte que queremos (no se vuelven a pedir)
     vistas, fallo = {}, []
     for cat, z in zonas.items():
-        us, ok = _entradas(get, web, cat)
+        try: us, ok = _entradas(get, web, cat)
+        except _Corte: us, ok = [], False
         if not ok: fallo.append(cat); continue
         for u in us: vistas.setdefault(u.rstrip('/') + '/', cat)
         time.sleep(0.5)
@@ -159,12 +185,15 @@ def leer(co, old, get, log):
             if not de and any(q[2] is not None for q in pts):
                 e = [q[2] for q in pts if q[2] is not None]; de = str(round(sum(max(0, b - a) for a, b in zip(e, e[1:])))) + ' m'
             rutas.append([f['n'] or u, zn, f['tipo'], km, de, f['dif'], '', u, _simplifica(pts), '', f['fecha']]); nuevas += 1
+        except _Corte as e:
+            log(f'⚠ {nom}: paro de leer su web ({e}); sigo otra noche.'); pedidas = tope
         except Exception as e:
             sin_track.append(f'{u} ({e})')
         time.sleep(1)
     # las que ya no están en su web (o han cambiado de zona) se quitan, salvo las de zonas que no se han podido leer
     for u, r in previas.items():
         if u not in vistas and any(r[1] == zonas[c][0] for c in fallo): rutas.append(r)
+    log(f'   ({get.st["n"]} peticiones a su web en {round((time.time() - get.st["t0"]) / 60, 1)} min)')
     log(f'🐾 {nom}: {len(vistas)} entradas en sus zonas, {len(rutas)} rutas en la app ({nuevas} nuevas'
         + (f', {fuera} fuera de la zona' if fuera else '') + (f', {len(sin_track)} sin track' if sin_track else '')
         + (f'; quedan {sum(1 for u in vistas if u not in previas and u not in saltar) - pedidas} por leer otra noche' if pedidas >= tope else '') + ').')
