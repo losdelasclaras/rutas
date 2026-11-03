@@ -528,32 +528,50 @@ def cumbres_osm(co, new):
     except Exception: pass
     log(f'⛰ Cumbres de {co.get("nombre") or co["id"]}: {bien} de {len(ps)} colocadas en el pico de OpenStreetMap; {len(fuera)} siguen en el punto más alto de su track (lista en robot/cumbres_{co["id"]}.txt).')
 
+def _es_mapa(im):
+    # dibujo de un mapa (topográfico, con el track): casi sin zonas oscuras y con poco contraste de luces y sombras;
+    # una foto de monte casi siempre tiene sombras, roca o bosque oscuro (probado con 52 mapas y 484 fotos de la app: acierta 46 y confunde 18)
+    import statistics
+    L = list(im.convert('L').resize((128, 128)).getdata())
+    return sum(1 for v in L if v < 70) / len(L) < 0.01 and statistics.pstdev(L) < 35
+
 def fotos_puntos_blog(co, new):
-    # puntos sin foto que enlazan a una entrada de su blog: la foto principal de la entrada (og:image), reducida y servida desde la app
-    import hashlib
+    # puntos sin foto que enlazan a una entrada de su blog: una foto de la entrada, reducida y servida desde la app.
+    # Con «foto_sin_mapas»: la primera foto de la entrada que no sea el dibujo de un mapa (Camudando'l camín abre con el mapa de la ruta)
+    import hashlib, time
     from PIL import Image
     d = APP + 'colab/fotos/'; os.makedirs(d, exist_ok=True)
     new['p'] = json.loads(json.dumps(new.get('p', [])))
-    nuevas = mal = 0
+    nuevas = mal = 0; sin = co.get('foto_sin_mapas')
     for p in new['p']:
         if p[5] or not p[4] or not re.search(r'blogspot\.|/20\d\d/', p[4]): continue
-        nf = co.get('foto_blog_n') or 1   # nº de foto de la entrada (Camudando'l camín pone de primera un dibujo del mapa: se coge la 2.ª)
-        fn = f'{co["id"]}p{"" if nf == 1 else nf}-{hashlib.md5(p[4].encode()).hexdigest()[:12]}.jpg'
+        fn = f'{co["id"]}p{"f" if sin else ""}-{hashlib.md5(p[4].encode()).hexdigest()[:12]}.jpg'
         if not os.path.exists(d + fn):
             if mal >= 8 and not nuevas: continue
             try:
+                time.sleep(1.5)   # Blogger corta si se le piden muchas páginas seguidas
                 h = get(p[4])
                 m = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)', h) or re.search(r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image', h)
-                url = html.unescape(m.group(1)) if m else None
-                if nf > 1:   # las fotos del cuerpo de la entrada (Blogger), en orden y sin repetir
-                    cu = h[h.find("post-body"):] if "post-body" in h else h
-                    ims = []
-                    for u in re.findall(r'<img[^>]+src=["\']([^"\']+(?:blogger\.googleusercontent\.com|bp\.blogspot\.com)[^"\']+)', cu):
-                        u = html.unescape(u); k = re.sub(r'/(s|w|h)\d+[^/]*/', '/', re.sub(r'=[swh]\d+[^/]*$', '', u))
-                        if k not in [x[0] for x in ims]: ims.append((k, u))
-                    if len(ims) >= nf: url = re.sub(r'/s\d+(-[a-z0-9-]+)?/', '/s1000/', re.sub(r'=s\d+(-[a-z0-9-]+)?$', '=s1000', ims[nf - 1][1]))
-                if not url: mal += 1; continue
-                im = Image.open(io.BytesIO(get(url, True))).convert('RGB'); im.thumbnail((800, 800), Image.LANCZOS)
+                im = None
+                if sin:
+                    # solo las fotos de la entrada (no la cabecera del blog), en orden y sin repetir
+                    vis = []
+                    for t in re.findall(r'<img[^>]+>', h):
+                        if 'headerimg' in t or 'Header1' in t: continue
+                        u = re.search(r'src=["\']([^"\']+(?:blogger\.googleusercontent\.com|bp\.blogspot\.com)[^"\']+)', t)
+                        if not u: continue
+                        u = html.unescape(u.group(1)); k = re.sub(r'/[swh]\d+[^/]*/', '/', re.sub(r'=[swh]\d+[^/]*$', '', u))
+                        if k not in [x[0] for x in vis]: vis.append((k, u))
+                    for k, u in vis[:8]:
+                        big = re.sub(r'/s\d+(-[a-z0-9-]+)?/', '/s1000/', re.sub(r'=s\d+(-[a-z0-9-]+)?$', '=s1000', u))
+                        try: x = Image.open(io.BytesIO(get(big, True))).convert('RGB')
+                        except Exception: continue
+                        if x.width < 300 or x.height < 200 or _es_mapa(x): continue
+                        im = x; break
+                if im is None:
+                    if not m: mal += 1; continue
+                    im = Image.open(io.BytesIO(get(html.unescape(m.group(1)), True))).convert('RGB')
+                im.thumbnail((800, 800), Image.LANCZOS)
                 im.save(d + fn, 'JPEG', quality=72, optimize=True, progressive=True); nuevas += 1
             except Exception:
                 mal += 1; continue
