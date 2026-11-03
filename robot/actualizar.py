@@ -528,6 +528,29 @@ def cumbres_osm(co, new):
     except Exception: pass
     log(f'⛰ Cumbres de {co.get("nombre") or co["id"]}: {bien} de {len(ps)} colocadas en el pico de OpenStreetMap; {len(fuera)} siguen en el punto más alto de su track (lista en robot/cumbres_{co["id"]}.txt).')
 
+def fotos_puntos_blog(co, new):
+    # puntos sin foto que enlazan a una entrada de su blog: la foto principal de la entrada (og:image), reducida y servida desde la app
+    import hashlib
+    from PIL import Image
+    d = APP + 'colab/fotos/'; os.makedirs(d, exist_ok=True)
+    new['p'] = json.loads(json.dumps(new.get('p', [])))
+    nuevas = mal = 0
+    for p in new['p']:
+        if p[5] or not p[4] or not re.search(r'blogspot\.|/20\d\d/', p[4]): continue
+        fn = f'{co["id"]}p-{hashlib.md5(p[4].encode()).hexdigest()[:12]}.jpg'
+        if not os.path.exists(d + fn):
+            if mal >= 8 and not nuevas: continue
+            try:
+                h = get(p[4])
+                m = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)', h) or re.search(r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image', h)
+                if not m: mal += 1; continue
+                im = Image.open(io.BytesIO(get(html.unescape(m.group(1)), True))).convert('RGB'); im.thumbnail((800, 800), Image.LANCZOS)
+                im.save(d + fn, 'JPEG', quality=72, optimize=True, progressive=True); nuevas += 1
+            except Exception:
+                mal += 1; continue
+        p[5] = 'colab/' + fn
+    if nuevas or mal: log(f'📷 Fotos de {co.get("nombre") or co["id"]} (de su blog): {nuevas} nuevas' + (f', {mal} sin foto' if mal else ''))
+
 def colaboradores():
     cf = APP + 'colaboradores.json'
     if not os.path.exists(cf): return
@@ -546,7 +569,7 @@ def colaboradores():
                     # capas de su My Maps que no queremos en la app (p. ej. publicidad de empresas)
                     n0 = len(pts); pts = [q for q in pts if quedar_colab(co, q)]
                     if n0 != len(pts): log(f'   (quitados {n0 - len(pts)} puntos de publicidad: capas o nombres que no queremos)')
-                    new.update(t=tit, p=pts, l=lin)
+                    new.update(t=tit, p=pts, l=[] if co.get('sin_lineas') else lin)   # sin_lineas: p. ej. líneas de límites, no rutas
             except Exception as e:
                 log(f'⚠ No he podido leer el mapa del colaborador {co["id"]}: {e}')
         if co.get('mapas_rutas'):
@@ -590,6 +613,7 @@ def colaboradores():
         blog_colab(co, new)
         if new.get('r'): new['r'] = json.loads(json.dumps(new['r'])); new['p'] = json.loads(json.dumps(new.get('p', [])))
         fotos_rutas(co, new)
+        if co.get('fotos_blog'): fotos_puntos_blog(co, new)
         fechas_rutas(co, new)
         nom = co.get('nombre') or new.get('t') or co['id']
         if new != old:

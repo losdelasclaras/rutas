@@ -48,5 +48,18 @@
    "1ZD9q8mockRhNGh2jiVOAVwpcPRFcDyY",
    "1o8nmJuJVvZBiY5Tl4l98qC6WzkOeUkQ"
   ]
+ },
+ {
+  "id": "c3",
+  "nombre": "Camudando el Camino",
+  "color": "#1e8e3e",
+  "mapa_mid": "1TuXx7eM9r22Qq3XQBTz1ukwt2fNMoA0",
+  "drive_carpeta": "",
+  "capas": [
+   "c"
+  ],
+  "sin_lineas": true,
+  "fotos_blog": true,
+  "blog_web": "https://camudandolcamin.blogspot.com"
  }
 ]
