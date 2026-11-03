@@ -109,7 +109,6 @@ document.addEventListener("click",e=>{
   if(e.target.closest("[data-ptgpx]")&&MPI){MPI.importar();return}
   if(e.target.closest('[data-mtx="lnk"]')){pegar();return}});
 // botón en Mis cosas › Tracks, junto a «Cargar GPX/KML»
-{const pon2=()=>{const b=document.querySelector('#mtbox [data-mtx="imp"]');if(b&&!b.parentNode.querySelector('[data-mtx="lnk"]'))b.insertAdjacentHTML("afterend",`<button class="mpb" data-mtx="lnk">🔗 Pegar un enlace</button>`)};
- let bx=null;const mira=()=>{const b=document.getElementById("mtbox");if(b&&b!==bx){bx=b;new MutationObserver(pon2).observe(b,{childList:true})}pon2()};mira();setInterval(mira,2000)}
+// (3 nov) quitado el botón «🔗 Pegar un enlace» de Mis cosas: a él no le parecía útil. Lo que llega por «Compartir › LdC Rutas» se sigue abriendo.
 window.ENLACES={abrirTexto,punto,ge0};
 })();
