@@ -47,7 +47,7 @@ rep('</style>','''html,body{height:100%;margin:0}
 </style>
 </head><body>''')
 # cada módulo va protegido: si uno falla en un móvil concreto, los demás y la app siguen funcionando
-_mods=['mispuntos','colab','capas','sync','seguir','mistracks','offline','yo','sos','resumen','listas','seguidores','pestanas','novedades','instalar','compartir','perfil','tiempo','cerca','orden','botones']
+_mods=['mispuntos','colab','capas','sync','seguir','mistracks','offline','yo','sos','resumen','listas','seguidores','pestanas','novedades','instalar','compartir','enlaces','perfil','tiempo','cerca','orden','botones']
 _w=lambda n:'try{\n'+open(f'/home/claude/pwa/{n}.js').read()+'\n}catch(e){console.error("módulo '+n+'",e);(window.__ERRS=window.__ERRS||[]).push("'+n+': "+(e&&e.message))}'
 i=t.rindex('</script>'); t=t[:i]+'\n'+'\n'.join(_w(n) for n in _mods)+'\n'+t[i:]
 # colaboradores (app/colaboradores.json + app/colab/<id>.json, los rellena el robot): van dentro de la página, así se ven también sin cobertura

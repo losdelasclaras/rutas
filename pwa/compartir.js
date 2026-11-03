@@ -119,7 +119,7 @@ async function recibidos(){if(!/[?&]recibido/.test(location.search))return;
   try{history.replaceState(null,"",location.pathname)}catch(e){}
   let L0=[];try{const c=await caches.open("ldc-share");const r=await c.match("recibido");if(r)L0=await r.json();await c.delete("recibido")}catch(e){}
   if(!L0.length){toast("Solo puedo abrir archivos GPX o KML");return}
-  for(const f of L0)MPI.importText(f.t,f.n||"track.gpx",true)}
+  for(const f of L0){if(f.x!=null){if(window.ENLACES)ENLACES.abrirTexto(f.x);continue}MPI.importText(f.t,f.n||"track.gpx",true)}}
 setTimeout(recibidos,700);
 if("launchQueue" in window)launchQueue.setConsumer(async p=>{if(!p.files||!p.files.length)return;const fs=[];for(const h of p.files){try{const f=await h.getFile();fs.push({n:f.name,t:await f.text()})}catch(e){}}
   for(const f of fs)MPI.importText(f.t,f.n,true)});
