@@ -537,14 +537,23 @@ def fotos_puntos_blog(co, new):
     nuevas = mal = 0
     for p in new['p']:
         if p[5] or not p[4] or not re.search(r'blogspot\.|/20\d\d/', p[4]): continue
-        fn = f'{co["id"]}p-{hashlib.md5(p[4].encode()).hexdigest()[:12]}.jpg'
+        nf = co.get('foto_blog_n') or 1   # nº de foto de la entrada (Camudando'l camín pone de primera un dibujo del mapa: se coge la 2.ª)
+        fn = f'{co["id"]}p{"" if nf == 1 else nf}-{hashlib.md5(p[4].encode()).hexdigest()[:12]}.jpg'
         if not os.path.exists(d + fn):
             if mal >= 8 and not nuevas: continue
             try:
                 h = get(p[4])
                 m = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)', h) or re.search(r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image', h)
-                if not m: mal += 1; continue
-                im = Image.open(io.BytesIO(get(html.unescape(m.group(1)), True))).convert('RGB'); im.thumbnail((800, 800), Image.LANCZOS)
+                url = html.unescape(m.group(1)) if m else None
+                if nf > 1:   # las fotos del cuerpo de la entrada (Blogger), en orden y sin repetir
+                    cu = h[h.find("post-body"):] if "post-body" in h else h
+                    ims = []
+                    for u in re.findall(r'<img[^>]+src=["\']([^"\']+(?:blogger\.googleusercontent\.com|bp\.blogspot\.com)[^"\']+)', cu):
+                        u = html.unescape(u); k = re.sub(r'/(s|w|h)\d+[^/]*/', '/', re.sub(r'=[swh]\d+[^/]*$', '', u))
+                        if k not in [x[0] for x in ims]: ims.append((k, u))
+                    if len(ims) >= nf: url = re.sub(r'/s\d+(-[a-z0-9-]+)?/', '/s1000/', re.sub(r'=s\d+(-[a-z0-9-]+)?$', '=s1000', ims[nf - 1][1]))
+                if not url: mal += 1; continue
+                im = Image.open(io.BytesIO(get(url, True))).convert('RGB'); im.thumbnail((800, 800), Image.LANCZOS)
                 im.save(d + fn, 'JPEG', quality=72, optimize=True, progressive=True); nuevas += 1
             except Exception:
                 mal += 1; continue
