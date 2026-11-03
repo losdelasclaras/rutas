@@ -1,0 +1,202 @@
+/* ---------- 📅 Salidas de clubes (Explorar › Salidas) ----------
+   · Los clubes de montaña (sin ánimo de lucro) anuncian sus próximas salidas: fecha, punto de encuentro, cómo apuntarse y el track (GPX).
+   · Un club pide permiso una vez («Soy un club»); el administrador lo aprueba y desde entonces publica solo, sin revisión de cada salida.
+   · El administrador puede crear clubes y publicar en nombre de cualquiera (p. ej. si un club le manda la salida por WhatsApp).
+   · Firestore: clubes/{id} (estado pend/ok), salidas/{id} (datos, sin el track) y salidasp/{id} (el track, solo al abrir la salida).
+   · Las salidas ya pasadas no salen. */
+(function(){
+const ADM=["losdelasclaras@gmail.com","jcrespopazos@gmail.com"];
+const MPI=window.MISPUNTOS;
+const usr=()=>window.LDCFB&&LDCFB.user();
+const esAdm=()=>{const u=usr();return!!(u&&u.email&&ADM.includes(u.email.toLowerCase()))};
+const DIFS=["Fácil","Moderada","Difícil","Muy difícil"];
+const DS=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"],MS=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const hoy=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const fFecha=f=>{const d=new Date(f);if(isNaN(d))return f;return `${DS[d.getDay()]} ${d.getDate()} de ${MS[d.getMonth()]}${f.length>10?" · "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+" h":""}`};
+const kmF=v=>(+v||0).toLocaleString("es-ES",{maximumFractionDigits:1})+" km";
+document.head.insertAdjacentHTML("beforeend",`<style>
+.salbox{border:1px solid var(--edge);border-radius:14px;padding:12px;margin:0 0 12px;background:var(--card)}
+.salbox.adm{border:2px solid #c3262e}.salbox h2{margin:0 0 8px;font-size:17px}
+.salc{display:flex;gap:12px;align-items:stretch;border:1px solid var(--edge);border-radius:14px;padding:10px 12px;margin:0 0 10px;background:var(--card);cursor:pointer}
+.salc .fd{flex:none;width:58px;border-radius:10px;background:#1e8e3e;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;padding:6px 0}
+.salc .fd b{font-size:24px}.salc .fd small{font-size:12px;font-weight:700;text-transform:uppercase}
+.salc .t{flex:1;min-width:0}.salc .t b{display:block;font-size:16.5px;line-height:1.25}
+.salc .t small{display:block;color:var(--muted);font-size:13.5px;line-height:1.35;margin-top:2px}
+.salc .t .cl{color:#1e8e3e;font-weight:800}
+.salform label{display:block;font-weight:700;margin:12px 0 4px}
+.salform input,.salform textarea,.salform select{width:100%;box-sizing:border-box;border:1px solid var(--edge);border-radius:10px;padding:10px;font:inherit;font-size:16px;background:var(--paper);color:var(--ink)}
+.salform textarea{min-height:80px;resize:vertical}.salform .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.salbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.salbtns .btn{width:100%;justify-content:center;margin:0}
+.salchips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.salrow{display:flex;align-items:center;gap:8px;border-top:1px solid var(--edge);padding:8px 0}.salrow:first-of-type{border-top:0}.salrow span{flex:1;min-width:0}
+.salaviso{font-size:13px;color:var(--muted);margin:8px 0 0}
+</style>`);
+
+/* --- la pestaña --- */
+const main=document.querySelector("main");
+const sec=document.createElement("section");sec.className="view pad";sec.id="v-salidas";sec.hidden=true;
+sec.innerHTML=`<div class="inner"><h1 class="vt">Próximas salidas</h1>
+<p class="lead">Salidas que anuncian los clubes y grupos de montaña: fecha, punto de encuentro, cómo apuntarse y el track.</p>
+<div id="sal-adm"></div><div id="sal-yo"></div><div id="sal-form"></div><div id="sal-chips"></div><div id="sal-lista"><p class="note">Cargando…</p></div></div>`;
+main.appendChild(sec);
+const $=id=>document.getElementById(id);
+
+let A=null,CLUBS=[],SALS=[],MIO=null,FIL="todos",CARGADO=0;
+const fs=()=>A.fs,db=()=>A.db;
+async function base(){if(A)return A;if(!window.LDCFB)throw new Error("sin cuenta");A=await LDCFB.load();return A}
+async function carga(fuerza){if(!fuerza&&Date.now()-CARGADO<60000)return pinta();
+  if(!navigator.onLine){$("sal-lista").innerHTML=`<p class="note">Sin conexión: las salidas se ven cuando haya cobertura.</p>`;return}
+  try{await base();const F=fs();
+    const [qc,qs]=await Promise.all([F.getDocs(F.query(F.collection(db(),"clubes"),F.where("estado","==","ok"))),
+      F.getDocs(F.query(F.collection(db(),"salidas"),F.where("fecha",">=",hoy()),F.orderBy("fecha")))]);
+    CLUBS=[];qc.forEach(d=>CLUBS.push(Object.assign({id:d.id},d.data())));
+    SALS=[];qs.forEach(d=>SALS.push(Object.assign({id:d.id},d.data())));
+    const u=usr();MIO=null;if(u){const d=await F.getDoc(F.doc(db(),"clubes",u.uid));if(d.exists())MIO=Object.assign({id:d.id},d.data())}
+    if(esAdm()){const qp=await F.getDocs(F.query(F.collection(db(),"clubes"),F.where("estado","==","pend")));PEND=[];qp.forEach(d=>PEND.push(Object.assign({id:d.id},d.data())))}
+    CARGADO=Date.now();pinta()}
+  catch(e){console.warn("salidas",e);try{pinta()}catch(_){}$("sal-lista").innerHTML=`<p class="note">No se han podido cargar las salidas. ${/permission/i.test(String(e))?"(Faltan los permisos en la base de datos.)":"Prueba dentro de un rato."}</p>`}}
+let PEND=[];
+
+function pinta(){
+  // administrador: solicitudes y clubes
+  if(esAdm()){$("sal-adm").innerHTML=`<div class="salbox adm"><h2>🛡 Clubes (solo lo ves tú)</h2>
+    ${PEND.length?`<p style="margin:0 0 4px"><b>Solicitudes pendientes</b></p>`+PEND.map(c=>`<div class="salrow"><span><b>${esc(c.n)}</b><br><small>${esc(c.web||"")} ${esc(c.contacto||"")}${c.msg?"<br>"+esc(c.msg):""}<br>${esc(c.email||"")}</small></span><button class="btn primary" data-scok="${c.id}">✓ Aprobar</button><button class="btn ghost" data-scno="${c.id}">✕</button></div>`).join(""):`<p class="note" style="margin:0 0 6px">No hay solicitudes pendientes.</p>`}
+    <p style="margin:10px 0 4px"><b>Clubes aprobados (${CLUBS.length})</b></p>${CLUBS.map(c=>`<div class="salrow"><span>${esc(c.n)}${c.prueba?" <small>(prueba)</small>":""}</span><button class="btn ghost" data-scdel="${c.id}">Quitar</button></div>`).join("")||`<p class="note">Ninguno todavía.</p>`}
+    <div class="salbtns"><button class="btn ghost" data-scnew>＋ Crear un club</button><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>`}
+  else $("sal-adm").innerHTML="";
+  // tú: club aprobado, pendiente, o pedir
+  const u=usr();
+  if(esAdm())$("sal-yo").innerHTML="";
+  else if(MIO&&MIO.estado==="ok")$("sal-yo").innerHTML=`<div class="salbox"><h2>🏔 ${esc(MIO.n)}</h2><p class="note" style="margin:0 0 8px">Tu club está dado de alta: lo que publiques sale al momento.</p><div class="salbtns" style="grid-template-columns:1fr"><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>`;
+  else if(MIO&&MIO.estado==="pend")$("sal-yo").innerHTML=`<div class="salbox"><h2>⏳ Solicitud enviada</h2><p class="note" style="margin:0">«${esc(MIO.n)}» está pendiente de que Los de las Claras lo apruebe. Cuando esté, aquí te saldrá «Nueva salida».</p></div>`;
+  else $("sal-yo").innerHTML=`<div class="salbtns" style="grid-template-columns:1fr;margin:0 0 12px"><button class="btn ghost" data-sclub>🏔 Soy un club: quiero publicar salidas</button></div>`;
+  // filtro por club
+  const cs=[...new Set(SALS.map(s=>s.cn))];
+  $("sal-chips").innerHTML=cs.length>1?`<div class="salchips"><button class="chip" data-sfil="todos" aria-pressed="${FIL==="todos"}">Todos</button>${cs.map(c=>`<button class="chip" data-sfil="${esc(c)}" aria-pressed="${FIL===c}">${esc(c)}</button>`).join("")}</div>`:"";
+  const L0=SALS.filter(s=>FIL==="todos"||s.cn===FIL);
+  $("sal-lista").innerHTML=L0.length?L0.map(s=>{const d=new Date(s.fecha);return `<div class="salc" data-sopen="${s.id}"><div class="fd"><small>${isNaN(d)?"":DS[d.getDay()].slice(0,3)}</small><b>${isNaN(d)?"?":d.getDate()}</b><small>${isNaN(d)?"":MS[d.getMonth()].slice(0,3)}</small></div>
+    <div class="t"><b>${esc(s.ti)}</b><small><span class="cl">${esc(s.cn)}</span> · ${esc(fFecha(s.fecha))}</small><small>${[s.km?kmF(s.km):"",s.up?"+"+Math.round(s.up).toLocaleString("es-ES")+" m":"",s.dif||""].filter(Boolean).join(" · ")}${s.enc?" · 📍 "+esc(s.enc):""}</small></div></div>`}).join("")
+    :`<p class="note">No hay salidas anunciadas todavía.${esAdm()||(MIO&&MIO.estado==="ok")?"":" Si eres de un club, pulsa «Soy un club» para publicar las vuestras."}</p>`}
+
+/* --- formularios --- */
+function formClub(adm){$("sal-form").innerHTML=`<div class="salbox salform"><h2>${adm?"＋ Crear un club":"🏔 Soy un club"}</h2>
+  ${adm?"":`<p class="note" style="margin:0">Solo para clubes y grupos de montaña sin ánimo de lucro (no empresas de turismo activo ni guías de pago). Los de las Claras lo aprueba una vez y luego publicáis solos.</p>`}
+  <label>Nombre del club</label><input id="sc-n" maxlength="80">
+  <label>Web, Facebook o Instagram</label><input id="sc-w" maxlength="200" placeholder="https://…">
+  <label>Contacto (lo que verá la gente)</label><input id="sc-c" maxlength="120" placeholder="Teléfono, correo o WhatsApp del club">
+  ${adm?`<label><input type="checkbox" id="sc-p" style="width:auto"> Es un club de prueba</label>`:`<label>Algo más (opcional)</label><textarea id="sc-m" maxlength="400"></textarea>`}
+  <div class="salbtns"><button class="btn ghost" data-sfx>Cancelar</button><button class="btn primary" data-scsave="${adm?1:0}">${adm?"Crear":"Enviar solicitud"}</button></div></div>`;$("sal-form").scrollIntoView({block:"start",behavior:"smooth"})}
+let GPX=null;
+function formSalida(){const adm=esAdm(),cl=adm?CLUBS:[MIO];GPX=null;
+  if(!cl.length){toast("Primero crea un club");return}
+  $("sal-form").innerHTML=`<div class="salbox salform"><h2>＋ Nueva salida</h2>
+  ${adm?`<label>Club</label><select id="ss-c">${cl.map(c=>`<option value="${c.id}">${esc(c.n)}</option>`).join("")}</select>`:`<p class="note" style="margin:0">Club: <b>${esc(MIO.n)}</b></p>`}
+  <label>Título</label><input id="ss-t" maxlength="100" placeholder="Por ejemplo: Peña Ubiña desde Tuíza">
+  <div class="two"><div><label>Día</label><input id="ss-d" type="date" min="${hoy()}"></div><div><label>Hora</label><input id="ss-h" type="time" value="08:00"></div></div>
+  <label>Punto de encuentro</label><input id="ss-e" maxlength="120" placeholder="Por ejemplo: aparcamiento de Tuíza de Arriba">
+  <label>Dificultad</label><select id="ss-f">${DIFS.map(d=>`<option>${d}</option>`).join("")}</select>
+  <label>Cómo apuntarse</label><input id="ss-a" maxlength="200" placeholder="Enlace, teléfono o WhatsApp">
+  <label>Descripción (opcional)</label><textarea id="ss-x" maxlength="1500"></textarea>
+  <label>Track (GPX o KML)</label><input id="ss-g" type="file" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml">
+  <p class="note" id="ss-gi" style="margin:4px 0 0">Del track salen solos los km, el desnivel y el mapa.</p>
+  <div class="salbtns"><button class="btn ghost" data-sfx>Cancelar</button><button class="btn primary" data-sssave>Publicar</button></div></div>`;
+  $("ss-g").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;const t=await f.text();GPX=leeTrack(t);
+    $("ss-gi").textContent=GPX?`✓ ${kmF(GPX.km)} · +${Math.round(GPX.up).toLocaleString("es-ES")} m`:"No he encontrado ningún recorrido en ese archivo";
+    if(GPX&&!$("ss-t").value&&GPX.n)$("ss-t").value=GPX.n});
+  $("sal-form").scrollIntoView({block:"start",behavior:"smooth"})}
+
+/* --- leer el GPX/KML: puntos, km, subida, altura máxima --- */
+const dmt=(a,b)=>{const r=Math.PI/180,dl=(b[0]-a[0])*r,dn=(b[1]-a[1])*r,h=Math.sin(dl/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dn/2)**2;return 12742000*Math.asin(Math.min(1,Math.sqrt(h)))};
+function leeTrack(t){try{const x=new DOMParser().parseFromString(t,"application/xml");let P0=[];
+    x.querySelectorAll("trkpt,rtept").forEach(p=>{const e=p.querySelector("ele");P0.push([+p.getAttribute("lat"),+p.getAttribute("lon"),e?+e.textContent:null])});
+    if(P0.length<2)x.querySelectorAll("LineString coordinates, coordinates").forEach(c=>{for(const s of c.textContent.trim().split(/\s+/)){const v=s.split(",");if(v.length>=2)P0.push([+v[1],+v[0],v[2]!=null&&v[2]!==""?+v[2]:null])}});
+    P0=P0.filter(p=>isFinite(p[0])&&isFinite(p[1]));if(P0.length<2)return null;
+    let km=0;for(let i=1;i<P0.length;i++)km+=dmt(P0[i-1],P0[i]);
+    let up=0,ref=P0[0][2],mx=null;for(const p of P0){if(p[2]==null)continue;if(mx==null||p[2]>mx)mx=p[2];if(ref==null){ref=p[2];continue}if(p[2]-ref>=4){up+=p[2]-ref;ref=p[2]}else if(ref-p[2]>=4)ref=p[2]}
+    let pts=P0;if(pts.length>1200&&window.COMPARTIR&&COMPARTIR.simple)pts=COMPARTIR.simple(pts,4);if(pts.length>1500)pts=pts.filter((_,i)=>i%Math.ceil(pts.length/1500)===0||i===pts.length-1);
+    pts=pts.map(p=>[+p[0].toFixed(5),+p[1].toFixed(5)].concat(p[2]!=null?[Math.round(p[2])]:[]));
+    const n=(x.querySelector("trk>name,Document>name,Placemark>name,metadata>name")||{}).textContent||"";
+    return{pts,km:Math.round(km/100)/10,up:Math.round(up/10)*10,mx:mx!=null?Math.round(mx):null,n:n.trim().slice(0,100)}}catch(e){return null}}
+
+/* --- guardar --- */
+async function guardaClub(adm){const n=$("sc-n").value.trim();if(n.length<3){toast("Pon el nombre del club");return}
+  const d={n,web:$("sc-w").value.trim(),contacto:$("sc-c").value.trim(),t:Date.now()};
+  try{await base();const F=fs(),u=usr();
+    if(adm){d.estado="ok";d.prueba=!!($("sc-p")&&$("sc-p").checked);d.por=u.uid;await F.addDoc(F.collection(db(),"clubes"),d);toast("Club creado")}
+    else{d.estado="pend";d.msg=($("sc-m")||{}).value||"";d.email=u.email||"";await F.setDoc(F.doc(db(),"clubes",u.uid),d);toast("Solicitud enviada")}
+    $("sal-form").innerHTML="";carga(true)}catch(e){console.warn(e);toast(/permission/i.test(String(e))?"Faltan los permisos en la base de datos":"No se ha podido guardar")}}
+async function guardaSalida(){const adm=esAdm(),cid=adm?$("ss-c").value:MIO.id,club=(adm?CLUBS.find(c=>c.id===cid):MIO);
+  const ti=$("ss-t").value.trim(),dia=$("ss-d").value,h=$("ss-h").value||"08:00";
+  if(ti.length<4){toast("Pon un título");return}if(!dia){toast("Pon el día");return}if(dia<hoy()){toast("El día ya ha pasado");return}if(!GPX){toast("Falta el track (GPX o KML)");return}
+  const s={club:cid,cn:club.n,cc:club.contacto||"",cw:club.web||"",ti,fecha:dia+"T"+h,enc:$("ss-e").value.trim(),dif:$("ss-f").value,ap:$("ss-a").value.trim(),txt:$("ss-x").value.trim(),
+    km:GPX.km,up:GPX.up,mx:GPX.mx,lat:GPX.pts[0][0],lon:GPX.pts[0][1],uid:usr().uid,t:Date.now()};
+  if(club.prueba)s.prueba=true;
+  try{await base();const F=fs();const r=await F.addDoc(F.collection(db(),"salidas"),s);await F.setDoc(F.doc(db(),"salidasp",r.id),{club:cid,p:JSON.stringify(GPX.pts)});
+    toast("Salida publicada");$("sal-form").innerHTML="";GPX=null;carga(true)}catch(e){console.warn(e);toast(/permission/i.test(String(e))?"Faltan los permisos en la base de datos":"No se ha podido publicar")}}
+
+/* --- la ficha de una salida (en el mapa, con su track) --- */
+let LAY=null;
+async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
+  showView("mapa");if(window.showTrack)showTrack(null);
+  let pts=null;try{await base();const d=await fs().getDoc(fs().doc(db(),"salidasp",id));if(d.exists())pts=JSON.parse(d.data().p)}catch(e){}
+  if(LAY){LAY.remove();LAY=null}
+  if(pts&&pts.length>1){LAY=L.layerGroup([L.polyline(pts.map(p=>[p[0],p[1]]),{color:"#fff",weight:8,opacity:.95,interactive:false}),L.polyline(pts.map(p=>[p[0],p[1]]),{color:"#1e8e3e",weight:5,interactive:false}),
+    L.circleMarker([pts[0][0],pts[0][1]],{radius:7,color:"#fff",weight:2,fillColor:"#2a7a3b",fillOpacity:1,interactive:false}).bindTooltip("Salida",{direction:"top"})]).addTo(map);
+    const el=document.getElementById("map").getBoundingClientRect(),wide=el.width>=860;map.fitBounds(L.latLngBounds(pts.map(p=>[p[0],p[1]])),{paddingTopLeft:[wide?60:24,110],paddingBottomRight:[wide?640:24,wide?24:el.height*.55],maxZoom:15})}
+  const ap=s.ap||"",apH=/^https?:\/\//i.test(ap)?ap:/^[+\d][\d\s]{7,}$/.test(ap)?"tel:"+ap.replace(/\s/g,""):"";
+  const wa=/whatsapp|wa\.me/i.test(ap)?ap:"";
+  const puede=esAdm()||(MIO&&MIO.estado==="ok"&&MIO.id===s.club);
+  sheet.classList.remove("full");
+  sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(s.ti)}</h2><button class="x" aria-label="Cerrar" data-close data-salx>×</button></div>
+  <div class="meta"><span class="tag" style="background:#1e8e3e;color:#fff;border-color:#1e8e3e">📅 ${esc(fFecha(s.fecha))}</span><span class="tag">${esc(s.cn)}</span>${s.prueba?`<span class="tag">Prueba</span>`:""}</div>
+  <div class="ficha">${s.km?`<div><b>${kmF(s.km)}</b><span>Distancia</span></div>`:""}${s.up?`<div><b>+${Math.round(s.up).toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${s.dif?`<div><b>${esc(s.dif)}</b><span>Dificultad</span></div>`:""}</div>
+  ${s.enc?`<p class="salida">📍 Punto de encuentro: <b>${esc(s.enc)}</b></p>`:""}
+  ${s.txt?`<p class="desc">${esc(s.txt).replace(/\n/g,"<br>")}</p>`:""}
+  ${ap?`<div class="salbox" style="margin-top:10px"><b>✍️ Cómo apuntarse</b><p style="margin:6px 0 0">${apH?`<a href="${esc(apH)}" target="_blank" rel="noopener">${esc(ap)}</a>`:esc(ap)}</p></div>`:""}
+  <div class="acts2"><div class="aprim">${apH?`<a class="btn primary" href="${esc(apH)}" target="_blank" rel="noopener">✍️ Apuntarse</a>`:""}</div><div class="agrid">
+   <button class="btn ghost" data-salfol>▶ Seguir</button><button class="btn ghost" data-salgpx>⬇ Descargar GPX</button>
+   <button class="btn ghost" data-salreloj>⌚ Enviar al reloj</button><button class="btn ghost" data-salshare>📤 Compartir</button>
+   <a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lon}" target="_blank" rel="noopener">🚗 Cómo llegar a la salida</a>
+   ${s.cw?`<a class="btn ghost" href="${esc(s.cw)}" target="_blank" rel="noopener">🏔 Web del club</a>`:""}
+   ${puede?`<button class="btn ghost" style="color:#b3261e" data-saldel>🗑 Borrar salida</button>`:""}</div></div>
+  <p class="salaviso">Organiza <b>${esc(s.cn)}</b>${s.cc?" ("+esc(s.cc)+")":""}. La inscripción, el seguro y las condiciones son cosa del club: Los de las Claras solo la anuncia.</p>`;
+  sheet._sal={s,pts};sheet.hidden=false;sheet.scrollTop=0}
+sheet.addEventListener("click",async e=>{const k=sheet._sal;if(!k)return;
+  if(e.target.closest("[data-salx]")){return}   // el track se queda en el mapa hasta abrir otra cosa
+  const {s,pts}=k;const sinT=()=>{if(!pts||pts.length<2){toast("Esta salida no tiene track");return true}return false};
+  if(e.target.closest("[data-salfol]")){if(sinT())return;if(LAY){LAY.remove();LAY=null}if(window.SEGUIR)SEGUIR.start({u:"tmp",ti:s.ti,gx:{ln:pts,km:s.km}},false);return}
+  if(e.target.closest("[data-salgpx]")||e.target.closest("[data-salreloj]")){if(sinT())return;if(window.enviaGpx)enviaGpx(s.ti,pts);
+    if(e.target.closest("[data-salreloj]"))setTimeout(()=>toast("Elige la app de tu reloj (Suunto, COROS…). Garmin y Polar: importa el GPX en su web.",7000),900);return}
+  if(e.target.closest("[data-salshare]")){const url=APPURL+"#sal="+s.id,text=`📅 ${s.ti}\n${fFecha(s.fecha)} · ${s.cn}${s.enc?"\n📍 "+s.enc:""}\nMira la salida en la app de Los de las Claras:`;
+    try{if(navigator.share){await navigator.share({title:s.ti,text,url});return}}catch(er){if(er&&er.name==="AbortError")return}
+    try{await navigator.clipboard.writeText(text+"\n"+url);toast("Enlace copiado")}catch(er){window.open("https://wa.me/?text="+encodeURIComponent(text+"\n"+url),"_blank","noopener")}return}
+  if(e.target.closest("[data-saldel]")){if(!confirm("¿Borrar esta salida?"))return;try{await base();const F=fs();await F.deleteDoc(F.doc(db(),"salidasp",s.id)).catch(()=>{});await F.deleteDoc(F.doc(db(),"salidas",s.id));
+    sheet.hidden=true;if(LAY){LAY.remove();LAY=null}toast("Salida borrada");carga(true)}catch(er){toast("No se ha podido borrar")}}});
+// al abrir otra cosa en el mapa, se quita el track de la salida
+{const st=window.showTrack;if(st)window.showTrack=function(){if(LAY&&!(sheet._sal&&!sheet.hidden)){LAY.remove();LAY=null}return st.apply(this,arguments)}}
+new MutationObserver(()=>{if(sheet._sal&&!sheet.querySelector("[data-salx]"))sheet._sal=null}).observe(sheet,{childList:true});
+
+/* --- clics en la pestaña --- */
+sec.addEventListener("click",async e=>{const t=e.target;
+  const o=t.closest("[data-sopen]");if(o){abre(o.dataset.sopen);return}
+  const fl=t.closest("[data-sfil]");if(fl){FIL=fl.dataset.sfil;pinta();return}
+  if(t.closest("[data-sfx]")){$("sal-form").innerHTML="";return}
+  if(t.closest("[data-sclub]")){if(window.cuentaOk&&!cuentaOk(()=>{showView("salidas");carga(true).then(()=>formClub(false))},"club"))return;formClub(false);return}
+  if(t.closest("[data-scnew]")){formClub(true);return}
+  const sv=t.closest("[data-scsave]");if(sv){guardaClub(sv.dataset.scsave==="1");return}
+  if(t.closest("[data-snew]")){formSalida();return}
+  if(t.closest("[data-sssave]")){guardaSalida();return}
+  const ok=t.closest("[data-scok]"),no=t.closest("[data-scno]"),dl=t.closest("[data-scdel]");
+  if(ok||no||dl){try{await base();const F=fs(),id=(ok||no||dl).dataset[ok?"scok":no?"scno":"scdel"];
+    if(ok)await F.updateDoc(F.doc(db(),"clubes",id),{estado:"ok"});
+    else{if(dl&&!confirm("¿Quitar este club? Sus salidas dejarán de verse cuando pasen o si las borras."))return;await F.deleteDoc(F.doc(db(),"clubes",id))}
+    toast(ok?"Club aprobado":"Hecho");carga(true)}catch(er){console.warn(er);toast("No se ha podido")}}});
+addEventListener("ldc-user",()=>{if(!sec.hidden)carga(true);else CARGADO=0});
+// cargar al entrar en la pestaña
+new MutationObserver(()=>{if(!sec.hidden)carga(false)}).observe(sec,{attributes:true,attributeFilter:["hidden"]});
+// enlace compartido: #sal=<id>
+async function deHash(){const m=/^#sal=([\w-]+)/.exec(location.hash||"");if(!m)return;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+  await carga(true);if(SALS.find(s=>s.id===m[1]))abre(m[1]);else toast("Esa salida ya no está (puede que haya pasado)")}
+addEventListener("hashchange",deHash);setTimeout(deHash,900);
+window.SALIDAS={carga,leeTrack};
+})();

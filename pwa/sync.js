@@ -49,7 +49,7 @@ const hora=()=>{const h=store.get(TK,null);if(!h)return"";const d=new Date(h),ho
 const cuenta=()=>{const nm=Object.keys(MARKS).length,np=MPI.get().length,nt=MPI.tracks().length;
   return`${nm} marca${nm===1?"":"s"} de cumbres y lugares · ${np} punto${np===1?"":"s"}${nt?` · ${nt} track${nt===1?"":"s"}`:""}`};
 let OPEN=false,PEND=null,MOT=null;
-const MOTS={marcas:"Entra para no perder tus marcas",puntos:"Entra para guardar tus puntos",tracks:"Entra para guardar tus tracks",proponer:"Entra para proponer al grupo"};
+const MOTS={marcas:"Entra para no perder tus marcas",puntos:"Entra para guardar tus puntos",tracks:"Entra para guardar tus tracks",proponer:"Entra para proponer al grupo",club:"Entra con la cuenta de Google del club"};
 // guardar algo tuyo pide haber entrado con Google; lo que pulsaste se hace solo después de entrar
 window.cuentaOk=(fn,motivo)=>{if(store.get(SK,"0")==="1")return true;PEND=fn;MOT=motivo||"marcas";panel();return false};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;

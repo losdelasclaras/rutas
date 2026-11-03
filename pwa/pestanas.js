@@ -42,15 +42,15 @@ for(const k in MS)if(MS[k])mo.observe(MS[k],{childList:true});
 pintaM();
 
 /* «Del grupo»: Rutas, Cumbres y Lugares del blog con su barra arriba */
-const GN={rutas:["📘","Rutas"],cumbres:["⛰️","Cumbres"],lugares:["🏞️","Lugares"]};
+const GN={rutas:["📘","Rutas"],cumbres:["⛰️","Cumbres"],lugares:["🏞️","Lugares"],salidas:["📅","Salidas"]};
 let curG=store.get("ldc-grupo","rutas");if(!GN[curG])curG="rutas";
-for(const g in GN){const v=document.querySelector("#v-"+g+" .inner");if(!v)continue;const b=document.createElement("div");b.className="subtabs";b.dataset.grp=g;b.style.gridTemplateColumns="repeat(3,1fr)";
+for(const g in GN){const v=document.querySelector("#v-"+g+" .inner");if(!v)continue;const b=document.createElement("div");b.className="subtabs";b.dataset.grp=g;b.style.gridTemplateColumns="repeat(4,1fr)";
   b.innerHTML=Object.keys(GN).map(k=>`<button role="tab" data-gs="${k}" aria-selected="${k===g}"><span class="i">${GN[k][0]}</span><span>${GN[k][1]}</span></button>`).join("");
   v.insertBefore(b,v.firstChild)}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-gs]");if(b)showView(b.dataset.gs)});
 
 /* showView entiende las vistas nuevas; la pestaña «Del grupo» vuelve a la última que viste */
-const VIEWS=["mapa","rutas","cumbres","lugares","mios","seg"];
+const VIEWS=["mapa","rutas","cumbres","lugares","salidas","mios","seg"];
 window.showView=showView=function(v){
   if(v==="grupo")v=curG;
   if(!VIEWS.includes(v))v="mapa";
