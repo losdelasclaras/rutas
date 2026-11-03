@@ -3,7 +3,10 @@
 (function(){
 const main=document.querySelector("main"),nav=document.querySelector("nav.tabs");if(!main||!nav)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
-nav.tabs{grid-template-columns:repeat(4,1fr)!important}
+nav.tabs{grid-template-columns:repeat(5,1fr)!important;zoom:1!important}
+nav.tabs button{font-size:12.5px!important;letter-spacing:0!important;padding:9px 0 11px!important;min-width:0;white-space:nowrap}
+nav.tabs button svg{width:25px!important;height:25px!important}
+@media(max-width:360px){nav.tabs button{font-size:11px!important}}
 .subtabs{position:sticky;top:0;z-index:5;background:var(--paper);display:grid;gap:6px;padding:8px 0 10px;margin:0 0 4px}
 .subtabs button{border:1px solid var(--edge);background:var(--card);color:var(--ink);border-radius:12px;padding:7px 2px 6px;font-weight:700;font-size:13px;line-height:1.15;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;white-space:nowrap}
 .subtabs button .i{font-size:19px;line-height:1}
@@ -17,9 +20,10 @@ nav.tabs{grid-template-columns:repeat(4,1fr)!important}
 const ICO={mapa:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
   grupo:'<path d="M2 20l7-12 4 6 3-4 6 10z"/><circle cx="17.5" cy="5.5" r="2"/>',
   mios:'<path d="M6 8h12l-1 12H7z"/><path d="M9 8V6a3 3 0 016 0v2"/>',
+  salidas:'<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.6"/>',
   seg:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c3.2-.4 5.5 1.8 5.5 5.3"/>'};
 const tab=(v,t)=>`<button role="tab" data-v="${v}" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">${ICO[v]}</svg>${t}</button>`;
-nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Explorar")+tab("mios","Mis cosas")+tab("seg","Seguidores");
+nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Explorar")+tab("salidas","Salidas")+tab("mios","Mis cosas")+tab("seg","Seguidores");   /* Salidas abajo (3 nov): antes era la 4.ª pestaña de Explorar */
 
 /* «Mis cosas»: una vista nueva con mis puntos, mis tracks y los mapas descargados */
 const sec=document.createElement("section");sec.className="view pad";sec.id="v-mios";sec.hidden=true;
@@ -42,9 +46,9 @@ for(const k in MS)if(MS[k])mo.observe(MS[k],{childList:true});
 pintaM();
 
 /* «Del grupo»: Rutas, Cumbres y Lugares del blog con su barra arriba */
-const GN={rutas:["📘","Rutas"],cumbres:["⛰️","Cumbres"],lugares:["🏞️","Lugares"],salidas:["📅","Salidas"]};
+const GN={rutas:["📘","Rutas"],cumbres:["⛰️","Cumbres"],lugares:["🏞️","Lugares"]};
 let curG=store.get("ldc-grupo","rutas");if(!GN[curG])curG="rutas";
-for(const g in GN){const v=document.querySelector("#v-"+g+" .inner");if(!v)continue;const b=document.createElement("div");b.className="subtabs";b.dataset.grp=g;b.style.gridTemplateColumns="repeat(4,1fr)";
+for(const g in GN){const v=document.querySelector("#v-"+g+" .inner");if(!v)continue;const b=document.createElement("div");b.className="subtabs";b.dataset.grp=g;b.style.gridTemplateColumns="repeat(3,1fr)";
   b.innerHTML=Object.keys(GN).map(k=>`<button role="tab" data-gs="${k}" aria-selected="${k===g}"><span class="i">${GN[k][0]}</span><span>${GN[k][1]}</span></button>`).join("");
   v.insertBefore(b,v.firstChild)}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-gs]");if(b)showView(b.dataset.gs)});
