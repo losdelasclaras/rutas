@@ -20,6 +20,9 @@ html,body{margin:0;height:100%;overflow:hidden;color:var(--ink);font:18px/1.4 sy
 @keyframes lat{from{opacity:1}to{opacity:.3}}
 #seg{flex-direction:column;align-items:stretch;background:#f2ebfa;color:#3d1466;width:100%}
 #seg .s1{display:flex;align-items:center;gap:8px}
+#seg.sec{background:#fdecdc;color:#6b3300}
+body.segab #top{z-index:1100}
+.tr2{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid rgba(0,0,0,.08)}.tr2 .pt{width:12px;height:12px;border-radius:50%;flex:none}.tr2 button{border:0;border-radius:9px;padding:6px 9px;font:inherit;font-size:13px;font-weight:800;background:#fff;color:#3d1466}
 #seg.fuera{background:#b3261e;color:#fff}#seg.fuera .ic{color:#fff}#seg.fin{background:#1f6b32;color:#fff}#seg.fin .ic{color:#fff}
 #seg[hidden],#segMas[hidden]{display:none}
 #segMas{margin-top:8px;font-weight:600}
@@ -109,6 +112,7 @@ function guardados(){let o={z:[],total:0};try{o=JSON.parse(Nativo.zonas())}catch
 function borraZ(id){if(!confirm("¿Borrar este mapa guardado?"))return;Nativo.borrarZona(id);capas();toast("Mapa borrado")}
 function capas(){const ga=guardadoAqui();$("sh").innerHTML=`<h2>🗺 Mapa</h2>`+Object.entries(CAPAS).map(([k,c])=>`<button class="capa" aria-pressed="${k===CAPA}" onclick="ponCapa('${k}')"><span>${k===CAPA?"✓":"○"}</span><span style="flex:1">${c.n}<small>${c.d}</small></span><span style="flex:none;font-size:13px;font-weight:800;padding:4px 8px;border-radius:8px;${ga.includes(k)?"background:#e3f1e6;color:#1f6b32\">💾 Guardado aquí":"background:#f1f1f1;color:#8a958e\">Sin guardar aquí"}</span></button>`).join("")+
   (T.length?`<button class="b2 go" onclick="cierra();bajarZona()">⬇ Guardar la zona del track, para sin cobertura</button><button class="b2" onclick="cierra();bajarTres('track')">⬇ Guardar los tres mapas de la zona del track</button>`:"")+`<button class="b2 ${T.length?"":"go"}" onclick="cierra();bajarVista()">⬇ Guardar lo que se ve, para sin cobertura</button><button class="b2" onclick="cierra();bajarTres('vista')">⬇ Guardar los tres mapas de lo que se ve</button><p style="font-size:14px;color:#5d6b62;margin:4px 0 8px">Se guarda el mapa elegido de la zona que tienes en pantalla, con más detalle. Para preparar desde casa otra zona: en el mapa de la app, Capas › «Mapa de una zona para grabar sin cobertura».</p>${guardados()}<button class="b2" onclick="cierra()">Cerrar</button><p style="font-size:12px;color:#8a958e;text-align:center;margin:6px 0 0">Versión ${(()=>{try{return Nativo.version()}catch(e){return"?"}})()}</p>`;$("sheet").hidden=false}
+const seg2B=L.polyline([],{color:"#fff",weight:7,opacity:.8}).addTo(map),seg2L=L.polyline([],{color:"#e8711a",weight:4,opacity:.95,dashArray:"8 6"}).addTo(map);
 const segB=L.polyline([],{color:"#fff",weight:9,opacity:.85}).addTo(map),segL=L.polyline([],{color:"#7b2cbf",weight:5,opacity:.95,dashArray:"10 7"}).addTo(map);
 const lineB=L.polyline([],{color:"#fff",weight:8,opacity:.9}).addTo(map),line=L.polyline([],{color:"#c3262e",weight:5}).addTo(map);
 let me=null,acc=null;const WPL=L.layerGroup().addTo(map);
@@ -141,51 +145,94 @@ function cambiaOri(){ORI=ORI==="norte"?"rumbo":"norte";try{localStorage.setItem(
   pintaRumbo()}
 map.on("rotate",pintaRumbo);
 function sinPermiso(){toast("⛔ Sin permiso de ubicación. Ábrelo en Ajustes › Aplicaciones › Los de las Claras › Permisos › Ubicación.",8000)}
-/* ---------- seguir un track ---------- */
+/* ---------- seguir uno o dos tracks (principal en morado y secundario en naranja) ----------
+   La app sabe por cuál vas: si te sales del principal pero vas por el secundario, no avisa; solo si te sales de los dos.
+   Avisa antes de los puntos donde los dos tracks se separan. Las variables T, TN, IDX… son siempre las del track por el que vas. */
 let T=[],TC=[],UPC=[],DNC=[],TN="",FUERA=0,AVISADO=false,IDX=0,REV=false,SEGOPEN=false,SEGD=null,T0=[];
+let TR=[null,null],ACT=0,SEPAV=new Set();
 const lsG=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsS=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}};
-function cargaSeguir(){let o=null;try{o=JSON.parse(Nativo.seguir()||"null")}catch(e){}
-  if(!o||!o.t||o.t.length<2){T=[];segL.setLatLngs([]);segB.setLatLngs([]);$("seg").hidden=true;return}
-  const nuevo=TN!==(o.n||"Track")||T0.length!==o.t.length;T0=o.t;TN=o.n||"Track";
-  REV=lsG("rev:"+TN)==="1";prepara();
-  const ll=T.map(p=>[p[0],p[1]]);segL.setLatLngs(ll);segB.setLatLngs(ll);
-  if(nuevo){IDX=0;map.fitBounds(L.latLngBounds(ll),{padding:[40,40],paddingTopLeft:[20,150],paddingBottomRight:[80,150]});SIGUE=false;clearTimeout(VUELTA);VUELTA=setTimeout(()=>{SIGUE=true;if(YO)map.panTo([YO[0],YO[1]])},20000);setTimeout(ofreceZona,700)}
-  pintaSeg(null)}
-// distancias, subida y bajada acumuladas a lo largo del track (con 4 m de margen para el ruido, como en la app)
-function prepara(){T=REV?T0.slice().reverse():T0.slice();const n=T.length;TC=[0];UPC=[0];DNC=[0];let U=0,Dn=0,ref=T[0][2];
-  for(let i=1;i<n;i++){TC.push(TC[i-1]+dm(T[i-1],T[i]));const e=T[i][2];
-    if(e!=null&&ref!=null){if(e-ref>=4){U+=e-ref;ref=e}else if(ref-e>=4){Dn+=ref-e;ref=e}}else if(ref==null)ref=e;UPC.push(U);DNC.push(Dn)}}
+const rdJ=t=>{try{return JSON.parse(t||"null")}catch(e){return null}};
+function prepR(r){r.t=r.rev?r.t0.slice().reverse():r.t0.slice();const n=r.t.length;r.tc=[0];r.upc=[0];r.dnc=[0];let U=0,Dn=0,ref=r.t[0][2];
+  for(let i=1;i<n;i++){r.tc.push(r.tc[i-1]+dm(r.t[i-1],r.t[i]));const e=r.t[i][2];
+    if(e!=null&&ref!=null){if(e-ref>=4){U+=e-ref;ref=e}else if(ref-e>=4){Dn+=ref-e;ref=e}}else if(ref==null)ref=e;r.upc.push(U);r.dnc.push(Dn)}}
+function mkR(o,viejo){if(!o||!o.t||o.t.length<2)return null;const n=o.n||"Track";
+  if(viejo&&viejo.n===n&&viejo.t0.length===o.t.length)return viejo;
+  const r={n,t0:o.t,rev:lsG("rev:"+n)==="1",idx:0,d:null};prepR(r);return r}
+// dónde se separan y se juntan los dos tracks (sobre cada uno): tramos a menos de 30 m del otro
+function cruces(){for(const r of TR)if(r){r.sep=[];r.jun=[]}if(!TR[0]||!TR[1])return;
+  for(const[r,o]of[[TR[0],TR[1]],[TR[1],TR[0]]]){let prev=null,ult=-1e9;
+    for(let i=0;i<r.t.length;i++){if(r.tc[i]-ult<15&&i<r.t.length-1)continue;ult=r.tc[i];let m=1e9;for(let j=0;j<o.t.length;j+=2){const d=dm(r.t[i],o.t[j]);if(d<m)m=d;if(m<30)break}
+      const cerca=m<30;if(prev!==null&&prev!==cerca)(cerca?r.jun:r.sep).push(i);prev=cerca}}}
+function act(i){if(!TR[i])i=0;ACT=i;const r=TR[i];if(!r){T=[];return}T=r.t;TC=r.tc;UPC=r.upc;DNC=r.dnc;TN=r.n;IDX=r.idx;REV=r.rev;T0=r.t0}
+function pintaLineas(){const ll=r=>r?r.t.map(p=>[p[0],p[1]]):[];segL.setLatLngs(ll(TR[0]));segB.setLatLngs(ll(TR[0]));seg2L.setLatLngs(ll(TR[1]));seg2B.setLatLngs(ll(TR[1]))}
+function cargaSeguir(){const p0=TR[0];
+  TR[0]=mkR(rdJ(Nativo.seguir()),TR[0]);TR[1]=mkR(rdJ(Nativo.seguir2?Nativo.seguir2():""),TR[1]);
+  if(!TR[0]&&TR[1]){TR[0]=TR[1];TR[1]=null}
+  cruces();pintaLineas();
+  if(!TR[0]){T=[];$("seg").hidden=true;preguntaNuevo();return}
+  act(ACT);
+  if(TR[0]!==p0){ACT=0;act(0);IDX=0;const ll=TR[0].t.map(p=>[p[0],p[1]]).concat(TR[1]?TR[1].t.map(p=>[p[0],p[1]]):[]);
+    map.fitBounds(L.latLngBounds(ll),{padding:[40,40],paddingTopLeft:[20,150],paddingBottomRight:[80,150]});SIGUE=false;clearTimeout(VUELTA);VUELTA=setTimeout(()=>{SIGUE=true;if(YO)map.panTo([YO[0],YO[1]])},20000);setTimeout(ofreceZona,700)}
+  if(YO)sigueA(YO[0],YO[1]);else pintaSeg(null);
+  preguntaNuevo()}
+// llega otro track mientras ya sigues uno: ¿cambiarlo o añadirlo como secundario?
+function preguntaNuevo(){const nu=rdJ(Nativo.nuevoSeguir?Nativo.nuevoSeguir():"");if(!nu||!nu.t)return;
+  if(!TR[0]){Nativo.ponSeguir("p",JSON.stringify(nu));cargaSeguir();return}
+  window.__NU=nu;
+  $("sh").innerHTML=`<h2>▶ ${esc(nu.n||"Track")}</h2><p>Ya estás siguiendo <b>${esc(TR[0].n)}</b>${TR[1]?` y, de secundario, <b>${esc(TR[1].n)}</b>`:""}. ¿Qué hago con este?</p>
+   <button class="b2 go" onclick="nuevoComo('s')">➕ Añadirlo como secundario${TR[1]?" (en lugar del que hay)":""}</button>
+   <button class="b2" onclick="nuevoComo('p')">⇄ Seguir solo este (dejar ${esc(TR[0].n)})</button>
+   <button class="b2" onclick="nuevoComo('x')">Cancelar</button>
+   <p style="font-size:14px;color:#5d6b62">Con dos tracks, la app sabe por cuál vas: solo avisa si te sales de los dos, y te avisa antes de donde se separan.</p>`;$("sheet").hidden=false}
+function nuevoComo(k){const nu=window.__NU;cierra();if(!nu)return;
+  if(k==="s"){Nativo.ponSeguir("s",JSON.stringify(nu));toast("➕ «"+(nu.n||"Track")+"» añadido como secundario (en naranja)")}
+  else if(k==="p"){Nativo.ponSeguir("p",JSON.stringify(nu));Nativo.ponSeguir("s","")}
+  else Nativo.ponSeguir("x","");
+  window.__NU=null;cargaSeguir()}
+// para lo que ya usaba un solo track
+function prepara(){const r=TR[ACT];if(!r)return;r.rev=REV;prepR(r);act(ACT)}
 const fmM=m=>Math.round(m).toLocaleString("es-ES")+" m";
 function pintaSeg(d){if(d!==undefined)SEGD=d;d=SEGD;const e=$("seg");if(!T.length){e.hidden=true;return}e.hidden=false;
   const n=T.length,tot=TC[n-1],hecho=TC[IDX]||0,queda=tot-hecho,upQ=UPC[n-1]-UPC[IDX],dnQ=DNC[n-1]-DNC[IDX],lejos=d!=null&&d>1000,fuera=!lejos&&d!=null&&d>60,fin=!lejos&&!fuera&&queda<60&&hecho>tot*.5;
-  e.className="chip"+(fuera?" fuera":fin?" fin":"");
+  const sec=ACT===1,otro=TR[sec?0:1];
+  e.className="chip"+(fuera?" fuera":fin?" fin":"")+(sec&&!fuera&&!fin?" sec":"");
   const a=YO?dm(YO,T[0]):d;
-  $("segTx").innerHTML=lejos?`▶ ${esc(TN)} · a <b>${kmT(a)} km</b> de la salida`:fuera?`⚠️ Te has salido del track (a ${Math.round(d)} m)`:fin?`🏁 ¡Has llegado al final!`:
-    `▶ ${esc(TN)} · faltan <b>${kmT(queda)} km</b>${upQ>=10?` · +${fmM(upQ)}`:""}`;
+  $("segTx").innerHTML=lejos?`▶ ${esc(TN)} · a <b>${kmT(a)} km</b> de la salida`:fuera?`⚠️ Te has salido ${otro?"de los dos tracks":"del track"} (a ${Math.round(d)} m)`:fin?`🏁 ¡Has llegado al final!`:
+    `${sec?"🟠 Por el secundario: ":"▶ "}${esc(TN)} · faltan <b>${kmT(queda)} km</b>${upQ>=10?` · +${fmM(upQ)}`:""}`;
   $("segIc").textContent=SEGOPEN?"▴":"▾";
   const m=$("segMas");m.hidden=!SEGOPEN;if(!SEGOPEN)return;
+  const fila=(r,i)=>`<div class="tr2"><span class="pt" style="background:${i?"#e8711a":"#7b2cbf"}"></span><span style="flex:1"><b>${esc(r.n)}</b>${r.rev?" <small>(al revés)</small>":""}<small style="display:block;opacity:.8">${i?"Secundario":"Principal"}${ACT===i&&r.d!=null&&r.d<=60?" · vas por este":""}${r.d!=null?` · a ${r.d<1000?Math.round(r.d)+" m":kmT(r.d)+" km"}`:""}</small></span>${i?`<button onclick="haceP()">⇅ Principal</button><button onclick="quita2()">✕</button>`:""}</div>`;
   m.innerHTML=`<div style="margin-bottom:4px">${esc(TN)}${REV?" <small>(al revés)</small>":""}</div><div class="bar"><i style="width:${tot?(hecho/tot*100).toFixed(1):0}%"></i></div>
    <div class="g3"><div><b>${kmT(hecho)}</b><small>km hechos</small></div><div><b>${kmT(queda)}</b><small>km que faltan</small></div><div><b>${kmT(tot)}</b><small>km en total</small></div>
    <div><b>+${fmM(UPC[IDX]||0)}</b><small>subida hecha</small></div><div><b>+${fmM(upQ)}</b><small>subida que falta</small></div><div><b>−${fmM(dnQ)}</b><small>bajada que falta</small></div></div>
-   <div class="ir">${lejos||IDX<3?`<button onclick="llegar()">🚗 Cómo llegar a la salida</button>`:""}<button class="b" onclick="alReves()">⇄ Al revés</button><button class="b" onclick="verTrack()">🗺 Ver el track</button><button class="x" onclick="dejar()">✕ Dejar de seguir</button></div>
-   <p style="font-size:13px;margin:8px 0 0;opacity:.8">Según el track. «Al revés» si lo empiezas por el final.</p>`}
-function abreSeg(){SEGOPEN=!SEGOPEN;pintaSeg()}
-function alReves(){REV=!REV;lsS("rev:"+TN,REV?"1":null);prepara();IDX=0;FUERA=0;AVISADO=false;if(YO)sigueA(YO[0],YO[1]);else pintaSeg();toast(REV?"Track al revés: empiezas por el final":"Track en el sentido normal")}
-function sigueA(la,lo){if(!T.length)return;
-  // el punto del track más cercano (buscando primero cerca del anterior)
-  let best=-1,bd=1e12;const p=[la,lo];
-  const a=Math.max(0,IDX-60),b=Math.min(T.length,IDX+400);for(let i=a;i<b;i++){const d=dm(p,T[i]);if(d<bd){bd=d;best=i}}
-  if(bd>300)for(let i=0;i<T.length;i++){const d=dm(p,T[i]);if(d<bd){bd=d;best=i}}
-  IDX=best;if(bd>60&&bd<=1000){FUERA++;if(FUERA>=2&&!AVISADO){AVISADO=true;try{Nativo.vibrar()}catch(e){}}}else{FUERA=0;AVISADO=false}
+   <div class="ir">${lejos||IDX<3?`<button onclick="llegar()">🚗 Cómo llegar a la salida</button>`:""}<button class="b" onclick="alReves()">⇄ Al revés</button><button class="b" onclick="verTrack()">🗺 Ver ${TR[1]?"los tracks":"el track"}</button><button class="x" onclick="dejar()">✕ Dejar de seguir</button></div>
+   <div style="margin-top:8px">${TR.map((r,i)=>r?fila(r,i):"").join("")}</div>
+   <p style="font-size:13px;margin:8px 0 0;opacity:.8">${TR[1]?"Solo avisa si te sales de los dos, y antes de donde se separan.":"¿Llevas una variante? En la app, «▶ Seguir» en otra ruta y añádela como secundario."} «Al revés» si lo empiezas por el final.</p>`}
+function abreSeg(){SEGOPEN=!SEGOPEN;document.body.classList.toggle("segab",SEGOPEN);pintaSeg()}
+function alReves(){REV=!REV;lsS("rev:"+TN,REV?"1":null);prepara();TR[ACT].idx=0;IDX=0;FUERA=0;AVISADO=false;cruces();pintaLineas();SEPAV.clear();if(YO)sigueA(YO[0],YO[1]);else pintaSeg();toast(REV?"Track al revés: empiezas por el final":"Track en el sentido normal")}
+function cercaDe(r,p){let best=-1,bd=1e12;const a=Math.max(0,r.idx-60),b=Math.min(r.t.length,r.idx+400);for(let i=a;i<b;i++){const d=dm(p,r.t[i]);if(d<bd){bd=d;best=i}}
+  if(bd>300)for(let i=0;i<r.t.length;i++){const d=dm(p,r.t[i]);if(d<bd){bd=d;best=i}}return[best,bd]}
+function sigueA(la,lo){if(!TR[0])return;const p=[la,lo];
+  for(const r of TR)if(r){const[i,d]=cercaDe(r,p);r.idx=i;r.d=d}
+  // por cuál vas: el principal si estás en él; si no, el secundario si estás en él; si no, el más cercano
+  let on=0;if(TR[1]){if(TR[0].d>60&&TR[1].d<=60)on=1;else if(TR[0].d>60&&TR[1].d<TR[0].d)on=1}
+  if(TR[1]&&on!==ACT&&Math.min(TR[0].d,TR[1].d)<=60)toast(on?`🟠 Vas por el secundario: «${TR[1].n}»`:`▶ De vuelta al principal: «${TR[0].n}»`);
+  act(on);const bd=TR[on].d;
+  if(bd>60&&bd<=1000){FUERA++;if(FUERA>=2&&!AVISADO){AVISADO=true;try{Nativo.vibrar()}catch(e){}}}else{FUERA=0;AVISADO=false}
+  // aviso antes de que los dos tracks se separen (unos 150 m antes, una vez por sitio)
+  const r=TR[on];if(TR[1]&&bd<=60&&r.sep)for(const k of r.sep){const falta=r.tc[k]-r.tc[r.idx],key=on+":"+k;if(falta>0&&falta<=150&&!SEPAV.has(key)){SEPAV.add(key);try{Nativo.vibrar()}catch(e){}
+      toast(`⚠️ En ${Math.round(falta/10)*10} m se separan los dos tracks: «${TR[0].n}» (morado) y «${TR[1].n}» (naranja)`,8000)}}
   pintaSeg(bd)}
+function haceP(){const a=rdJ(Nativo.seguir()),b=rdJ(Nativo.seguir2());if(!a||!b)return;Nativo.ponSeguir("p",JSON.stringify(b));Nativo.ponSeguir("s",JSON.stringify(a));TR=[TR[1],TR[0]];ACT=ACT?0:1;cruces();pintaLineas();act(ACT);pintaSeg();toast("⇅ «"+TR[0].n+"» es ahora el principal")}
+function quita2(){Nativo.ponSeguir("s","");TR[1]=null;cruces();pintaLineas();act(0);if(YO)sigueA(YO[0],YO[1]);else pintaSeg();toast("Secundario quitado")}
 function llegar(){const q=T[0];Nativo.abrir(`https://www.google.com/maps/dir/?api=1&destination=${q[0]},${q[1]}&travelmode=driving`)}
-function verTrack(){SIGUE=false;clearTimeout(VUELTA);map.fitBounds(L.latLngBounds(T.map(p=>[p[0],p[1]])),{paddingTopLeft:[20,190],paddingBottomRight:[70,110]})}
-function dejar(){Nativo.dejarSeguir();cargaSeguir();toast("Has dejado de seguir el track")}
+function verTrack(){SIGUE=false;clearTimeout(VUELTA);map.fitBounds(L.latLngBounds(TR.filter(Boolean).flatMap(r=>r.t.map(p=>[p[0],p[1]]))),{paddingTopLeft:[20,190],paddingBottomRight:[70,110]})}
+function dejar(){const n=TR[0]&&TR[0].n;if(TR[1]){Nativo.ponSeguir("p",Nativo.seguir2());Nativo.ponSeguir("s","");TR=[null,null];cargaSeguir();toast("Has dejado «"+n+"»: ahora sigues «"+TR[0].n+"»")}else{Nativo.dejarSeguir();TR=[null,null];cargaSeguir();toast("Has dejado de seguir el track")}}
 // mapa sin cobertura: se bajan los trozos del mapa a lo largo del track (zoom 11 a 16)
 function listaZona(cp){cp=cp||CAPA;const L0=[];const vis=new Set();
   const tl=(la,lo,z)=>{const n=2**z,x=Math.floor((lo+180)/360*n),r=la*toR,y=Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n);return[x,y]};
   for(let z=11;z<=16;z++){const ring=z<=15?1:1;let prev=null;
-    for(const q of T){const[x,y]=tl(q[0],q[1],z);const k=x+"/"+y;if(k===prev)continue;prev=k;
+    for(const q of TR.filter(Boolean).flatMap(r=>r.t)){const[x,y]=tl(q[0],q[1],z);const k=x+"/"+y;if(k===prev)continue;prev=k;
       for(let dx=-ring;dx<=ring;dx++)for(let dy=-ring;dy<=ring;dy++){const kk=cp+"/"+z+"/"+(x+dx)+"/"+(y+dy);if(!vis.has(kk)){vis.add(kk);L0.push(kk)}}}}
   if(L0.length>4000)L0.length=4000;return L0}
 const TRES=["topo","ign","orto"];

@@ -261,7 +261,14 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         val t = i?.getStringExtra("t")
         if (i?.data?.host == "seguir" && t != null) try {
             val a = JSONArray(t); if (a.length() >= 2)
-                Grab.prefs(this).edit().putString("seguir", JSONObject().put("n", i.getStringExtra("n") ?: "Track").put("t", a).toString()).apply()
+            {   // si ya se sigue otro track, este queda pendiente: la pantalla pregunta si cambiarlo o añadirlo como secundario
+                val nuevo = JSONObject().put("n", i.getStringExtra("n") ?: "Track").put("t", a).toString()
+                val p = Grab.prefs(this); val ya = try { JSONObject(p.getString("seguir", "") ?: "") } catch (e: Exception) { null }
+                val mismo = ya != null && ya.optString("n") == (i.getStringExtra("n") ?: "Track") && (ya.optJSONArray("t")?.length() ?: 0) == a.length()
+                val mismo2 = try { JSONObject(p.getString("seguir2", "") ?: "").optString("n") == (i.getStringExtra("n") ?: "Track") } catch (e: Exception) { false }
+                if (ya == null) p.edit().putString("seguir", nuevo).remove("seguir_nuevo").apply()
+                else if (!mismo && !mismo2) p.edit().putString("seguir_nuevo", nuevo).apply()
+            }
         } catch (e: Exception) {}
     }
 
@@ -422,7 +429,14 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         // seguir
         @JavascriptInterface fun seguir(): String = Grab.prefs(c).getString("seguir", "") ?: ""
         @JavascriptInterface fun version(): String = try { packageManager.getPackageInfo(packageName, 0).versionName ?: "?" } catch (e: Exception) { "?" }
-        @JavascriptInterface fun dejarSeguir() { Grab.prefs(c).edit().remove("seguir").apply() }
+        @JavascriptInterface fun dejarSeguir() { Grab.prefs(c).edit().remove("seguir").remove("seguir_nuevo").apply() }
+        // dos tracks: principal («seguir»), secundario («seguir2») y el que acaba de llegar mientras ya se seguía otro («seguir_nuevo»)
+        @JavascriptInterface fun seguir2(): String = Grab.prefs(c).getString("seguir2", "") ?: ""
+        @JavascriptInterface fun nuevoSeguir(): String = Grab.prefs(c).getString("seguir_nuevo", "") ?: ""
+        @JavascriptInterface fun ponSeguir(rol: String, json: String) { val e = Grab.prefs(c).edit().remove("seguir_nuevo")
+            val k = when (rol) { "p" -> "seguir"; "s" -> "seguir2"; else -> null }
+            if (k != null) { if (json.isBlank()) e.remove(k) else e.putString(k, json) }
+            e.apply() }
         /** Zona elegida en el mapa de la app para guardarla sin cobertura (se lee una vez). */
         @JavascriptInterface fun zona(): String { val p = Grab.prefs(c); val z = p.getString("zona", "") ?: ""; p.edit().remove("zona").apply(); return z }
         @JavascriptInterface fun vibrar() { try { val v = getSystemService(VIBRATOR_SERVICE) as Vibrator
