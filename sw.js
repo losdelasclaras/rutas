@@ -12,6 +12,7 @@ self.addEventListener("fetch",e=>{
         for(const f of fd.getAll("f"))if(f&&typeof f.text==="function")out.push({n:f.name||"track.gpx",t:await f.text()});
         const txt=[fd.get("text"),fd.get("url")].filter(Boolean).join(" "),m=txt.match(/https?:\/\/\S*#t=\S+/);
         if(!out.length&&m)return Response.redirect(m[0],303);
+        if(!out.length&&txt.trim())out.push({x:txt.trim()});   // un enlace de otra app (Wikiloc, Google Maps…): la app explica qué hacer
         const c=await caches.open("ldc-share");await c.put("recibido",new Response(JSON.stringify(out),{headers:{"content-type":"application/json"}}))}catch(err){}
       return Response.redirect(new URL("./?recibido=1",self.registration.scope).href,303)})());return}
   if(e.request.method!=="GET")return;
