@@ -90,7 +90,11 @@ const CAPAS={topo:{n:"Topográfico",d:"OpenTopoMap, curvas de nivel, de toda Eur
 let CAPA="topo";try{CAPA=localStorage.getItem("capa")||"topo"}catch(e){}if(!CAPAS[CAPA])CAPA="topo";
 let FONDO=CAPAS[CAPA].l().addTo(map);
 // si el mapa no llega (sin cobertura y sin haberlo guardado), se dice en vez de dejar el fondo gris sin más
-let MALT=0,AVT=0;const vigila=l=>{l.on("tileerror",()=>{MALT++;if(MALT>=6&&Date.now()-AVT>60000){AVT=Date.now();MALT=0;toast("🗺 Sin mapa en esta zona: no hay cobertura y no estaba guardado. Con cobertura, 🗺 › Guardar lo que se ve.",6000)}});l.on("tileload",()=>{MALT=0});return l};vigila(FONDO);
+let MALT=0,AVT=0;const vigila=l=>{l.on("tileerror",()=>{MALT++;if(MALT>=6&&Date.now()-AVT>60000){AVT=Date.now();MALT=0;
+  // ¿hay guardado otro mapa de esta zona (p. ej. el del IGN)? se pone ese
+  let cs=[];try{const c=map.getCenter();cs=JSON.parse(Nativo.capasCon(c.lat,c.lng,Math.round(map.getZoom())))}catch(e){}
+  if(cs.length&&!cs.includes(CAPA)){ponCapaSin(cs[0]);toast("🗺 Sin cobertura: puesto el mapa que tienes guardado de esta zona ("+CAPAS[cs[0]].n+")",6000);return}
+  toast("🗺 Sin mapa en esta zona: no hay cobertura y no estaba guardado. Con cobertura, 🗺 › Guardar lo que se ve.",6000)}});l.on("tileload",()=>{MALT=0});return l};vigila(FONDO);
 function ponCapa(k){if(!CAPAS[k])return;CAPA=k;try{localStorage.setItem("capa",k)}catch(e){}FONDO.remove();FONDO=vigila(CAPAS[k].l()).addTo(map);FONDO.bringToBack();capas()}
 const mbT=b=>b<1e6?"menos de 1 MB":Math.round(b/1e6).toLocaleString("es-ES")+" MB";
 function guardados(){let o={z:[],total:0};try{o=JSON.parse(Nativo.zonas())}catch(e){return""}
@@ -179,8 +183,9 @@ function miraZona(){let o=null;try{o=JSON.parse(Nativo.zona()||"null")}catch(e){
   if(ZR)ZR.remove();ZR=L.rectangle(bb,{color:"#2a7a3b",weight:3,fill:false,dashArray:"8 6",interactive:false}).addTo(map);ofreceVista(bb,o.n)}
 function listaVista(b){const z0=Math.max(8,Math.min(15,Math.round(map.getBoundsZoom(b)))),L0=[];
   const tl=(la,lo,z)=>{const n=2**z,x=Math.floor((lo+180)/360*n),r=la*toR,y=Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n);return[x,y]};
-  for(let z=z0;z<=Math.min(16,z0+3);z++){const[x1,y1]=tl(b.getNorth(),b.getWest(),z),[x2,y2]=tl(b.getSouth(),b.getEast(),z);
-    for(let x=x1;x<=x2;x++)for(let y=y1;y<=y2;y++)L0.push(CAPA+"/"+z+"/"+x+"/"+y);if(L0.length>3000)break}
+  for(let z=z0;z<=16;z++){const[x1,y1]=tl(b.getNorth(),b.getWest(),z),[x2,y2]=tl(b.getSouth(),b.getEast(),z);
+    if(z>z0&&L0.length+(x2-x1+1)*(y2-y1+1)>3000)break;   // solo zooms enteros (si no, se guardaba solo un trozo de la zona)
+    for(let x=x1;x<=x2;x++)for(let y=y1;y<=y2;y++)L0.push(CAPA+"/"+z+"/"+x+"/"+y)}
   if(L0.length>3000)L0.length=3000;return L0}
 let ZN="Zona";function ofreceVista(bb,nm){ZN=nm||"Zona";let f=0;try{f=+Nativo.faltan(JSON.stringify(listaVista(bb)))}catch(e){}
   $("sh").innerHTML=`<h2>🗺 Mapa de ${esc(nm||"la zona")}</h2><p style="margin:0 0 6px">${f?"Para verlo aquí aunque no haya cobertura. Elige el mapa:":"Esta zona ya está guardada con este mapa. Puedes guardar también otro:"}</p>`+
@@ -189,8 +194,9 @@ let ZN="Zona";function ofreceVista(bb,nm){ZN=nm||"Zona";let f=0;try{f=+Nativo.fa
     <p style="font-size:14px;color:#5d6b62;margin:4px 0">Mejor con wifi. El recuadro verde es la zona que se guarda.</p>`;$("sheet").hidden=false}
 function bajarVista(){const b=map.getBounds(),z0=Math.max(8,Math.min(15,Math.round(map.getZoom()))),L0=[];
   const tl=(la,lo,z)=>{const n=2**z,x=Math.floor((lo+180)/360*n),r=la*toR,y=Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n);return[x,y]};
-  for(let z=z0;z<=Math.min(16,z0+3);z++){const[x1,y1]=tl(b.getNorth(),b.getWest(),z),[x2,y2]=tl(b.getSouth(),b.getEast(),z);
-    for(let x=x1;x<=x2;x++)for(let y=y1;y<=y2;y++)L0.push(CAPA+"/"+z+"/"+x+"/"+y);if(L0.length>3000)break}
+  for(let z=z0;z<=16;z++){const[x1,y1]=tl(b.getNorth(),b.getWest(),z),[x2,y2]=tl(b.getSouth(),b.getEast(),z);
+    if(z>z0&&L0.length+(x2-x1+1)*(y2-y1+1)>3000)break;
+    for(let x=x1;x<=x2;x++)for(let y=y1;y<=y2;y++)L0.push(CAPA+"/"+z+"/"+x+"/"+y)}
   if(L0.length>3000){L0.length=3000;toast("Zona muy grande: acerca un poco el mapa para guardarla entera",5000)}
   try{Nativo.bajar(JSON.stringify(L0),"Zona vista el "+new Date().toLocaleDateString("es-ES",{day:"numeric",month:"short"}))}catch(e){}}
 function bajando(h,t,falta){if(falta&&h<t)toast(`🗺 Guardando el mapa de la zona para sin cobertura: ${h} de ${t}`,2500);else if(h>=t)toast(falta?"🗺 Mapa de la zona guardado: se verá sin cobertura":"🗺 El mapa de la zona ya estaba guardado",3000)}

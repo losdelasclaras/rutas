@@ -19,6 +19,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -197,7 +199,10 @@ class GrabarActivity : Activity(), LocationListener {
                 val f = tesela(k[0], k[1], k[2], k[3])
                 if (!f.exists() || f.length() == 0L) bajarTesela(u, f)
                 val tipo = if (k[0] == "topo") "image/png" else "image/jpeg"
-                return if (f.exists() && f.length() > 0) WebResourceResponse(tipo, null, f.inputStream())
+                if (f.exists() && f.length() > 0) return WebResourceResponse(tipo, null, f.inputStream())
+                // sin cobertura y sin esa tesela: se amplía un trozo de la de menos zoom que sí esté guardada (se ve algo borrosa, pero se ve)
+                val r = recorte(k[0], k[1].toInt(), k[2].toInt(), k[3].toInt())
+                return if (r != null) WebResourceResponse(tipo, null, java.io.ByteArrayInputStream(r))
                 else WebResourceResponse(tipo, null, 404, "Sin cobertura", emptyMap(), java.io.ByteArrayInputStream(ByteArray(0)))
             }
         }
@@ -240,6 +245,21 @@ class GrabarActivity : Activity(), LocationListener {
         Regex("^https://www\\.ign\\.es/wmts/(mapa-raster|pnoa-ma)\\?.*TileMatrix=(\\d+)&TileRow=(\\d+)&TileCol=(\\d+)$").find(u)?.let {
             val (sv, z, y, x) = it.destructured; return listOf(if (sv == "pnoa-ma") "orto" else "ign", z, x, y) }
         return null }
+    /** Trozo ampliado de una tesela guardada de menos zoom (hasta 6 niveles menos), o null si no hay ninguna. */
+    private fun recorte(capa: String, z: Int, x: Int, y: Int): ByteArray? {
+        for (dz in 1..6) { val zz = z - dz; if (zz < 0) break
+            val f = tesela(capa, "$zz", "${x shr dz}", "${y shr dz}"); if (!f.exists() || f.length() == 0L) continue
+            return try { val bm = BitmapFactory.decodeFile(f.path) ?: continue
+                val n = 1 shl dz; val sz = bm.width / n; if (sz < 4) return null
+                val parte = Bitmap.createBitmap(bm, (x and (n - 1)) * sz, (y and (n - 1)) * sz, sz, sz)
+                val esc = Bitmap.createScaledBitmap(parte, bm.width, bm.height, true)
+                val o = java.io.ByteArrayOutputStream(); esc.compress(if (capa == "topo") Bitmap.CompressFormat.PNG else Bitmap.CompressFormat.JPEG, 85, o); o.toByteArray()
+            } catch (e: Exception) { null } }
+        return null }
+    /** Mapas (topo, ign, orto) que tienen guardado algo en ese sitio, a ese zoom o menos. */
+    private fun capasCon(la: Double, lo: Double, z: Int): List<String> = listOf("topo", "ign", "orto").filter { cp ->
+        (0..6).any { dz -> val zz = z - dz; if (zz < 0) false else { val n = 1 shl zz; val x = ((lo + 180) / 360 * n).toInt(); val r = Math.toRadians(la)
+            val y = ((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n).toInt(); val f = tesela(cp, "$zz", "$x", "$y"); f.exists() && f.length() > 0 } } }
     private fun tesela(capa: String, z: String, x: String, y: String) = File(teselas, "$capa/$z/$x/$y" + if (capa == "topo") ".png" else ".jpg")
     private fun bajarTesela(u: String, f: File): Boolean = try {
         val k = java.net.URL(u).openConnection() as java.net.HttpURLConnection
@@ -375,6 +395,7 @@ class GrabarActivity : Activity(), LocationListener {
             if (!Grab.prefs(c).getBoolean("activo", false)) Buzon.enviar(c, emptyList(), "Puntos", JSONArray().put(w)) {}
             return true }
         /** Cuántas de esas teselas faltan por guardar (para preguntar solo si hace falta y decir cuánto ocupa). */
+        @JavascriptInterface fun capasCon(la: Double, lo: Double, z: Int): String = JSONArray(this@GrabarActivity.capasCon(la, lo, z)).toString()
         @JavascriptInterface fun faltan(lista: String): Int { val a = try { JSONArray(lista) } catch (e: Exception) { return 0 }
             return (0 until a.length()).count { val (cp, z, x, y) = a.getString(it).split("/"); val f = tesela(cp, z, x, y); !(f.exists() && f.length() > 0) } }
         // mapa sin cobertura: bajar la zona del track
