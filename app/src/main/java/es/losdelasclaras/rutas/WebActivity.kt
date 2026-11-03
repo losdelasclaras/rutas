@@ -1,6 +1,7 @@
 package es.losdelasclaras.rutas
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -26,10 +27,26 @@ class WebActivity : LauncherActivity() {
     }
     private var preguntando = false
 
-    override fun shouldLaunchImmediately(): Boolean { preguntando = pedir(); return !preguntando }
+    /** Si se está grabando un recorrido, al abrir la app desde el icono se va directo a la pantalla de grabar
+     *  (salvo justo después de tocar 🏠 en esa pantalla, que es para ir a la app). */
+    private var aGrabar = false
+    private fun grabando(): Boolean {
+        val g = Grab.prefs(this)
+        if (!g.getBoolean("activo", false)) return false
+        val v = g.getLong("volver_t", 0L)
+        if (System.currentTimeMillis() - v < 20000) { g.edit().remove("volver_t").apply(); return false }
+        return true
+    }
+    override fun shouldLaunchImmediately(): Boolean {
+        if (intent?.data == null && grabando()) { aGrabar = true; return false }
+        preguntando = pedir(); return !preguntando }
 
     override fun onCreate(b: Bundle?) {
         super.onCreate(b)
+        if (aGrabar) {
+            startActivity(Intent(this, GrabarActivity::class.java).putExtra("desdeIcono", true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            finish(); return
+        }
         if (preguntando && !isFinishing) {
             getSharedPreferences("ldc", MODE_PRIVATE).edit().putLong("permiso_pedido", System.currentTimeMillis()).apply()
             requestPermissions(perms, 7)
@@ -47,7 +64,7 @@ class WebActivity : LauncherActivity() {
         finishAndRemoveTask()
     }
     private fun vigilar() { h.removeCallbacks(vigia); h.postDelayed(vigia, 10000) }
-    override fun onResume() { super.onResume(); if (!tapada && !preguntando) vigilar() }
+    override fun onResume() { super.onResume(); if (!tapada && !preguntando && !aGrabar) vigilar() }
     override fun onPause() { super.onPause(); if (!preguntando) tapada = true; h.removeCallbacks(vigia) }
     override fun onDestroy() { h.removeCallbacks(vigia); super.onDestroy() }
 }

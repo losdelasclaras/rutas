@@ -204,12 +204,14 @@ class GrabarActivity : Activity(), LocationListener {
         web.webChromeClient = WebChromeClient()
         web.addJavascriptInterface(Puente(), "Nativo")
         setContentView(web)
+        desdeIcono = intent?.getBooleanExtra("desdeIcono", false) == true
         datosDe(intent)
         web.loadUrl("file:///android_asset/grabar.html")
         Buzon.reintentar(this)
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) permisos()
     }
-    override fun onNewIntent(i: Intent?) { super.onNewIntent(i); setIntent(i); datosDe(i); web.evaluateJavascript("cargaSeguir();refresca();miraZona()", null) }
+    private var desdeIcono = false
+    override fun onNewIntent(i: Intent?) { super.onNewIntent(i); setIntent(i); desdeIcono = i?.getBooleanExtra("desdeIcono", false) == true; datosDe(i); web.evaluateJavascript("cargaSeguir();refresca();miraZona()", null) }
     override fun onResume() { super.onResume(); mirar() }
     override fun onPause() { super.onPause(); soltar() }
 
@@ -346,7 +348,13 @@ class GrabarActivity : Activity(), LocationListener {
             try { startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName"))) }
             catch (e: Exception) { try { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) } catch (x: Exception) {} } }
         @JavascriptInterface fun sinBateria(): Boolean = if (Build.VERSION.SDK_INT >= 23) (getSystemService(POWER_SERVICE) as PowerManager).isIgnoringBatteryOptimizations(packageName) else true
-        @JavascriptInterface fun volver() = runOnUiThread { finish() }
+        /** 🏠: si esta pantalla se abrió sola desde el icono (porque se estaba grabando), detrás no está la app: se abre como al tocar el icono. */
+        @JavascriptInterface fun volver() = runOnUiThread {
+            if (desdeIcono) {
+                Grab.prefs(c).edit().putLong("volver_t", System.currentTimeMillis()).apply()
+                try { startActivity(packageManager.getLaunchIntentForPackage(packageName)!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) {}
+            }
+            finish() }
         /** Abrir fuera (Google Maps para «Cómo llegar»). */
         @JavascriptInterface fun abrir(u: String) = runOnUiThread { if (u.startsWith("https://")) try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(u))) } catch (e: Exception) {} }
         // seguir

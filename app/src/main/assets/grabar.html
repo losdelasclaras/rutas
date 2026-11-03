@@ -9,18 +9,26 @@
 html,body{margin:0;height:100%;overflow:hidden;color:var(--ink);font:18px/1.4 system-ui,-apple-system,Roboto,sans-serif;background:#e8e6dc}
 #map{position:fixed;inset:0;background:#e8e6dc}
 .leaflet-control-attribution{font-size:10px}
-/* datos arriba */
-#top{position:fixed;left:10px;right:10px;top:10px;z-index:1000;background:rgba(255,255,255,.96);border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.25);padding:8px 10px}
-.st{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
-.st b{display:block;font-size:26px;font-variant-numeric:tabular-nums;line-height:1.1}.st small{color:var(--muted);font-weight:700;font-size:13px}
-#est{margin-top:6px;padding:6px 10px;border-radius:10px;font-weight:800;font-size:15px;text-align:center;background:#f1f1f1}
-#est.rec{background:var(--rojo);color:#fff}#est.pau{background:#fff1e0;color:#8a4b00}
-#seg{margin-top:6px;padding:7px 10px;border-radius:10px;background:#f2ebfa;color:#3d1466;font-weight:700;font-size:15px}
-#seg.fuera{background:#b3261e;color:#fff}
-#seg .ir{display:flex;gap:8px;margin-top:7px}#seg .ir button{flex:1;border:0;border-radius:10px;padding:9px 6px;font:inherit;font-size:15px;font-weight:800;background:#7b2cbf;color:#fff}
-#seg .ir button+button{background:#fff;color:#3d1466}
-#seg[hidden],#est[hidden]{display:none}
-#seg .x{float:right;border:0;background:none;color:inherit;font-weight:800;font-size:15px;padding:0 0 0 8px;text-decoration:underline}
+/* datos arriba: dos tiras pequeñas; al tocarlas se ve todo */
+#top{position:fixed;left:10px;right:10px;top:10px;z-index:1000;display:flex;flex-direction:column;align-items:flex-start;gap:6px;pointer-events:none}
+.chip{pointer-events:auto;max-width:100%;background:rgba(255,255,255,.96);border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.25);padding:7px 12px;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.chip .ic{flex:none;font-size:15px;border-left:1px solid var(--edge);padding-left:8px;color:var(--muted)}
+.chip .tx{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
+#rec.rec{background:var(--rojo);color:#fff}#rec.rec .ic{color:#fff;border-color:rgba(255,255,255,.4)}
+#rec.pau{background:#fff1e0;color:#8a4b00}
+#rec .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#fff;margin-right:6px;animation:lat 1s ease-in-out infinite alternate}
+@keyframes lat{from{opacity:1}to{opacity:.3}}
+#seg{flex-direction:column;align-items:stretch;background:#f2ebfa;color:#3d1466;width:100%}
+#seg .s1{display:flex;align-items:center;gap:8px}
+#seg.fuera{background:#b3261e;color:#fff}#seg.fuera .ic{color:#fff}#seg.fin{background:#1f6b32;color:#fff}#seg.fin .ic{color:#fff}
+#seg[hidden],#segMas[hidden]{display:none}
+#segMas{margin-top:8px;font-weight:600}
+.bar{height:6px;border-radius:3px;background:rgba(0,0,0,.12);overflow:hidden;margin:2px 0 8px}.bar i{display:block;height:100%;background:#7b2cbf}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 4px;text-align:center}
+.g3 b{display:block;font-size:19px;font-variant-numeric:tabular-nums}.g3 small{display:block;font-size:12px;opacity:.8;font-weight:700;line-height:1.15}
+.ir{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.ir button{flex:1 1 40%;border:0;border-radius:10px;padding:9px 6px;font:inherit;font-size:15px;font-weight:800;background:#7b2cbf;color:#fff}
+.ir button.b{background:#fff;color:#3d1466}.ir button.x{background:#fff;color:#b3261e}
+.dt{width:100%;border-collapse:collapse;margin:4px 0 8px}.dt td{padding:8px 4px;border-bottom:1px solid var(--edge);font-size:17px}.dt td+td{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
 /* botones redondos a la derecha */
 #lado{position:fixed;right:12px;bottom:104px;z-index:1000;display:flex;flex-direction:column;gap:12px}
 .rd{width:46px;height:46px;border-radius:50%;border:0;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3);display:grid;place-items:center;font-size:20px;color:var(--ink);padding:0}
@@ -51,9 +59,8 @@ html,body{margin:0;height:100%;overflow:hidden;color:var(--ink);font:18px/1.4 sy
 </style></head><body>
 <div id="map"></div>
 <div id="top">
-  <div class="st"><span><b id="tt">0:00</b><small>tiempo</small></span><span><b id="km">0,00</b><small>km</small></span><span><b id="up">+0</b><small>m subida</small></span></div>
-  <div id="est"></div>
-  <div id="seg" hidden></div>
+  <div id="rec" class="chip" onclick="datos()"><span class="tx" id="recTx">Toca ● para grabar</span><span class="ic" id="recIc">📊</span></div>
+  <div id="seg" class="chip" hidden><div class="s1" onclick="abreSeg()"><span class="tx" id="segTx"></span><span class="ic" id="segIc">▾</span></div><div id="segMas" hidden></div></div>
 </div>
 <button class="rd" id="casa" onclick="Nativo.volver()" aria-label="Volver a la app">🏠</button>
 <div id="lado">
@@ -109,24 +116,35 @@ function pos(la,lo,ac,al){YO=[la,lo,al];
   sigueA(la,lo)}
 function sinPermiso(){toast("⛔ Sin permiso de ubicación. Ábrelo en Ajustes › Aplicaciones › Los de las Claras › Permisos › Ubicación.",8000)}
 /* ---------- seguir un track ---------- */
-let T=[],TC=[],TU=[],TN="",FUERA=0,AVISADO=false,IDX=0;
+let T=[],TC=[],UPC=[],DNC=[],TN="",FUERA=0,AVISADO=false,IDX=0,REV=false,SEGOPEN=false,SEGD=null,T0=[];
+const lsG=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsS=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}};
 function cargaSeguir(){let o=null;try{o=JSON.parse(Nativo.seguir()||"null")}catch(e){}
   if(!o||!o.t||o.t.length<2){T=[];segL.setLatLngs([]);segB.setLatLngs([]);$("seg").hidden=true;return}
-  const nuevo=TN!==o.n||T.length!==o.t.length;T=o.t;TN=o.n||"Track";
-  TC=[0];for(let i=1;i<T.length;i++)TC.push(TC[i-1]+dm(T[i-1],T[i]));
-  // subida que queda desde cada punto (suavizada, como en la app)
-  TU=new Array(T.length).fill(0);let up=0;for(let i=T.length-2;i>=0;i--){const a=T[i][2],b=T[i+1][2];if(a!=null&&b!=null&&b>a)up+=b-a;TU[i]=up}
+  const nuevo=TN!==(o.n||"Track")||T0.length!==o.t.length;T0=o.t;TN=o.n||"Track";
+  REV=lsG("rev:"+TN)==="1";prepara();
   const ll=T.map(p=>[p[0],p[1]]);segL.setLatLngs(ll);segB.setLatLngs(ll);
   if(nuevo){IDX=0;map.fitBounds(L.latLngBounds(ll),{padding:[40,40],paddingTopLeft:[20,150],paddingBottomRight:[80,150]});SIGUE=false;clearTimeout(VUELTA);VUELTA=setTimeout(()=>{SIGUE=true;if(YO)map.panTo([YO[0],YO[1]])},20000);setTimeout(ofreceZona,700)}
   pintaSeg(null)}
-function pintaSeg(d){const e=$("seg");if(!T.length){e.hidden=true;return}e.hidden=false;
-  if(d!=null&&d>1000){const a=YO?dm(YO,T[0]):d;e.className="lejos";
-    e.innerHTML=`<button class="x" onclick="dejar()">Dejar</button>▶ ${esc(TN)}<br><span style="font-weight:600">Estás a <b>${kmT(a)} km</b> de la salida</span>`+
-      `<div class="ir"><button onclick="llegar()">🚗 Cómo llegar a la salida</button><button onclick="verTrack()">🗺 Ver el track</button></div>`;return}
-  const queda=TC[TC.length-1]-TC[IDX],sub=Math.round(TU[IDX]||0);
-  e.className=d!=null&&d>60?"fuera":"";
-  e.innerHTML=`<button class="x" onclick="dejar()">Dejar</button>`+(d!=null&&d>60?`⚠️ Te has salido del track (a ${Math.round(d)} m)`:`▶ ${esc(TN)}`)+
-    `<br><span style="font-weight:600">Faltan <b>${kmT(queda)} km</b>${sub>0?` · <b>+${sub.toLocaleString("es-ES")} m</b> por subir`:""}</span>`}
+// distancias, subida y bajada acumuladas a lo largo del track (con 4 m de margen para el ruido, como en la app)
+function prepara(){T=REV?T0.slice().reverse():T0.slice();const n=T.length;TC=[0];UPC=[0];DNC=[0];let U=0,Dn=0,ref=T[0][2];
+  for(let i=1;i<n;i++){TC.push(TC[i-1]+dm(T[i-1],T[i]));const e=T[i][2];
+    if(e!=null&&ref!=null){if(e-ref>=4){U+=e-ref;ref=e}else if(ref-e>=4){Dn+=ref-e;ref=e}}else if(ref==null)ref=e;UPC.push(U);DNC.push(Dn)}}
+const fmM=m=>Math.round(m).toLocaleString("es-ES")+" m";
+function pintaSeg(d){if(d!==undefined)SEGD=d;d=SEGD;const e=$("seg");if(!T.length){e.hidden=true;return}e.hidden=false;
+  const n=T.length,tot=TC[n-1],hecho=TC[IDX]||0,queda=tot-hecho,upQ=UPC[n-1]-UPC[IDX],dnQ=DNC[n-1]-DNC[IDX],lejos=d!=null&&d>1000,fuera=!lejos&&d!=null&&d>60,fin=!lejos&&!fuera&&queda<60&&hecho>tot*.5;
+  e.className="chip"+(fuera?" fuera":fin?" fin":"");
+  const a=YO?dm(YO,T[0]):d;
+  $("segTx").innerHTML=lejos?`▶ ${esc(TN)} · a <b>${kmT(a)} km</b> de la salida`:fuera?`⚠️ Te has salido del track (a ${Math.round(d)} m)`:fin?`🏁 ¡Has llegado al final!`:
+    `▶ ${esc(TN)} · faltan <b>${kmT(queda)} km</b>${upQ>=10?` · +${fmM(upQ)}`:""}`;
+  $("segIc").textContent=SEGOPEN?"▴":"▾";
+  const m=$("segMas");m.hidden=!SEGOPEN;if(!SEGOPEN)return;
+  m.innerHTML=`<div style="margin-bottom:4px">${esc(TN)}${REV?" <small>(al revés)</small>":""}</div><div class="bar"><i style="width:${tot?(hecho/tot*100).toFixed(1):0}%"></i></div>
+   <div class="g3"><div><b>${kmT(hecho)}</b><small>km hechos</small></div><div><b>${kmT(queda)}</b><small>km que faltan</small></div><div><b>${kmT(tot)}</b><small>km en total</small></div>
+   <div><b>+${fmM(UPC[IDX]||0)}</b><small>subida hecha</small></div><div><b>+${fmM(upQ)}</b><small>subida que falta</small></div><div><b>−${fmM(dnQ)}</b><small>bajada que falta</small></div></div>
+   <div class="ir">${lejos||IDX<3?`<button onclick="llegar()">🚗 Cómo llegar a la salida</button>`:""}<button class="b" onclick="alReves()">⇄ Al revés</button><button class="b" onclick="verTrack()">🗺 Ver el track</button><button class="x" onclick="dejar()">✕ Dejar de seguir</button></div>
+   <p style="font-size:13px;margin:8px 0 0;opacity:.8">Según el track. «Al revés» si lo empiezas por el final.</p>`}
+function abreSeg(){SEGOPEN=!SEGOPEN;pintaSeg()}
+function alReves(){REV=!REV;lsS("rev:"+TN,REV?"1":null);prepara();IDX=0;FUERA=0;AVISADO=false;if(YO)sigueA(YO[0],YO[1]);else pintaSeg();toast(REV?"Track al revés: empiezas por el final":"Track en el sentido normal")}
 function sigueA(la,lo){if(!T.length)return;
   // el punto del track más cercano (buscando primero cerca del anterior)
   let best=-1,bd=1e12;const p=[la,lo];
@@ -190,12 +208,27 @@ function pintaPuntos(){WPL.clearLayers();let l=[];try{l=JSON.parse(Nativo.listaP
 /* ---------- grabar ---------- */
 function sube(){let up=0,ref=null;for(const p of PTS){if(p[2]==null)continue;if(ref==null){ref=p[2];continue}if(p[2]-ref>5){up+=p[2]-ref;ref=p[2]}else if(ref-p[2]>5)ref=p[2]}return Math.round(up)}
 const dur=()=>S.activo?Math.max(0,(S.pz||Date.now())-S.t0-S.pau):0;
+function baja(){let dn=0,ref=null;for(const p of PTS){if(p[2]==null)continue;if(ref==null){ref=p[2];continue}if(ref-p[2]>5){dn+=ref-p[2];ref=p[2]}else if(p[2]-ref>5)ref=p[2]}return Math.round(dn)}
+// tiempo en movimiento: tramos entre puntos a más de 0,4 m/s (y menos de 15, para no contar saltos del GPS)
+function mov(){let t=0,d=0;for(let i=1;i<PTS.length;i++){const a=PTS[i-1],b=PTS[i],dt=(b[3]-a[3])/1000;if(!(dt>0)||dt>600)continue;const dd=dm(a,b),v=dd/dt;if(v>.4&&v<15){t+=dt;d+=dd}}return{t:t*1000,d}}
+let DATOS=false;
+function datos(){if(!S.activo){toast(T.length?"Toca ● (abajo) para grabar mientras sigues el track":"Toca ● (abajo) para empezar a grabar");return}DATOS=true;$("sh").dataset.d="1";$("sheet").hidden=false;pintaDatos()}
+function pintaDatos(){if(!DATOS)return;if($("sheet").hidden||($("sh").innerHTML&&!$("sh").querySelector(".dt")&&$("sh").dataset.d!=="1")){DATOS=false;return}$("sh").dataset.d="";
+  const tt=dur(),m=mov(),np=+(Nativo.nPuntos()||0),vm=m.t?m.d/(m.t/1000)*3.6:0,ritmo=vm?60/vm:0,ini=new Date(S.t0);
+  const fila=(a,b)=>`<tr><td>${a}</td><td>${b}</td></tr>`;
+  $("sh").innerHTML=`<h2>📊 ${S.pz?"❚❚ En pausa":"● Grabando"}</h2><p style="margin:0 0 6px;color:#5d6b62;font-size:15px">${PTS.length?"Puedes apagar la pantalla: sigue grabando.":"Esperando la señal del GPS…"}</p>
+  <table class="dt">${fila("⏱ Tiempo total",hms(tt))}${fila("🚶 En movimiento",hms(m.t))}${fila("☕ Parado",hms(Math.max(0,tt-m.t)))}${S.pau||S.pz?fila("❚❚ En pausa",hms(S.pau+(S.pz?Date.now()-S.pz:0))):""}
+  ${fila("📏 Distancia",kmT(D)+" km")}${fila("↗ Subida",fmM(sube()))}${fila("↘ Bajada",fmM(baja()))}
+  ${fila("🏃 Velocidad media (en movimiento)",vm?vm.toLocaleString("es-ES",{maximumFractionDigits:1})+" km/h":"—")}${fila("⏳ Ritmo",ritmo&&ritmo<120?(x=>Math.floor(x/60)+":"+String(x%60).padStart(2,"0"))(Math.round(ritmo*60))+" min/km":"—")}
+  ${fila("🕘 Empezaste",ini.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}))}${fila("📍 Puntos guardados",np)}${fila("🛰 Puntos de GPS",PTS.length.toLocaleString("es-ES"))}</table>
+  <p style="font-size:13px;color:#8a958e;margin:0 0 6px">La subida y la bajada salen de la altura del GPS: son aproximadas.</p>
+  <button class="b2" onclick="cierra()">Cerrar</button>`}
 function pinta(){
-  $("tt").textContent=hms(dur());$("km").textContent=kmT(D);$("up").textContent="+"+sube().toLocaleString("es-ES");
-  const e=$("est");
-  if(!S.activo){e.className="";e.innerHTML=(T.length?"Toca ● para grabar mientras lo sigues":"Toca ● para grabar")}
-  else if(S.pz){e.className="pau";e.textContent="❚❚ En pausa"}
-  else{e.className="rec";e.textContent=PTS.length?"● Grabando · puedes apagar la pantalla":"● Grabando · esperando la señal del GPS…"}
+  const e=$("rec");
+  if(!S.activo){e.className="chip";$("recTx").textContent=T.length?"Toca ● para grabar mientras lo sigues":"Toca ● para grabar";$("recIc").hidden=true}
+  else{$("recIc").hidden=false;e.className="chip "+(S.pz?"pau":"rec");
+    $("recTx").innerHTML=(S.pz?"❚❚ ":`<i class="dot"></i>`)+`${hms(dur())} · ${kmT(D)} km · +${sube().toLocaleString("es-ES")} m`}
+  pintaDatos();
   $("abajo").innerHTML=!S.activo?`<button class="big go" onclick="Nativo.empezar()" aria-label="Grabar"><i></i></button>`:
     `<button class="big ${S.pz?"pl":"ps"}" onclick="Nativo.pausa()" aria-label="${S.pz?"Seguir grabando":"Pausa"}"><i></i></button><button class="big fn" onclick="fin()" aria-label="Terminar"><i></i></button>`;
   $("b-bat").hidden=!S.activo||Nativo.sinBateria()}
@@ -220,7 +253,7 @@ function hecho(n,donde,est){const e=esc(n);
   <button class="b2" onclick="cierra()">Cerrar</button>
   <p style="font-size:14px;color:#5d6b62">Copia en ${esc(donde)}.</p>`;$("sheet").hidden=false;refresca()}
 function aviso(t){toast(t,6000)}
-function cierra(){$("sheet").hidden=true}
+function cierra(){$("sheet").hidden=true;DATOS=false}
 cargaSeguir();refresca();setTimeout(miraZona,300);
 setInterval(()=>{if(document.visibilityState!=="visible")return;S=JSON.parse(Nativo.estado());nuevos();pinta()},2000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){refresca();cargaSeguir()}});
