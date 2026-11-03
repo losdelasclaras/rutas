@@ -7,6 +7,9 @@
        así que se explica cómo bajar el GPX en esa app y abrirlo aquí. */
 (function(){
 const MPI=window.MISPUNTOS;
+// el mapa de Wikiloc en una zona (km = mitad del lado del recuadro, unos 3 km por defecto)
+const wkUrl=window.wkUrl=(la,lo,km)=>{const dy=(km||3.3)/111.2,dx=dy/Math.cos(la*Math.PI/180);
+  return`https://es.wikiloc.com/wikiloc/map.do?sw=${(la-dy).toFixed(4)}%2C${(lo-dx).toFixed(4)}&ne=${(la+dy).toFixed(4)}%2C${(lo+dx).toFixed(4)}&page=1`};
 const nrm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();
 const dkm=(a,b,c,d)=>Math.hypot((a-c)*111.2,(b-d)*111.2*Math.cos(a*Math.PI/180));
 async function mandar(title,text,url){
@@ -30,7 +33,7 @@ function datosFicha(c){
   return{n:h2.textContent.trim(),lat,lon,alt,cum:key[0]==="c",co:co?co.textContent.trim():""}}
 function pon(c){const d=datosFicha(c);if(!d)return;c._pt=d;
   // 🔎 más rutas por aquí en Wikiloc: su mapa centrado en este punto (unos 3 km alrededor). No se saca nada de Wikiloc: solo se enlaza
-  const wk=`https://es.wikiloc.com/wikiloc/map.do?sw=${(d.lat-.03).toFixed(4)}%2C${(d.lon-.04).toFixed(4)}&ne=${(d.lat+.03).toFixed(4)}%2C${(d.lon+.04).toFixed(4)}&page=1`;
+  const wk=wkUrl(d.lat,d.lon);
   const b=`<button class="btn ghost" data-ptshare>📤 Compartir</button><a class="btn ghost" href="${wk}" target="_blank" rel="noopener">🔎 Más rutas por aquí (Wikiloc)</a>`;
   const acts=c.querySelector(".actions");if(acts)acts.insertAdjacentHTML("beforeend",b);
   else c.querySelector(".mkblock").insertAdjacentHTML("afterend",`<div class="actions" style="margin-top:8px">${b}</div>`)}
@@ -64,12 +67,19 @@ const ORD=[
   ["llegar",el=>href(el,/google\.[a-z.]+\/maps\/dir/),"🚗 Cómo llegar a la salida"],
   ["mapa",el=>el.matches("[data-ovmap]"),null],
   ["ruta",el=>el.matches("[data-mtroute]"),null],
-  ["wl",el=>href(el,/wikiloc\./i),"Ver en Wikiloc"],
+  ["wl",el=>href(el,/wikiloc\./i)&&!el.matches("[data-wkz]"),"Ver en Wikiloc"],
+  ["wkz",el=>el.matches("[data-wkz]"),null],
   ["gm",el=>href(el,/google\.[a-z.]+\/maps\/search/),"📍 Google Maps"]];
 function ordena(c){if(!c||c.hidden)return;
   const pr=[...c.querySelectorAll(PRIM)].find(x=>!x.closest(FUERA));if(!pr)return;
   // ⌚ si no está
   if(!c.querySelector("[data-reloj]")&&(pr.matches("[data-follow],[data-mtfol]")||(pr.matches("[data-cofol]")&&c.id==="sheet")))pr.insertAdjacentHTML("afterend",`<button class="btn ghost" data-reloj></button>`);
+  // 🔎 más rutas por esta zona en Wikiloc (en su mapa), desde la salida de la ruta
+  if(!c.querySelector("[data-wkz]")){let ll=null;
+    if(pr.matches("[data-follow]")){const r=R[+pr.dataset.follow];if(r)ll=[r.lat,r.lon]}
+    else if(pr.matches("[data-cofol]")&&c.id==="sheet"&&sheet._cor){ll=sheet._cor.c.r[sheet._cor.i][8]}
+    else if(pr.matches("[data-mtfol]")&&MPI){const t=MPI.tracks().find(x=>String(x.id)===pr.dataset.mtfol),q=t&&MPI.ptsOf(t);if(q&&q.length)ll=q[0]}
+    if(ll)pr.insertAdjacentHTML("afterend",`<a class="btn ghost" data-wkz href="${wkUrl(ll[0],ll[1])}" target="_blank" rel="noopener">🔎 Más rutas por aquí (Wikiloc)</a>`)}
   let box=c.querySelector(".acts2");
   if(!box){const ta=pr.closest(".topacts")||pr.parentNode;ta.insertAdjacentHTML("beforebegin",`<div class="acts2"><div class="aprim"></div><div class="agrid"></div></div>`);box=ta.previousElementSibling;
     // debajo de los datos de la ruta (km, desnivel, dificultad y salida), no encima de la descripción

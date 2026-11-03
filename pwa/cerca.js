@@ -2,7 +2,7 @@
 (function(){
 let PICK=false;      // esperando a que se elija sitio en la pantalla de búsqueda
 window.NEAR=null;    // {lat,lon,label,rad}
-const banner=()=>NEAR?`<div class="wzban"><b>📍 Cerca de ${esc(NEAR.label)}</b><span>A menos de ${NEAR.rad} km, de lo más cercano a lo más lejano. Arriba cambias entre Rutas, Cumbres y Lugares.</span><div><button class="btn primary" data-cnear>Cambiar</button> <button class="linkbtn" data-cnoff>Ver todo</button></div></div>`:"";
+const banner=()=>NEAR?`<div class="wzban"><b>📍 Cerca de ${esc(NEAR.label)}</b><span>A menos de ${NEAR.rad} km, de lo más cercano a lo más lejano. Arriba cambias entre Rutas, Cumbres y Lugares.</span><div><button class="btn primary" data-cnear>Cambiar</button> <button class="linkbtn" data-cnoff>Ver todo</button>${window.wkUrl?` <a class="linkbtn" href="${wkUrl(NEAR.lat,NEAR.lon,Math.min(NEAR.rad||8,8))}" target="_blank" rel="noopener">🔎 Más rutas por aquí en Wikiloc</a>`:""}</div></div>`:"";
 window.cercaBar=(kind,C)=>`<div class="wizrow cerca"><button class="btn ghost wizbtn" data-cnear>📍 Cerca de un lugar</button><button class="btn ghost wizbtn" data-cme>🎯 Cerca de mí</button><button class="btn ghost wizbtn" data-fpopen>⚙ Filtros${fpN(C)?" ("+fpN(C)+")":""}</button></div>`+banner();
 window.cercaTit=()=>PICK?"¿Cerca de dónde?":"Rutas cerca de…";
 const vistaX=()=>["rutas","cumbres","lugares"].find(k=>{const v=document.getElementById("v-"+k);return v&&!v.hidden});
