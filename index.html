@@ -374,16 +374,16 @@ const norm=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 const km=(a,b)=>{const R0=6371,toR=Math.PI/180,dl=(b.lat-a.lat)*toR,dn=(b.lon-a.lon)*toR;const h=Math.sin(dl/2)**2+Math.cos(a.lat*toR)*Math.cos(b.lat*toR)*Math.sin(dn/2)**2;return 2*R0*Math.asin(Math.sqrt(h))};
 
 /* ---------- tipos de lugar ---------- */
-const CATS=[["brana","Brañas y majadas",/(?:^|[\s(/-])(braña|brañas|majada|majdada|mayada|mayá|invernales|prau|vega|puertos de verano|panera)(?=$|[\s,.)/-])/i],
- ["foz","Foces, canales y sedos",/(?:^|[\s(/-])(foz|foces|desfiladero|canal|canalón|sedo|sedos|travesedo|olla|jour|hierbas altas|cañón|faja|fajas|clavijas|forau)(?=$|[\s,.)/-])/i],
- ["agua","Lagos y fuentes",/(?:^|[\s(/-])(lago|lagos|laguna|lagunas|llaguna|llagos|nacimiento|fuente|oyu|pozo|ibón|ibon|ibones|ibonet|estany|estanque|stany|lac|lacs|embalse|étang|lago di)(?=$|[\s,.)/-])/i],
+const CATS=[["brana","Brañas y majadas",/(?:^|[\s(/-])(braña|brañas|majada|majdada|mayada|mayá|mayau|mayáu|invernales|prau|vega|puertos de verano|panera)(?=$|[\s,.)/-])/i],
+ ["foz","Foces, canales y sedos",/(?:^|[\s(/-])(foz|foces|foix|garganta|desfiladero|canal|canalón|sedo|sedos|travesedo|olla|jour|hierbas altas|cañón|faja|fajas|clavijas|forau)(?=$|[\s,.)/-])/i],
+ ["agua","Lagos y fuentes",/(?:^|[\s(/-])(lago|lagos|laguna|lagunas|llaguna|llagos|nacimiento|fuente|fuentes|oyu|pozo|ibón|ibon|ibones|ibonet|estany|estanque|stany|lac|lacs|embalse|étang|lago di)(?=$|[\s,.)/-])/i],
  ["cascada","Cascadas",/(?:^|[\s(/-])(cascada|cascadas|cascade|tabayon|tabayón|salto|pingañón|gorg|gradas)(?=$|[\s,.)/-])/i],
  ["bosque","Bosques",/(?:^|[\s(/-])(bosque|hayedo|faedo|fayeu|tejeda)(?=$|[\s,.)/-])/i],
  ["costa","Costa",/(?:^|[\s(/-])(playa|faro|cabo|punta|acantilados|bufones|cala|pedreru)(?=$|[\s,.)/-])/i],
- ["patrimonio","Patrimonio",/(?:^|[\s(/-])(ermita|iglesia|monasterio|castro|dolmen|ídolo|minas|poblado|calzada|medieval|puente|molinos|castillo|abandonado|túnel|tunel|conjunto)(?=$|[\s,.)/-])/i],
+ ["patrimonio","Patrimonio",/(?:^|[\s(/-])(ermita|iglesia|monasterio|castro|dolmen|ídolo|mina|minas|aldea|etnográfica|etnografica|histórico|historico|poblado|calzada|medieval|puente|molinos|castillo|abandonado|túnel|tunel|conjunto)(?=$|[\s,.)/-])/i],
  ["cueva","Cuevas",/(?:^|[\s(/-])(cueva|covarones)(?=$|[\s,.)/-])/i],
  ["refugio","Refugios",/(?:^|[\s(/-])(refugio|refugi|refuge|rifugio|cabane|hütte|chalet)(?=$|[\s,.)/-])/i],
- ["collado","Collados, sierras y miradores",/(?:^|[\s(/-])(collado|collada|collaú|pasá|mirador|muezca|copa|sierra|arista|coll|col|cuello|port|puerto|paso|passo|pass|forcella|furcela|portillón|brecha|brèche|hourquette|circ|cirque)(?=$|[\s,.)/-])/i],
+ ["collado","Collados, sierras y miradores",/(?:^|[\s(/-])(collado|collada|collaú|colláu|collau|pasá|mirador|muezca|copa|sierra|arista|coll|col|cuello|port|puerto|paso|passo|pass|forcella|furcela|portillón|brecha|brèche|hourquette|circ|cirque)(?=$|[\s,.)/-])/i],
  ["senda","Sendas y caminos",/(?:^|[\s(/-])(senda|camín|ruta|sentiero|galleria|valle)(?=$|[\s,.)/-])/i]];
 const catOf=n=>{for(const [k,,re] of CATS)if(re.test(n))return k;return "otros"};
 P.forEach(p=>{p.cat=p.ic?"invernal":p.t==="cumbre"?"cumbre":p.x?"inicio":catOf(p.c)});
@@ -1921,7 +1921,7 @@ function panelHTML(){const r=F.r;
   <div class="bar"><i data-fbar style="width:0"></i></div>
   <div class="fg"><div><small>Hecho</small><b data-fdone>—</b></div><div><small>Falta</small><b data-fleft>${fk(F.T.tot)}</b></div>
    <div><small>Subida que falta</small><b data-fup>+${fm(F.T.up[F.T.up.length-1])}</b></div><div><small>Bajada que falta</small><b data-fdn>−${fm(F.T.dn[F.T.dn.length-1])}</b></div></div>
-  <div class="fb"><button data-fc class="on">◎ Centrar</button><button data-fr title="Si haces la ruta desde el otro extremo">⇄ Al revés</button><button data-fpt>📍 Punto</button><button data-fx class="end">✕ Terminar</button></div>`}
+  <div class="fb"><button data-fc class="on">◎ Centrar</button><button data-fr title="Si haces la ruta desde el otro extremo">⇄ Al revés</button><button data-fpt>📍 Marcar</button><button data-fx class="end">✕ Terminar</button></div>`}
 const Q=s=>F&&F.el.querySelector(s);
 function status(cls,html){const e=Q("[data-fst]");if(!e)return;e.className="fst "+cls;e.innerHTML=html}
 
@@ -2392,7 +2392,7 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 window.YO={apaga,activo:()=>W!=null};
 // botón «📍 Punto» en el mapa: guarda un punto donde estás
 const fabs=document.querySelector(".fabs");
-if(fabs)fabs.insertAdjacentHTML("afterbegin",`<button class="btn ghost" id="b-pt" data-short="Punto" title="Guardar un punto donde estoy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Guardar punto</button>`);
+if(fabs)fabs.insertAdjacentHTML("afterbegin",`<button class="btn ghost" id="b-pt" data-short="Marcar" title="Marcar un sitio en el mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Marcar un sitio</button>`);
 // dentro de la app Android (la del APK): botón «Grabar», que abre la grabadora nativa (graba con la pantalla apagada)
 const enApp=(()=>{try{if(document.referrer.startsWith("android-app://es.losdelasclaras.rutas"))sessionStorage.setItem("ldc-apk","1");return sessionStorage.getItem("ldc-apk")==="1"}catch(e){return false}})();
 // en el APK los mapas sin cobertura se guardan en la pantalla de grabar (que es donde se usan): fuera los de la web (Mis cosas › Mapas y sus botones)
@@ -3850,12 +3850,12 @@ for(const k of ["cumbres","lugares"]){const v=document.getElementById("v-"+k);if
     if(e.target.closest(".fpanel .chips [data-v]"))setTimeout(()=>{labels(k);renderCol(k)},0)},true)}
 
 /* Rutas: estado propio de los filtros sencillos */
-const RF={z:"",ep:"",iv:"",tk:""},CUT=new Date().getFullYear()-5;
+const RF={z:"",ep:"",iv:"",tk:""},CUT=new Date().getFullYear()-1; // nov 2026: «últimos 2 años» (antes: desde hace 5 años / antes)
 window.RFOK=r=>(!RF.z||zoneOf(r.r)===RF.z)&&(!RF.ep||(RF.ep==="new"?(r.y||0)>=CUT:(r.y||0)<CUT))&&(!RF.iv||(RF.iv==="si"?!!r.iv:!r.iv))&&(!RF.tk||!!r.gx);
 const rsrc=()=>window.COLX?COLX.rsrc:"todas";
 const RG=()=>[["z","Zona",[["","Todas"],["cant","Norte"],["pir","Pirineos"],["alp","Alpes y Dolomitas"]]],
   ...(window.COLX?[["rs","De quién",[["todas","Todas"],["grupo","Los de las Claras"],...CO_LIST()]]]:[]),
-  ["ep","Época",[["","Todas"],["new",`Desde ${CUT}`],["old",`Antes de ${CUT}`]]],
+  ["ep","Época",[["","Todas"],["new","Recientes (últimos 2 años)"]]],
   ["iv","Invierno",[["","Todas"],["si","Solo invernales"],["no","Sin invernales"]]],
   ["tk","Track",[["","Todas"],["si","Con track en el mapa"]]]];
 const CO_LIST=()=>{const s=document.querySelectorAll("#list .rsrc [data-rsrc]");return [...s].filter(b=>/^co_/.test(b.dataset.rsrc)).map(b=>[b.dataset.rsrc,b.textContent.trim()])};
@@ -3914,6 +3914,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 #mres .nada{padding:12px 14px;color:var(--muted)}
 .mapbar{top:58px!important}
 #pendban{top:108px!important}.fol.min{top:108px!important}
+/* ordenador y tableta: buscador de ancho normal y las zonas a su lado (no tapa los botones + / −) */
+@media(min-width:700px){#msearch{right:auto;width:400px}.mapbar{top:10px!important;left:420px!important;right:80px!important}#pendban{top:64px!important}.fol.min{top:64px!important}}
 #v-mapa.fol-on #msearch{display:none!important}#v-mapa.grb-on #msearch{visibility:hidden}
 </style>`);
 vm.insertAdjacentHTML("beforeend",`<div id="msearch"><div class="mb"><span aria-hidden="true">🔎</span><input id="mq" type="search" placeholder="Busca una ruta, cumbre o pueblo" autocomplete="off" enterkeyhint="search"><button class="mx" id="mqx" aria-label="Borrar" hidden>×</button></div><div id="mres" hidden></div></div>`);
@@ -4093,12 +4095,14 @@ if(mio){const tt=mio.querySelector(".tt");if(tt)tt.textContent="Mis cosas";
   const bs=[nom("mp","Mis puntos"),nom("mt","Mis tracks"),nom("mh","Señalar las que hice"),nom("mq","Señalar las que quiero hacer")].filter(Boolean);
   if(g&&g.classList.contains("laygrp"))for(const b of bs)g.appendChild(b)}
 
-// interruptor general de cada colaborador
-function grupos(){return hdrs().map(h=>({h,g:h.nextElementSibling})).filter(x=>x.g&&x.g.classList.contains("laygrp")&&x.g.querySelector('[data-lay^="co_"]'))}
-function estado(){for(const{h,g}of grupos()){const bs=[...g.querySelectorAll('[data-lay^="co_"]:not([hidden])')];const on=bs.filter(b=>!/_t$/.test(b.dataset.lay)&&b.getAttribute("aria-pressed")==="true").length;
+// interruptor general de cada colaborador y también del blog (Los de las Claras), para que nadie sea más que otros
+const SW='[data-lay^="co_"],[data-lay="peaks"],[data-lay="spots"],[data-lay="tracks"]',SWV=SW.split(",").map(x=>x+":not([hidden])").join(",");
+const esT=b=>/_t$/.test(b.dataset.lay)||b.dataset.lay==="tracks";
+function grupos(){return hdrs().map(h=>({h,g:h.nextElementSibling})).filter(x=>x.g&&x.g.classList.contains("laygrp")&&x.g.querySelector(SW))}
+function estado(){for(const{h,g}of grupos()){const bs=[...g.querySelectorAll(SWV)];const on=bs.filter(b=>!esT(b)&&b.getAttribute("aria-pressed")==="true").length;
     let s=h.querySelector(".mst");if(!s){s=document.createElement("span");s.className="mst";s.setAttribute("role","switch");s.innerHTML="<i></i>";h.classList.add("conm");h.appendChild(s);
-      s.addEventListener("click",e=>{e.stopPropagation();e.preventDefault();const bs=[...g.querySelectorAll('[data-lay^="co_"]:not([hidden])')];const alguno=bs.some(b=>b.getAttribute("aria-pressed")==="true");
-        for(const b of bs){const es=b.getAttribute("aria-pressed")==="true",quiero=alguno?false:!/_t$/.test(b.dataset.lay);if(es!==quiero)b.click()}setTimeout(()=>{estado();if(window.capasSum)capasSum()},50)})}
+      s.addEventListener("click",e=>{e.stopPropagation();e.preventDefault();const bs=[...g.querySelectorAll(SWV)];const alguno=bs.some(b=>b.getAttribute("aria-pressed")==="true");
+        for(const b of bs){const es=b.getAttribute("aria-pressed")==="true",quiero=alguno?false:!esT(b);if(es!==quiero)b.click()}setTimeout(()=>{estado();if(window.capasSum)capasSum()},50)})}
     s.classList.toggle("on",on>0||bs.some(b=>b.getAttribute("aria-pressed")==="true"));s.setAttribute("aria-checked",on>0);s.title=on?"Ocultar todo":"Ver cumbres, lugares y rutas"}}
 estado();lg.addEventListener("click",()=>setTimeout(estado,30));setTimeout(estado,800);
 
@@ -4122,6 +4126,7 @@ try{
 const KO="ldc-orden-rutas",KP="ldc-ultpos";
 let ORD=store.get(KO,"cerca");if(ORD!=="cerca"&&ORD!=="fecha")ORD="cerca";
 let POS=store.get(KP,null);if(!POS||typeof POS.lat!=="number")POS=null;
+if(ORD==="cerca"&&!POS)ORD="fecha"; // nov 2026: si aún no sé dónde estás, empiezo por las más recientes
 // cualquier ubicación que reciba la app se apunta como «última conocida»
 const G=navigator.geolocation;
 if(G){const guarda=p=>{try{const c=p&&p.coords;if(!c)return;const n={lat:c.latitude,lon:c.longitude,t:Date.now()};
@@ -4161,6 +4166,37 @@ document.getElementById("list").addEventListener("click",(e)=>{
 })();
 
 }catch(e){console.error("módulo orden",e);(window.__ERRS=window.__ERRS||[]).push("orden: "+(e&&e.message))}
+try{
+/* ---------- Explorar más limpio (nov 2026) ----------
+   · sin los títulos grandes («Las rutas», «Tus cumbres», «Tus lugares») ni las explicaciones de debajo
+   · «Cerca de un lugar» y «Cerca de mí» juntos en un solo «📍 Cerca de…» (pregunta: ¿de ti o de un sitio?), con «⚙ Filtros» al lado
+   Para quitarlo: borrar 'explorar2' de la lista del build. */
+(function(){
+document.head.insertAdjacentHTML("beforeend",`<style>
+#v-rutas h1.vt,#v-cumbres h1.vt,#v-lugares h1.vt,#v-cumbres p.lead,#v-lugares p.lead{display:none!important}
+#v-rutas #b-nearme,#v-cumbres [data-cme],#v-lugares [data-cme]{display:none!important}
+#v-rutas .wizrow,#v-cumbres .wizrow.cerca,#v-lugares .wizrow.cerca{grid-template-columns:1fr 1fr!important}
+#v-rutas .wizrow .wizbtn,#v-cumbres .wizrow.cerca .wizbtn,#v-lugares .wizrow.cerca .wizbtn{white-space:nowrap!important}
+.cdq{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center}
+.cdq>div{background:var(--card,#fff);color:var(--ink,#222);width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 20px rgba(0,0,0,.25)}
+.cdq h3{margin:0 0 12px;font-size:19px}
+.cdq button{display:flex;align-items:center;gap:12px;width:100%;border:1px solid var(--edge,#ddd);background:var(--card,#fff);color:inherit;font:inherit;font-size:17px;font-weight:700;text-align:left;padding:15px 16px;border-radius:14px;margin:0 0 10px;cursor:pointer}
+.cdq button span{font-size:24px}.cdq button.x{justify-content:center;font-weight:600;color:var(--muted,#666);border:0}
+</style>`);
+// el botón «Cerca de un lugar» pasa a ser «📍 Cerca de…» (se le quita data-cnear para que no salte directo al buscador de sitios)
+function arregla(root){for(const b of (root||document).querySelectorAll("#v-rutas [data-cnear],#v-cumbres [data-cnear],#v-lugares [data-cnear]")){b.removeAttribute("data-cnear");b.setAttribute("data-cerca2","");b.textContent="📍 Cerca de…"}}
+// textos de los buscadores que no se corten
+{const q=document.getElementById("q");if(q)q.placeholder="Busca ruta, cumbre o sitio…";const ql=document.getElementById("qs-lugares");if(ql)ql.placeholder="Busca un lugar…"}
+arregla();new MutationObserver(()=>arregla()).observe(document.querySelector("main")||document.body,{childList:true,subtree:true});
+function pregunta(){const d=document.createElement("div");d.className="cdq";
+  d.innerHTML=`<div role="dialog" aria-label="Rutas cerca de"><h3>¿Cerca de dónde?</h3><button data-q="yo"><span>🎯</span>Cerca de mí</button><button data-q="sitio"><span>🏘️</span>Cerca de un pueblo o sitio</button><button class="x" data-q="no">Cancelar</button></div>`;
+  d.addEventListener("click",e=>{const b=e.target.closest("[data-q]");if(!b&&e.target!==d)return;d.remove();if(!b)return;
+    if(b.dataset.q==="yo")CERCA.yo();else if(b.dataset.q==="sitio")CERCA.buscar()});
+  document.body.appendChild(d)}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-cerca2]");if(!b)return;e.preventDefault();e.stopPropagation();if(window.CERCA)pregunta()},true);
+})();
+
+}catch(e){console.error("módulo explorar2",e);(window.__ERRS=window.__ERRS||[]).push("explorar2: "+(e&&e.message))}
 try{
 /* ---------- botones del mapa: una fila abajo (Capas · Grabar · Punto · Yo); sin «Todo» ni «Rutas» (eso está en Explorar);
    en el ordenador fuera lo que necesita GPS: SOS, Punto, Yo, Grabar y Seguir ---------- */
@@ -4202,5 +4238,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="549b55bd9f";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="911632ee7a";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
