@@ -1,4 +1,4 @@
-# Informe del robot · 04/11/2026 01:13
+# Informe del robot · 04/11/2026 01:31
 
 **Cambios:** regeneración forzada
 
@@ -12,11 +12,11 @@
 - 📅 Fechas de rutas de Rutinas Varias: 0 nuevas (146 de 401 con fecha); Wikiloc no responde (8 fallos).
 - Colaborador «Rutinas Varias»: sin cambios.
 - Colaborador «Camudando'l camín»: sin cambios.
-- ⚠ Gata con botas: no he podido leer 15 zona(s) de su web (rutas/resto-de-espana/burgos, rutas/resto-de-espana/vizcaya, rutas/resto-de-espana/guipuzcoa, rutas/resto-de-espana/alava, rutas/resto-de-espana/navarra, rutas/resto-de-espana/huesca, rutas/resto-de-espana/lleida, rutas/resto-de-espana/girona, rutas/andorra, rutas/francia/nueva-aquitania, rutas/occitania, rutas/galicia/a-coruna, rutas/galicia/lugo, rutas/galicia/ourense, rutas/galicia/pontevedra); esas rutas se quedan como estaban.
+- ⚠ Gata con botas: no he podido leer 17 zona(s) de su web (rutas/resto-de-espana/leon, rutas/resto-de-espana/palencia, rutas/resto-de-espana/burgos, rutas/resto-de-espana/vizcaya, rutas/resto-de-espana/guipuzcoa, rutas/resto-de-espana/alava, rutas/resto-de-espana/navarra, rutas/resto-de-espana/huesca, rutas/resto-de-espana/lleida, rutas/resto-de-espana/girona, rutas/andorra, rutas/francia/nueva-aquitania, rutas/occitania, rutas/galicia/a-coruna, rutas/galicia/lugo, rutas/galicia/ourense, rutas/galicia/pontevedra); esas rutas se quedan como estaban.
 - ⚠ Gata con botas: paro de leer su web (su web no responde); sigo otra noche.
--    (11 peticiones a su web en 0.4 min)
-- 🐾 Gata con botas: 59 entradas en sus zonas, 54 rutas en la app (0 nuevas; quedan -3 por leer otra noche).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 504: Gateway Timeout <?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"     "http://www.w3.org/T; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+-    (7 peticiones a su web en 0.2 min)
+- 🐾 Gata con botas: 42 entradas en sus zonas, 54 rutas en la app (0 nuevas; quedan -18 por leer otra noche).
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 1 de 1 colocadas en el pico de OpenStreetMap; 0 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 53 en total, 1 sin foto
 - Colaborador «Gata con botas»: sin cambios.
