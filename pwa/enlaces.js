@@ -53,7 +53,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .acts2 .agrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .acts2 .ados{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .acts2 .ados>*{display:flex;align-items:center;justify-content:center;text-align:center;width:100%;min-height:50px;margin:0;padding:8px 6px;box-sizing:border-box;line-height:1.2;font-size:16px;font-weight:700}
-.acts2 .ados .segb{border-color:#20302a;color:#20302a}
+.acts2 .ados .segb{border:2px solid var(--ink);color:var(--ink);background:var(--card)}
 .acts2 .sintrack{border:1px dashed var(--edge,#ccc);border-radius:12px;color:var(--muted,#777);font-weight:600;background:transparent;cursor:default}
 .acts2 .amas{margin-top:8px}
 .acts2 .amas>summary{list-style:none;cursor:pointer;text-align:center;font-weight:700;padding:12px;border:1px solid var(--edge,#ddd);border-radius:12px;color:var(--ink)}
