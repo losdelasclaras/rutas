@@ -22,6 +22,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 #mres .nada{padding:12px 14px;color:var(--muted)}
 .mapbar{top:58px!important}
 #pendban{top:108px!important}.fol.min{top:108px!important}
+/* ordenador y tableta: buscador de ancho normal y las zonas a su lado (no tapa los botones + / −) */
+@media(min-width:700px){#msearch{right:auto;width:400px}.mapbar{top:10px!important;left:420px!important;right:80px!important}#pendban{top:64px!important}.fol.min{top:64px!important}}
 #v-mapa.fol-on #msearch{display:none!important}#v-mapa.grb-on #msearch{visibility:hidden}
 </style>`);
 vm.insertAdjacentHTML("beforeend",`<div id="msearch"><div class="mb"><span aria-hidden="true">🔎</span><input id="mq" type="search" placeholder="Busca una ruta, cumbre o pueblo" autocomplete="off" enterkeyhint="search"><button class="mx" id="mqx" aria-label="Borrar" hidden>×</button></div><div id="mres" hidden></div></div>`);
