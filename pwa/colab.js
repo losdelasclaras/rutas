@@ -66,7 +66,7 @@ const altCo=(n,d)=>{let m=/\(?\s*(\d[\d.]{2,4})\s*m(?:ts|etros)?\s*\)?/i.exec(n|
     if(m){const v=+m[1].replace(/\./g,"");if(v>=300&&v<=4900)return v}}return null};
 const cap1=s=>s?s[0].toUpperCase()+s.slice(1).toLowerCase():s;
 // como en las cumbres del grupo: si la cumbre está en una sola ruta, se abre directamente la ficha de esa ruta (con la marca de la cumbre)
-function abrirCum(c,p,k){if(k==="cumbre"&&p[9]&&p[9].length===1&&c.r&&c.r[p[9][0]]){abrirR(c,p[9][0]);return}abrir(c,p,k)}
+function abrirCum(c,p,k){if(k==="cumbre"&&window.FICHAPT){try{if(FICHAPT.co(c,p))return}catch(e){console.error(e)}}if(k==="cumbre"&&p[9]&&p[9].length===1&&c.r&&c.r[p[9][0]]){abrirR(c,p[9][0]);return}abrir(c,p,k)}
 function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);const deR=k==="cumbre"&&p[9]&&p[9].length;
   const a=altCo(n,d);
   const desc=resto.filter(l=>!/^\W*\w[\w ]{1,20}:\s/u.test(l)),otros=resto.filter(l=>/^\W*\w[\w ]{1,20}:\s/u.test(l));
@@ -298,6 +298,10 @@ function abrirEnlaceCo(){const h=location.hash||"";if(!h.startsWith("#co="))retu
 addEventListener("hashchange",abrirEnlaceCo);setTimeout(abrirEnlaceCo,400);
 COLX.rut=()=>RUT;
 COLX.rutaItem=(c,i)=>RUT.find(x=>x.rr===i&&x.co===c);
+// nov 2026 · cumbres compartidas: todos los que tienen la misma cumbre (grupo y colaboradores), para la ficha única
+COLX.coKey=(c,n)=>coKey(c,n,"cumbre");
+COLX.cumDe=gi=>{const ms=CUMM.filter(m=>{const g=grpDe(m)||(m.__sup&&grpDe(m.__sup));return g&&g.i===gi});const out=new Set(ms);for(const m of ms)grupoDe(m).forEach(x=>out.add(x));return[...out].map(m=>({c:m.__co,p:m.__p}))};
+COLX.cumCo=p=>{const m=CUMM.find(x=>x.__p===p);if(!m)return{gi:null,ms:[]};const set=[m,...grupoDe(m)];const g=set.map(grpDe).find(Boolean);return{gi:g?g.i:null,ms:set.map(x=>({c:x.__co,p:x.__p}))}};
 COLX.rKey=x=>rKeyCo(x.co,x.c);
 COLX.byP=p=>ALL.find(x=>x.pp===p);
 COLX.todo=()=>ALL;

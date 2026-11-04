@@ -51,6 +51,14 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .acts2{margin:12px 0 8px}
 .acts2 .aprim .btn{display:flex;width:100%;justify-content:center;font-size:17px;padding:13px;box-sizing:border-box;margin:0}
 .acts2 .agrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.acts2 .ados{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.acts2 .ados>*{display:flex;align-items:center;justify-content:center;text-align:center;width:100%;min-height:50px;margin:0;padding:8px 6px;box-sizing:border-box;line-height:1.2;font-size:16px;font-weight:700}
+.acts2 .ados .segb{border-color:#20302a;color:#20302a}
+.acts2 .sintrack{border:1px dashed var(--edge,#ccc);border-radius:12px;color:var(--muted,#777);font-weight:600;background:transparent;cursor:default}
+.acts2 .amas{margin-top:8px}
+.acts2 .amas>summary{list-style:none;cursor:pointer;text-align:center;font-weight:700;padding:12px;border:1px solid var(--edge,#ddd);border-radius:12px;color:var(--ink)}
+.acts2 .amas>summary::-webkit-details-marker{display:none}
+.acts2 .amas[open]>summary{border-bottom-left-radius:0;border-bottom-right-radius:0}
 .acts2 .agrid>*{display:flex;align-items:center;justify-content:center;text-align:center;width:100%;min-height:48px;margin:0;padding:8px 6px;box-sizing:border-box;white-space:normal;line-height:1.2;font-size:15px}
 .acts2 .agrid>.blogb{border-color:var(--mark,#c3262e);color:var(--mark,#c3262e);font-weight:800}
 </style>`);
@@ -70,27 +78,66 @@ const ORD=[
   ["wl",el=>href(el,/wikiloc\./i)&&!el.matches("[data-wkz]"),"Ver en Wikiloc"],
   ["wkz",el=>el.matches("[data-wkz]"),null],
   ["gm",el=>href(el,/google\.[a-z.]+\/maps\/search/),"📍 Google Maps"]];
+/* nov 2026 · molde único de ficha: 📖 Leer en el blog grande · ▶ Seguir (o «Sin track») + 📤 Compartir · «··· Más opciones» con el resto.
+   Debajo del título solo: de qué blog es, ❄ Invernal y el año. El tiempo pasa a «Más opciones» (☁ Ver el tiempo). */
+function limpia(c){
+  if(c.querySelector(".fpt"))return;   // ficha de cumbre/lugar nueva: ya viene hecha
+  const ruta=!!(c.querySelector(".grab[data-route]")||c.querySelector(".mkblock.rmk")||c.querySelector("[data-follow],[data-cofol]"));if(!ruta)return;
+  // título de colaborador sin la zona delante («Picos de Europa | …»)
+  const h2=c.querySelector(".sheet-head h2");if(h2&&/\|/.test(h2.textContent)&&!h2.dataset.lp){h2.dataset.lp=1;h2.textContent=h2.textContent.split("|").pop().trim()}
+  // una sola fila de marcas: la de la ruta
+  if(c.querySelector(".mkblock.rmk"))c.querySelectorAll(".mkblock:not(.rmk)").forEach(x=>{if(!x.closest(FUERA))x.remove()});
+  // datos (km, desnivel, duración, dificultad) sin cuadros vacíos: 1–3 en una fila; 4 en dos filas de dos
+  c.querySelectorAll(".ficha").forEach(f=>{const n=f.children.length;f.style.gridTemplateColumns=`repeat(${n===4?2:Math.min(n,3)||1},1fr)`});
+  // etiquetas
+  const me=[...c.querySelectorAll(".meta")].find(x=>!x.closest(FUERA));
+  if(me&&!me.dataset.lp){me.dataset.lp=1;let ano=false,src=false;
+    for(const t of [...me.querySelectorAll(".tag")]){const tx=t.textContent;
+      if(t.classList.contains("iv"))continue;
+      if(t.hasAttribute("style")){src=true;continue}
+      const y=/\b(19|20)\d{2}\b/.exec(tx);if(y&&!ano){ano=true;t.textContent=y[0];continue}
+      t.remove()}
+    if(!src&&c.querySelector(".grab[data-route],[data-follow],[data-share]"))me.insertAdjacentHTML("afterbegin",`<span class="tag" style="background:#c3262e;color:#fff;border-color:#c3262e">Los de las Claras</span>`)}
+  // el tiempo: fuera de la ficha; sus enlaces van a «Más opciones»
+  for(const h of [...c.querySelectorAll(".sec>h3")])if(/^el tiempo$/i.test(h.textContent.trim())){const sec=h.parentNode;
+    const mb=sec.querySelector('a[href*="meteoblue"]'),ae=sec.querySelector('a[href*="aemet"]');
+    if(mb){mb.textContent="☁ Ver el tiempo";mb.dataset.wxl="1";sec.before(mb)}if(ae){ae.textContent="☁ "+ae.textContent.trim();ae.dataset.wxl="1";sec.before(ae)}sec.remove()}}
 function ordena(c){if(!c||c.hidden)return;
-  const pr=[...c.querySelectorAll(PRIM)].find(x=>!x.closest(FUERA));if(!pr)return;
+  try{limpia(c)}catch(e){console.error(e)}
+  if(c.querySelector(".fpt"))return;
+  const pr=[...c.querySelectorAll(PRIM)].find(x=>!x.closest(FUERA));
+  const ruta=!!(pr||c.querySelector(".grab[data-route]")||c.querySelector(".mkblock.rmk"));if(!ruta)return;
   // ⌚ si no está
-  if(!c.querySelector("[data-reloj]")&&(pr.matches("[data-follow],[data-mtfol]")||(pr.matches("[data-cofol]")&&c.id==="sheet")))pr.insertAdjacentHTML("afterend",`<button class="btn ghost" data-reloj></button>`);
+  if(pr&&!c.querySelector("[data-reloj]")&&(pr.matches("[data-follow],[data-mtfol]")||(pr.matches("[data-cofol]")&&c.id==="sheet")))pr.insertAdjacentHTML("afterend",`<button class="btn ghost" data-reloj></button>`);
   // 🔎 más rutas por esta zona en Wikiloc (en su mapa), desde la salida de la ruta
-  if(!c.querySelector("[data-wkz]")){let ll=null;
+  if(pr&&!c.querySelector("[data-wkz]")){let ll=null;
     if(pr.matches("[data-follow]")){const r=R[+pr.dataset.follow];if(r)ll=[r.lat,r.lon]}
     else if(pr.matches("[data-cofol]")&&c.id==="sheet"&&sheet._cor){ll=sheet._cor.c.r[sheet._cor.i][8]}
     else if(pr.matches("[data-mtfol]")&&MPI){const t=MPI.tracks().find(x=>String(x.id)===pr.dataset.mtfol),q=t&&MPI.ptsOf(t);if(q&&q.length)ll=q[0]}
     if(ll)pr.insertAdjacentHTML("afterend",`<a class="btn ghost" data-wkz href="${wkUrl(ll[0],ll[1])}" target="_blank" rel="noopener">🔎 Más rutas por aquí (Wikiloc)</a>`)}
   let box=c.querySelector(".acts2");
-  if(!box){const ta=pr.closest(".topacts")||pr.parentNode;ta.insertAdjacentHTML("beforebegin",`<div class="acts2"><div class="aprim"></div><div class="agrid"></div></div>`);box=ta.previousElementSibling;
+  if(!box){const anc=pr||[...c.querySelectorAll(".actions,.topacts")].find(x=>!x.closest(FUERA));if(!anc)return;
+    const ta=anc.closest(".topacts")||(anc.matches(".actions,.topacts")?anc:anc.parentNode);
+    ta.insertAdjacentHTML("beforebegin",`<div class="acts2"><div class="aprim"></div><div class="ados"></div><details class="amas"><summary>··· Más opciones</summary><div class="agrid"></div></details></div>`);box=ta.previousElementSibling;
     // debajo de los datos de la ruta (km, desnivel, dificultad y salida), no encima de la descripción
-    const base=ta.parentNode,dat=[...base.children].filter(x=>x.matches(".ficha,.salida"));if(dat.length){const ul=dat[dat.length-1];if(ul.compareDocumentPosition(box)&Node.DOCUMENT_POSITION_PRECEDING)ul.after(box)}}
-  const ap=box.querySelector(".aprim"),ag=box.querySelector(".agrid");if(pr.parentNode!==ap){pr.textContent="▶ Seguir";ap.appendChild(pr)}
-  const els=[...c.querySelectorAll("button,a")].filter(x=>!x.closest(FUERA)&&!ap.contains(x));
-  const vistos=new Set(),orden=[];
-  for(const[k,f,lab]of ORD)for(const el of els){if(!f(el))continue;
-    if(vistos.has(k)){if(!ag.contains(el)||true){el.remove()}continue}   // repetido (p. ej. «Compartir esta ruta» al final)
-    vistos.add(k);if(lab)el.textContent=lab;el.classList.remove("primary");el.classList.add("btn","ghost");el.classList.toggle("blogb",k==="blog");orden.push(el)}
-  for(const el of orden)if(el.parentNode!==ag||ag.lastElementChild!==el)ag.appendChild(el);
+    const base=box.parentNode,dat=[...base.children].filter(x=>x.matches(".ficha,.salida"));if(dat.length){const ul=dat[dat.length-1];if(ul.compareDocumentPosition(box)&Node.DOCUMENT_POSITION_PRECEDING)ul.after(box)}}
+  const ap=box.querySelector(".aprim"),ad=box.querySelector(".ados"),ag=box.querySelector(".agrid");
+  const els=[...c.querySelectorAll("button,a")].filter(x=>!x.closest(FUERA)&&!ap.contains(x)&&!ad.contains(x)&&x.tagName!=="SUMMARY"&&!x.closest("summary"));
+  const vistos=new Set();let blog=null,share=null;const resto=[];
+  for(const[k,f,lab]of ORD)for(const el of els){if(!f(el)||el===pr)continue;
+    if(vistos.has(k)){el.remove();continue}   // repetido (p. ej. «Compartir esta ruta» al final)
+    vistos.add(k);if(lab)el.textContent=lab;el.classList.remove("primary","blogb");el.classList.add("btn","ghost");
+    if(k==="blog")blog=el;else if(k==="share")share=el;else resto.push(el)}
+  for(const el of els)if(el.dataset&&el.dataset.wxl&&!resto.includes(el))resto.push(el);
+  // 📖 grande (si no hay blog, ▶ Seguir grande)
+  const grande=ap.firstElementChild?null:(blog||pr);
+  if(grande){if(grande===blog){blog.classList.remove("ghost");blog.classList.add("primary")}ap.appendChild(grande)}
+  if(pr){pr.textContent="▶ Seguir";if(!ap.contains(pr)){pr.classList.remove("primary");pr.classList.add("btn","ghost","segb");if(pr.parentNode!==ad)ad.appendChild(pr)}}
+  else if(!ad.querySelector(".sintrack")&&!c.querySelector("[data-mtfol]"))ad.insertAdjacentHTML("afterbegin",`<span class="sintrack" title="Esta ruta no tiene track para seguirla">Sin track</span>`);
+  if(share&&share.parentNode!==ad)ad.appendChild(share);
+  {const sh=ad.querySelector("[data-share],[data-coshare],[data-mtshare]");const solo=[...ad.children].filter(x=>getComputedStyle(x).display!=="none").length===1;if(sh)sh.style.gridColumn=solo?"1 / -1":""}
+  for(const el of resto)if(el.parentNode!==ag)ag.appendChild(el);
+  box.querySelector(".amas").hidden=!ag.children.length;
   // contenedores que se han quedado vacíos
   c.querySelectorAll(".topacts,.actions").forEach(x=>{if(!x.closest(".acts2")&&!x.children.length)x.remove()})}
 for(const id of ["sheet","ov"]){const el=document.getElementById(id);if(!el)continue;let t=0,ocupado=false;
