@@ -331,12 +331,11 @@ const CATS=[["brana","Brañas y majadas",/(?:^|[\s(/-])(braña|brañas|majada|ma
  ["refugio","Refugios",/(?:^|[\s(/-])(refugio|refugi|refuge|rifugio|cabane|hütte|chalet)(?=$|[\s,.)/-])/i],
  ["collado","Collados, sierras y miradores",/(?:^|[\s(/-])(collado|collada|collaú|colláu|collau|pasá|mirador|muezca|copa|sierra|arista|coll|col|cuello|port|puerto|paso|passo|pass|forcella|furcela|portillón|brecha|brèche|hourquette|circ|cirque)(?=$|[\s,.)/-])/i],
  ["senda","Sendas y caminos",/(?:^|[\s(/-])(senda|camín|ruta|sentiero|galleria|valle)(?=$|[\s,.)/-])/i]];
-const catOf=n=>{for(const [k,,re] of CATS)if(re.test(n))return k;return "otros"};
-P.forEach(p=>{p.cat=p.ic?"invernal":p.t==="cumbre"?"cumbre":p.x?"inicio":catOf(p.c)});
 /* excepciones: lugares cuyo nombre no dice el tipo (las dijo Jonathan, 4 nov 2026) */
 const CATX={"Área Recreativa de Moniello":"costa","Cinque Torri":"cumbre","La Llosa de Viango":"cueva","Cuafurada":"cueva","Cuallagar":"cueva",
  "El Fielato":"brana","Vallemoru":"brana","Ventaniella":"brana","Ripatera":"bosque","Traviesas de Somajía":"senda"};
-P.forEach(p=>{const k=CATX[p.c];if(k&&!p.ic&&p.t!=="cumbre"&&!p.x)p.cat=k});
+const catOf=n=>{if(CATX[n])return CATX[n];for(const [k,,re] of CATS)if(re.test(n))return k;return "otros"};
+P.forEach(p=>{p.cat=p.ic?"invernal":p.t==="cumbre"?"cumbre":p.x?"inicio":catOf(p.c)});
 const ICO=c=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true"><use href="#ic-${c}" x="-12" y="-12" width="24" height="24"/></svg>`;
 /* ---------- filters ---------- */
 /* ---------- paisajes: se deducen de los puntos y del título de cada ruta ---------- */
