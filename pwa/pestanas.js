@@ -30,15 +30,16 @@ nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Explorar")+tab("salidas","Salidas"
 
 /* «Mis cosas»: una vista nueva con mis puntos, mis tracks y los mapas descargados */
 const sec=document.createElement("section");sec.className="view pad";sec.id="v-mios";sec.hidden=true;
-sec.innerHTML=`<div class="inner"><h1 class="vt">Mis cosas</h1><p class="lead" style="margin-bottom:4px">Lo que has hecho y lo que quieres hacer, tus puntos, tus tracks y los mapas que has descargado. Con tu cuenta de Google los tienes en el móvil y en el ordenador.</p>
-<div class="subtabs" id="st-mios" role="tablist" style="grid-template-columns:repeat(4,1fr)"></div></div>`;
+// nov 2026: sin título grande; una línea con el estado de la cuenta; dos pestañas: ✓★ Marcadas y 📁 Guardado (puntos y tracks juntos)
+sec.innerHTML=`<div class="inner"><div class="mcta" id="mcta"></div>
+<div class="subtabs" id="st-mios" role="tablist" style="grid-template-columns:repeat(2,1fr)"></div></div>`;
 main.appendChild(sec);const inner=sec.firstElementChild;
-const MS={ml:document.getElementById("mlbox"),mp:document.getElementById("mpbox"),mt:document.getElementById("mtbox"),off:document.getElementById("offbox")};
+const MS={ml:document.getElementById("mlbox"),gd:document.getElementById("gdbox"),mp:document.getElementById("mpbox"),mt:document.getElementById("mtbox"),off:document.getElementById("offbox")};
 for(const k in MS)if(MS[k]){MS[k].dataset.msec=k;inner.appendChild(MS[k])}
-const MN={ml:["★","Mis listas"],mp:["📍","Puntos"],mt:["🧵","Tracks"],off:["📥","Mapas"]};
+const MN={ml:["✓★","Marcadas"],gd:["📁","Guardado"]};
 if(document.documentElement.classList.contains("apk")){delete MN.off;if(MS.off)MS.off.hidden=true;delete MS.off}   // en el APK, los mapas sin cobertura van en la pantalla de grabar
-const cuenta=k=>k==="ml"?(window.LISTAS?LISTAS.pend()+" ★":""):k==="res"?(typeof PEAKS!=="undefined"?PEAKS.filter(p=>MARKS["c:"+norm(p.c)+(p.co?"@"+p.co.id:"")]==="hecha").length+" ⛰️":""):k==="mp"?MISPUNTOS.get().length:k==="mt"?MISPUNTOS.tracks().length:(window.OFFLINE?OFFLINE.list().length:0);
-let curM=store.get("ldc-mios","ml");if(!MN[curM])curM="ml";
+const cuenta=k=>k==="ml"?(window.LISTAS?LISTAS.pend()+" ★":""):k==="res"?(typeof PEAKS!=="undefined"?PEAKS.filter(p=>MARKS["c:"+norm(p.c)+(p.co?"@"+p.co.id:"")]==="hecha").length+" ⛰️":""):k==="gd"?(window.GUARDADO?GUARDADO.n():""):k==="mp"?MISPUNTOS.get().length:k==="mt"?MISPUNTOS.tracks().length:(window.OFFLINE?OFFLINE.list().length:0);
+let curM=store.get("ldc-mios","ml");if(curM==="mp"||curM==="mt")curM="gd";if(!MN[curM])curM="ml";
 const barM=document.getElementById("st-mios");
 function pintaM(){barM.innerHTML=Object.keys(MN).map(k=>`<button role="tab" data-ms="${k}" aria-selected="${k===curM}"><span class="i">${MN[k][0]}</span><span>${MN[k][1]}</span><small>${cuenta(k)}</small></button>`).join("");
   for(const k in MS)if(MS[k])MS[k].hidden=k!==curM;if(curM==="ml"&&window.LISTAS)LISTAS.render()}
@@ -47,6 +48,13 @@ barM.addEventListener("click",e=>{const b=e.target.closest("[data-ms]");if(!b)re
 const mo=new MutationObserver(()=>barM.querySelectorAll("[data-ms]").forEach(b=>{const s=b.querySelector("small");if(s)s.textContent=cuenta(b.dataset.ms)}));
 for(const k in MS)if(MS[k])mo.observe(MS[k],{childList:true});
 pintaM();
+// la línea de la cuenta: si has entrado, dónde se guarda; si no, el botón para entrar
+{const el=document.getElementById("mcta");const pinta=()=>{if(!el)return;const u=window.LDCFB&&LDCFB.user&&LDCFB.user();
+   el.innerHTML=u?`<p class="mcok">✅ Guardado en tu cuenta${u.displayName?` (${esc(u.displayName.split(" ")[0])})`:""}: lo tienes en el móvil y en el ordenador.</p>`:`<button class="mcin" data-mcent>Entra con Google para no perder tus cosas</button>`};
+ document.head.insertAdjacentHTML("beforeend",`<style>.mcta{margin:4px 0 12px}.mcta .mcok{margin:0;color:var(--muted);font-size:14.5px}.mcta .mcin{width:100%;min-height:48px;border-radius:12px;border:1px solid var(--edge);background:var(--card);color:var(--ink);font:inherit;font-weight:800;cursor:pointer}
+ #mlbox{display:flex;flex-direction:column}#mlbox details.mlres{order:9;margin-top:14px}#mlbox .mlacts{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}#mlbox .mlacts .btn{margin:0;font-size:14.5px;padding:10px 6px}</style>`);
+ el&&el.addEventListener("click",e=>{if(e.target.closest("[data-mcent]")&&window.cuentaOk)cuentaOk(pinta,"marcas")});
+ addEventListener("ldc-user",pinta);setTimeout(pinta,800);pinta()}
 
 /* «Del grupo»: Rutas, Cumbres y Lugares del blog con su barra arriba */
 const GN={rutas:["📘","Rutas"],cumbres:["⛰️","Cumbres"],lugares:["🏞️","Lugares"]};
@@ -69,7 +77,7 @@ window.showView=showView=function(v){
   VIEWS.forEach(n=>{const el=document.getElementById("v-"+n);if(el)el.hidden=n!==v});
   if(v==="mios"&&window.LISTAS){LISTAS.render();if(window.LISTAS_CNT)LISTAS_CNT()}
   store.set("ldc-tab",v)};
-window.LUGTAB=k=>{showView("mios");if(MN[k]){curM=k;store.set("ldc-mios",k);pintaM()}};
+window.LUGTAB=k=>{showView("mios");if(k==="mp"||k==="mt")k="gd";if(MN[k]){curM=k;store.set("ldc-mios",k);pintaM()}};
 const vis=VIEWS.find(n=>{const el=document.getElementById("v-"+n);return el&&!el.hidden})||"mapa";
 showView(vis);
 })();

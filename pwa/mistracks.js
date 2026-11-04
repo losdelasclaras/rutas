@@ -136,15 +136,15 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-rest]");if
     if(!s)ts=[...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString(),est:v,...(v==="hecho"?{fh:new Date().toISOString().slice(0,10)}:{})}];
     else ts=T().map(x=>{if(x!==s)return x;const y={...x};if(y.est===v){delete y.est;delete y.fh}else{y.est=v;if(v==="hecho")y.fh=new Date().toISOString().slice(0,10);else delete y.fh}return y});
     MPI.saveTracks(ts);const n=savedOf(r);
-    toast(n&&n.est?(n.est==="hecho"?"Marcada como hecha":"Apuntada como pendiente")+" · está en Mis cosas › Mis tracks":"Marca quitada");
+    toast(n&&n.est?(n.est==="hecho"?"Marcada como hecha":"Apuntada como pendiente")+" · está en Mis cosas › Guardado":"Marca quitada");
     document.querySelectorAll(`.rest[data-r="${r.id}"]`).forEach(x=>x.outerHTML=RESTBTN(r));
     document.querySelectorAll(`[data-mtsave="${r.id}"]`).forEach(x=>x.textContent=savedOf(r)?"★ En mis tracks":"☆ Guardar en mis tracks")};
   if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go()},true);
 document.addEventListener("click",e=>{const b=e.target.closest("[data-mtsave]");if(!b)return;e.preventDefault();e.stopPropagation();
-  const r=R[+b.dataset.mtsave];if(!r||!r.gx)return;if(window.cuentaOk&&!cuentaOk(()=>{const bb=document.querySelector(`[data-mtsave="${r.id}"]`);if(bb&&!savedOf(r))bb.click();else if(!savedOf(r)){MPI.saveTracks([...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString()}]);toast("Guardado en Mis cosas › Mis tracks")}},"tracks"))return;const s=savedOf(r);
+  const r=R[+b.dataset.mtsave];if(!r||!r.gx)return;if(window.cuentaOk&&!cuentaOk(()=>{const bb=document.querySelector(`[data-mtsave="${r.id}"]`);if(bb&&!savedOf(r))bb.click();else if(!savedOf(r)){MPI.saveTracks([...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString()}]);toast("Guardado en Mis cosas › Guardado")}},"tracks"))return;const s=savedOf(r);
   if(s){MPI.saveTracks(T().filter(x=>x!==s));b.textContent="☆ Guardar en mis tracks";toast("Quitado de Mis tracks")}
   else{MPI.saveTracks([...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString()}]);
-    b.textContent="★ En mis tracks";toast("Guardado en Mis cosas › Mis tracks");if(window.OFFLINE&&OFFLINE.ofrecer)setTimeout(()=>OFFLINE.ofrecer(r),700)}},true);
+    b.textContent="★ En mis tracks";toast("Guardado en Mis cosas › Guardado");if(window.OFFLINE&&OFFLINE.ofrecer)setTimeout(()=>OFFLINE.ofrecer(r),700)}},true);
 
 window.MISTRACKS={render,open,refresh,route:id=>{const t=T().find(x=>String(x.id)===String(id));return t&&t.pts?comoRuta(t):null}};
 render();

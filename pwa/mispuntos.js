@@ -227,13 +227,13 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
       for(const pt of pm.getElementsByTagName("Point")){const c=tx(pt,"coordinates").split(",");addP(+c[1],+c[0],n,d)}
       for(const ls of pm.getElementsByTagName("LineString")){const pts=tx(ls,"coordinates").split(/\s+/).filter(Boolean).map(s=>{const c=s.split(",");return c[2]!=null&&+c[2]!==0?[+c[1],+c[0],+c[2]]:[+c[1],+c[0]]});addT(pts,n)}}}
   if(!np&&!nt){toast("No he encontrado puntos ni tracks en ese archivo");return}
-  if(np>=2){const nm=(doc.getElementsByTagName("metadata")[0]&&tx(doc.getElementsByTagName("metadata")[0],"name"))||(doc.getElementsByTagName("Document")[0]&&tx(doc.getElementsByTagName("Document")[0],"name"))||base;for(const p of MP.slice(-np))if(!p.c)p.c=nm.slice(0,60)}
+  if(np+nt>=2&&np>=1){const nm=(doc.getElementsByTagName("metadata")[0]&&tx(doc.getElementsByTagName("metadata")[0],"name"))||(doc.getElementsByTagName("Document")[0]&&tx(doc.getElementsByTagName("Document")[0],"name"))||base;for(const p of MP.slice(-np))if(!p.c)p.c=nm.slice(0,60);for(const t of nuevos)if(!t.c)t.c=nm.slice(0,60)}   // nov 2026: un archivo = una carpeta, con sus puntos y sus tracks
   // archivo que llega desde «Compartir»: un solo track se enseña primero, con «Guardar en mis tracks»
   if(prev&&nt===1&&!np&&window.COMPARTIR&&COMPARTIR.preview){const t=nuevos[0];MT.splice(MT.indexOf(t),1);COMPARTIR.preview(t);return}
   if(window.cuentaOk&&store.get("ldc-sesion","0")!=="1"){nuevos.forEach(t=>{const i=MT.indexOf(t);if(i>=0)MT.splice(i,1)});MP=store.get(MPK,[]);cuentaOk(()=>imp(txt,fname),"tracks");return}
   saveMP();if(nt&&!saveMT()){MT=store.get(MTK,[])}
   LAY.mp=true;LAY.mt=true;saveLay();["mp","mt"].forEach(k=>{const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",true)});
-  drawMP();drawMT();renderBox();toast([np?`${np} punto${np===1?"":"s"}`:"",nt?`${nt} track${nt===1?"":"s"}`:""].filter(Boolean).join(" y ")+(np+nt===1?" cargado":" cargados")+(nt?" · están en Mis cosas › Mis tracks":""));
+  drawMP();drawMT();renderBox();toast([np?`${np} punto${np===1?"":"s"}`:"",nt?`${nt} track${nt===1?"":"s"}`:""].filter(Boolean).join(" y ")+(np+nt===1?" cargado":" cargados")+" · están en Mis cosas › Guardado");
   for(const o of nuevos)if(o.pts.some(p=>p[2]==null))demAlt(o.id);
   if(nt===1&&!np&&window.MISTRACKS)MISTRACKS.open(nuevos[0].id,true)}
 // desnivel de un track (con margen de 4 m para que el ruido no sume)
@@ -388,7 +388,10 @@ sheet.addEventListener("click",e=>{if(sheet._ct==null)return;const t=MT.find(x=>
   const go=()=>{if(out)delete t.c;else t.c=n;if(esP){saveMP();drawMP()}else{saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render()}renderBox();sheet._ct=null;toast(out?"Sacado de la carpeta":`Metido en 📁 «${n}»`);if(esP)openMP(t.id);else if(window.MISTRACKS)MISTRACKS.open(t.id,false)};
   if(window.cuentaOk&&!cuentaOk(go,esP?"puntos":"tracks"))return;go()});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-mtcar]");if(b)carpetaTrack(b.dataset.mtcar)});
-window.MISPUNTOS={get:()=>MP,verCompartidos,carpetaTrack,guardarCarpeta,fotoGet,fotoPut,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
+window.MISPUNTOS={get:()=>MP,accion:carpetaAccion,nueva:nuevaCarpeta,cruz:()=>cross(),
+  ver:id=>{const p=MP.find(x=>x.id===id);if(!p)return;showView("mapa");if(!LAY.mp){LAY.mp=true;saveLay();syncMP()}map.flyTo([p.lat,p.lon],Math.max(map.getZoom(),15));openMP(id)},
+  exportar:k=>k==="kml"?dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml"):dl("mis-puntos.gpx",toGPX(),"application/gpx+xml"),
+  guarda:()=>{saveMP();drawMP();renderBox()},verCompartidos,carpetaTrack,guardarCarpeta,fotoGet,fotoPut,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
   addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),ptsOf,desn,suben,demAlt,dl,
   saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
   importText(txt,n,prev){try{imp(String(txt),n||"track.gpx",prev)}catch(e){toast("No he podido leer ese archivo (solo GPX o KML)")}},

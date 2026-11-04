@@ -48,7 +48,7 @@ function render(){if(box.hidden)return;const o=items(),all=o.cumbre.concat(o.lug
   const body=sec("⛰️ Cumbres",o.cumbre,"c")+sec("🏞️ Lugares",o.lugar,"l")+sec("🥾 Rutas",o.ruta,"r");
   const nq=all.filter(x=>x.m==="quiero").length,nh=all.filter(x=>x.m==="hecha").length;
   box.innerHTML=`<h2>★ Mis listas</h2>
-  <div class="mlbig"><b>${hc}</b><span>cumbres subidas de ${nC}</span></div><div class="mlbar"><i style="width:${nC?(hc/nC*100).toFixed(1):0}%"></i></div>
+  <div class="mlbig"><b>${hc}</b><span>${hc===1?"cumbre subida":"cumbres subidas"} de ${nC}</span></div><div class="mlbar"><i style="width:${nC?(hc/nC*100).toFixed(1):0}%"></i></div>
   <details class="mlres"${box._res?" open":""}><summary>🏆 Ver el resumen completo</summary><div id="mlresin"></div></details>
   <div class="chips" style="margin:12px 0 4px"><button class="chip" data-lmode="quiero" aria-pressed="${MODE==="quiero"}">★ Pendientes · ${nq}</button><button class="chip" data-lmode="hecha" aria-pressed="${MODE==="hecha"}">✓ Hechas · ${nh}</button></div>
   <div class="mlacts"><button class="btn ghost" data-lnear>${POS?"🎯 Ordenado por cercanía":"🎯 Ordenar por cercanía"}</button>${(MODE==="quiero"?nq:nh)?`<button class="btn primary" data-lmap>🗺 ${MODE==="quiero"?"Ver pendientes en el mapa":"Ver lo hecho en el mapa"}</button>`:""}</div>
