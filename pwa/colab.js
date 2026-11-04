@@ -300,6 +300,7 @@ COLX.rut=()=>RUT;
 COLX.rutaItem=(c,i)=>RUT.find(x=>x.rr===i&&x.co===c);
 // nov 2026 · cumbres compartidas: todos los que tienen la misma cumbre (grupo y colaboradores), para la ficha única
 COLX.coKey=(c,n)=>coKey(c,n,"cumbre");
+COLX.ficha=d=>ficha(d);   // datos (km, desnivel, duración, dificultad) que vienen en la descripción de su punto
 COLX.cumDe=gi=>{const ms=CUMM.filter(m=>{const g=grpDe(m)||(m.__sup&&grpDe(m.__sup));return g&&g.i===gi});const out=new Set(ms);for(const m of ms)grupoDe(m).forEach(x=>out.add(x));return[...out].map(m=>({c:m.__co,p:m.__p}))};
 COLX.cumCo=p=>{const m=CUMM.find(x=>x.__p===p);if(!m)return{gi:null,ms:[]};const set=[m,...grupoDe(m)];const g=set.map(grpDe).find(Boolean);return{gi:g?g.i:null,ms:set.map(x=>({c:x.__co,p:x.__p}))}};
 COLX.rKey=x=>rKeyCo(x.co,x.c);
