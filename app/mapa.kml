@@ -5929,6 +5929,16 @@
           </coordinates>
         </Point>
       </Placemark>
+      <Placemark>
+        <name>Pico Cicueta (1611 m.)</name>
+        <description>https://losdelasclaras.blogspot.com/2026/11/ruta-al-pico-cicueta-o-castiecho-desde.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.5253653,43.042704,0
+          </coordinates>
+        </Point>
+      </Placemark>
     </Folder>
     <Folder>
       <name>Capa sin nombre</name>
