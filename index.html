@@ -387,6 +387,10 @@ const CATS=[["brana","Brañas y majadas",/(?:^|[\s(/-])(braña|brañas|majada|ma
  ["senda","Sendas y caminos",/(?:^|[\s(/-])(senda|camín|ruta|sentiero|galleria|valle)(?=$|[\s,.)/-])/i]];
 const catOf=n=>{for(const [k,,re] of CATS)if(re.test(n))return k;return "otros"};
 P.forEach(p=>{p.cat=p.ic?"invernal":p.t==="cumbre"?"cumbre":p.x?"inicio":catOf(p.c)});
+/* excepciones: lugares cuyo nombre no dice el tipo (las dijo Jonathan, 4 nov 2026) */
+const CATX={"Área Recreativa de Moniello":"costa","Cinque Torri":"cumbre","La Llosa de Viango":"cueva","Cuafurada":"cueva","Cuallagar":"cueva",
+ "El Fielato":"brana","Vallemoru":"brana","Ventaniella":"brana","Ripatera":"bosque","Traviesas de Somajía":"senda"};
+P.forEach(p=>{const k=CATX[p.c];if(k&&!p.ic&&p.t!=="cumbre"&&!p.x)p.cat=k});
 const ICO=c=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true"><use href="#ic-${c}" x="-12" y="-12" width="24" height="24"/></svg>`;
 /* ---------- filters ---------- */
 /* ---------- paisajes: se deducen de los puntos y del título de cada ruta ---------- */
@@ -1392,7 +1396,7 @@ const altCo=(n,d)=>{let m=/\(?\s*(\d[\d.]{2,4})\s*m(?:ts|etros)?\s*\)?/i.exec(n|
     if(m){const v=+m[1].replace(/\./g,"");if(v>=300&&v<=4900)return v}}return null};
 const cap1=s=>s?s[0].toUpperCase()+s.slice(1).toLowerCase():s;
 // como en las cumbres del grupo: si la cumbre está en una sola ruta, se abre directamente la ficha de esa ruta (con la marca de la cumbre)
-function abrirCum(c,p,k){if(k==="cumbre"&&p[9]&&p[9].length===1&&c.r&&c.r[p[9][0]]){abrirR(c,p[9][0]);return}abrir(c,p,k)}
+function abrirCum(c,p,k){if(k==="cumbre"&&window.FICHAPT){try{if(FICHAPT.co(c,p))return}catch(e){console.error(e)}}if(k==="cumbre"&&p[9]&&p[9].length===1&&c.r&&c.r[p[9][0]]){abrirR(c,p[9][0]);return}abrir(c,p,k)}
 function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);const deR=k==="cumbre"&&p[9]&&p[9].length;
   const a=altCo(n,d);
   const desc=resto.filter(l=>!/^\W*\w[\w ]{1,20}:\s/u.test(l)),otros=resto.filter(l=>/^\W*\w[\w ]{1,20}:\s/u.test(l));
@@ -1624,6 +1628,10 @@ function abrirEnlaceCo(){const h=location.hash||"";if(!h.startsWith("#co="))retu
 addEventListener("hashchange",abrirEnlaceCo);setTimeout(abrirEnlaceCo,400);
 COLX.rut=()=>RUT;
 COLX.rutaItem=(c,i)=>RUT.find(x=>x.rr===i&&x.co===c);
+// nov 2026 · cumbres compartidas: todos los que tienen la misma cumbre (grupo y colaboradores), para la ficha única
+COLX.coKey=(c,n)=>coKey(c,n,"cumbre");
+COLX.cumDe=gi=>{const ms=CUMM.filter(m=>{const g=grpDe(m)||(m.__sup&&grpDe(m.__sup));return g&&g.i===gi});const out=new Set(ms);for(const m of ms)grupoDe(m).forEach(x=>out.add(x));return[...out].map(m=>({c:m.__co,p:m.__p}))};
+COLX.cumCo=p=>{const m=CUMM.find(x=>x.__p===p);if(!m)return{gi:null,ms:[]};const set=[m,...grupoDe(m)];const g=set.map(grpDe).find(Boolean);return{gi:g?g.i:null,ms:set.map(x=>({c:x.__co,p:x.__p}))}};
 COLX.rKey=x=>rKeyCo(x.co,x.c);
 COLX.byP=p=>ALL.find(x=>x.pp===p);
 COLX.todo=()=>ALL;
@@ -3548,6 +3556,14 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .acts2{margin:12px 0 8px}
 .acts2 .aprim .btn{display:flex;width:100%;justify-content:center;font-size:17px;padding:13px;box-sizing:border-box;margin:0}
 .acts2 .agrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.acts2 .ados{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.acts2 .ados>*{display:flex;align-items:center;justify-content:center;text-align:center;width:100%;min-height:50px;margin:0;padding:8px 6px;box-sizing:border-box;line-height:1.2;font-size:16px;font-weight:700}
+.acts2 .ados .segb{border-color:#20302a;color:#20302a}
+.acts2 .sintrack{border:1px dashed var(--edge,#ccc);border-radius:12px;color:var(--muted,#777);font-weight:600;background:transparent;cursor:default}
+.acts2 .amas{margin-top:8px}
+.acts2 .amas>summary{list-style:none;cursor:pointer;text-align:center;font-weight:700;padding:12px;border:1px solid var(--edge,#ddd);border-radius:12px;color:var(--ink)}
+.acts2 .amas>summary::-webkit-details-marker{display:none}
+.acts2 .amas[open]>summary{border-bottom-left-radius:0;border-bottom-right-radius:0}
 .acts2 .agrid>*{display:flex;align-items:center;justify-content:center;text-align:center;width:100%;min-height:48px;margin:0;padding:8px 6px;box-sizing:border-box;white-space:normal;line-height:1.2;font-size:15px}
 .acts2 .agrid>.blogb{border-color:var(--mark,#c3262e);color:var(--mark,#c3262e);font-weight:800}
 </style>`);
@@ -3567,27 +3583,66 @@ const ORD=[
   ["wl",el=>href(el,/wikiloc\./i)&&!el.matches("[data-wkz]"),"Ver en Wikiloc"],
   ["wkz",el=>el.matches("[data-wkz]"),null],
   ["gm",el=>href(el,/google\.[a-z.]+\/maps\/search/),"📍 Google Maps"]];
+/* nov 2026 · molde único de ficha: 📖 Leer en el blog grande · ▶ Seguir (o «Sin track») + 📤 Compartir · «··· Más opciones» con el resto.
+   Debajo del título solo: de qué blog es, ❄ Invernal y el año. El tiempo pasa a «Más opciones» (☁ Ver el tiempo). */
+function limpia(c){
+  if(c.querySelector(".fpt"))return;   // ficha de cumbre/lugar nueva: ya viene hecha
+  const ruta=!!(c.querySelector(".grab[data-route]")||c.querySelector(".mkblock.rmk")||c.querySelector("[data-follow],[data-cofol]"));if(!ruta)return;
+  // título de colaborador sin la zona delante («Picos de Europa | …»)
+  const h2=c.querySelector(".sheet-head h2");if(h2&&/\|/.test(h2.textContent)&&!h2.dataset.lp){h2.dataset.lp=1;h2.textContent=h2.textContent.split("|").pop().trim()}
+  // una sola fila de marcas: la de la ruta
+  if(c.querySelector(".mkblock.rmk"))c.querySelectorAll(".mkblock:not(.rmk)").forEach(x=>{if(!x.closest(FUERA))x.remove()});
+  // datos (km, desnivel, duración, dificultad) sin cuadros vacíos: 1–3 en una fila; 4 en dos filas de dos
+  c.querySelectorAll(".ficha").forEach(f=>{const n=f.children.length;f.style.gridTemplateColumns=`repeat(${n===4?2:Math.min(n,3)||1},1fr)`});
+  // etiquetas
+  const me=[...c.querySelectorAll(".meta")].find(x=>!x.closest(FUERA));
+  if(me&&!me.dataset.lp){me.dataset.lp=1;let ano=false,src=false;
+    for(const t of [...me.querySelectorAll(".tag")]){const tx=t.textContent;
+      if(t.classList.contains("iv"))continue;
+      if(t.hasAttribute("style")){src=true;continue}
+      const y=/\b(19|20)\d{2}\b/.exec(tx);if(y&&!ano){ano=true;t.textContent=y[0];continue}
+      t.remove()}
+    if(!src&&c.querySelector(".grab[data-route],[data-follow],[data-share]"))me.insertAdjacentHTML("afterbegin",`<span class="tag" style="background:#c3262e;color:#fff;border-color:#c3262e">Los de las Claras</span>`)}
+  // el tiempo: fuera de la ficha; sus enlaces van a «Más opciones»
+  for(const h of [...c.querySelectorAll(".sec>h3")])if(/^el tiempo$/i.test(h.textContent.trim())){const sec=h.parentNode;
+    const mb=sec.querySelector('a[href*="meteoblue"]'),ae=sec.querySelector('a[href*="aemet"]');
+    if(mb){mb.textContent="☁ Ver el tiempo";mb.dataset.wxl="1";sec.before(mb)}if(ae){ae.textContent="☁ "+ae.textContent.trim();ae.dataset.wxl="1";sec.before(ae)}sec.remove()}}
 function ordena(c){if(!c||c.hidden)return;
-  const pr=[...c.querySelectorAll(PRIM)].find(x=>!x.closest(FUERA));if(!pr)return;
+  try{limpia(c)}catch(e){console.error(e)}
+  if(c.querySelector(".fpt"))return;
+  const pr=[...c.querySelectorAll(PRIM)].find(x=>!x.closest(FUERA));
+  const ruta=!!(pr||c.querySelector(".grab[data-route]")||c.querySelector(".mkblock.rmk"));if(!ruta)return;
   // ⌚ si no está
-  if(!c.querySelector("[data-reloj]")&&(pr.matches("[data-follow],[data-mtfol]")||(pr.matches("[data-cofol]")&&c.id==="sheet")))pr.insertAdjacentHTML("afterend",`<button class="btn ghost" data-reloj></button>`);
+  if(pr&&!c.querySelector("[data-reloj]")&&(pr.matches("[data-follow],[data-mtfol]")||(pr.matches("[data-cofol]")&&c.id==="sheet")))pr.insertAdjacentHTML("afterend",`<button class="btn ghost" data-reloj></button>`);
   // 🔎 más rutas por esta zona en Wikiloc (en su mapa), desde la salida de la ruta
-  if(!c.querySelector("[data-wkz]")){let ll=null;
+  if(pr&&!c.querySelector("[data-wkz]")){let ll=null;
     if(pr.matches("[data-follow]")){const r=R[+pr.dataset.follow];if(r)ll=[r.lat,r.lon]}
     else if(pr.matches("[data-cofol]")&&c.id==="sheet"&&sheet._cor){ll=sheet._cor.c.r[sheet._cor.i][8]}
     else if(pr.matches("[data-mtfol]")&&MPI){const t=MPI.tracks().find(x=>String(x.id)===pr.dataset.mtfol),q=t&&MPI.ptsOf(t);if(q&&q.length)ll=q[0]}
     if(ll)pr.insertAdjacentHTML("afterend",`<a class="btn ghost" data-wkz href="${wkUrl(ll[0],ll[1])}" target="_blank" rel="noopener">🔎 Más rutas por aquí (Wikiloc)</a>`)}
   let box=c.querySelector(".acts2");
-  if(!box){const ta=pr.closest(".topacts")||pr.parentNode;ta.insertAdjacentHTML("beforebegin",`<div class="acts2"><div class="aprim"></div><div class="agrid"></div></div>`);box=ta.previousElementSibling;
+  if(!box){const anc=pr||[...c.querySelectorAll(".actions,.topacts")].find(x=>!x.closest(FUERA));if(!anc)return;
+    const ta=anc.closest(".topacts")||(anc.matches(".actions,.topacts")?anc:anc.parentNode);
+    ta.insertAdjacentHTML("beforebegin",`<div class="acts2"><div class="aprim"></div><div class="ados"></div><details class="amas"><summary>··· Más opciones</summary><div class="agrid"></div></details></div>`);box=ta.previousElementSibling;
     // debajo de los datos de la ruta (km, desnivel, dificultad y salida), no encima de la descripción
-    const base=ta.parentNode,dat=[...base.children].filter(x=>x.matches(".ficha,.salida"));if(dat.length){const ul=dat[dat.length-1];if(ul.compareDocumentPosition(box)&Node.DOCUMENT_POSITION_PRECEDING)ul.after(box)}}
-  const ap=box.querySelector(".aprim"),ag=box.querySelector(".agrid");if(pr.parentNode!==ap){pr.textContent="▶ Seguir";ap.appendChild(pr)}
-  const els=[...c.querySelectorAll("button,a")].filter(x=>!x.closest(FUERA)&&!ap.contains(x));
-  const vistos=new Set(),orden=[];
-  for(const[k,f,lab]of ORD)for(const el of els){if(!f(el))continue;
-    if(vistos.has(k)){if(!ag.contains(el)||true){el.remove()}continue}   // repetido (p. ej. «Compartir esta ruta» al final)
-    vistos.add(k);if(lab)el.textContent=lab;el.classList.remove("primary");el.classList.add("btn","ghost");el.classList.toggle("blogb",k==="blog");orden.push(el)}
-  for(const el of orden)if(el.parentNode!==ag||ag.lastElementChild!==el)ag.appendChild(el);
+    const base=box.parentNode,dat=[...base.children].filter(x=>x.matches(".ficha,.salida"));if(dat.length){const ul=dat[dat.length-1];if(ul.compareDocumentPosition(box)&Node.DOCUMENT_POSITION_PRECEDING)ul.after(box)}}
+  const ap=box.querySelector(".aprim"),ad=box.querySelector(".ados"),ag=box.querySelector(".agrid");
+  const els=[...c.querySelectorAll("button,a")].filter(x=>!x.closest(FUERA)&&!ap.contains(x)&&!ad.contains(x)&&x.tagName!=="SUMMARY"&&!x.closest("summary"));
+  const vistos=new Set();let blog=null,share=null;const resto=[];
+  for(const[k,f,lab]of ORD)for(const el of els){if(!f(el)||el===pr)continue;
+    if(vistos.has(k)){el.remove();continue}   // repetido (p. ej. «Compartir esta ruta» al final)
+    vistos.add(k);if(lab)el.textContent=lab;el.classList.remove("primary","blogb");el.classList.add("btn","ghost");
+    if(k==="blog")blog=el;else if(k==="share")share=el;else resto.push(el)}
+  for(const el of els)if(el.dataset&&el.dataset.wxl&&!resto.includes(el))resto.push(el);
+  // 📖 grande (si no hay blog, ▶ Seguir grande)
+  const grande=ap.firstElementChild?null:(blog||pr);
+  if(grande){if(grande===blog){blog.classList.remove("ghost");blog.classList.add("primary")}ap.appendChild(grande)}
+  if(pr){pr.textContent="▶ Seguir";if(!ap.contains(pr)){pr.classList.remove("primary");pr.classList.add("btn","ghost","segb");if(pr.parentNode!==ad)ad.appendChild(pr)}}
+  else if(!ad.querySelector(".sintrack")&&!c.querySelector("[data-mtfol]"))ad.insertAdjacentHTML("afterbegin",`<span class="sintrack" title="Esta ruta no tiene track para seguirla">Sin track</span>`);
+  if(share&&share.parentNode!==ad)ad.appendChild(share);
+  {const sh=ad.querySelector("[data-share],[data-coshare],[data-mtshare]");const solo=[...ad.children].filter(x=>getComputedStyle(x).display!=="none").length===1;if(sh)sh.style.gridColumn=solo?"1 / -1":""}
+  for(const el of resto)if(el.parentNode!==ag)ag.appendChild(el);
+  box.querySelector(".amas").hidden=!ag.children.length;
   // contenedores que se han quedado vacíos
   c.querySelectorAll(".topacts,.actions").forEach(x=>{if(!x.closest(".acts2")&&!x.children.length)x.remove()})}
 for(const id of ["sheet","ov"]){const el=document.getElementById(id);if(!el)continue;let t=0,ocupado=false;
@@ -3716,38 +3771,6 @@ document.addEventListener("pointerdown",e=>{const s=e.target.closest&&e.target.c
 })();
 
 }catch(e){console.error("módulo perfil",e);(window.__ERRS=window.__ERRS||[]).push("perfil: "+(e&&e.message))}
-try{
-/* ---------- el tiempo en la ficha de la ruta: previsión de 5 días de meteoblue en el punto y a su altura ---------- */
-(function(){
-document.head.insertAdjacentHTML("beforeend",`<style>
-.wx{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:6px 0 10px}
-.wx .d{border:1px solid var(--edge);border-radius:12px;padding:8px 2px;text-align:center;background:var(--card)}
-.wx .d b{display:block;font-size:13px;text-transform:capitalize}.wx .d .i{font-size:26px;line-height:1.2}
-.wx .d .t{font-weight:800;font-size:14px}.wx .d .t span{color:var(--muted);font-weight:600}
-.wx .d small{display:block;font-size:11.5px;color:var(--muted);line-height:1.25}.wx .d small.ll{color:#1a5fb4;font-weight:700}
-.wx .d small.vi{color:#8a4b00;font-weight:700}
-.wxn{font-size:12px;color:var(--muted);margin:2px 0 8px}.wxn a{color:inherit}
-.mbw iframe{display:block;width:100%;height:250px;border:1px solid var(--edge);border-radius:12px;background:#fff}
-</style>`);
-const ICON=c=>c===0?["☀️","Despejado"]:c<=2?["🌤️","Algo nuboso"]:c===3?["☁️","Nublado"]:c<=48?["🌫️","Niebla"]:c<=57?["🌦️","Llovizna"]:c<=67?["🌧️","Lluvia"]:c<=77?["🌨️","Nieve"]:c<=82?["🌦️","Chubascos"]:c<=86?["🌨️","Chubascos de nieve"]:["⛈️","Tormenta"];
-const CK="ldc-wx2";   // modelo europeo ECMWF (IFS) servido por Open-Meteo
-async function datos(lat,lon,alt){const k=`${lat.toFixed(2)},${lon.toFixed(2)},${alt||""}`;let c={};try{c=JSON.parse(sessionStorage.getItem(CK)||"{}")}catch(e){}
-  if(c[k]&&Date.now()-c[k].t<3600e3)return c[k].d;
-  const u=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}${alt?`&elevation=${alt}`:""}&models=ecmwf_ifs025&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,wind_gusts_10m_max&timezone=auto&forecast_days=5`;
-  const d=(await (await fetch(u)).json()).daily;c[k]={t:Date.now(),d};try{sessionStorage.setItem(CK,JSON.stringify(c))}catch(e){}return d}
-// Meteoblue (widget oficial gratuito, con su enlace de atribución): la previsión en el punto y a su altura
-function pinta(el){el.dataset.ok="1";
-  if(!navigator.onLine){el.outerHTML=`<p class="wxn">Sin conexión: la previsión se ve cuando haya cobertura.</p>`;return}
-  const lat=(+el.dataset.lat).toFixed(3),lon=(+el.dataset.lon).toFixed(3),alt=el.dataset.alt?Math.round(+el.dataset.alt):"";
-  const loc=`${lat}N${lon}E${alt}_Europe%2FMadrid`;
-  const q="geoloc=fixed&days=5&tempunit=CELSIUS&windunit=KILOMETER_PER_HOUR&precipunit=MILLIMETER&coloured=coloured&pictoicon=1&maxtemperature=1&mintemperature=1&windspeed=1&windgust=1&winddirection=0&uv=0&humidity=0&precipitation=1&precipitationprobability=1&spot=0&pressure=0&layout=light";
-  el.outerHTML=`<div class="mbw"><iframe src="https://www.meteoblue.com/es/tiempo/widget/daily/${loc}?${q}" title="Previsión meteoblue" loading="lazy" scrolling="no" allowtransparency="true"></iframe>
-  <div class="wxn"><a href="https://www.meteoblue.com/es/tiempo/semana/${loc}" target="_blank" rel="noopener">meteoblue</a> · previsión a ${alt?Number(alt).toLocaleString("es-ES")+" m":"la altura del punto"} · toca el recuadro para verla completa</div></div>`}
-function busca(){document.querySelectorAll(".wx:not([data-ok])").forEach(pinta)}
-const mo=new MutationObserver(busca);for(const id of ["sheet","ov"]){const el=document.getElementById(id);if(el)mo.observe(el,{childList:true,subtree:true})}busca();
-})();
-
-}catch(e){console.error("módulo tiempo",e);(window.__ERRS=window.__ERRS||[]).push("tiempo: "+(e&&e.message))}
 try{
 /* ---------- «Modo cerca» común a Rutas, Cumbres y Lugares (cerca de un sitio o de mí) + botón 🎯 Cerca del mapa ---------- */
 (function(){
@@ -4198,6 +4221,97 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-cerca2]");
 
 }catch(e){console.error("módulo explorar2",e);(window.__ERRS=window.__ERRS||[]).push("explorar2: "+(e&&e.message))}
 try{
+/* ---------- ficha única de cumbre y de lugar (nov 2026) ----------
+   · El título es lo que has tocado («Peña Ubiña · 2411 m»), no una ruta.
+   · Una sola fila de marcas (✓ ★). Si la cumbre la tienen también colaboradores, la marca vale para todos.
+   · «Rutas que suben aquí» (o «… que pasan por aquí»), agrupadas por quién las hizo:
+     primero el que más rutas tenga; si empatan, Los de las Claras si su ruta es reciente (últimos 2 años); si no, el de la ruta más reciente.
+   · Botones: 📤 Compartir · 📍 Google Maps y «··· Más opciones» (Wikiloc por aquí, ☁ el tiempo).
+   Para quitarlo: borrar 'fichas2' de la lista del build (vuelven las fichas de antes). */
+(function(){
+if(typeof pickRoute!=="function")return;
+document.head.insertAdjacentHTML("beforeend",`<style>
+.fpt-src{margin:14px 0 4px;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
+.fpt-src i{display:inline-block;width:12px;height:12px;border-radius:50%;flex:none}
+.fpt-alias{margin:-2px 0 8px;color:var(--muted);font-size:14px}
+.fpt-none{color:var(--muted)}
+</style>`);
+const GRP={n:"Los de las Claras",c:"#c3262e"};
+const RECIENTE=new Date().getFullYear()-1;
+const meteo=(la,lo,a)=>`https://www.meteoblue.com/es/tiempo/semana/${la.toFixed(3)}N${lo.toFixed(3)}E${a?Math.round(a):""}_Europe%2FMadrid`;
+const nk=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();
+const mkCo=(k,cum)=>{const s=MARKS[k]||"",L=cum?["Subida","Quiero subir"]:["He estado","Quiero ir"];
+  return `<span class="mk" data-key="${esc(k)}"><button data-mk="hecha" aria-pressed="${s==="hecha"}" title="${L[0]}">✓ ${L[0]}</button><button data-mk="quiero" aria-pressed="${s==="quiero"}" title="${L[1]}">★ ${L[1]}</button></span>`};
+
+function pinta(o){
+  // o: {n, a, lat, lon, cum, mk (html), keys:[claves extra], alias:[], src:[{n,c,rows:[html],cnt,y,grp}], foto, gi, solo}
+  for(const b of o.blogs||[])if(!o.src.some(x=>x.n===b.n&&x.cnt))o.src.push({n:b.n,c:b.c,cnt:0,y:0,rows:[],chip:1});
+  const chips=o.src.filter(x=>x.cnt||x.chip);
+  const ord=o.src.filter(x=>x.cnt).sort((A,B)=>B.cnt-A.cnt||((B.grp&&B.y>=RECIENTE)?1:0)-((A.grp&&A.y>=RECIENTE)?1:0)||(B.y||0)-(A.y||0));
+  const tot=ord.reduce((t,x)=>t+x.cnt,0);
+  const tit=o.cum?"Rutas que suben aquí":"Rutas que pasan por aquí";
+  const ae=typeof aemetZone==="function"?aemetZone(o.lat,o.lon):null;
+  sheet.classList.remove("full");sheet._cor=null;
+  sheet.innerHTML=`<div class="grab"></div>${o.foto?`<div class="photo"><img src="${esc(o.foto)}" alt="" onerror="this.parentNode.remove()"></div>`:""}
+  <div class="sheet-head"><h2>${esc(o.n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
+  <div class="meta">${o.a?`<span class="tag alt">${fmtA(o.a)}</span>`:""}${chips.sort((A,B)=>(B.cnt||0)-(A.cnt||0)).map(x=>`<span class="tag" style="background:${x.c};color:#fff;border-color:${x.c}">${esc(x.n)}</span>`).join("")}</div>
+  ${o.alias.length?`<p class="fpt-alias">También llamada ${o.alias.map(esc).join(", ")}</p>`:""}
+  <div class="mkblock fpt" data-ll="${o.lat},${o.lon}"><span>${o.cum?"¿La has subido?":"¿Has estado?"}</span>${o.mk}</div>
+  <div class="acts2 fpt">${(o.blogs||[]).length?`<div class="aprim">${o.blogs.map(b=>`<a class="btn ${o.src.some(x=>x.cnt)?"ghost blogb":"primary"}" href="${esc(b.u)}" target="_blank" rel="noopener">${/instagram\.com/i.test(b.u)?"📷 Ver en Instagram":"📖 Leer en "+esc(b.n)}</a>`).join("")}</div>`:""}<div class="ados"><button class="btn ghost" data-ptshare>📤 Compartir</button><a class="btn ghost" href="https://www.google.com/maps/search/?api=1&query=${o.lat},${o.lon}" target="_blank" rel="noopener">📍 Google Maps</a></div>
+   <details class="amas"><summary>··· Más opciones</summary><div class="agrid">
+    <a class="btn ghost" href="${wkUrl(o.lat,o.lon)}" target="_blank" rel="noopener">🔎 Más rutas por aquí (Wikiloc)</a>
+    <a class="btn ghost" href="${meteo(o.lat,o.lon,o.a)}" target="_blank" rel="noopener">☁ Ver el tiempo</a>
+    ${ae?`<a class="btn ghost" href="https://www.aemet.es/es/eltiempo/prediccion/montana?w=&p=${ae[0]}" target="_blank" rel="noopener">☁ AEMET montaña · ${ae[1]}</a>`:""}
+    <a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${o.lat},${o.lon}" target="_blank" rel="noopener">🚗 Cómo llegar</a>
+   </div></details></div>
+  <div class="sec"><h3>${tit}${tot>1?` (${tot})`:""}</h3>
+   ${ord.length?ord.map(x=>`${ord.length>1||!x.grp?`<div class="fpt-src"><i style="background:${x.c}"></i>${esc(x.n)}${x.cnt>1?` · ${x.cnt}`:""}</div>`:""}<div class="rows">${x.rows.join("")}</div>`).join("")
+     :`<p class="note fpt-none">${(o.blogs||[]).length?"Todavía no hay ruta con track enlazada; la tienes contada en el blog.":"Este punto todavía no tiene enlazada ninguna ruta."}</p>`}
+  </div>`;
+  sheet._pt={n:o.n,lat:o.lat,lon:o.lon,alt:o.a||null,cum:o.cum,co:""};
+  sheet._fptKeys=o.keys;
+  if(o.gi!=null)nodes.classed("sel",i=>i===o.gi);else nodes.classed("sel",false);
+  if(window.showTrack)showTrack(o.solo||null);{const tp=document.getElementById("trkpill");if(tp)tp.hidden=true}
+  if(typeof ensureZone==="function")ensureZone(zoneAt(o.lat,o.lon));
+  sheet.hidden=false;sheet.scrollTop=0}
+
+// datos de una cumbre o lugar del grupo (y de los colaboradores que la tengan)
+function deGrupo(gi){const p=P[gi];const cum=p.t==="cumbre";
+  const rs=(p.rs||[]).filter(ri=>R[ri]&&R[ri].u).map(ri=>R[ri]).sort(byDate);
+  const src=[{n:GRP.n,c:GRP.c,grp:true,cnt:rs.length,y:Math.max(0,...rs.map(r=>r.y||0)),rows:rs.map(r=>rowHTML(r))}];
+  const ms=cum&&window.COLX&&COLX.cumDe?COLX.cumDe(gi):[];
+  return junta({n:p.c,a:p.a,lat:p.lat,lon:p.lon,cum,gi,mk:mkBtns(p)||"",main:mkKey(p),src,rs},ms)}
+function junta(o,ms){const by={},alias=new Set(),keys=[];let foto=o.rs&&o.rs.find(r=>r.f!=null);foto=foto?`fotos/${foto.f}.jpg`:null;
+  o.blogs=o.blogs||[];
+  for(const{c,p}of ms){if(nk(p[0])!==nk(o.n))alias.add(p[0]);
+    if(p[4]&&/^https?:/.test(p[4])&&!(p[9]||[]).length&&!o.blogs.some(b=>b.n===c.n))o.blogs.push({n:c.n,c:c.c,u:p[4]});
+    if(!foto&&p[5]&&/^https?:|\.(jpe?g|png|webp)/i.test(p[5]))foto=p[5];if(o.cum&&COLX.coKey)keys.push(COLX.coKey(c,p[0]));
+    const b=by[c.id]||(by[c.id]={n:c.n,c:c.c,cnt:0,y:0,rows:[],vis:new Set()});
+    for(const i of (p[9]||[])){if(b.vis.has(i))continue;b.vis.add(i);const it=COLX.rutaItem(c,i);if(!it)continue;b.rows.push(COLX.rrow(it));b.cnt++;b.y=Math.max(b.y,it.y||0);
+      if(!foto&&c.r&&c.r[i]&&c.r[i][9])foto=c.r[i][9]}}
+  o.src=o.src.concat(Object.values(by));o.alias=[...alias];o.keys=keys.filter(k=>k!==o.main);o.foto=foto;
+  const g=o.rs||[];o.solo=g.length===1&&o.src.every(x=>x.grp||!x.cnt)?g[0]:null;
+  return o}
+
+window.pickRoute=pickRoute=function(pi){pinta(deGrupo(pi))};
+window.FICHAPT={
+  co(c,p){const x=COLX.cumCo?COLX.cumCo(p):{gi:null,ms:[{c,p}]};
+    if(x.gi!=null){pinta(deGrupo(x.gi));return true}
+    // solo de este colaborador y sin rutas con track: su ficha de siempre (descripción, datos y enlace a su entrada)
+    if(x.ms.length<=1&&!(p[9]||[]).length)return false;
+    const k=COLX.coKey(c,p[0]);
+    const o=junta({n:p[0],a:null,lat:p[1],lon:p[2],cum:true,gi:null,mk:mkCo(k,true),main:k,src:[],rs:[]},x.ms.length?x.ms:[{c,p}]);
+    pinta(o);return true}};
+// una sola marca para todos: cuando se guarda una marca desde esta ficha (con o sin pasar por «entrar con tu cuenta»),
+// se copia a la misma cumbre de los colaboradores
+{const orig=saveMarks;let dentro=false;
+ window.saveMarks=saveMarks=function(){if(!dentro&&!sheet.hidden&&sheet._fptKeys&&sheet._fptKeys.length){const mk=sheet.querySelector(".mkblock.fpt .mk[data-key]");
+   if(mk){const v=MARKS[mk.dataset.key]||"";dentro=true;for(const k of sheet._fptKeys){if(v)MARKS[k]=v;else delete MARKS[k]}dentro=false;setTimeout(()=>{if(window.refreshMarks)refreshMarks()},0)}}
+   return orig.apply(this,arguments)}}
+})();
+
+}catch(e){console.error("módulo fichas2",e);(window.__ERRS=window.__ERRS||[]).push("fichas2: "+(e&&e.message))}
+try{
 /* ---------- botones del mapa: una fila abajo (Capas · Grabar · Punto · Yo); sin «Todo» ni «Rutas» (eso está en Explorar);
    en el ordenador fuera lo que necesita GPS: SOS, Punto, Yo, Grabar y Seguir ---------- */
 (function(){
@@ -4238,5 +4352,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="911632ee7a";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="031f8e5805";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
