@@ -51,12 +51,28 @@ const cuenta=()=>{const nm=Object.keys(MARKS).length,np=MPI.get().length,nt=MPI.
 let OPEN=false,PEND=null,MOT=null;
 const MOTS={marcas:"Entra para no perder tus marcas",puntos:"Entra para guardar tus puntos",tracks:"Entra para guardar tus tracks",proponer:"Entra para proponer al grupo",club:"Entra con la cuenta de Google del club"};
 // guardar algo tuyo pide haber entrado con Google; lo que pulsaste se hace solo después de entrar
-window.cuentaOk=(fn,motivo)=>{if(store.get(SK,"0")==="1")return true;PEND=fn;MOT=motivo||"marcas";panel();return false};
-document.addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;
+// nov 2026: guardar ya no pide cuenta. Sin entrar, todo se guarda en este móvil y sale un aviso pequeño para entrar con Google
+// (al entrar, lo del móvil y lo de la cuenta se juntan). Solo «club» y «proponer» siguen necesitando la cuenta.
+const NECESITA=new Set(["club","proponer"]);
+window.cuentaOk=(fn,motivo)=>{if(store.get(SK,"0")==="1")return true;if(!NECESITA.has(motivo)){avisoLocal();return true}PEND=fn;MOT=motivo||"marcas";panel();return false};
+window.cuentaPanel=()=>{MOT=null;PEND=null;panel()};
+document.head.insertAdjacentHTML("beforeend",`<style>#avloc{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:2500;display:flex;gap:10px;align-items:center;background:#20302a;color:#fff;border-radius:14px;padding:10px 10px 10px 14px;box-shadow:0 4px 16px rgba(0,0,0,.35);font-size:15px;max-width:520px;margin:0 auto}
+#avloc[hidden]{display:none}#avloc span{flex:1}#avloc button{border:0;border-radius:10px;padding:9px 12px;font:inherit;font-weight:800;cursor:pointer}#avloc .si{background:#fff;color:#20302a}#avloc .no{background:transparent;color:#fff;opacity:.8;padding:9px 6px}</style>`);
+let AVT=0;
+function avisoLocal(){if(store.get(SK,"0")==="1")return;
+  // como mucho una vez cada 3 días, para no agobiar
+  const ult=+store.get("ldc-avloc",0);if(Date.now()-ult<3*864e5)return;store.set("ldc-avloc",Date.now());
+  let el=document.getElementById("avloc");if(!el){el=document.createElement("div");el.id="avloc";document.body.appendChild(el);
+    el.addEventListener("click",e=>{if(e.target.closest(".si")){el.hidden=true;cuentaPanel()}else if(e.target.closest(".no"))el.hidden=true})}
+  el.innerHTML=`<span>Guardado en este móvil. Entra con Google para no perderlo si cambias de móvil.</span><button class="si">Entrar</button><button class="no" aria-label="Cerrar">✕</button>`;
+  el.hidden=false;clearTimeout(AVT);AVT=setTimeout(()=>{el.hidden=true},9000)}
+// al marcar ✓ ★ sin cuenta: se guarda en el móvil y sale el aviso
+document.addEventListener("click",e=>{if(store.get(SK,"0")==="1")return;if(e.target.closest("[data-m],[data-mk],[data-gdpe],[data-mtest]"))setTimeout(avisoLocal,300)});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(true||!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;   // nov 2026: ya no se pide cuenta para marcar
   e.preventDefault();e.stopPropagation();const k=b.parentElement.dataset.key,v=b.dataset.m;
   cuentaOk(()=>{if(MARKS[k]!==v){MARKS[k]=v;saveMarks();renderCols();if(typeof refreshMarks==="function")refreshMarks()}toast(v==="hecha"?"Marcado ✓":"Apuntado en tu lista ★")},"marcas")},true);
 // lo mismo con los botones ✓/★ de las fichas (mapa, rutas, colaboradores) y de Mis listas: sin cuenta, primero entrar
-document.addEventListener("click",e=>{const b=e.target.closest("[data-mk]");if(!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;
+document.addEventListener("click",e=>{const b=e.target.closest("[data-mk]");if(true||!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;   // nov 2026: ya no se pide cuenta para marcar
   e.preventDefault();e.stopPropagation();const k=b.parentElement.dataset.key,v=b.dataset.mk;
   cuentaOk(()=>{if(MARKS[k]!==v){MARKS[k]=v;saveMarks()}
     document.querySelectorAll(`.mk[data-key="${CSS.escape(k)}"]`).forEach(g=>g.querySelectorAll("[data-mk]").forEach(x=>x.setAttribute("aria-pressed",MARKS[k]===x.dataset.mk)));
@@ -64,7 +80,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-mk]");if(!
 function panel(){OPEN=true;
   if(!USER){load().catch(()=>{});
     show(`<div class="sheet-head"><h2>${MOT?esc(MOTS[MOT]||"Entra con tu cuenta"):"Tu cuenta"}</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
-    <p>${MOT?"Para guardar algo tuyo hay que entrar con tu cuenta de Google. ":"Entra con tu cuenta de Google y "}Tus <b>marcas de cumbres, lugares y rutas, tus puntos y tus tracks</b> se guardan en tu cuenta: los tendrás en el móvil y en el ordenador, y no se pierden si cambias de móvil.</p>
+    <p>${MOT?"Para esto hay que entrar con tu cuenta de Google. Tus ":"Ahora lo tuyo se guarda solo en este móvil. Si entras con tu cuenta de Google, tus "}<b>marcas de cumbres, lugares y rutas, tus puntos y tus tracks</b> se guardan en tu cuenta: los tendrás en el móvil y en el ordenador, y no se pierden si cambias de móvil.</p>
     <p class="note">Solo hace falta una vez: después la app entra sola. Para ver rutas y mapas no hace falta. Solo se guarda lo tuyo y nadie más puede verlo.</p>
     ${ERR?`<p class="syncst er">${esc(ERR)}</p>`:""}
     <p style="margin:14px 0 6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="gbtn" data-gin>${GLOGO}Entrar con Google</button>${MOT?`<button class="mpb" data-close>Ahora no</button>`:""}</p>

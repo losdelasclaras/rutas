@@ -50,10 +50,10 @@ for(const k in MS)if(MS[k])mo.observe(MS[k],{childList:true});
 pintaM();
 // la línea de la cuenta: si has entrado, dónde se guarda; si no, el botón para entrar
 {const el=document.getElementById("mcta");const pinta=()=>{if(!el)return;const u=window.LDCFB&&LDCFB.user&&LDCFB.user();
-   el.innerHTML=u?`<p class="mcok">✅ Guardado en tu cuenta${u.displayName?` (${esc(u.displayName.split(" ")[0])})`:""}: lo tienes en el móvil y en el ordenador.</p>`:`<button class="mcin" data-mcent>Entra con Google para no perder tus cosas</button>`};
+   el.innerHTML=u?`<p class="mcok">✅ Guardado en tu cuenta${u.displayName?` (${esc(u.displayName.split(" ")[0])})`:""}: lo tienes en el móvil y en el ordenador.</p>`:`<p class="mcok" style="margin:0 0 6px">📱 Tus cosas se guardan en este móvil.</p><button class="mcin" data-mcent>Entra con Google para no perderlas si cambias de móvil</button>`};
  document.head.insertAdjacentHTML("beforeend",`<style>.mcta{margin:4px 0 12px}.mcta .mcok{margin:0;color:var(--muted);font-size:14.5px}.mcta .mcin{width:100%;min-height:48px;border-radius:12px;border:1px solid var(--edge);background:var(--card);color:var(--ink);font:inherit;font-weight:800;cursor:pointer}
  #mlbox{display:flex;flex-direction:column}#mlbox details.mlres{order:9;margin-top:14px}#mlbox .mlacts{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}#mlbox .mlacts .btn{margin:0;font-size:14.5px;padding:10px 6px}</style>`);
- el&&el.addEventListener("click",e=>{if(e.target.closest("[data-mcent]")&&window.cuentaOk)cuentaOk(pinta,"marcas")});
+ el&&el.addEventListener("click",e=>{if(e.target.closest("[data-mcent]")&&window.cuentaPanel)cuentaPanel()});
  addEventListener("ldc-user",pinta);setTimeout(pinta,800);pinta()}
 
 /* «Del grupo»: Rutas, Cumbres y Lugares del blog con su barra arriba */

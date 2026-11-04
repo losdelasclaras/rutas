@@ -230,7 +230,7 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
   if(np+nt>=2&&np>=1){const nm=(doc.getElementsByTagName("metadata")[0]&&tx(doc.getElementsByTagName("metadata")[0],"name"))||(doc.getElementsByTagName("Document")[0]&&tx(doc.getElementsByTagName("Document")[0],"name"))||base;for(const p of MP.slice(-np))if(!p.c)p.c=nm.slice(0,60);for(const t of nuevos)if(!t.c)t.c=nm.slice(0,60)}   // nov 2026: un archivo = una carpeta, con sus puntos y sus tracks
   // archivo que llega desde «Compartir»: un solo track se enseña primero, con «Guardar en mis tracks»
   if(prev&&nt===1&&!np&&window.COMPARTIR&&COMPARTIR.preview){const t=nuevos[0];MT.splice(MT.indexOf(t),1);COMPARTIR.preview(t);return}
-  if(window.cuentaOk&&store.get("ldc-sesion","0")!=="1"){nuevos.forEach(t=>{const i=MT.indexOf(t);if(i>=0)MT.splice(i,1)});MP=store.get(MPK,[]);cuentaOk(()=>imp(txt,fname),"tracks");return}
+  if(window.cuentaOk&&!cuentaOk(()=>imp(txt,fname),"tracks")){nuevos.forEach(t=>{const i=MT.indexOf(t);if(i>=0)MT.splice(i,1)});MP=store.get(MPK,[]);return}
   saveMP();if(nt&&!saveMT()){MT=store.get(MTK,[])}
   LAY.mp=true;LAY.mt=true;saveLay();["mp","mt"].forEach(k=>{const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",true)});
   drawMP();drawMT();renderBox();toast([np?`${np} punto${np===1?"":"s"}`:"",nt?`${nt} track${nt===1?"":"s"}`:""].filter(Boolean).join(" y ")+(np+nt===1?" cargado":" cargados")+" · están en Mis cosas › Guardado");
