@@ -99,12 +99,12 @@ for(const k of ["cumbres","lugares"]){const v=document.getElementById("v-"+k);if
     if(e.target.closest(".fpanel .chips [data-v]"))setTimeout(()=>{labels(k);renderCol(k)},0)},true)}
 
 /* Rutas: estado propio de los filtros sencillos */
-const RF={z:"",ep:"",iv:"",tk:""},CUT=new Date().getFullYear()-5;
+const RF={z:"",ep:"",iv:"",tk:""},CUT=new Date().getFullYear()-1; // nov 2026: «últimos 2 años» (antes: desde hace 5 años / antes)
 window.RFOK=r=>(!RF.z||zoneOf(r.r)===RF.z)&&(!RF.ep||(RF.ep==="new"?(r.y||0)>=CUT:(r.y||0)<CUT))&&(!RF.iv||(RF.iv==="si"?!!r.iv:!r.iv))&&(!RF.tk||!!r.gx);
 const rsrc=()=>window.COLX?COLX.rsrc:"todas";
 const RG=()=>[["z","Zona",[["","Todas"],["cant","Norte"],["pir","Pirineos"],["alp","Alpes y Dolomitas"]]],
   ...(window.COLX?[["rs","De quién",[["todas","Todas"],["grupo","Los de las Claras"],...CO_LIST()]]]:[]),
-  ["ep","Época",[["","Todas"],["new",`Desde ${CUT}`],["old",`Antes de ${CUT}`]]],
+  ["ep","Época",[["","Todas"],["new","Recientes (últimos 2 años)"]]],
   ["iv","Invierno",[["","Todas"],["si","Solo invernales"],["no","Sin invernales"]]],
   ["tk","Track",[["","Todas"],["si","Con track en el mapa"]]]];
 const CO_LIST=()=>{const s=document.querySelectorAll("#list .rsrc [data-rsrc]");return [...s].filter(b=>/^co_/.test(b.dataset.rsrc)).map(b=>[b.dataset.rsrc,b.textContent.trim()])};

@@ -45,12 +45,14 @@ if(mio){const tt=mio.querySelector(".tt");if(tt)tt.textContent="Mis cosas";
   const bs=[nom("mp","Mis puntos"),nom("mt","Mis tracks"),nom("mh","Señalar las que hice"),nom("mq","Señalar las que quiero hacer")].filter(Boolean);
   if(g&&g.classList.contains("laygrp"))for(const b of bs)g.appendChild(b)}
 
-// interruptor general de cada colaborador
-function grupos(){return hdrs().map(h=>({h,g:h.nextElementSibling})).filter(x=>x.g&&x.g.classList.contains("laygrp")&&x.g.querySelector('[data-lay^="co_"]'))}
-function estado(){for(const{h,g}of grupos()){const bs=[...g.querySelectorAll('[data-lay^="co_"]:not([hidden])')];const on=bs.filter(b=>!/_t$/.test(b.dataset.lay)&&b.getAttribute("aria-pressed")==="true").length;
+// interruptor general de cada colaborador y también del blog (Los de las Claras), para que nadie sea más que otros
+const SW='[data-lay^="co_"],[data-lay="peaks"],[data-lay="spots"],[data-lay="tracks"]',SWV=SW.split(",").map(x=>x+":not([hidden])").join(",");
+const esT=b=>/_t$/.test(b.dataset.lay)||b.dataset.lay==="tracks";
+function grupos(){return hdrs().map(h=>({h,g:h.nextElementSibling})).filter(x=>x.g&&x.g.classList.contains("laygrp")&&x.g.querySelector(SW))}
+function estado(){for(const{h,g}of grupos()){const bs=[...g.querySelectorAll(SWV)];const on=bs.filter(b=>!esT(b)&&b.getAttribute("aria-pressed")==="true").length;
     let s=h.querySelector(".mst");if(!s){s=document.createElement("span");s.className="mst";s.setAttribute("role","switch");s.innerHTML="<i></i>";h.classList.add("conm");h.appendChild(s);
-      s.addEventListener("click",e=>{e.stopPropagation();e.preventDefault();const bs=[...g.querySelectorAll('[data-lay^="co_"]:not([hidden])')];const alguno=bs.some(b=>b.getAttribute("aria-pressed")==="true");
-        for(const b of bs){const es=b.getAttribute("aria-pressed")==="true",quiero=alguno?false:!/_t$/.test(b.dataset.lay);if(es!==quiero)b.click()}setTimeout(()=>{estado();if(window.capasSum)capasSum()},50)})}
+      s.addEventListener("click",e=>{e.stopPropagation();e.preventDefault();const bs=[...g.querySelectorAll(SWV)];const alguno=bs.some(b=>b.getAttribute("aria-pressed")==="true");
+        for(const b of bs){const es=b.getAttribute("aria-pressed")==="true",quiero=alguno?false:!esT(b);if(es!==quiero)b.click()}setTimeout(()=>{estado();if(window.capasSum)capasSum()},50)})}
     s.classList.toggle("on",on>0||bs.some(b=>b.getAttribute("aria-pressed")==="true"));s.setAttribute("aria-checked",on>0);s.title=on?"Ocultar todo":"Ver cumbres, lugares y rutas"}}
 estado();lg.addEventListener("click",()=>setTimeout(estado,30));setTimeout(estado,800);
 

@@ -6,6 +6,7 @@
 const KO="ldc-orden-rutas",KP="ldc-ultpos";
 let ORD=store.get(KO,"cerca");if(ORD!=="cerca"&&ORD!=="fecha")ORD="cerca";
 let POS=store.get(KP,null);if(!POS||typeof POS.lat!=="number")POS=null;
+if(ORD==="cerca"&&!POS)ORD="fecha"; // nov 2026: si aún no sé dónde estás, empiezo por las más recientes
 // cualquier ubicación que reciba la app se apunta como «última conocida»
 const G=navigator.geolocation;
 if(G){const guarda=p=>{try{const c=p&&p.coords;if(!c)return;const n={lat:c.latitude,lon:c.longitude,t:Date.now()};
