@@ -385,12 +385,11 @@ const CATS=[["brana","Brañas y majadas",/(?:^|[\s(/-])(braña|brañas|majada|ma
  ["refugio","Refugios",/(?:^|[\s(/-])(refugio|refugi|refuge|rifugio|cabane|hütte|chalet)(?=$|[\s,.)/-])/i],
  ["collado","Collados, sierras y miradores",/(?:^|[\s(/-])(collado|collada|collaú|colláu|collau|pasá|mirador|muezca|copa|sierra|arista|coll|col|cuello|port|puerto|paso|passo|pass|forcella|furcela|portillón|brecha|brèche|hourquette|circ|cirque)(?=$|[\s,.)/-])/i],
  ["senda","Sendas y caminos",/(?:^|[\s(/-])(senda|camín|ruta|sentiero|galleria|valle)(?=$|[\s,.)/-])/i]];
-const catOf=n=>{for(const [k,,re] of CATS)if(re.test(n))return k;return "otros"};
-P.forEach(p=>{p.cat=p.ic?"invernal":p.t==="cumbre"?"cumbre":p.x?"inicio":catOf(p.c)});
 /* excepciones: lugares cuyo nombre no dice el tipo (las dijo Jonathan, 4 nov 2026) */
 const CATX={"Área Recreativa de Moniello":"costa","Cinque Torri":"cumbre","La Llosa de Viango":"cueva","Cuafurada":"cueva","Cuallagar":"cueva",
  "El Fielato":"brana","Vallemoru":"brana","Ventaniella":"brana","Ripatera":"bosque","Traviesas de Somajía":"senda"};
-P.forEach(p=>{const k=CATX[p.c];if(k&&!p.ic&&p.t!=="cumbre"&&!p.x)p.cat=k});
+const catOf=n=>{if(CATX[n])return CATX[n];for(const [k,,re] of CATS)if(re.test(n))return k;return "otros"};
+P.forEach(p=>{p.cat=p.ic?"invernal":p.t==="cumbre"?"cumbre":p.x?"inicio":catOf(p.c)});
 const ICO=c=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true"><use href="#ic-${c}" x="-12" y="-12" width="24" height="24"/></svg>`;
 /* ---------- filters ---------- */
 /* ---------- paisajes: se deducen de los puntos y del título de cada ruta ---------- */
@@ -897,7 +896,7 @@ function renderCol(kind){const C=COL[kind];
   <div class="chips" data-k="${kind}" data-grp="f">${[["todas","Todas"],["hecha",C.done],["quiero",C.want],["nada","Sin marcar"]].map(([v,l])=>`<button class="chip" data-v="${v}" aria-pressed="${C.f===v}">${l}</button>`).join("")}</div>
   ${window.COLX?COLX.chips(kind,C):""}<div class="chips" data-k="${kind}" data-grp="g">${groups.map(([v,l])=>`<button class="chip" data-v="${v}" aria-pressed="${C.g===v}">${l}</button>`).join("")}</div>${window.fpClose?fpClose(kind,C,list.length):""}
   <div class="rows">${list.length?list.map(p=>{const s=st(p);const rsx=p.co?[]:(P[p.i].rs||[]).filter(x=>R[x].u),ri=rsx[0];
-    return `<div class="row crow${s?" is-"+s:""}${window.COLX?COLX.cls(p):""}">${p.co?COLX.ico(p,kind):ICO(kind==="cumbres"?"cumbre":p.cat)}<div class="t"><b>${esc(p.c)}</b><span>${C.near?`<b class="dkm">${p._d<10?p._d.toFixed(1).replace(".",","):p._d.toFixed(0)} km</b> · `:""}${window.COLX?COLX.src(p):""}${kind==="cumbres"?esc(p.r)+(p.techo?" · Techo de "+esc(p.techo):""):esc(((window.COLX?COLX.cats():CATS).find(c=>c[0]===p.cat)||[,"Otros"])[1])+" · "+esc(p.r)}</span></div>
+    return `<div class="row crow${s?" is-"+s:""}${window.COLX?COLX.cls(p):""}" data-ci="${p.co?p.ci:""}" data-pi="${p.co?"":p.i}">${p.co?COLX.ico(p,kind):ICO(kind==="cumbres"?"cumbre":p.cat)}<div class="t"><b>${esc(p.c)}</b><span>${C.near?`<b class="dkm">${p._d<10?p._d.toFixed(1).replace(".",","):p._d.toFixed(0)} km</b> · `:""}${window.COLX?COLX.src(p):""}${kind==="cumbres"?esc(p.r)+(p.techo?" · Techo de "+esc(p.techo):""):esc(((window.COLX?COLX.cats():CATS).find(c=>c[0]===p.cat)||[,"Otros"])[1])+" · "+esc(p.r)}</span></div>
     ${p.a?`<span class="alt">${fmtA(p.a)}</span>`:""}
     <span class="mk" data-k="${kind}" data-key="${esc(key(p))}"><button data-m="hecha" aria-pressed="${s==="hecha"}" title="${C.done}">✓ <span>${C.done}</span></button><button data-m="quiero" aria-pressed="${s==="quiero"}" title="${C.want}">★ <span>${C.want}</span></button>${p.co?`<button data-cov="${p.ci}" title="Ver">${p.pp&&p.pp[9]&&p.pp[9].length?(p.pp[9].length>1?p.pp[9].length+" rutas":"Ruta"):"Ver"}</button>`:""}${ri!=null?`<button data-go="${ri}" data-pt="${p.i}" data-n="${rsx.length}" title="Ver la ruta">${rsx.length>1?rsx.length+" rutas":"Ruta"}</button>`:""}</span></div>`}).join(""):`<p class="empty">No hay ${kind} con ese filtro.</p>`}</div>`;
   const cut=HTML.indexOf('<div class="rows">');document.getElementById("colh-"+kind).innerHTML=HTML.slice(0,cut);document.getElementById(C.el).innerHTML=HTML.slice(cut)}
@@ -1592,11 +1591,11 @@ for(const L of [PEAKS,SPOTS]){const pares=L.filter(x=>x.par);for(const x of pare
 window.COLX={
   cats:()=>CATS.concat(EXTRA),
   ok(p,C){const o=C.o||"todas";return o==="todas"||(o==="grupo"&&!p.co)||(o==="dos"&&!!p.both)||(p.co&&o==="co_"+p.co.id)},
-  chips(kind,C){const o=C.o||"todas";const ops=[["todas","Todos",""],["grupo","Los de las Claras","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c]),["dos","En los dos","#7b5ea7"]];
+  chips(kind,C){const o=C.o||"todas";const ops=[["todas","Todos",""],["grupo","Los de las Claras","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c]),["dos","En varios blogs","#7b5ea7"]];
     return `<div class="chips" data-k="${kind}" data-grp="o">${ops.map(([v,l,col])=>`<button class="chip" data-v="${v}" aria-pressed="${o===v}">${col?`<span class="dot" style="background:${col}"></span>`:""}${esc(l)}</button>`).join("")}</div>`},
   cls:p=>(p.co?` src-co${p.both?" both":""}" style="--cc:${p.co.c}`:` src-g${p.both?" both":""}`),
   ico:(p,kind)=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true" style="border-radius:50%;box-shadow:0 0 0 2.5px ${p.co.c}"><use href="#ic-${p.k}" x="-12" y="-12" width="24" height="24"/></svg>`,
-  src:p=>p.co?`<em class="cosrc" style="color:${p.co.c}">${esc(p.co.n)}</em>${p.both?` · <em class="cosrc dos">en los dos</em>`:""} · `:p.both?`<em class="cosrc dos">También en ${esc(p.both)}</em> · `:"",
+  src:p=>p.co?`<em class="cosrc" style="color:${p.co.c}">${esc(p.co.n)}</em>${p.both?` · <em class="cosrc dos">también en otro blog</em>`:""} · `:p.both?`<em class="cosrc dos">También en ${esc(p.both)}</em> · `:"",
   open(ci){const it=ALL[ci];if(!it)return;if(it.rr!=null){if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>verR(it.co,it.rr),80);return}if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>abrirCum(it.co,it.pp,it.k),80)}};
 /* ---------- también en la pestaña Rutas: sus puntos que son rutas (capas de rutas o con «Distancia:») ---------- */
 document.head.insertAdjacentHTML("beforeend",`<style>
@@ -4204,6 +4203,23 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .cdq>div{background:var(--card,#fff);color:var(--ink,#222);width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 20px rgba(0,0,0,.25)}
 .cdq h3{margin:0 0 12px;font-size:19px}
 .cdq button{display:flex;align-items:center;gap:12px;width:100%;border:1px solid var(--edge,#ddd);background:var(--card,#fff);color:inherit;font:inherit;font-size:17px;font-weight:700;text-align:left;padding:15px 16px;border-radius:14px;margin:0 0 10px;cursor:pointer}
+/* Cumbres y Lugares: filas de una línea (nombre · altitud · ✓ ★), sin botón «Ruta»: al tocar la fila se abre su ficha */
+#v-cumbres .crow,#v-lugares .crow{grid-template-columns:24px minmax(0,1fr) auto auto!important;row-gap:0!important;cursor:pointer;padding-top:9px;padding-bottom:9px}
+#v-cumbres .crow .mk,#v-lugares .crow .mk{grid-column:4!important;grid-row:1!important;justify-self:end!important}
+#v-cumbres .crow .mk [data-go],#v-cumbres .crow .mk [data-cov],#v-lugares .crow .mk [data-go],#v-lugares .crow .mk [data-cov]{display:none!important}
+#v-cumbres .crow .mk button span,#v-lugares .crow .mk button span{display:none}
+#v-cumbres .crow .alt,#v-lugares .crow .alt{grid-column:3!important;align-self:center!important;margin:0!important}
+#v-cumbres .crow>.ico2,#v-lugares .crow>.ico2{align-self:center!important;margin:0!important}
+/* el color de cada blog: raya más marcada y fondo más suave */
+.crow.src-g{background:rgba(195,38,46,.04)!important;box-shadow:inset 7px 0 0 #c3262e!important}
+.crow.src-co{background:color-mix(in srgb,var(--cc) 7%,transparent)!important;box-shadow:inset 7px 0 0 var(--cc)!important}
+.crow.both{background:rgba(123,94,167,.08)!important}
+/* las marcadas, con su señal junto al nombre (en vez de tachadas) */
+.crow.is-hecha .t b{text-decoration:none!important}
+.crow.is-hecha .t b::after{content:" ✓";color:#2a7a3b;font-weight:900}
+.crow.is-quiero .t b::after{content:" ★";color:#d4a000;font-weight:900}
+/* sin la barra vacía mientras no hay nada marcado */
+.colhead .prog:has(>i[style="width:0.0%"]){display:none}
 .cdq button span{font-size:24px}.cdq button.x{justify-content:center;font-weight:600;color:var(--muted,#666);border:0}
 </style>`);
 // el botón «Cerca de un lugar» pasa a ser «📍 Cerca de…» (se le quita data-cnear para que no salte directo al buscador de sitios)
@@ -4216,6 +4232,10 @@ function pregunta(){const d=document.createElement("div");d.className="cdq";
   d.addEventListener("click",e=>{const b=e.target.closest("[data-q]");if(!b&&e.target!==d)return;d.remove();if(!b)return;
     if(b.dataset.q==="yo")CERCA.yo();else if(b.dataset.q==="sitio")CERCA.buscar()});
   document.body.appendChild(d)}
+document.addEventListener("click",e=>{const r=e.target.closest("#v-cumbres .crow,#v-lugares .crow");if(!r||e.target.closest(".mk,button,a"))return;
+  const ci=r.dataset.ci,pi=r.dataset.pi;
+  if(ci!==""&&ci!=null&&window.COLX){COLX.open(+ci);return}
+  if(pi!==""&&pi!=null){showView("mapa");setTimeout(()=>{pickRoute(+pi);const p=P[+pi];if(p)flyTo(p.lat,p.lon,13)},120)}});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-cerca2]");if(!b)return;e.preventDefault();e.stopPropagation();if(window.CERCA)pregunta()},true);
 })();
 
@@ -4352,5 +4372,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="031f8e5805";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="dc1ad32590";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
