@@ -29,7 +29,8 @@ async function alAbrir(){try{
     map.setView([la,lo],10,{animate:false});
     if(typeof ensureZone==="function")ensureZone(zoneAt(la,lo))},()=>{},{enableHighAccuracy:false,maximumAge:10*60*1000,timeout:8000})
 }catch(e){}}
-setTimeout(alAbrir,300);
+// desactivado 4 nov: la app entraba en bucle al arrancar (pendiente de revisar)
+// setTimeout(alAbrir,300);
 
 /* --- nombres sin pisarse --- */
 function prio(el){const c=el.classList,la=el.querySelector(".la");const alt=la?parseInt(la.textContent.replace(/\D/g,""))||0:0;
