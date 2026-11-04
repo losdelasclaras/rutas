@@ -86,6 +86,8 @@ rep('const list=C.items.filter(p=>(kind==="cumbres"?','const list=C.items.filter
 rep('<div class="chips" data-k="${kind}" data-grp="g">','${window.COLX?COLX.chips(kind,C):""}<div class="chips" data-k="${kind}" data-grp="g">')
 rep('const rsx=(P[p.i].rs||[]).filter(x=>R[x].u),ri=rsx[0];','const rsx=p.co?[]:(P[p.i].rs||[]).filter(x=>R[x].u),ri=rsx[0];')
 rep('<div class="row crow${s?" is-"+s:""}">${ICO(kind==="cumbres"?"cumbre":p.cat)}<div class="t"><b>${esc(p.c)}</b><span>','<div class="row crow${s?" is-"+s:""}${window.COLX?COLX.cls(p):""}">${p.co?COLX.ico(p,kind):ICO(kind==="cumbres"?"cumbre":p.cat)}<div class="t"><b>${esc(p.c)}</b><span>${window.COLX?COLX.src(p):""}')
+# nov 2026: cada fila sabe qué abrir al tocarla (la ficha de la cumbre o del lugar)
+rep('<div class="row crow${s?" is-"+s:""}${window.COLX?COLX.cls(p):""}">','<div class="row crow${s?" is-"+s:""}${window.COLX?COLX.cls(p):""}" data-ci="${p.co?p.ci:""}" data-pi="${p.co?"":p.i}">')
 rep('esc((CATS.find(c=>c[0]===p.cat)||[,"Otros"])[1])','esc(((window.COLX?COLX.cats():CATS).find(c=>c[0]===p.cat)||[,"Otros"])[1])')
 rep('${ri!=null?`<button data-go="${ri}"','${p.co?`<button data-cov="${p.ci}" title="Ver">${p.pp&&p.pp[9]&&p.pp[9].length?(p.pp[9].length>1?p.pp[9].length+" rutas":"Ruta"):"Ver"}</button>`:""}${ri!=null?`<button data-go="${ri}"')
 rep('const go=e.target.closest("[data-go]");if(go){','const cv=e.target.closest("[data-cov]");if(cv&&window.COLX){COLX.open(+cv.dataset.cov);return}\n  const go=e.target.closest("[data-go]");if(go){')
