@@ -1157,7 +1157,7 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
   if(np+nt>=2&&np>=1){const nm=(doc.getElementsByTagName("metadata")[0]&&tx(doc.getElementsByTagName("metadata")[0],"name"))||(doc.getElementsByTagName("Document")[0]&&tx(doc.getElementsByTagName("Document")[0],"name"))||base;for(const p of MP.slice(-np))if(!p.c)p.c=nm.slice(0,60);for(const t of nuevos)if(!t.c)t.c=nm.slice(0,60)}   // nov 2026: un archivo = una carpeta, con sus puntos y sus tracks
   // archivo que llega desde «Compartir»: un solo track se enseña primero, con «Guardar en mis tracks»
   if(prev&&nt===1&&!np&&window.COMPARTIR&&COMPARTIR.preview){const t=nuevos[0];MT.splice(MT.indexOf(t),1);COMPARTIR.preview(t);return}
-  if(window.cuentaOk&&store.get("ldc-sesion","0")!=="1"){nuevos.forEach(t=>{const i=MT.indexOf(t);if(i>=0)MT.splice(i,1)});MP=store.get(MPK,[]);cuentaOk(()=>imp(txt,fname),"tracks");return}
+  if(window.cuentaOk&&!cuentaOk(()=>imp(txt,fname),"tracks")){nuevos.forEach(t=>{const i=MT.indexOf(t);if(i>=0)MT.splice(i,1)});MP=store.get(MPK,[]);return}
   saveMP();if(nt&&!saveMT()){MT=store.get(MTK,[])}
   LAY.mp=true;LAY.mt=true;saveLay();["mp","mt"].forEach(k=>{const b=document.querySelector(`[data-lay="${k}"]`);if(b)b.setAttribute("aria-pressed",true)});
   drawMP();drawMT();renderBox();toast([np?`${np} punto${np===1?"":"s"}`:"",nt?`${nt} track${nt===1?"":"s"}`:""].filter(Boolean).join(" y ")+(np+nt===1?" cargado":" cargados")+" · están en Mis cosas › Guardado");
@@ -1333,7 +1333,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-b4030d36.json", "ln": "colab-ln-49a867d1.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-c0015df1.json", "ln": "colab-ln-49a867d1.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -1748,12 +1748,28 @@ const cuenta=()=>{const nm=Object.keys(MARKS).length,np=MPI.get().length,nt=MPI.
 let OPEN=false,PEND=null,MOT=null;
 const MOTS={marcas:"Entra para no perder tus marcas",puntos:"Entra para guardar tus puntos",tracks:"Entra para guardar tus tracks",proponer:"Entra para proponer al grupo",club:"Entra con la cuenta de Google del club"};
 // guardar algo tuyo pide haber entrado con Google; lo que pulsaste se hace solo después de entrar
-window.cuentaOk=(fn,motivo)=>{if(store.get(SK,"0")==="1")return true;PEND=fn;MOT=motivo||"marcas";panel();return false};
-document.addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;
+// nov 2026: guardar ya no pide cuenta. Sin entrar, todo se guarda en este móvil y sale un aviso pequeño para entrar con Google
+// (al entrar, lo del móvil y lo de la cuenta se juntan). Solo «club» y «proponer» siguen necesitando la cuenta.
+const NECESITA=new Set(["club","proponer"]);
+window.cuentaOk=(fn,motivo)=>{if(store.get(SK,"0")==="1")return true;if(!NECESITA.has(motivo)){avisoLocal();return true}PEND=fn;MOT=motivo||"marcas";panel();return false};
+window.cuentaPanel=()=>{MOT=null;PEND=null;panel()};
+document.head.insertAdjacentHTML("beforeend",`<style>#avloc{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:2500;display:flex;gap:10px;align-items:center;background:#20302a;color:#fff;border-radius:14px;padding:10px 10px 10px 14px;box-shadow:0 4px 16px rgba(0,0,0,.35);font-size:15px;max-width:520px;margin:0 auto}
+#avloc[hidden]{display:none}#avloc span{flex:1}#avloc button{border:0;border-radius:10px;padding:9px 12px;font:inherit;font-weight:800;cursor:pointer}#avloc .si{background:#fff;color:#20302a}#avloc .no{background:transparent;color:#fff;opacity:.8;padding:9px 6px}</style>`);
+let AVT=0;
+function avisoLocal(){if(store.get(SK,"0")==="1")return;
+  // como mucho una vez cada 3 días, para no agobiar
+  const ult=+store.get("ldc-avloc",0);if(Date.now()-ult<3*864e5)return;store.set("ldc-avloc",Date.now());
+  let el=document.getElementById("avloc");if(!el){el=document.createElement("div");el.id="avloc";document.body.appendChild(el);
+    el.addEventListener("click",e=>{if(e.target.closest(".si")){el.hidden=true;cuentaPanel()}else if(e.target.closest(".no"))el.hidden=true})}
+  el.innerHTML=`<span>Guardado en este móvil. Entra con Google para no perderlo si cambias de móvil.</span><button class="si">Entrar</button><button class="no" aria-label="Cerrar">✕</button>`;
+  el.hidden=false;clearTimeout(AVT);AVT=setTimeout(()=>{el.hidden=true},9000)}
+// al marcar ✓ ★ sin cuenta: se guarda en el móvil y sale el aviso
+document.addEventListener("click",e=>{if(store.get(SK,"0")==="1")return;if(e.target.closest("[data-m],[data-mk],[data-gdpe],[data-mtest]"))setTimeout(avisoLocal,300)});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(true||!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;   // nov 2026: ya no se pide cuenta para marcar
   e.preventDefault();e.stopPropagation();const k=b.parentElement.dataset.key,v=b.dataset.m;
   cuentaOk(()=>{if(MARKS[k]!==v){MARKS[k]=v;saveMarks();renderCols();if(typeof refreshMarks==="function")refreshMarks()}toast(v==="hecha"?"Marcado ✓":"Apuntado en tu lista ★")},"marcas")},true);
 // lo mismo con los botones ✓/★ de las fichas (mapa, rutas, colaboradores) y de Mis listas: sin cuenta, primero entrar
-document.addEventListener("click",e=>{const b=e.target.closest("[data-mk]");if(!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;
+document.addEventListener("click",e=>{const b=e.target.closest("[data-mk]");if(true||!b||!b.parentElement||!b.parentElement.dataset.key||store.get(SK,"0")==="1")return;   // nov 2026: ya no se pide cuenta para marcar
   e.preventDefault();e.stopPropagation();const k=b.parentElement.dataset.key,v=b.dataset.mk;
   cuentaOk(()=>{if(MARKS[k]!==v){MARKS[k]=v;saveMarks()}
     document.querySelectorAll(`.mk[data-key="${CSS.escape(k)}"]`).forEach(g=>g.querySelectorAll("[data-mk]").forEach(x=>x.setAttribute("aria-pressed",MARKS[k]===x.dataset.mk)));
@@ -1761,7 +1777,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-mk]");if(!
 function panel(){OPEN=true;
   if(!USER){load().catch(()=>{});
     show(`<div class="sheet-head"><h2>${MOT?esc(MOTS[MOT]||"Entra con tu cuenta"):"Tu cuenta"}</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
-    <p>${MOT?"Para guardar algo tuyo hay que entrar con tu cuenta de Google. ":"Entra con tu cuenta de Google y "}Tus <b>marcas de cumbres, lugares y rutas, tus puntos y tus tracks</b> se guardan en tu cuenta: los tendrás en el móvil y en el ordenador, y no se pierden si cambias de móvil.</p>
+    <p>${MOT?"Para esto hay que entrar con tu cuenta de Google. Tus ":"Ahora lo tuyo se guarda solo en este móvil. Si entras con tu cuenta de Google, tus "}<b>marcas de cumbres, lugares y rutas, tus puntos y tus tracks</b> se guardan en tu cuenta: los tendrás en el móvil y en el ordenador, y no se pierden si cambias de móvil.</p>
     <p class="note">Solo hace falta una vez: después la app entra sola. Para ver rutas y mapas no hace falta. Solo se guarda lo tuyo y nadie más puede verlo.</p>
     ${ERR?`<p class="syncst er">${esc(ERR)}</p>`:""}
     <p style="margin:14px 0 6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="gbtn" data-gin>${GLOGO}Entrar con Google</button>${MOT?`<button class="mpb" data-close>Ahora no</button>`:""}</p>
@@ -3391,10 +3407,10 @@ for(const k in MS)if(MS[k])mo.observe(MS[k],{childList:true});
 pintaM();
 // la línea de la cuenta: si has entrado, dónde se guarda; si no, el botón para entrar
 {const el=document.getElementById("mcta");const pinta=()=>{if(!el)return;const u=window.LDCFB&&LDCFB.user&&LDCFB.user();
-   el.innerHTML=u?`<p class="mcok">✅ Guardado en tu cuenta${u.displayName?` (${esc(u.displayName.split(" ")[0])})`:""}: lo tienes en el móvil y en el ordenador.</p>`:`<button class="mcin" data-mcent>Entra con Google para no perder tus cosas</button>`};
+   el.innerHTML=u?`<p class="mcok">✅ Guardado en tu cuenta${u.displayName?` (${esc(u.displayName.split(" ")[0])})`:""}: lo tienes en el móvil y en el ordenador.</p>`:`<p class="mcok" style="margin:0 0 6px">📱 Tus cosas se guardan en este móvil.</p><button class="mcin" data-mcent>Entra con Google para no perderlas si cambias de móvil</button>`};
  document.head.insertAdjacentHTML("beforeend",`<style>.mcta{margin:4px 0 12px}.mcta .mcok{margin:0;color:var(--muted);font-size:14.5px}.mcta .mcin{width:100%;min-height:48px;border-radius:12px;border:1px solid var(--edge);background:var(--card);color:var(--ink);font:inherit;font-weight:800;cursor:pointer}
  #mlbox{display:flex;flex-direction:column}#mlbox details.mlres{order:9;margin-top:14px}#mlbox .mlacts{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}#mlbox .mlacts .btn{margin:0;font-size:14.5px;padding:10px 6px}</style>`);
- el&&el.addEventListener("click",e=>{if(e.target.closest("[data-mcent]")&&window.cuentaOk)cuentaOk(pinta,"marcas")});
+ el&&el.addEventListener("click",e=>{if(e.target.closest("[data-mcent]")&&window.cuentaPanel)cuentaPanel()});
  addEventListener("ldc-user",pinta);setTimeout(pinta,800);pinta()}
 
 /* «Del grupo»: Rutas, Cumbres y Lugares del blog con su barra arriba */
@@ -3696,7 +3712,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .acts2 .agrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .acts2 .ados{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .acts2 .ados>*{display:flex;align-items:center;justify-content:center;text-align:center;width:100%;min-height:50px;margin:0;padding:8px 6px;box-sizing:border-box;line-height:1.2;font-size:16px;font-weight:700}
-.acts2 .ados .segb{border-color:#20302a;color:#20302a}
+.acts2 .ados .segb{border:2px solid var(--ink);color:var(--ink);background:var(--card)}
 .acts2 .sintrack{border:1px dashed var(--edge,#ccc);border-radius:12px;color:var(--muted,#777);font-weight:600;background:transparent;cursor:default}
 .acts2 .amas{margin-top:8px}
 .acts2 .amas>summary{list-style:none;cursor:pointer;text-align:center;font-weight:700;padding:12px;border:1px solid var(--edge,#ddd);border-radius:12px;color:var(--ink)}
@@ -4529,5 +4545,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="63fc6c2665";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="81bca453be";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
