@@ -1,4 +1,4 @@
-# Informe del robot · 04/11/2026 01:56
+# Informe del robot · 04/11/2026 02:06
 
 **Cambios:** regeneración forzada
 
@@ -14,7 +14,7 @@
 - Colaborador «Camudando'l camín»: sin cambios.
 - ⚠ Gata con botas: no he podido leer 17 zona(s) de su web (rutas/resto-de-espana/leon, rutas/resto-de-espana/palencia, rutas/resto-de-espana/burgos, rutas/resto-de-espana/vizcaya, rutas/resto-de-espana/guipuzcoa, rutas/resto-de-espana/alava, rutas/resto-de-espana/navarra, rutas/resto-de-espana/huesca, rutas/resto-de-espana/lleida, rutas/resto-de-espana/girona, rutas/andorra, rutas/francia/nueva-aquitania, rutas/occitania, rutas/galicia/a-coruna, rutas/galicia/lugo, rutas/galicia/ourense, rutas/galicia/pontevedra); esas rutas se quedan como estaban.
 - ⚠ Gata con botas: paro de leer su web (su web no responde); sigo otra noche.
--    (6 peticiones a su web en 0.2 min)
+-    (7 peticiones a su web en 0.2 min)
 - 🐾 Gata con botas: 42 entradas en sus zonas, 54 rutas en la app (0 nuevas; quedan -18 por leer otra noche).
 - ⛰ Cumbres de Gata con botas: 1 de 1 colocadas en el pico de OpenStreetMap; 0 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 53 en total, 1 sin foto
