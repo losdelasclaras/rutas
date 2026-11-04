@@ -6,7 +6,7 @@
 (function(){
 if(typeof map==="undefined")return;
 const KEY="ldc-agrupar",HASTA=10,CELDA=58;
-let ON=true;try{ON=localStorage.getItem(KEY)!=="0"}catch(e){}
+const ON=true; // nov 2026: agrupar es el formato fijo de la app (antes se podía apagar en Capas)
 const mapEl=map.getContainer();
 document.head.insertAdjacentHTML("beforeend",`<style>
 .agr-on .leaflet-marker-icon.pt:not(.agr-1),.agr-on .leaflet-marker-icon.cpt:not(.agr-1){visibility:hidden!important;pointer-events:none!important}
@@ -36,10 +36,5 @@ function pinta(){capa.clearLayers();
 let t=0;const luego=()=>{clearTimeout(t);t=setTimeout(pinta,60)};
 map.on("zoomend moveend layeradd layerremove",e=>{if(e.layer&&capa.hasLayer(e.layer))return;if(e.type==="layeradd"||e.type==="layerremove"){if(!(e.layer instanceof L.Marker))return}luego()});
 document.addEventListener("click",e=>{if(e.target.closest(".laypanel [data-lay],.laypanel [data-base]"))luego()});
-// interruptor en Capas, apartado Mapa
-const mg=[...document.querySelectorAll(".laypanel button.laygh")].find(b=>/^mapa$/i.test(b.textContent.trim()));
-const dest=mg&&mg.nextElementSibling&&mg.nextElementSibling.classList.contains("laygrp")?mg.nextElementSibling:document.querySelector(".laypanel");
-if(dest){dest.insertAdjacentHTML("beforeend",`<button class="lay" data-agr aria-pressed="${ON}"><svg class="ico" viewBox="-5 -5 10 10"><circle r="4.2" fill="#c3262e" stroke="#fff" stroke-width=".8"/><text y="1.8" text-anchor="middle" font-size="5" font-weight="800" fill="#fff">3</text></svg>Agrupar iconos al alejar</button>`);
-  dest.querySelector("[data-agr]").addEventListener("click",e=>{e.stopPropagation();ON=!ON;try{localStorage.setItem(KEY,ON?"1":"0")}catch(_){}e.currentTarget.setAttribute("aria-pressed",ON);pinta()})}
 setTimeout(pinta,400);window.AGRUPAR={pinta,on:()=>ON};
 })();
