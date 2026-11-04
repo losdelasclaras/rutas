@@ -1,6 +1,6 @@
-# Informe del robot · 04/11/2026 03:15
+# Informe del robot · 04/11/2026 05:18
 
-**Cambios:** regeneración forzada
+Sin cambios.
 
 - Blog: sin entradas nuevas.
 - Mapa: sin cambios.
@@ -15,11 +15,6 @@
 - ⚠ Gata con botas: paro de leer su web (su web no responde); sigo otra noche.
 -    (6 peticiones a su web en 0.2 min)
 - 🐾 Gata con botas: 42 entradas en sus zonas, 54 rutas en la app (0 nuevas; quedan -18 por leer otra noche).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 1 de 1 colocadas en el pico de OpenStreetMap; 0 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 53 en total, 1 sin foto
 - Colaborador «Gata con botas»: sin cambios.
-- ⚠ Track de Drive sin ruta: drive__CicuetadesdeRuayer.gpx
-- ⚠ Track de Drive sin ruta: drive__cabeza-de-arco-desde-caleao-por-la-cabriterina.gpx · mejor opción:  (ya tenía track o poco segura)
-- ⚠ Track de Drive sin ruta: drive__canton-de-texeu-y-majadas-del-cornion.gpx · mejor opción: Canton de Texeu y Majadas del Cornión. (ya tenía track o poco segura)
-- App regenerada: 375 rutas, 164 con track.
