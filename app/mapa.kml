@@ -6655,32 +6655,6 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Mirador del Espíritu Santo</name>
-        <description>https://losdelasclaras.blogspot.com/2010/07/senda-costera-muros-del-nalon.html</description>
-        <styleUrl>#icon-1899-DB4436</styleUrl>
-        <Point>
-          <coordinates>
-            -6.0816507,43.563155,0
-          </coordinates>
-        </Point>
-      </Placemark>
-      <Placemark>
-        <name>Braña Vega Campo</name>
-        <description>https://losdelasclaras.blogspot.com/2010/05/la-mostayal.html</description>
-        <styleUrl>#icon-1899-DB4436</styleUrl>
-        <Point>
-          <coordinates>
-            -5.9459833,43.2712611,0
-          </coordinates>
-        </Point>
-      </Placemark>
-    </Folder>
-    <Folder>
-      <name>Capa sin nombre</name>
-    </Folder>
-    <Folder>
-      <name>Rutas</name>
-      <Placemark>
         <name>Pico Cicueta desde Ruayer - Wikiloc</name>
         <description><![CDATA[Estadísticas calculadas a partir de los datos importados<br><br>lunes, 2 de noviembre de 2026, 20:51 CET<br>Distancia: 12,4 km<br>Duración: 0 minutos y 0 segundos<br>Elevación mínima: 1152 m<br>Elevación máxima: 1152 m<br>Ascenso total: 0 m<br>Descenso total: 0 m]]></description>
         <styleUrl>#line-0288D1-5000</styleUrl>
@@ -8357,6 +8331,32 @@
           </coordinates>
         </LineString>
       </Placemark>
+      <Placemark>
+        <name>Mirador del Espíritu Santo</name>
+        <description>https://losdelasclaras.blogspot.com/2010/07/senda-costera-muros-del-nalon.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -6.0816507,43.563155,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Braña Vega Campo</name>
+        <description>https://losdelasclaras.blogspot.com/2010/05/la-mostayal.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.9459833,43.2712611,0
+          </coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Capa sin nombre</name>
+    </Folder>
+    <Folder>
+      <name>Rutas</name>
     </Folder>
   </Document>
 </kml>

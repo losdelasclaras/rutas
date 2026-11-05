@@ -1,10 +1,9 @@
-# Informe del robot · 05/11/2026 09:57
+# Informe del robot · 05/11/2026 10:37
 
-**Cambios:** mapa: 1 puntos nuevos o cambiados
+**Cambios:** mapa: 0 puntos nuevos o cambiados
 
 - Blog: sin entradas nuevas.
-- 🗺️ Mapa: 655 puntos (1 nuevos o movidos, 0 quitados).
--    + Pico Cicueta desde Ruayer - Wikiloc  ⚠ sin enlace a una entrada del blog
+- 🗺️ Mapa: 655 puntos (0 nuevos o movidos, 0 quitados).
 - Drive: sin tracks nuevos.
 - ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Rutinas Varias con lo guardado de otras noches.
 - ⛰ Cumbres de Rutinas Varias: 76 de 96 colocadas en el pico de OpenStreetMap; 20 siguen en el punto más alto de su track (lista en robot/cumbres_c2.txt).
@@ -13,10 +12,10 @@
 - 📅 Fechas de rutas de Rutinas Varias: 0 nuevas (146 de 401 con fecha); Wikiloc no responde (8 fallos).
 - Colaborador «Rutinas Varias»: sin cambios.
 - Colaborador «Camudando'l camín»: sin cambios.
-- ⚠ Gata con botas: no he podido leer 12 zona(s) de su web (rutas/resto-de-espana/alava, rutas/resto-de-espana/navarra, rutas/resto-de-espana/huesca, rutas/resto-de-espana/lleida, rutas/resto-de-espana/girona, rutas/andorra, rutas/francia/nueva-aquitania, rutas/occitania, rutas/galicia/a-coruna, rutas/galicia/lugo, rutas/galicia/ourense, rutas/galicia/pontevedra); esas rutas se quedan como estaban.
+- ⚠ Gata con botas: no he podido leer 14 zona(s) de su web (rutas/resto-de-espana/vizcaya, rutas/resto-de-espana/guipuzcoa, rutas/resto-de-espana/alava, rutas/resto-de-espana/navarra, rutas/resto-de-espana/huesca, rutas/resto-de-espana/lleida, rutas/resto-de-espana/girona, rutas/andorra, rutas/francia/nueva-aquitania, rutas/occitania, rutas/galicia/a-coruna, rutas/galicia/lugo, rutas/galicia/ourense, rutas/galicia/pontevedra); esas rutas se quedan como estaban.
 - ⚠ Gata con botas: paro de leer su web (su web no responde); sigo otra noche.
--    (15 peticiones a su web en 0.6 min)
-- 🐾 Gata con botas: 68 entradas en sus zonas, 54 rutas en la app (0 nuevas; quedan 6 por leer otra noche).
+-    (13 peticiones a su web en 0.5 min)
+- 🐾 Gata con botas: 66 entradas en sus zonas, 54 rutas en la app (0 nuevas; quedan 4 por leer otra noche).
 - ⛰ Cumbres de Gata con botas: 1 de 1 colocadas en el pico de OpenStreetMap; 0 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 53 en total, 1 sin foto
 - Colaborador «Gata con botas»: sin cambios.
