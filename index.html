@@ -1142,7 +1142,7 @@ function dl(name,txt,type){const a=document.createElement("a");a.href=URL.create
 function dist(a,b){const R=6371000,t=Math.PI/180,dl=(b[0]-a[0])*t,dn=(b[1]-a[1])*t,x=Math.sin(dl/2)**2+Math.cos(a[0]*t)*Math.cos(b[0]*t)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
 function thin(pts){if(pts.length<3)return pts;const out=[pts[0]];let acc=0;for(let i=1;i<pts.length;i++){acc+=dist(pts[i-1],pts[i]);if(acc>=15||i===pts.length-1){out.push(pts[i]);acc=0}}return out.map(p=>p[2]!=null&&isFinite(p[2])?[c5(p[0]),c5(p[1]),Math.round(p[2])]:[c5(p[0]),c5(p[1])])}
 fin.addEventListener("change",()=>{const f=fin.files&&fin.files[0];if(!f)return;if(/\.kmz$/i.test(f.name)){toast("Los .kmz no los leo: expórtalo como .kml");return}
-  const rd=new FileReader();rd.onload=()=>{try{imp(String(rd.result),f.name)}catch(e){toast("No he podido leer ese archivo")}};rd.readAsText(f)});
+  const rd=new FileReader();rd.onload=()=>{try{imp(String(rd.result),f.name,true)}catch(e){toast("No he podido leer ese archivo")}};rd.readAsText(f)});
 function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"application/xml");if(doc.getElementsByTagName("parsererror").length)throw 0;
   const tx=(el,tag)=>{const n=el.getElementsByTagName(tag)[0];return n?n.textContent.trim():""};
   const base=fname.replace(/\.[^.]+$/,"");let np=0,nt=0;const have=new Set(MP.map(p=>p.lat.toFixed(4)+","+p.lon.toFixed(4)+"|"+p.n));
@@ -1156,9 +1156,9 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
   if(doc.getElementsByTagName("gpx").length){
     const gpsAlt=/Los de las Claras/.test((doc.documentElement.getAttribute("creator")||""));   // grabado con la app: altura del GPS, poco fiable
     // 8 nov 2026: en un GPX de la grabadora (un solo track) los puntos van dentro del track, no sueltos
-    const WP=[...doc.getElementsByTagName("wpt")],dentro=gpsAlt&&doc.getElementsByTagName("trk").length===1;
+    const WP=[...doc.getElementsByTagName("wpt")],dentro=(gpsAlt||prev)&&doc.getElementsByTagName("trk").length===1;   // y, si se enseña antes de guardar, los de cualquier GPX de un track
     if(!dentro)for(const w of WP)addP(+w.getAttribute("lat"),+w.getAttribute("lon"),tx(w,"name"),tx(w,"desc")||tx(w,"cmt"));
-    for(const t of doc.getElementsByTagName("trk")){const tp=[...t.getElementsByTagName("trkpt")],pts=tp.map(p=>{const e=gpsAlt?"":tx(p,"ele");return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});
+    for(const t of doc.getElementsByTagName("trk")){const tp=[...t.getElementsByTagName("trkpt")],pts=tp.map(p=>{const e=gpsAlt&&!prev?"":tx(p,"ele");return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});
       const tms=tp.map(p=>{const v=Date.parse(tx(p,"time"));return isFinite(v)?v:0});addT(pts,tx(t,"name"),tms.some(Boolean)?tms:null,gpsAlt?tp.map(p=>{const e=tx(p,"ele");return e===""?null:+e}):null)}
     if(dentro&&nuevos.length===1&&WP.length){const o=nuevos[0];o.w=WP.map(w=>{const la=+w.getAttribute("lat"),lo=+w.getAttribute("lon"),e=tx(w,"ele"),t=Date.parse(tx(w,"time"));if(!isFinite(la)||!isFinite(lo))return null;
         const q={id:nid(),n:tx(w,"name")||"Punto",ic:"otro",nota:tx(w,"desc")||"",lat:c5(la),lon:c5(lo)};if(e!=="")q.a=Math.round(+e);if(isFinite(t))q.t=t;return q}).filter(Boolean)}
@@ -2166,13 +2166,20 @@ const cambiaW=(tid,f)=>MPI.saveTracks(T().map(x=>{if(String(x.id)!==String(tid))
 function encuadra(t){const p=MPI.ptsOf(t);if(!p){if(window.loadTracks)loadTracks().then(ok=>{if(ok&&MPI.ptsOf(t))encuadra(t)});return}
   const b=L.latLngBounds(p.map(x=>[x[0],x[1]]));const wide=innerWidth>=860;
   map.fitBounds(b,{paddingTopLeft:[30,90],paddingBottomRight:wide?[480,30]:[30,Math.round(innerHeight*0.5)],maxZoom:15})}
-function open(id,fit){const t=T().find(x=>String(x.id)===String(id));if(!t)return;
+/* 8 nov 2026: «👁 Solo verlo»: se cierra la ficha y el mapa enseña el track entero, con una etiqueta para volver a la ficha */
+let PILL=null;const quitaPill=()=>{if(PILL){PILL.remove();PILL=null}};
+function soloVer(t){sheet.hidden=true;quitaPill();if(typeof showView==="function")showView("mapa");
+  PILL=document.createElement("div");PILL.className="tmppill";PILL.innerHTML=`<button class="pn" type="button">🧵 ${esc(t.n)}</button><button class="qx" type="button">✕ Cerrar</button>`;
+  (document.getElementById("v-mapa")||document.body).appendChild(PILL);
+  PILL.querySelector(".pn").onclick=()=>{quitaPill();open(t.id,false)};PILL.querySelector(".qx").onclick=quitaPill;
+  const p=MPI.ptsOf(t);if(p&&p.length)map.fitBounds(L.latLngBounds(p.map(x=>[x[0],x[1]])),{paddingTopLeft:[30,130],paddingBottomRight:[30,150],maxZoom:15})}
+function open(id,fit){const t=T().find(x=>String(x.id)===String(id));if(!t)return;quitaPill();
   if(t.pts&&t.pts.length>1&&!(t.dv>=2)&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
   if(typeof showView==="function")showView("mapa");
   if(!LAY.mt){LAY.mt=true;saveLay();const b=document.querySelector('[data-lay="mt"]');if(b)b.setAttribute("aria-pressed",true);MPI.sync()}
   const r=routeOf(t),d=datos(t),p=MPI.ptsOf(t)||(r&&r.gx&&r.gx.st?[r.gx.st]:null);
   MPI.show(`<div class="sheet-head"><h2>${esc(t.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
-  <div class="topacts"><button class="btn primary" data-mtfol="${esc(t.id)}">▶ Seguir track</button><button class="btn ghost" data-mtshare="${esc(t.id)}">📤 Compartir</button>${r?`<button class="btn ghost" data-mtroute="${esc(t.id)}">📘 Ver la ruta</button>`:""}</div>
+  <div class="topacts"><button class="btn ghost" data-mtver="${esc(t.id)}">👁 Solo verlo</button><button class="btn primary" data-mtfol="${esc(t.id)}">▶ Seguir track</button><button class="btn ghost" data-mtshare="${esc(t.id)}">📤 Compartir</button>${r?`<button class="btn ghost" data-mtroute="${esc(t.id)}">📘 Ver la ruta</button>`:""}</div>
   <div class="meta"><span class="tag">${r?"Ruta del blog":t.src==="grab"?"Grabado con la app":"Track cargado"}</span>${d.km?`<span class="tag">${kmTxt(d.km)}</span>`:""}${d.up!=null?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}${t.f?`<span class="tag">Guardado el ${fmtF(t.f)}</span>`:""}</div>
   <div class="estbox"><button class="mpb${t.est==="hecho"?" on":""}" data-mtest="hecho" data-id="${esc(t.id)}">✓ ${t.est==="hecho"?"Hecho":"Lo he hecho"}</button><button class="mpb${t.est==="pend"?" on":""}" data-mtest="pend" data-id="${esc(t.id)}">★ Pendiente</button>${t.est==="hecho"?`<label class="note" style="display:flex;align-items:center;gap:6px">el <input type="date" data-mtfh="${esc(t.id)}" value="${(t.fh||"").slice(0,10)}" max="${new Date().toISOString().slice(0,10)}"></label>`:""}</div>
   ${datosHTML(t,d)}
@@ -2223,6 +2230,7 @@ sheet.addEventListener("change",e=>{const d=e.target.closest("[data-mtfh]");if(!
 sheet.addEventListener("click",e=>{
   const id=(s)=>{const b=e.target.closest(s);return b?b.getAttribute(s.slice(1,-1)):null};
   let k;
+  if((k=id("[data-mtver]"))!=null){const t=T().find(x=>String(x.id)===k);if(t)soloVer(t);return}
   if((k=id("[data-mtfol]"))!=null){const t=T().find(x=>String(x.id)===k);if(!t)return;const r=routeOf(t);if(r)SEGUIR.start(r,false);else SEGUIR.start(comoRuta(t),false);return}
   if((k=id("[data-mtgpx]"))!=null){const t=T().find(x=>String(x.id)===k);if(!t)return;const r=routeOf(t);if(r)dlGPX(r);else MPI.dl(t.n.replace(/[\\/:*?"<>|]+/g," ").trim()+".gpx",gpxDe(t),"application/gpx+xml");return}
   const es=e.target.closest("[data-mtest]");if(es){const k2=es.dataset.id,v=es.dataset.mtest;
@@ -3653,6 +3661,9 @@ function enc(pts){let o="",pl=0,pn=0;const e=v=>{v=v<0?~(v<<1):v<<1;let s="";whi
   for(const p of pts){const la=Math.round(p[0]*1e5),lo=Math.round(p[1]*1e5);o+=e(la-pl)+e(lo-pn);pl=la;pn=lo}return o}
 function dec(s){const out=[];let i=0,la=0,lo=0;const d=()=>{let r=0,sh=0,b;do{b=s.charCodeAt(i++)-63;r|=(b&0x1f)<<sh;sh+=5}while(b>=0x20&&i<=s.length);return r&1?~(r>>1):r>>1};
   while(i<s.length){la+=d();lo+=d();out.push([la/1e5,lo/1e5])}return out}
+// 8 nov 2026: polilínea con altura (lat, lon y metros), la que manda la APK al abrir un GPX desde WhatsApp
+function dec3(s){const out=[];let i=0,la=0,lo=0,al=0;const d=()=>{let r=0,sh=0,b;do{b=s.charCodeAt(i++)-63;r|=(b&0x1f)<<sh;sh+=5}while(b>=0x20&&i<=s.length);return r&1?~(r>>1):r>>1};
+  while(i<s.length){la+=d();lo+=d();al+=d();out.push([la/1e5,lo/1e5,al])}return out}
 // simplificar (Douglas-Peucker, ~6 m) para que el enlace sea corto
 function simple(p,tol){if(p.length<3)return p;const c=Math.cos(p[0][0]*Math.PI/180),X=q=>q[1]*111320*c,Y=q=>q[0]*110540;const keep=new Uint8Array(p.length);keep[0]=keep[p.length-1]=1;const st=[[0,p.length-1]];
   while(st.length){const[a,b]=st.pop();let mx=0,ix=-1;const ax=X(p[a]),ay=Y(p[a]),bx=X(p[b]),by=Y(p[b]),dx=bx-ax,dy=by-ay,l=Math.hypot(dx,dy)||1;
@@ -3730,6 +3741,15 @@ function abrirCompartido(){const h=location.hash||"";
   if(/^#c=[A-Za-z0-9]{4,20}$/.test(h)){const c=h.slice(3);try{history.replaceState(null,"",location.pathname+location.search.replace(/^\?g=\d+$/,""))}catch(e){}if(window.LDCFB)abrirCorto(c);return true}
   if(h.startsWith("#f=")){try{history.replaceState(null,"",location.pathname+location.search.replace(/^\?g=\d+$/,""))}catch(e){}
     try{const o=JSON.parse(decodeURIComponent(h.slice(3)));MPI.verCompartidos({n:o.n,ps:{ps:(o.p||[]).map(x=>({n:x[0],lat:x[1],lon:x[2],ic:x[3],a:x[4]})),ts:(o.t||[]).map(x=>({n:x[0],pts:dec(x[1])}))}})}catch(e){toast("Ese enlace no es válido")}return true}
+  // 8 nov 2026: «Abrir con» / WhatsApp desde la APK: track con alturas, puntos y horas (#t3=<polilínea>!<nombre>!<datos>)
+  if(h.startsWith("#t3=")){const pr=h.slice(4).split("!");let pts=[],x={};try{pts=dec3(decodeURIComponent(pr[0]))}catch(e){}try{if(pr[2])x=JSON.parse(decodeURIComponent(pr[2]))}catch(e){}
+    try{history.replaceState(null,"",location.pathname+location.search.replace(/^\?g=\d+$/,""))}catch(e){}
+    if(pts.length<2){toast("Ese archivo no tiene un recorrido que pueda leer");return true}
+    if(!x.a)pts=pts.map(q=>[q[0],q[1]]);
+    const n=decodeURIComponent(pr[1]||"Track");let km=0;for(let i=1;i<pts.length;i++)km+=map.distance([pts[i-1][0],pts[i-1][1]],[pts[i][0],pts[i][1]]);km=x.km||Math.round(km/100)/10;
+    const w=(x.w||[]).map((q,i)=>{const o={id:Date.now().toString(36)+"w"+i,n:q[0]||"Punto",ic:"otro",nota:q[4]||"",lat:q[1],lon:q[2]};if(q[3]!=null)o.a=q[3];if(q[5])o.t=q[5];return o});
+    const t={n,pts,km};if(w.length)t.w=w;if(x.g)t.gr=1;if(x.tm){t.tm=x.tm;t.fh=new Date(x.tm.a).toISOString()}
+    mostrar(t,"archivo");return true}
   if(!h.startsWith("#t="))return false;
   const raw=h.slice(3),cut=raw.lastIndexOf("!"),code=decodeURIComponent(cut>=0?raw.slice(0,cut):raw),nm=cut>=0?raw.slice(cut+1):"";let pts=[];try{pts=dec(code)}catch(e){}
   try{history.replaceState(null,"",location.pathname+location.search.replace(/^\?g=\d+$/,""))}catch(e){}
@@ -3755,13 +3775,14 @@ function soloVer(){const d=sheet._tmp;if(!d)return;ULT={t:Object.assign({},d,d.x
   PILL.querySelector(".qx").onclick=()=>{quitaPill();if(TMP){TMP.remove();TMP=null}sheet._tmp=null;ULT=null}}
 // enseñar un track sin guardarlo: desde un enlace o desde un archivo compartido con la app
 function mostrar(t,origen){const n=t.n,pts=t.pts,km=t.km;quitaPill();
-  if(t.up==null&&pts.length>1&&pts.every(x=>x[2]!=null)&&MPI.suben){const u=MPI.suben(pts);t=Object.assign({},t,{up:u[0],dn:u[1]})}
+  if(t.up==null&&pts.length>1&&pts.every(x=>x[2]!=null)&&MPI.suben){const u=(t.gr&&MPI.sube?MPI.sube:MPI.suben)(pts);t=Object.assign({},t,{up:u[0],dn:u[1]})}
   if(typeof showView==="function")showView("mapa");
-  if(TMP)TMP.remove();TMP=L.layerGroup([L.polyline(pts,{color:"#fff",weight:8,opacity:.9}),L.polyline(pts,{color:"#7b2cbf",weight:5,opacity:.95,dashArray:"10 6"})]).addTo(map);
+  if(TMP)TMP.remove();TMP=L.layerGroup([L.polyline(pts.map(x=>[x[0],x[1]]),{color:"#fff",weight:8,opacity:.9}),L.polyline(pts.map(x=>[x[0],x[1]]),{color:"#7b2cbf",weight:5,opacity:.95,dashArray:"10 6"})]).addTo(map);
+  for(const w of t.w||[])TMP.addLayer(L.marker([w.lat,w.lon],{icon:L.divIcon({className:"mpk wpk",html:`<span>${MPI.emo?MPI.emo(w.ic):"📍"}</span>`,iconSize:[0,0]}),title:w.n,zIndexOffset:950}).bindTooltip(esc(w.n),{permanent:true,direction:"right",offset:[12,0],className:"lbl mpl",interactive:false}));
   map.fitBounds(L.latLngBounds(pts),{paddingTopLeft:[30,90],paddingBottomRight:innerWidth>=860?[480,30]:[30,Math.round(innerHeight*.5)],maxZoom:15});
   const ya=MPI.tracks().find(t=>t.pts&&t.pts.length&&t.n===n&&Math.abs(t.pts[0][0]-pts[0][0])<1e-4);
   MPI.show(`<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-tmpx>×</button></div>
-    <div class="meta"><span class="tag">${origen==="archivo"?"Archivo GPX/KML":"Track compartido"}</span><span class="tag">${km.toLocaleString("es-ES")} km</span>${t.up!=null?`<span class="tag">+${t.up.toLocaleString("es-ES")} m</span>`:""}</div>
+    <div class="meta"><span class="tag">${origen==="archivo"?"Archivo GPX/KML":"Track compartido"}</span><span class="tag">${km.toLocaleString("es-ES")} km</span>${t.up!=null?`<span class="tag">+${t.up.toLocaleString("es-ES")} m</span>`:""}${(t.w||[]).length?`<span class="tag">📍 ${t.w.length} punto${t.w.length>1?"s":""}</span>`:""}</div>
     ${perfilTmp(pts,km)}
     <p class="note">${origen==="archivo"?"Aún no se ha guardado.":"Te lo han pasado por enlace."} Puedes solo verlo en el mapa, guardarlo en Mis cosas para tenerlo siempre, o seguirlo.</p>
     <div class="topacts"><button class="btn primary" data-tmpver>👁 Solo verlo</button><button class="btn ghost" data-tmpsave>${ya?"★ Ya guardado":"☆ Guardar"}</button><button class="btn ghost" data-tmpfol>▶ Seguir</button></div>${(()=>{const q=pts.reduce((b,x)=>x[2]!=null&&(b[2]==null||x[2]>b[2])?x:b,pts[0]);return`<div class="wx" data-lat="${q[0]}" data-lon="${q[1]}" data-alt="${q[2]!=null?Math.round(q[2]):""}"></div>`})()}`);
@@ -4684,5 +4705,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="eea359c3e3";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="6e931d6b91";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
