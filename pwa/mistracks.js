@@ -85,12 +85,8 @@ function encuadra(t){const p=MPI.ptsOf(t);if(!p){if(window.loadTracks)loadTracks
   const b=L.latLngBounds(p.map(x=>[x[0],x[1]]));const wide=innerWidth>=860;
   map.fitBounds(b,{paddingTopLeft:[30,90],paddingBottomRight:wide?[480,30]:[30,Math.round(innerHeight*0.5)],maxZoom:15})}
 /* 8 nov 2026: «👁 Solo verlo»: se cierra la ficha y el mapa enseña el track entero, con una etiqueta para volver a la ficha */
-let PILL=null;const quitaPill=()=>{if(PILL){PILL.remove();PILL=null}};
-function soloVer(t){sheet.hidden=true;quitaPill();if(typeof showView==="function")showView("mapa");
-  PILL=document.createElement("div");PILL.className="tmppill";PILL.innerHTML=`<button class="pn" type="button">🧵 ${esc(t.n)}</button><button class="qx" type="button">✕ Cerrar</button>`;
-  (document.getElementById("v-mapa")||document.body).appendChild(PILL);
-  PILL.querySelector(".pn").onclick=()=>{quitaPill();open(t.id,false)};PILL.querySelector(".qx").onclick=quitaPill;
-  const p=MPI.ptsOf(t);if(p&&p.length)map.fitBounds(L.latLngBounds(p.map(x=>[x[0],x[1]])),{paddingTopLeft:[30,130],paddingBottomRight:[30,150],maxZoom:15})}
+const quitaPill=()=>{};
+function soloVer(t){if(window.SOLOVER)SOLOVER.on({n:t.n,pts:MPI.ptsOf(t)||[],w:t.w},()=>open(t.id,false))}
 function open(id,fit){const t=T().find(x=>String(x.id)===String(id));if(!t)return;quitaPill();
   if(t.pts&&t.pts.length>1&&!(t.dv>=2)&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
   if(typeof showView==="function")showView("mapa");

@@ -114,14 +114,34 @@ function perfilTmp(pts,km){if(typeof profSVG!=="function"||pts.length<2||pts.som
 document.head.insertAdjacentHTML("beforeend",`<style>.tmppill{position:absolute;left:50%;transform:translateX(-50%);bottom:84px;z-index:26;display:flex;align-items:center;gap:8px;width:min(400px,calc(100% - 24px));box-sizing:border-box;background:var(--card);border:2px solid #7b2cbf;border-radius:14px;padding:6px 6px 6px 12px;box-shadow:0 2px 10px rgba(0,0,0,.2);zoom:var(--fs)}
 .tmppill .pn{flex:1;min-width:0;min-height:38px;background:none;border:0;padding:0;color:var(--ink);font:inherit;font-weight:800;text-align:left;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tmppill .qx{flex:none;min-height:38px;border:1px solid var(--edge);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-weight:800;padding:0 10px;cursor:pointer}</style>`);
-let PILL=null,ULT=null;
+/* 8 nov 2026: «👁 Solo verlo» a pantalla completa: solo el mapa del IGN, el track con sus puntos y las pestañas de abajo.
+   Se esconden cabecera (con SOS), búsqueda, Norte·Pirineos, Capas, Cerca y todas las capas; al salir vuelve todo como estaba. */
+document.head.insertAdjacentHTML("beforeend",`<style>
+body.solover header.top,body.solover #msearch,body.solover .mapbar,body.solover .legend,body.solover .fabs,body.solover .leaflet-top{display:none!important}
+body.solover #map .leaflet-overlay-pane,body.solover #map .leaflet-marker-pane,body.solover #map .leaflet-tooltip-pane,body.solover #map .leaflet-shadow-pane{display:none!important}
+.sovl{display:flex;align-items:center;gap:6px;white-space:nowrap;transform:translate(-16px,-16px)}.sovl span{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#fff;border:3px solid #e8711a;font-size:17px;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.sovl b{font:800 13px system-ui,sans-serif;color:#1d1d1d;background:rgba(255,255,255,.88);padding:2px 6px;border-radius:6px}</style>`);
+let PILL=null,ULT=null,SV=null;
 function quitaPill(){if(PILL){PILL.remove();PILL=null}}
-function soloVer(){const d=sheet._tmp;if(!d)return;ULT={t:Object.assign({},d,d.x||{}),origen:sheet._tmpo||"enlace"};sheet.hidden=true;quitaPill();
-  const vm=document.getElementById("v-mapa")||document.body;PILL=document.createElement("div");PILL.className="tmppill";
-  PILL.innerHTML=`<button class="pn" type="button">🧵 ${esc(d.n)}</button><button class="qx" type="button">✕ Quitar</button>`;vm.appendChild(PILL);
-  try{map.fitBounds(L.latLngBounds(d.pts.map(x=>[x[0],x[1]])),{paddingTopLeft:[30,130],paddingBottomRight:[30,150],maxZoom:15})}catch(e){}
-  PILL.querySelector(".pn").onclick=()=>{const u=ULT;quitaPill();if(u)mostrar(u.t,u.origen)};
-  PILL.querySelector(".qx").onclick=()=>{quitaPill();if(TMP){TMP.remove();TMP=null}sheet._tmp=null;ULT=null}}
+function svOff(){if(!SV)return;const v=SV;SV=null;document.body.classList.remove("solover");quitaPill();if(v.lay)v.lay.remove();
+  if(v.base&&typeof setBase==="function"&&BASE==="ign")setBase(v.base);setTimeout(()=>map.invalidateSize(),50)}
+function svOn(t,back,cerrar){svOff();sheet.hidden=true;if(typeof showView==="function")showView("mapa");
+  if(!map.getPane("solov")){map.createPane("solov").style.zIndex=640;map.createPane("solom").style.zIndex=660}
+  const ll=t.pts.map(x=>[x[0],x[1]]),lay=L.layerGroup([L.polyline(ll,{pane:"solov",color:"#fff",weight:9,opacity:.95}),L.polyline(ll,{pane:"solov",color:"#7b2cbf",weight:5.5,opacity:1})]);
+  for(const w of t.w||[])lay.addLayer(L.marker([w.lat,w.lon],{pane:"solom",interactive:false,icon:L.divIcon({className:"",html:`<div class="sovl"><span>${MPI.emo?MPI.emo(w.ic):"📍"}</span><b>${esc(w.n)}</b></div>`,iconSize:[0,0]})}));
+  lay.addTo(map);
+  let base=null;if(typeof setBase==="function"&&typeof BASE!=="undefined"&&BASE!=="ign"){base=BASE;setBase("ign")}
+  SV={lay,base};document.body.classList.add("solover");
+  PILL=document.createElement("div");PILL.className="tmppill";PILL.innerHTML=`<button class="pn" type="button">🧵 ${esc(t.n)}</button><button class="qx" type="button" aria-label="Salir">✕</button>`;
+  (document.getElementById("v-mapa")||document.body).appendChild(PILL);
+  PILL.querySelector(".pn").onclick=()=>{svOff();back&&back()};PILL.querySelector(".qx").onclick=()=>{svOff();cerrar&&cerrar()};
+  setTimeout(()=>{map.invalidateSize();try{map.fitBounds(L.latLngBounds(ll),{paddingTopLeft:[24,24],paddingBottomRight:[24,90],maxZoom:16})}catch(e){}},60)}
+// se sale solo si se abre otra ficha o se cambia de pestaña
+new MutationObserver(()=>{if(SV&&!sheet.hidden)svOff()}).observe(sheet,{attributes:true,attributeFilter:["hidden"]});
+document.addEventListener("click",e=>{if(SV&&e.target.closest(".tabs"))svOff()},true);
+window.SOLOVER={on:svOn,off:svOff};
+function soloVer(){const d=sheet._tmp;if(!d)return;ULT={t:Object.assign({},d,d.x||{}),origen:sheet._tmpo||"enlace"};const u=ULT;
+  svOn({n:d.n,pts:d.pts,w:d.x&&d.x.w},()=>mostrar(u.t,u.origen),()=>{if(TMP){TMP.remove();TMP=null}sheet._tmp=null;ULT=null})}
 // enseñar un track sin guardarlo: desde un enlace o desde un archivo compartido con la app
 function mostrar(t,origen){const n=t.n,pts=t.pts,km=t.km;quitaPill();
   if(t.up==null&&pts.length>1&&pts.every(x=>x[2]!=null)&&MPI.suben){const u=(t.gr&&MPI.sube?MPI.sube:MPI.suben)(pts);t=Object.assign({},t,{up:u[0],dn:u[1]})}
@@ -131,10 +151,12 @@ function mostrar(t,origen){const n=t.n,pts=t.pts,km=t.km;quitaPill();
   map.fitBounds(L.latLngBounds(pts),{paddingTopLeft:[30,90],paddingBottomRight:innerWidth>=860?[480,30]:[30,Math.round(innerHeight*.5)],maxZoom:15});
   const ya=MPI.tracks().find(t=>t.pts&&t.pts.length&&t.n===n&&Math.abs(t.pts[0][0]-pts[0][0])<1e-4);
   MPI.show(`<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-tmpx>×</button></div>
-    <div class="meta"><span class="tag">${origen==="archivo"?"Archivo GPX/KML":"Track compartido"}</span><span class="tag">${km.toLocaleString("es-ES")} km</span>${t.up!=null?`<span class="tag">+${t.up.toLocaleString("es-ES")} m</span>`:""}${(t.w||[]).length?`<span class="tag">📍 ${t.w.length} punto${t.w.length>1?"s":""}</span>`:""}</div>
+    ${(()=>{const c=[],x=(v,l)=>c.push(`<div><b>${v}</b><span>${l}</span></div>`);x(km.toLocaleString("es-ES")+" km","Distancia");   // 8 nov 2026: sin etiquetas; datos en una fila
+      if(t.up!=null)x("+"+t.up.toLocaleString("es-ES")+" m","Subida");if(t.dn!=null)x("−"+t.dn.toLocaleString("es-ES")+" m","Bajada");if((t.w||[]).length)x("📍 "+t.w.length,t.w.length>1?"Puntos":"Punto");
+      return`<div class="dat">${c.join("")}</div>`})()}
     ${perfilTmp(pts,km)}
     <p class="note">${origen==="archivo"?"Aún no se ha guardado.":"Te lo han pasado por enlace."} Puedes solo verlo en el mapa, guardarlo en Mis cosas para tenerlo siempre, o seguirlo.</p>
-    <div class="topacts"><button class="btn primary" data-tmpver>👁 Solo verlo</button><button class="btn ghost" data-tmpsave>${ya?"★ Ya guardado":"☆ Guardar"}</button><button class="btn ghost" data-tmpfol>▶ Seguir</button></div>${(()=>{const q=pts.reduce((b,x)=>x[2]!=null&&(b[2]==null||x[2]>b[2])?x:b,pts[0]);return`<div class="wx" data-lat="${q[0]}" data-lon="${q[1]}" data-alt="${q[2]!=null?Math.round(q[2]):""}"></div>`})()}`);
+    <div class="topacts"><button class="btn primary" data-tmpver>👁 Solo verlo</button><button class="btn ghost" data-tmpsave>${ya?"★ Ya guardado":"☆ Guardar"}</button><button class="btn ghost" data-tmpfol>▶ Seguir</button></div>`);
   sheet._tmp={n,pts,km,up:t.up,dn:t.dn,mx:t.mx,mn:t.mn,x:{w:t.w,gr:t.gr,ug:t.ug,tm:t.tm,fh:t.fh}};sheet._tmpo=origen}   // x: lo de un GPX de la grabadora (puntos dentro, horas)
 sheet.addEventListener("click",e=>{const d=sheet._tmp;
   if(e.target.closest("[data-tmpver]")){soloVer();return}
