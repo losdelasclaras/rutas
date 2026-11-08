@@ -8,6 +8,10 @@
 (function(){
 const pn=document.querySelector(".laypanel"),lg=document.querySelector(".legend");if(!pn||!lg)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
+/* 8 nov 2026: con Capas abierto, el panel por delante de todo lo del mapa y sin la barra de búsqueda detrás; si no cabe, se desplaza */
+.legend.open{z-index:45}
+#v-mapa:has(.legend.open) #msearch,#v-mapa:has(.legend.open) .mapbar{display:none!important}
+.legend.open .laypanel{max-height:calc((100dvh - 230px) / var(--fs,1));overflow-y:auto;overscroll-behavior:contain}
 .laypanel .lay[data-lay]{display:flex;align-items:center;gap:8px;color:var(--ink)!important;opacity:1!important}
 .laypanel .lay[data-lay][aria-pressed="false"] .ico,.laypanel .lay[data-lay][aria-pressed="false"] .lico{filter:grayscale(1);opacity:.55}
 .laypanel .lay[data-lay]::after,.laypanel .mst{content:"";flex:none;margin-left:auto;width:40px;height:24px;border-radius:12px;background:#c9ccc4;position:relative;transition:background .15s;box-sizing:border-box}
