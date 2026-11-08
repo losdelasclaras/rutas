@@ -41,7 +41,7 @@ function cache(t){try{const m=JSON.parse(localStorage.getItem(EK)||"{}")[t.id],h
 const enApk=()=>{try{return sessionStorage.getItem("ldc-apk")==="1"}catch(e){return false}};
 const xe=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function gpxTxt(n,pts,wps){return`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${xe(n)}</name></metadata>\n`+
-  (wps||[]).map(w=>`<wpt lat="${w.lat}" lon="${w.lon}"><name>${xe(w.n||"Punto")}</name></wpt>`).join("\n")+(wps&&wps.length?"\n":"")+
+  (wps||[]).map(w=>`<wpt lat="${w.lat}" lon="${w.lon}">${w.a!=null?`<ele>${Math.round(w.a)}</ele>`:""}${w.t?`<time>${new Date(w.t).toISOString()}</time>`:""}<name>${xe(w.n||"Punto")}</name>${w.nota?`<desc>${xe(w.nota)}</desc>`:""}</wpt>`).join("\n")+(wps&&wps.length?"\n":"")+
   `<trk><name>${xe(n)}</name><trkseg>\n`+pts.map(p=>`<trkpt lat="${(+p[0]).toFixed(6)}" lon="${(+p[1]).toFixed(6)}">${p[2]!=null?`<ele>${Math.round(p[2])}</ele>`:""}</trkpt>`).join("\n")+`\n</trkseg></trk>\n</gpx>\n`}
 const nomArch=n=>(String(n).normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^\w\s-]/g,"").trim().replace(/\s+/g,"-").slice(0,60)||"track")+".gpx";
 // enviar un GPX como archivo de verdad. En la app del APK lo manda Android (Chrome no deja mandar .gpx); en el navegador, si el móvil no deja, se descarga
@@ -58,7 +58,7 @@ function compartir(t){const r=t.src==="blog"?R.find(x=>x.u===t.u):null;
     <p class="note">El <b>archivo GPX</b> se abre con Wikiloc, OruxMaps, Google Earth o esta misma app. Con el <b>enlace</b>, quien lo toque ve el track en la app de Los de las Claras.</p>`);
   sheet._shk={t,r}}
 sheet.addEventListener("click",e=>{const b=e.target.closest("[data-shk]"),d=sheet._shk;if(!b||!d)return;sheet._shk=null;
-  if(b.dataset.shk==="gpx"){enviaGpx(d.t.n,d.t.pts);return}
+  if(b.dataset.shk==="gpx"){enviaGpx(d.t.n,d.t.pts,d.t.w);return}   // 8 nov 2026: con los puntos de la grabación dentro
   if(d.r){shareRoute(d.r);return}compartirEnlace(d.t)});
 async function compartirEnlace(t){
   if(!t.pts||t.pts.length<2)return;
@@ -93,18 +93,38 @@ function abrirCompartido(){const h=location.hash||"";
   if(pts.length<2){toast("Ese enlace de track no es válido");return true}
   const n=decodeURIComponent(nm||"Track compartido");let km=0;for(let i=1;i<pts.length;i++)km+=map.distance(pts[i-1],pts[i]);km=Math.round(km/100)/10;
   mostrar({n,pts,km},"enlace");return true}
+// perfil del track compartido (si trae alturas), con el mismo dibujo que el resto
+function perfilTmp(pts,km){if(typeof profSVG!=="function"||pts.length<2||pts.some(x=>x[2]==null))return"";let c=0;const all=[[0,pts[0][2]]];
+  for(let i=1;i<pts.length;i++){c+=map.distance([pts[i-1][0],pts[i-1][1]],[pts[i][0],pts[i][1]]);all.push([c/1000,pts[i][2]])}
+  const f=km&&c?km/(c/1000):1,st=Math.max(1,Math.floor(all.length/120)),pf=[];for(let i=0;i<all.length;i+=st)pf.push([Math.round(all[i][0]*f*100)/100,all[i][1]]);pf.push([Math.round(all[all.length-1][0]*f*100)/100,all[all.length-1][1]]);
+  const el=pf.map(x=>x[1]);return profSVG({pf,mn:Math.min(...el),mx:Math.max(...el),km})}
+// «Solo verlo»: se cierra la ficha y el track se queda en el mapa, con una etiqueta para volver a la ficha o quitarlo
+document.head.insertAdjacentHTML("beforeend",`<style>.tmppill{position:absolute;left:50%;transform:translateX(-50%);bottom:84px;z-index:26;display:flex;align-items:center;gap:8px;width:min(400px,calc(100% - 24px));box-sizing:border-box;background:var(--card);border:2px solid #7b2cbf;border-radius:14px;padding:6px 6px 6px 12px;box-shadow:0 2px 10px rgba(0,0,0,.2);zoom:var(--fs)}
+.tmppill .pn{flex:1;min-width:0;min-height:38px;background:none;border:0;padding:0;color:var(--ink);font:inherit;font-weight:800;text-align:left;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tmppill .qx{flex:none;min-height:38px;border:1px solid var(--edge);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-weight:800;padding:0 10px;cursor:pointer}</style>`);
+let PILL=null,ULT=null;
+function quitaPill(){if(PILL){PILL.remove();PILL=null}}
+function soloVer(){const d=sheet._tmp;if(!d)return;ULT={t:Object.assign({},d,d.x||{}),origen:sheet._tmpo||"enlace"};sheet.hidden=true;quitaPill();
+  const vm=document.getElementById("v-mapa")||document.body;PILL=document.createElement("div");PILL.className="tmppill";
+  PILL.innerHTML=`<button class="pn" type="button">🧵 ${esc(d.n)}</button><button class="qx" type="button">✕ Quitar</button>`;vm.appendChild(PILL);
+  try{map.fitBounds(L.latLngBounds(d.pts.map(x=>[x[0],x[1]])),{paddingTopLeft:[30,130],paddingBottomRight:[30,150],maxZoom:15})}catch(e){}
+  PILL.querySelector(".pn").onclick=()=>{const u=ULT;quitaPill();if(u)mostrar(u.t,u.origen)};
+  PILL.querySelector(".qx").onclick=()=>{quitaPill();if(TMP){TMP.remove();TMP=null}sheet._tmp=null;ULT=null}}
 // enseñar un track sin guardarlo: desde un enlace o desde un archivo compartido con la app
-function mostrar(t,origen){const n=t.n,pts=t.pts,km=t.km;
+function mostrar(t,origen){const n=t.n,pts=t.pts,km=t.km;quitaPill();
+  if(t.up==null&&pts.length>1&&pts.every(x=>x[2]!=null)&&MPI.suben){const u=MPI.suben(pts);t=Object.assign({},t,{up:u[0],dn:u[1]})}
   if(typeof showView==="function")showView("mapa");
   if(TMP)TMP.remove();TMP=L.layerGroup([L.polyline(pts,{color:"#fff",weight:8,opacity:.9}),L.polyline(pts,{color:"#7b2cbf",weight:5,opacity:.95,dashArray:"10 6"})]).addTo(map);
   map.fitBounds(L.latLngBounds(pts),{paddingTopLeft:[30,90],paddingBottomRight:innerWidth>=860?[480,30]:[30,Math.round(innerHeight*.5)],maxZoom:15});
   const ya=MPI.tracks().find(t=>t.pts&&t.pts.length&&t.n===n&&Math.abs(t.pts[0][0]-pts[0][0])<1e-4);
   MPI.show(`<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-tmpx>×</button></div>
     <div class="meta"><span class="tag">${origen==="archivo"?"Archivo GPX/KML":"Track compartido"}</span><span class="tag">${km.toLocaleString("es-ES")} km</span>${t.up!=null?`<span class="tag">+${t.up.toLocaleString("es-ES")} m</span>`:""}</div>
-    <p class="note">${origen==="archivo"?"Solo lo estás viendo: no se ha guardado.":"Te lo han pasado por enlace."} Guárdalo en Mis tracks si quieres tenerlo siempre, seguirlo otro día o descargar su mapa.</p>
-    <div class="topacts"><button class="btn primary" data-tmpsave>${ya?"★ Ya guardado":"☆ Guardar en Mis tracks"}</button><button class="btn ghost" data-tmpfol>▶ Seguir</button></div>${(()=>{const q=pts.reduce((b,x)=>x[2]!=null&&(b[2]==null||x[2]>b[2])?x:b,pts[0]);return`<div class="wx" data-lat="${q[0]}" data-lon="${q[1]}" data-alt="${q[2]!=null?Math.round(q[2]):""}"></div>`})()}`);
-  sheet._tmp={n,pts,km,up:t.up,dn:t.dn,mx:t.mx,mn:t.mn,x:{w:t.w,gr:t.gr,ug:t.ug,tm:t.tm,fh:t.fh}}}   // x: lo de un GPX de la grabadora (puntos dentro, horas)
+    ${perfilTmp(pts,km)}
+    <p class="note">${origen==="archivo"?"Aún no se ha guardado.":"Te lo han pasado por enlace."} Puedes solo verlo en el mapa, guardarlo en Mis cosas para tenerlo siempre, o seguirlo.</p>
+    <div class="topacts"><button class="btn primary" data-tmpver>👁 Solo verlo</button><button class="btn ghost" data-tmpsave>${ya?"★ Ya guardado":"☆ Guardar"}</button><button class="btn ghost" data-tmpfol>▶ Seguir</button></div>${(()=>{const q=pts.reduce((b,x)=>x[2]!=null&&(b[2]==null||x[2]>b[2])?x:b,pts[0]);return`<div class="wx" data-lat="${q[0]}" data-lon="${q[1]}" data-alt="${q[2]!=null?Math.round(q[2]):""}"></div>`})()}`);
+  sheet._tmp={n,pts,km,up:t.up,dn:t.dn,mx:t.mx,mn:t.mn,x:{w:t.w,gr:t.gr,ug:t.ug,tm:t.tm,fh:t.fh}};sheet._tmpo=origen}   // x: lo de un GPX de la grabadora (puntos dentro, horas)
 sheet.addEventListener("click",e=>{const d=sheet._tmp;
+  if(e.target.closest("[data-tmpver]")){soloVer();return}
   if(e.target.closest("[data-tmpx]")&&TMP){TMP.remove();TMP=null}
   if(!d)return;
   if(e.target.closest("[data-tmpfol]")){if(TMP){TMP.remove();TMP=null}SEGUIR.start({u:"tmp",ti:d.n,gx:{ln:d.pts,km:d.km}},false);return}
