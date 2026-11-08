@@ -307,9 +307,17 @@ function guardaPunto(){const n=($("pn").value||"").trim()||"Punto",d=NP||{ic:"ot
 function pintaPuntos(){WPL.clearLayers();let l=[];try{l=JSON.parse(Nativo.listaPuntos()||"[]")}catch(e){}
   for(const w of l)WPL.addLayer(L.marker([w[1],w[2]],{icon:L.divIcon({className:"wp2",html:`<span><b>${EMOP(w[5]||"otro")}</b></span>`,iconSize:[0,0]})}).bindTooltip(esc(w[0]),{direction:"top",offset:[0,-26]}))}
 /* ---------- grabar ---------- */
-function sube(){let up=0,ref=null;for(const p of PTS){if(p[2]==null)continue;if(ref==null){ref=p[2];continue}if(p[2]-ref>5){up+=p[2]-ref;ref=p[2]}else if(ref-p[2]>5)ref=p[2]}return Math.round(up)}
+/* subida y bajada (8 nov 2026): la altura del GPS baila 10-40 m; se suaviza en tramos de 150 m y solo cuentan cambios de 8 m o más,
+   igual que en la app. Con el track real del 8 nov: 653 m (Wikiloc 650); antes salía mucho más. */
+let SBC={n:-1,u:0,d:0};
+function subeBaja(){if(SBC.n===PTS.length)return SBC;const q=PTS.filter(p=>p[2]!=null),n=q.length,c=[0];let U=0,D=0;
+  if(n>1){for(let i=1;i<n;i++)c.push(c[i-1]+dm(q[i-1],q[i]));const E=[];let j0=0,j1=0;
+    for(let i=0;i<n;i++){while(j1<n-1&&c[j1+1]-c[i]<=150)j1++;while(c[i]-c[j0]>150)j0++;let t=0;for(let k=j0;k<=j1;k++)t+=q[k][2];E.push(t/(j1-j0+1))}
+    let ref=E[0];for(const x of E){const d=x-ref;if(d>=8){U+=d;ref=x}else if(d<=-8){D-=d;ref=x}}}
+  SBC={n:PTS.length,u:Math.round(U),d:Math.round(D)};return SBC}
+function sube(){return subeBaja().u}
 const dur=()=>S.activo?Math.max(0,(S.pz||Date.now())-S.t0-S.pau):0;
-function baja(){let dn=0,ref=null;for(const p of PTS){if(p[2]==null)continue;if(ref==null){ref=p[2];continue}if(ref-p[2]>5){dn+=ref-p[2];ref=p[2]}else if(p[2]-ref>5)ref=p[2]}return Math.round(dn)}
+function baja(){return subeBaja().d}
 // tiempo en movimiento: tramos entre puntos a más de 0,4 m/s (y menos de 15, para no contar saltos del GPS)
 function mov(){let t=0,d=0;for(let i=1;i<PTS.length;i++){const a=PTS[i-1],b=PTS[i],dt=(b[3]-a[3])/1000;if(!(dt>0)||dt>600)continue;const dd=dm(a,b),v=dd/dt;if(v>.4&&v<15){t+=dt;d+=dd}}return{t:t*1000,d}}
 let DATOS=false;
@@ -322,7 +330,7 @@ function pintaDatos(){if(!DATOS)return;if($("sheet").hidden||($("sh").innerHTML&
   ${fila("📏 Distancia",kmT(D)+" km")}${fila("↗ Subida",fmM(sube()))}${fila("↘ Bajada",fmM(baja()))}
   ${fila("🏃 Velocidad media (en movimiento)",vm?vm.toLocaleString("es-ES",{maximumFractionDigits:1})+" km/h":"—")}${fila("⏳ Ritmo",ritmo&&ritmo<120?(x=>Math.floor(x/60)+":"+String(x%60).padStart(2,"0"))(Math.round(ritmo*60))+" min/km":"—")}
   ${fila("🕘 Empezaste",ini.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}))}${fila("📍 Puntos guardados",np)}${fila("🛰 Puntos de GPS",PTS.length.toLocaleString("es-ES"))}</table>
-  <p style="font-size:13px;color:#8a958e;margin:0 0 6px">La subida y la bajada salen de la altura del GPS: son aproximadas.</p>
+  <p style="font-size:13px;color:#8a958e;margin:0 0 6px">La subida y la bajada salen de la altura del GPS, suavizada: son aproximadas.</p>
   <button class="b2" onclick="cierra()">Cerrar</button>`}
 function pinta(){
   const e=$("rec");
