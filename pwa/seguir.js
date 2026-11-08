@@ -19,7 +19,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .fol .fb button.on{background:#1a73e8;color:#fff;border-color:#1a73e8}.fol .fb button.end{color:#b3261e}
 .fol .bar{height:6px;border-radius:3px;background:#e6e6e6;margin:8px 0 2px;overflow:hidden}.fol .bar i{display:block;height:100%;background:#c3262e}
 .folme{width:20px;height:20px}
-.fol .fmin{flex:none;width:40px;height:36px;border:1px solid var(--edge);background:var(--card);color:var(--ink);border-radius:10px;font-size:20px;font-weight:800;cursor:pointer;line-height:1}
+.fol .fmin{flex:none;width:56px;height:48px;border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:12px;font-size:26px;font-weight:800;cursor:pointer;line-height:1}
 .fol.min{top:64px;bottom:auto;right:8px;padding:8px 10px}
 @media(min-width:860px){.fol.min{right:auto}}
 .fol.min .fst,.fol.min .bar,.fol.min .fb,.fol.min .fg>div:nth-child(n+3){display:none}
