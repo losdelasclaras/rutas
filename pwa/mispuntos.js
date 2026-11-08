@@ -212,7 +212,7 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
   const base=fname.replace(/\.[^.]+$/,"");let np=0,nt=0;const have=new Set(MP.map(p=>p.lat.toFixed(4)+","+p.lon.toFixed(4)+"|"+p.n));
   const addP=(lat,lon,n,nota)=>{if(!isFinite(lat)||!isFinite(lon))return;const k=lat.toFixed(4)+","+lon.toFixed(4)+"|"+n;if(have.has(k))return;have.add(k);MP.push({id:nid(),n:n||"Punto importado",ic:"otro",nota:nota||"",lat:c5(lat),lon:c5(lon),f:new Date().toISOString()});np++};
   const addT=(pts,n,tms,ga)=>{if(pts.length<2)return;const t=thin(pts);let km=0;for(let i=1;i<pts.length;i++){const d=dist(pts[i-1],pts[i]);if(d<2000)km+=d}const o={id:nid(),n:n||base,km:Math.round(km/100)/10,pts:t,src:"gpx",f:new Date().toISOString()};
-    if(ga&&ga.length===pts.length&&ga.every(v=>v!=null&&isFinite(v)))o.ug=suben(pts.map((q,i)=>[q[0],q[1],ga[i]]));desn(o);
+    if(ga&&ga.length===pts.length&&ga.every(v=>v!=null&&isFinite(v))){o.gr=1;o.ug=sg(pts.map((q,i)=>[q[0],q[1],ga[i]]))}desn(o);
     // si el GPX trae la hora de cada punto: inicio, fin y tiempo en movimiento (tramos de menos de 1 min y a más de 1 km/h)
     if(tms&&tms.length===pts.length){let a=null,b=null,mov=0;for(let i=0;i<tms.length;i++){if(!tms[i])continue;if(a==null)a=tms[i];b=tms[i];
         if(i&&tms[i-1]){const dt=(tms[i]-tms[i-1])/1000;if(dt>0&&dt<=60&&dist(pts[i-1],pts[i])/dt>0.28)mov+=dt}}
@@ -239,13 +239,22 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
 // desnivel de un track (con margen de 4 m para que el ruido no sume)
 /* desnivel: el perfil se suaviza en tramos de 50 m (las alturas del GPS y las del mapa del terreno van a saltos) y se suman las subidas y bajadas de más de 4 m.
    Con un track real (Pico Cicueta, 12,4 km) da lo mismo que Wikiloc: +852/−882 frente a 856. */
-function suben(p){const n=p.length,c=[0];for(let i=1;i<n;i++)c.push(c[i-1]+dist(p[i-1],p[i]));const E=[];let j0=0,j1=0,s=0;
-  for(let i=0;i<n;i++){while(j1<n-1&&c[j1+1]-c[i]<=50){j1++;}while(c[i]-c[j0]>50)j0++;let t=0;for(let k=j0;k<=j1;k++)t+=p[k][2];E.push(t/(j1-j0+1))}
-  let U=0,D=0,ref=E[0];for(const x of E){const d=x-ref;if(d>=4){U+=d;ref=x}else if(d<=-4){D-=d;ref=x}}return[Math.round(U),Math.round(D)]}
+/* 8 nov 2026: en lo GRABADO con la app (altura del GPS o, ya en la app, la del relieve de 90 m) los tramos de 50 m dejan pasar muchos saltos:
+   track real del 8 nov (8,8 km) → 826 m con 50 m/4 m; Wikiloc 650. Con tramos de 150 m y repechos de 8 m o más → 653. Lo grabado usa sg() = tramos de 150 m y 8 m. */
+function sg(p){return suben(p,150,8)}
+function suben(p,W,TH){W=W||50;TH=TH||4;const n=p.length,c=[0];for(let i=1;i<n;i++)c.push(c[i-1]+dist(p[i-1],p[i]));const E=[];let j0=0,j1=0,s=0;
+  for(let i=0;i<n;i++){while(j1<n-1&&c[j1+1]-c[i]<=W){j1++;}while(c[i]-c[j0]>W)j0++;let t=0;for(let k=j0;k<=j1;k++)t+=p[k][2];E.push(t/(j1-j0+1))}
+  let U=0,D=0,ref=E[0];for(const x of E){const d=x-ref;if(d>=TH){U+=d;ref=x}else if(d<=-TH){D-=d;ref=x}}return[Math.round(U),Math.round(D)]}
+function esGrab(o){return !!(o&&(o.src==="grab"||o.gr||o.ug))}
 function desn(o){const p=o.pts;if(!p.length||p.some(x=>x[2]==null)){if(o.ug){o.up=o.ug[0];o.dn=o.ug[1]}else{delete o.up;delete o.dn}return}let mx=-1e9,mn=1e9;
   for(const x of p){if(x[2]>mx)mx=x[2];if(x[2]<mn)mn=x[2]}
   // si es grabado con la app, el desnivel sale de la altura del GPS (ug), que sigue mejor los repechos; las alturas que se ven, del mapa del terreno
-  const[U,D]=o.ug||suben(p);o.up=U;o.dn=D;o.mx=mx;o.mn=mn;o.dv=2}
+  // lo grabado: con el filtro GR sobre las alturas que tenga el track (las del relieve en cuanto llegan); lo demás, como siempre
+  const[U,D]=esGrab(o)?sg(p):suben(p);o.up=U;o.dn=D;o.mx=mx;o.mn=mn;o.dv=esGrab(o)?3:2}
+// tracks grabados guardados antes del 8 nov: se recalculan una vez (también los que lleguen de la cuenta)
+function fixDv(l){let k=0;for(const o of l||[])if(esGrab(o)&&o.dv!==3&&o.pts&&o.pts.length>1){
+    if(!o.pts.every(x=>x[2]!=null))continue;desn(o);k++}return k}   // sin alturas: se arregla cuando llegan las del relieve (demAlt)
+if(fixDv(MT))try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}
 // si el GPX no trae alturas, se sacan del modelo de relieve (hace falta conexión)
 async function demAlt(id){const o=MT.find(x=>x.id===id);if(!o||!navigator.onLine)return;const p=o.pts;
   const idx=[];const step=Math.max(1,Math.ceil(p.length/1000));for(let i=0;i<p.length;i+=step)idx.push(i);if(idx[idx.length-1]!==p.length-1)idx.push(p.length-1);
@@ -392,11 +401,11 @@ window.MISPUNTOS={get:()=>MP,accion:carpetaAccion,nueva:nuevaCarpeta,cruz:()=>cr
   ver:id=>{const p=MP.find(x=>x.id===id);if(!p)return;showView("mapa");if(!LAY.mp){LAY.mp=true;saveLay();syncMP()}map.flyTo([p.lat,p.lon],Math.max(map.getZoom(),15));openMP(id)},
   exportar:k=>k==="kml"?dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml"):dl("mis-puntos.gpx",toGPX(),"application/gpx+xml"),
   guarda:()=>{saveMP();drawMP();renderBox()},verCompartidos,carpetaTrack,guardarCarpeta,fotoGet,fotoPut,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
-  addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),ptsOf,desn,suben,demAlt,dl,
+  addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),ptsOf,desn,suben,sube:sg,demAlt,dl,
   saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
   importText(txt,n,prev){try{imp(String(txt),n||"track.gpx",prev)}catch(e){toast("No he podido leer ese archivo (solo GPX o KML)")}},
   importar(){if(window.cuentaOk&&!cuentaOk(()=>toast("Ya has entrado. Pulsa otra vez «Cargar GPX/KML» para elegir el archivo"),"tracks"))return;fin.value="";fin.click()},
   // la sincronización cambia lo guardado sin volver a avisar a la nube
-  set(mp,mt){if(mp){MP.length=0;MP.push(...mp);store.set(MPK,MP)}if(mt){MT.length=0;MT.push(...mt);try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}}
+  set(mp,mt){if(mp){MP.length=0;MP.push(...mp);store.set(MPK,MP)}if(mt){fixDv(mt);MT.length=0;MT.push(...mt);try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}}
     drawMP();drawMT();renderBox();if(window.MISTRACKS)MISTRACKS.render();if(MPSEL&&!MP.some(p=>p.id===MPSEL)){MPSEL=null}}};
 })();
