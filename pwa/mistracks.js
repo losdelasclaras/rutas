@@ -44,7 +44,7 @@ box.addEventListener("click",e=>{if(e.target.closest('[data-mtx="imp"]')){MPI.im
   const fb=e.target.closest("[data-mtf]");if(fb){FIL=fb.dataset.mtf;store.set("ldc-mtfil",FIL);render();return}
   const re=e.target.closest("[data-mtred]");if(re){renombrar(re.dataset.mtred);return}
   const rd=e.target.closest("[data-mtrdel]");if(rd){if(rd.dataset.sure!=="1"){rd.dataset.sure="1";rd.classList.add("sure");rd.innerHTML="¿Seguro?";setTimeout(()=>{if(rd.isConnected){rd.dataset.sure="";rd.classList.remove("sure");rd.innerHTML='<svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>'}},4000);return}
-    MPI.saveTracks(T().filter(x=>String(x.id)!==rd.dataset.mtrdel));toast("Quitado de Mis tracks");return}
+    borraFotos(rd.dataset.mtrdel);MPI.saveTracks(T().filter(x=>String(x.id)!==rd.dataset.mtrdel));toast("Quitado de Mis tracks");return}
   const o=e.target.closest("[data-mtopen]");if(o)open(o.dataset.mtopen,true)});
 
 /* perfil a partir de los puntos (para los cargados) */
@@ -53,28 +53,55 @@ function perfil(t){const r=routeOf(t);if(r&&r.gx&&r.gx.pf&&r.gx.pf.length)return
   const dm=(a,b)=>{const R0=6371,k=Math.PI/180,dl=(b[0]-a[0])*k,dn=(b[1]-a[1])*k,h=Math.sin(dl/2)**2+Math.cos(a[0]*k)*Math.cos(b[0]*k)*Math.sin(dn/2)**2;return 2*R0*Math.asin(Math.sqrt(h))};
   let c=0;const all=[[0,p[0][2]]];for(let i=1;i<p.length;i++){c+=dm(p[i-1],p[i]);all.push([c,p[i][2]])}
   const f=t.km&&c?t.km/c:1,step=Math.max(1,Math.floor(all.length/120)),pf=[];for(let i=0;i<all.length;i+=step)pf.push([Math.round(all[i][0]*f*100)/100,all[i][1]]);pf.push([Math.round(c*f*100)/100,all[all.length-1][1]]);
-  return profSVG({pf,mn:t.mn!=null?t.mn:Math.min(...pf.map(x=>x[1])),mx:t.mx!=null?t.mx:Math.max(...pf.map(x=>x[1])),km:t.km})}
+  const g={pf,mn:t.mn!=null?t.mn:Math.min(...pf.map(x=>x[1])),mx:t.mx!=null?t.mx:Math.max(...pf.map(x=>x[1])),km:t.km};
+  return conPuntos(profSVG(g),t,g)}
+/* 8 nov 2026: los puntos de la grabación en el perfil, en su km y a su altura (mismas medidas que profSVG) */
+function conPuntos(svg,t,g){if(!(t.w||[]).length||!MPI.kmW)return svg;const W=600,H=190,pl=70,pb=34,pt=12,pr=8,X=g.pf[g.pf.length-1][0]||1,lo=Math.floor((g.mn-30)/50)*50,hi=Math.ceil((g.mx+30)/50)*50;
+  const em=k=>k==="cumbre"?"⛰️":MPI.ico(k)[1];
+  const m=t.w.map(w=>{const q=MPI.kmW(t,w);if(!q||q.lejos||q.a==null)return"";const x=pl+(W-pl-pr)*Math.min(q.km,X)/X,y=pt+(H-pt-pb)*(1-(q.a-lo)/(hi-lo));
+    return`<g class="wpp" data-wp="${esc(w.id)}" style="cursor:pointer"><line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${y.toFixed(1)}" y2="${H-pb}" stroke="#e8711a" stroke-width="1.5" stroke-dasharray="3 3"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="13" fill="#fff" stroke="#e8711a" stroke-width="2.5"/><text x="${x.toFixed(1)}" y="${(y+5.5).toFixed(1)}" text-anchor="middle" font-size="15">${em(w.ic)}</text><title>${esc(w.n)}</title></g>`}).join("");
+  return svg.replace(/<\/svg>$/,m+"</svg>")}
+/* ficha de un punto de la grabación */
+const kmF=v=>"km "+v.toLocaleString("es-ES",{minimumFractionDigits:1,maximumFractionDigits:1});
+function puntosHTML(t){const ws=t.w||[];if(!ws.length)return"";
+  return`<h3 style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px">📍 Puntos del recorrido (${ws.length})</h3><div class="wplist">${ws.map(w=>{const q=MPI.kmW&&MPI.kmW(t,w);
+    return`<button class="wprow" data-wpopen="${esc(w.id)}" data-t="${esc(t.id)}">${w.fo?`<span class="wpf" data-wpfoto="${esc(w.id)}"></span>`:`<span class="wpe">${MPI.emo(w.ic)}</span>`}<span class="wpt"><b>${esc(w.n)}</b><small>${[q?kmF(q.km):"",q&&q.a!=null?Math.round(q.a).toLocaleString("es-ES")+" m":"",w.t?hora(w.t):""].filter(Boolean).join(" · ")}</small></span></button>`}).join("")}</div>`}
+async function fotos(el){for(const s of el.querySelectorAll("[data-wpfoto]")){const j=await MPI.fotoGet(s.dataset.wpfoto);if(j&&s.isConnected)s.innerHTML=`<img src="${j}" alt="">`;else if(s.isConnected){s.className="wpe";s.textContent="📷"}}}
+function punto(tid,pid){const t=T().find(x=>String(x.id)===String(tid)),w=t&&(t.w||[]).find(x=>x.id===pid);if(!t||!w)return;
+  if(typeof showView==="function")showView("mapa");const q=MPI.kmW&&MPI.kmW(t,w);
+  MPI.show(`<div class="sheet-head"><h2>${MPI.emo(w.ic)} ${esc(w.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  <div class="meta"><span class="tag">Punto de «${esc(t.n)}»</span>${q?`<span class="tag">${kmF(q.km)}</span>`:""}${q&&q.a!=null?`<span class="tag alt">${Math.round(q.a).toLocaleString("es-ES")} m</span>`:""}${w.t?`<span class="tag">${hora(w.t)}</span>`:""}</div>
+  ${w.fo?`<div data-wpbig="${esc(w.id)}" style="min-height:40px"></div>`:""}
+  ${w.nota?`<p class="desc" style="white-space:pre-wrap">${esc(w.nota)}</p>`:""}
+  <div class="topacts"><button class="btn primary" data-mtback="${esc(t.id)}">← Ver el recorrido</button><a class="btn ghost" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${w.lat},${w.lon}">🚗 Cómo llegar</a></div>
+  <div class="mpacts"><button class="mpb" data-wpedit="${esc(w.id)}" data-t="${esc(t.id)}">✏️ Cambiar nombre o nota</button><button class="mpb dan" data-wpdel="${esc(w.id)}" data-t="${esc(t.id)}">Quitar este punto</button></div>
+  <p class="note">${w.lat.toFixed(5)}, ${w.lon.toFixed(5)}</p>`);
+  sheet._mt=t.id;sheet._wp=w.id;
+  const b=sheet.querySelector("[data-wpbig]");if(b)MPI.fotoGet(w.id).then(j=>{if(j&&b.isConnected)b.innerHTML=`<img src="${j}" alt="" style="width:100%;max-height:320px;object-fit:cover;border-radius:12px;display:block;margin:4px 0 10px;cursor:zoom-in" data-fotobig>`;else b.remove()});
+  map.flyTo([w.lat,w.lon],Math.max(map.getZoom(),15))}
+const cambiaW=(tid,f)=>MPI.saveTracks(T().map(x=>{if(String(x.id)!==String(tid))return x;const y={...x,w:(x.w||[]).map(w=>({...w}))};f(y);return y}));
 
 function encuadra(t){const p=MPI.ptsOf(t);if(!p){if(window.loadTracks)loadTracks().then(ok=>{if(ok&&MPI.ptsOf(t))encuadra(t)});return}
   const b=L.latLngBounds(p.map(x=>[x[0],x[1]]));const wide=innerWidth>=860;
   map.fitBounds(b,{paddingTopLeft:[30,90],paddingBottomRight:wide?[480,30]:[30,Math.round(innerHeight*0.5)],maxZoom:15})}
 function open(id,fit){const t=T().find(x=>String(x.id)===String(id));if(!t)return;
-  if(t.pts&&t.pts.length>1&&t.dv!==2&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
+  if(t.pts&&t.pts.length>1&&!(t.dv>=2)&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
   if(typeof showView==="function")showView("mapa");
   if(!LAY.mt){LAY.mt=true;saveLay();const b=document.querySelector('[data-lay="mt"]');if(b)b.setAttribute("aria-pressed",true);MPI.sync()}
   const r=routeOf(t),d=datos(t),p=MPI.ptsOf(t)||(r&&r.gx&&r.gx.st?[r.gx.st]:null);
   MPI.show(`<div class="sheet-head"><h2>${esc(t.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="topacts"><button class="btn primary" data-mtfol="${esc(t.id)}">▶ Seguir track</button><button class="btn ghost" data-mtshare="${esc(t.id)}">📤 Compartir</button>${r?`<button class="btn ghost" data-mtroute="${esc(t.id)}">📘 Ver la ruta</button>`:""}</div>
-  <div class="meta"><span class="tag">${r?"Ruta del blog":"Track cargado"}</span>${d.km?`<span class="tag">${kmTxt(d.km)}</span>`:""}${d.up!=null?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}${t.f?`<span class="tag">Guardado el ${fmtF(t.f)}</span>`:""}</div>
+  <div class="meta"><span class="tag">${r?"Ruta del blog":t.src==="grab"?"Grabado con la app":"Track cargado"}</span>${d.km?`<span class="tag">${kmTxt(d.km)}</span>`:""}${d.up!=null?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}${t.f?`<span class="tag">Guardado el ${fmtF(t.f)}</span>`:""}</div>
   <div class="estbox"><button class="mpb${t.est==="hecho"?" on":""}" data-mtest="hecho" data-id="${esc(t.id)}">✓ ${t.est==="hecho"?"Hecho":"Lo he hecho"}</button><button class="mpb${t.est==="pend"?" on":""}" data-mtest="pend" data-id="${esc(t.id)}">★ Pendiente</button>${t.est==="hecho"?`<label class="note" style="display:flex;align-items:center;gap:6px">el <input type="date" data-mtfh="${esc(t.id)}" value="${(t.fh||"").slice(0,10)}" max="${new Date().toISOString().slice(0,10)}"></label>`:""}</div>
   ${datosHTML(t,d)}
   ${perfil(t)}
+  ${puntosHTML(t)}
   ${!r&&t.pts&&t.pts.some(x=>x[2]==null)?`<p class="note">${navigator.onLine?"Calculando las alturas…":"Este track no trae alturas; se calcularán cuando haya conexión."}</p>`:""}
   ${window.OFFLINE&&!OFFLINE.has(r?r.u:"mt:"+t.id)&&p&&p[0][0]<44&&p[0][0]>35&&p[0][1]>-10&&p[0][1]<4.7?`<div class="offhint" style="margin:12px 0 4px;padding:10px 12px;border-radius:12px;background:#eef6ef;color:#1f4d2a;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="flex:1;min-width:180px">📥 <b>¿Vas a ir?</b> Descarga el mapa para verlo aunque no tengas cobertura.</span><button class="mpb pri" style="background:#2a7a3b;border-color:#2a7a3b" data-offt="${esc(t.id)}">Descargar mapa</button></div>`:""}
   <div class="mpacts">${p?`<a class="mpb" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p[0][0]},${p[0][1]}">🚗 Cómo llegar al inicio</a>`:""}
   ${window.OFFLINE&&OFFLINE.has(r?r.u:"mt:"+t.id)?`<button class="mpb" data-offt="${esc(t.id)}">✓ Mapa sin cobertura</button>`:""}<button class="mpb" data-mtgpx="${esc(t.id)}">⬇ Descargar GPX</button><button class="mpb" data-mtcar="${esc(t.id)}">📁 ${t.c?esc(t.c):"Meter en carpeta"}</button><button class="mpb" data-mtren="${esc(t.id)}">✏️ Cambiar nombre</button><button class="mpb dan" data-mtdel="${esc(t.id)}"><svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg> Quitar de mis tracks</button></div>
   ${(()=>{const q=p&&p.length?p.reduce((b,x)=>x[2]!=null&&(b[2]==null||x[2]>b[2])?x:b,p[0]):null;return q?`<h3 style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px">El tiempo${q[2]!=null?" en el punto más alto":""}</h3><div class="wx" data-lat="${q[0]}" data-lon="${q[1]}" data-alt="${q[2]!=null?Math.round(q[2]):""}"></div>`:""})()}`);
-  sheet._mt=t.id;
+  sheet._mt=t.id;sheet._wp=null;fotos(sheet);
   if(fit)setTimeout(()=>encuadra(t),60);
   if(!r&&t.pts&&t.pts.some(x=>x[2]==null))MPI.demAlt(t.id)}
 /* 📊 Datos del track: distancia, desniveles, alturas y, si es grabado, horas, tiempo en movimiento y velocidad */
@@ -99,7 +126,9 @@ function datosHTML(t,d){const c=[],x=(v,l,w)=>c.push(`<div${w?' class="w"':""}><
 function refresh(id){render();if(!sheet.hidden&&String(sheet._mt)===String(id)&&sheet.querySelector("[data-mtfol]"))open(id,false)}
 
 function gpxDe(t){const x=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  return`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<trk><name>${x(t.n)}</name><trkseg>\n`+
+  return`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${x(t.n)}</name></metadata>\n`+
+    (t.w||[]).map(w=>`<wpt lat="${w.lat}" lon="${w.lon}">${w.a!=null?`<ele>${Math.round(w.a)}</ele>`:""}${w.t?`<time>${new Date(w.t).toISOString()}</time>`:""}<name>${x(w.n)}</name>${w.nota?`<desc>${x(w.nota)}</desc>`:""}<type>${x(MPI.ico(w.ic)[2])}</type></wpt>\n`).join("")+
+    `<trk><name>${x(t.n)}</name><trkseg>\n`+
     t.pts.map(p=>`<trkpt lat="${p[0]}" lon="${p[1]}">${p[2]!=null?`<ele>${p[2]}</ele>`:""}</trkpt>`).join("\n")+`\n</trkseg></trk>\n</gpx>\n`}
 function renombrar(k){const t=T().find(x=>String(x.id)===String(k));if(!t)return;if(typeof showView==="function")showView("mapa");
   MPI.show(`<div class="sheet-head"><h2>Cambiar nombre</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><div class="mpform"><label for="mtn">Nombre del track</label><input type="text" id="mtn" maxlength="100" value="${esc(t.n)}">
@@ -124,7 +153,15 @@ sheet.addEventListener("click",e=>{
     const ts=T().map(x=>String(x.id)===k?{...x,n:v}:x);MPI.saveTracks(ts);toast("Nombre cambiado");open(k,false);return}
   if((k=id("[data-mtback]"))!=null){open(k,false);return}
   if((k=id("[data-mtdel]"))!=null){const b=e.target.closest("[data-mtdel]");if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="¿Seguro? Toca otra vez";return}
-    MPI.saveTracks(T().filter(x=>String(x.id)!==k));sheet.hidden=true;toast("Quitado de Mis tracks");return}});
+    borraFotos(k);MPI.saveTracks(T().filter(x=>String(x.id)!==k));sheet.hidden=true;toast("Quitado de Mis tracks");return}
+  const wo=e.target.closest("[data-wpopen]");if(wo){punto(wo.dataset.t,wo.dataset.wpopen);return}
+  const wg=e.target.closest(".wpp");if(wg&&sheet._mt!=null){punto(sheet._mt,wg.dataset.wp);return}
+  const we=e.target.closest("[data-wpedit]");if(we){const t=T().find(x=>String(x.id)===we.dataset.t),w=t&&(t.w||[]).find(x=>x.id===we.dataset.wpedit);if(!w)return;
+    const n=prompt("Nombre del punto",w.n);if(n==null)return;const nt=prompt("Nota (puede quedar vacía)",w.nota||"");
+    cambiaW(t.id,y=>{const z=y.w.find(x=>x.id===w.id);z.n=(n.trim()||z.n).slice(0,80);if(nt!=null)z.nota=nt.trim().slice(0,1000)});punto(t.id,w.id);return}
+  const wd=e.target.closest("[data-wpdel]");if(wd){if(wd.dataset.sure!=="1"){wd.dataset.sure="1";wd.textContent="¿Seguro? Toca otra vez";return}
+    const id=wd.dataset.wpdel,tid=wd.dataset.t;cambiaW(tid,y=>{const z=y.w.find(x=>x.id===id);if(z&&z.fo&&MPI.fotoDel)MPI.fotoDel(id);y.w=y.w.filter(x=>x.id!==id)});toast("Punto quitado");open(tid,false);return}});
+function borraFotos(k){const t=T().find(x=>String(x.id)===String(k));for(const w of (t&&t.w)||[])if(w.fo&&MPI.fotoDel)MPI.fotoDel(w.id)}
 
 /* en la ficha de una ruta del blog: «☆ Guardar en mis tracks» */
 window.MTSAVED=r=>!!savedOf(r);
@@ -146,6 +183,9 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-mtsave]");
   else{MPI.saveTracks([...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),km:r.gx.km,up:r.gx.up,dn:r.gx.dn,f:new Date().toISOString()}]);
     b.textContent="★ En mis tracks";toast("Guardado en Mis cosas › Guardado");if(window.OFFLINE&&OFFLINE.ofrecer)setTimeout(()=>OFFLINE.ofrecer(r),700)}},true);
 
-window.MISTRACKS={render,open,refresh,route:id=>{const t=T().find(x=>String(x.id)===String(id));return t&&t.pts?comoRuta(t):null}};
+document.head.insertAdjacentHTML("beforeend",`<style>.wplist{display:grid;gap:6px;margin:4px 0 10px}.wprow{display:flex;gap:10px;align-items:center;text-align:left;width:100%;padding:6px;border:1px solid var(--edge);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+.wpf,.wpe{flex:0 0 52px;width:52px;height:52px;border-radius:9px;overflow:hidden;display:grid;place-items:center;background:var(--paper,#f4f6f2);font-size:24px}.wpf img{width:100%;height:100%;object-fit:cover;display:block}
+.wpt{display:flex;flex-direction:column;min-width:0}.wpt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wpt small{color:var(--muted);font-weight:700}</style>`);
+window.MISTRACKS={render,open,refresh,punto,route:id=>{const t=T().find(x=>String(x.id)===String(id));return t&&t.pts?comoRuta(t):null}};
 render();
 })();

@@ -103,13 +103,13 @@ function mostrar(t,origen){const n=t.n,pts=t.pts,km=t.km;
     <div class="meta"><span class="tag">${origen==="archivo"?"Archivo GPX/KML":"Track compartido"}</span><span class="tag">${km.toLocaleString("es-ES")} km</span>${t.up!=null?`<span class="tag">+${t.up.toLocaleString("es-ES")} m</span>`:""}</div>
     <p class="note">${origen==="archivo"?"Solo lo estás viendo: no se ha guardado.":"Te lo han pasado por enlace."} Guárdalo en Mis tracks si quieres tenerlo siempre, seguirlo otro día o descargar su mapa.</p>
     <div class="topacts"><button class="btn primary" data-tmpsave>${ya?"★ Ya guardado":"☆ Guardar en Mis tracks"}</button><button class="btn ghost" data-tmpfol>▶ Seguir</button></div>${(()=>{const q=pts.reduce((b,x)=>x[2]!=null&&(b[2]==null||x[2]>b[2])?x:b,pts[0]);return`<div class="wx" data-lat="${q[0]}" data-lon="${q[1]}" data-alt="${q[2]!=null?Math.round(q[2]):""}"></div>`})()}`);
-  sheet._tmp={n,pts,km,up:t.up,dn:t.dn,mx:t.mx,mn:t.mn}}
+  sheet._tmp={n,pts,km,up:t.up,dn:t.dn,mx:t.mx,mn:t.mn,x:{w:t.w,gr:t.gr,ug:t.ug,tm:t.tm,fh:t.fh}}}   // x: lo de un GPX de la grabadora (puntos dentro, horas)
 sheet.addEventListener("click",e=>{const d=sheet._tmp;
   if(e.target.closest("[data-tmpx]")&&TMP){TMP.remove();TMP=null}
   if(!d)return;
   if(e.target.closest("[data-tmpfol]")){if(TMP){TMP.remove();TMP=null}SEGUIR.start({u:"tmp",ti:d.n,gx:{ln:d.pts,km:d.km}},false);return}
   if(e.target.closest("[data-tmpsave]")){const go=()=>{const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-      const o={id,n:d.n,km:d.km,pts:d.pts,src:"gpx",f:new Date().toISOString()};MPI.desn(o);MPI.saveTracks([...MPI.tracks(),o]);if(d.pts.some(p=>p[2]==null))MPI.demAlt(id);if(TMP){TMP.remove();TMP=null}
+      const o={id,n:d.n,km:d.km,pts:d.pts,src:"gpx",f:new Date().toISOString()};for(const k in d.x||{})if(d.x[k]!=null)o[k]=d.x[k];MPI.desn(o);MPI.saveTracks([...MPI.tracks(),o]);if(d.pts.some(p=>p[2]==null))MPI.demAlt(id);if(TMP){TMP.remove();TMP=null}
       sheet._tmp=null;toast("Guardado en Mis cosas › Mis tracks");if(window.MISTRACKS)MISTRACKS.open(id,false)};
     if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go()}});
 addEventListener("hashchange",abrirCompartido);setTimeout(abrirCompartido,600);

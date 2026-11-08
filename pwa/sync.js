@@ -137,15 +137,19 @@ async function onUser(u){
   setTimeout(()=>dispatchEvent(new Event("ldc-user")),0);
   if(!u){USER=null;store.set(SK,"0");repaint();return}
   USER=u;store.set(SK,"1");BUSY=true;repaint();
-  const fs=A.fs,first=store.get(UK,null)!==u.uid,p=pend();
+  const fs=A.fs,first=store.get(UK,null)!==u.uid;
   const [dm,dp,dt,dz]=await Promise.all([fs.getDoc(ref("marcas")),fs.getDoc(ref("puntos")),fs.getDocs(tcol()),fs.getDoc(ref("mapas"))]);
+  // 8 nov 2026: lo pendiente se mira DESPUÉS de leer la nube: si mientras tanto llegó algo al móvil (p. ej. una grabación), no se pisa
+  const p=pend();
   const OFF=window.OFFLINE,lw=OFF?OFF.wanted():[],cz=dz.exists()?J(dz.data().j):null;
   const cm=dm.exists()?J(dm.data().j):null,cp=dp.exists()?J(dp.data().j):null;
   const ct=[];CLOUDT=new Map();dt.forEach(d=>{ct.push(tIn(d.id,d.data()));CLOUDT.set(d.id,d.data().j)});
   // la primera vez en este aparato, o si quedaron cambios sin subir, se junta todo; si no, manda lo de la nube
   const m=cm==null?MARKS:(first||p.marcas)?joinMarks(MARKS,cm):cm;
-  const pts=cp==null?MPI.get():(first||p.puntos)?joinList(MPI.get(),cp,sameP):cp;
-  const trs=!dt.size?MPI.tracks():(first||p.tracks)?joinList(MPI.tracks(),ct,(a,b)=>String(a.id)===String(b.id)):ct;
+  // con cambios sin subir manda lo del móvil (y se añade lo que solo esté en la nube); la primera vez, como antes
+  const sameT=(a,b)=>String(a.id)===String(b.id);
+  const pts=cp==null?MPI.get():p.puntos?joinList(cp,MPI.get(),sameP):first?joinList(MPI.get(),cp,sameP):cp;
+  const trs=!dt.size?MPI.tracks():p.tracks?joinList(ct,MPI.tracks(),sameT):first?joinList(MPI.tracks(),ct,sameT):ct;
   const nm=Object.keys(m).length-Object.keys(MARKS).length,np=pts.length-MPI.get().length,nt=trs.length-MPI.tracks().length;
   const zs=cz==null?lw:(first||p.mapas)?joinList(lw,cz,(a,b)=>a.id===b.id):cz;
   applyMarks(m);MPI.set(pts,trs);if(OFF)OFF.setWanted(zs);
@@ -155,16 +159,23 @@ async function onUser(u){
   if(cz==null?zs.length:JSON.stringify(zs)!==JSON.stringify(cz))w.push(fs.setDoc(ref("mapas"),{j:JSON.stringify(zs),t:Date.now()}));
   w.push(pushTracks());
   await Promise.all(w);
-  store.set(UK,u.uid);store.set(PK,{});store.set(TK,new Date().toISOString());READY=true;BUSY=false;
+  // lo que haya cambiado en el móvil mientras se escribía sigue pendiente y se sube ahora (antes se borraba la lista entera)
+  const pn=pend(),keep={};
+  if(pn.marcas&&JSON.stringify(MARKS)!==JSON.stringify(m))keep.marcas=1;
+  if(pn.puntos&&JSON.stringify(MPI.get())!==JSON.stringify(pts))keep.puntos=1;
+  if(pn.tracks&&tKey(MPI.tracks())!==tKey(trs))keep.tracks=1;
+  if(pn.mapas&&OFF&&JSON.stringify(OFF.wanted())!==JSON.stringify(zs))keep.mapas=1;
+  store.set(UK,u.uid);store.set(PK,keep);store.set(TK,new Date().toISOString());READY=true;BUSY=false;
+  for(const k in keep)push(k);
   if(PEND){const f=PEND;PEND=null;MOT=null;setTimeout(()=>{try{f()}catch(e){}},300)}
   if(OPEN){bg.hidden=true;OPEN=false}
   if(first){const tot=Object.keys(m).length+pts.length+trs.length;toast(tot?`Conectado: ${cuenta()} guardados en tu cuenta`:"Conectado con tu cuenta")}
   else if(nm>0||np>0||nt>0)toast("Recibidos los cambios de tu cuenta");
   // a partir de aquí, lo que cambie en otro aparato llega solo
-  unsub.push(fs.onSnapshot(ref("marcas"),s=>{if(s.metadata.hasPendingWrites||!s.exists())return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(MARKS)){applyMarks(v);done()}}));
-  unsub.push(fs.onSnapshot(ref("puntos"),s=>{if(s.metadata.hasPendingWrites||!s.exists())return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(MPI.get())){MPI.set(v,null);done()}}));
-  unsub.push(fs.onSnapshot(ref("mapas"),s=>{if(s.metadata.hasPendingWrites||!s.exists()||!window.OFFLINE)return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(OFFLINE.wanted())){OFFLINE.setWanted(v);done()}}));
-  unsub.push(fs.onSnapshot(tcol(),s=>{if(s.metadata.hasPendingWrites)return;const v=[];s.forEach(d=>{v.push(tIn(d.id,d.data()));CLOUDT.set(d.id,d.data().j)});for(const k of [...CLOUDT.keys()])if(!v.some(t=>String(t.id)===k))CLOUDT.delete(k);
+  unsub.push(fs.onSnapshot(ref("marcas"),s=>{if(s.metadata.hasPendingWrites||!s.exists()||pend().marcas)return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(MARKS)){applyMarks(v);done()}}));
+  unsub.push(fs.onSnapshot(ref("puntos"),s=>{if(s.metadata.hasPendingWrites||!s.exists()||pend().puntos)return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(MPI.get())){MPI.set(v,null);done()}}));
+  unsub.push(fs.onSnapshot(ref("mapas"),s=>{if(s.metadata.hasPendingWrites||!s.exists()||!window.OFFLINE||pend().mapas)return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(OFFLINE.wanted())){OFFLINE.setWanted(v);done()}}));
+  unsub.push(fs.onSnapshot(tcol(),s=>{if(s.metadata.hasPendingWrites||pend().tracks)return;const v=[];s.forEach(d=>{v.push(tIn(d.id,d.data()));CLOUDT.set(d.id,d.data().j)});for(const k of [...CLOUDT.keys()])if(!v.some(t=>String(t.id)===k))CLOUDT.delete(k);
     if(tKey(v)!==tKey(MPI.tracks())){MPI.set(null,v);done()}}));
   repaint()}
 function done(){store.set(TK,new Date().toISOString());repaint()}

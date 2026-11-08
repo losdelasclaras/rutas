@@ -63,7 +63,7 @@ function render(){if(box.hidden)return;const all=items(),nh=all.filter(x=>x.e===
         (op?`<div class="gdfin" data-fn="${esc(n)}"><div class="gdfa"><button class="pri" data-gda="ver">🗺 Ver en el mapa</button><button data-gda="share">📤 Compartir</button><button data-gda="gpx">⬇ GPX</button></div>
           <div class="gdmas"><button data-gda="ren">✏️ Cambiar nombre</button><button data-gda="undo">📂 Deshacer carpeta</button></div>${xs.map(x=>fila(Object.assign({inF:1},x))).join("")}</div>`:"")}).join("")+
       (sueltos.length?(names.length?`<p class="gdsep">Sin carpeta</p>`:"")+sueltos.map(x=>fila(x)).join(""):"")}
-  box.innerHTML=`<div class="gdtop"><button class="pri" data-gdadd>＋ Añadir</button><button data-gdmas>··· Más</button></div>
+  box.innerHTML=`<div class="gdtop"><button class="pri" data-gdadd>⬆️ Abrir GPX o KML</button><button data-gdmas>··· Más</button></div>
   ${all.length?`<div class="gdfil">${[["todos","Todo",all.length],["pend","★ Pendientes",np],["hecho","✓ Hechos",nh]].map(([k,t,c])=>`<button data-gdfil="${k}" aria-pressed="${FIL===k}">${t} <small>${c}</small></button>`).join("")}</div>
   <input class="gdq" id="gdq" type="search" placeholder="Buscar en lo guardado…" autocomplete="off" value="${esc(Q)}">`:""}<div id="gdlist">${body}</div>`;
   const q=box.querySelector("#gdq");if(q)q.addEventListener("input",()=>{Q=nk(q.value.trim());const p=q.selectionStart;render();const q2=box.querySelector("#gdq");if(q2){q2.focus();try{q2.setSelectionRange(p,p)}catch(e){}}})}
@@ -71,7 +71,7 @@ function elige(tit,ops){const d=document.createElement("div");d.className="cdq";
   d.innerHTML=`<div role="dialog" aria-label="${esc(tit)}"><h3>${tit}</h3>${ops.map((o,i)=>`<button data-q="${i}"><span>${o[0]}</span>${o[1]}</button>`).join("")}<button class="x" data-q="no">Cancelar</button></div>`;
   d.addEventListener("click",e=>{const b=e.target.closest("[data-q]");if(!b&&e.target!==d)return;d.remove();if(!b||b.dataset.q==="no")return;ops[+b.dataset.q][2]()});document.body.appendChild(d)}
 box.addEventListener("click",e=>{
-  if(e.target.closest("[data-gdadd]")){elige("¿Qué quieres añadir?",[["🎯","Un punto donde estoy",()=>MPI.gps()],["✛","Un punto tocando en el mapa",()=>MPI.cruz()],["⬆️","Abrir un archivo GPX o KML",()=>MPI.importar()]]);return}
+  if(e.target.closest("[data-gdadd]")){MPI.importar();return}   // 8 nov 2026: ya no se añaden puntos sueltos
   if(e.target.closest("[data-gdmas]")){const hay=MPI.get().length;elige("Más opciones",[["📁","Crear una carpeta",()=>MPI.nueva()],...(hay?[["⬇️","Exportar mis puntos (GPX)",()=>MPI.exportar("gpx")],["⬇️","Exportar mis puntos (KML, Google Earth)",()=>MPI.exportar("kml")]]:[])]);return}
   const fb=e.target.closest("[data-gdfil]");if(fb){FIL=fb.dataset.gdfil;render();return}
   const f=e.target.closest("[data-gdf]");if(f){const n=f.dataset.gdf;if(OPEN.has(n))OPEN.delete(n);else OPEN.add(n);render();return}

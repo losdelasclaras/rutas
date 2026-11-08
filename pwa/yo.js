@@ -41,7 +41,8 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 window.YO={apaga,activo:()=>W!=null};
 // botón «📍 Punto» en el mapa: guarda un punto donde estás
 const fabs=document.querySelector(".fabs");
-if(fabs)fabs.insertAdjacentHTML("afterbegin",`<button class="btn ghost" id="b-pt" data-short="Marcar" title="Marcar un sitio en el mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Marcar un sitio</button>`);
+// 8 nov 2026: quitado (decidido con Jonathan): los puntos se guardan solo grabando, dentro del track. Para volver: quitar «false&&»
+if(false&&fabs)fabs.insertAdjacentHTML("afterbegin",`<button class="btn ghost" id="b-pt" data-short="Marcar" title="Marcar un sitio en el mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Marcar un sitio</button>`);
 // dentro de la app Android (la del APK): botón «Grabar», que abre la grabadora nativa (graba con la pantalla apagada)
 const enApp=(()=>{try{if(document.referrer.startsWith("android-app://es.losdelasclaras.rutas"))sessionStorage.setItem("ldc-apk","1");return sessionStorage.getItem("ldc-apk")==="1"}catch(e){return false}})();
 // en el APK los mapas sin cobertura se guardan en la pantalla de grabar (que es donde se usan): fuera los de la web (Mis cosas › Mapas y sus botones)
@@ -86,22 +87,36 @@ function buzon(){let b=null;try{b=localStorage.getItem("ldc-buzon")}catch(e){}
 let RECOG=false;
 async function recoger(){let b=null;try{b=localStorage.getItem("ldc-buzon")}catch(e){}if(!b||RECOG||!navigator.onLine||!window.LDCFB||!window.MISPUNTOS)return;RECOG=true;
   try{const a=await LDCFB.load(),fs=a.fs,ref=fs.doc(a.db,"buzon",b),d=await fs.getDoc(ref);
-    if(d.exists()){const l=JSON.parse(d.data().j||"[]"),MPI=window.MISPUNTOS,ts=MPI.tracks().slice();let ult=null,n=0;
-      let np=0;const MP0=MPI.get();
-      for(const it of l){for(const w of it.w||[]){const[n,la,lo,al,t,ic,nt,fo]=w;if(!isFinite(la)||!isFinite(lo))continue;if(MP0.some(q=>Math.abs(q.lat-la)<1e-5&&Math.abs(q.lon-lo)<1e-5&&q.n===n))continue;
-          const p={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),n:n||"Punto",ic:ic||"otro",nota:[nt||"",it.n&&it.p&&it.p.length?"En «"+it.n+"»":""].filter(Boolean).join("\n"),lat:Math.round(la*1e5)/1e5,lon:Math.round(lo*1e5)/1e5,f:new Date(t||Date.now()).toISOString()};if(al!=null&&isFinite(al))p.a=Math.round(al);if(fo&&/^data:image\//.test(fo)&&MPI.fotoPut){p.fo=1;MPI.fotoPut(p.id,fo)}MPI.addPoint(p);np++}
-        const pts=(it.p||[]).map(q=>[q[0],q[1]]);if(pts.length<2)continue;
-        if(ts.some(t=>t.src==="grab"&&t.f===new Date(it.t0).toISOString()))continue;   // ya estaba
+    if(d.exists()){const l=JSON.parse(d.data().j||"[]"),MPI=window.MISPUNTOS,ts=MPI.tracks().slice();let ult=null,n=0,nw=0,np=0,cambio=false;
+      const MP0=MPI.get(),nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6),r5=v=>Math.round(v*1e5)/1e5;
+      const dia=v=>{const t=new Date(v);return isNaN(t)?"":t.toLocaleDateString("es-ES")};
+      // 8 nov 2026: los puntos de una grabación van DENTRO de su track (o.w), con su foto aparte (como los de Mis puntos)
+      const pto=w=>{const[n,la,lo,al,t,ic,nt,fo]=w;if(!isFinite(la)||!isFinite(lo))return null;
+        const p={id:nid(),n:n||"Punto",ic:ic||"otro",nota:nt||"",lat:r5(la),lon:r5(lo),t:t||Date.now()};if(al!=null&&isFinite(al))p.a=Math.round(al);
+        if(fo&&/^data:image\//.test(fo)&&MPI.fotoPut){p.fo=1;MPI.fotoPut(p.id,fo)}return p};
+      const meter=(o,ws)=>{o.w=o.w||[];let k=0;for(const w of ws){if(o.w.some(q=>Math.abs(q.lat-w[1])<1e-5&&Math.abs(q.lon-w[2])<1e-5&&q.n===(w[0]||"Punto")))continue;const p=pto(w);if(p){o.w.push(p);k++}}o.w.sort((x,y)=>x.t-y.t);return k};
+      for(const it of l){const ws=it.w||[],pts=(it.p||[]).map(q=>[q[0],q[1]]);
+        if(pts.length<2){   // puntos sueltos (APK antiguos, guardados sin grabar): como antes, a Mis puntos
+          for(const w of ws){const[n0,la,lo]=w;if(!isFinite(la)||!isFinite(lo))continue;if(MP0.some(q=>Math.abs(q.lat-la)<1e-5&&Math.abs(q.lon-lo)<1e-5&&q.n===n0))continue;const p=pto(w);if(!p)continue;p.f=new Date(p.t).toISOString();delete p.t;MPI.addPoint(p);np++}continue}
+        const ya=ts.find(t=>t.src==="grab"&&t.f===new Date(it.t0).toISOString());
+        // ¿ya está ese recorrido en la app (cargado a mano desde el GPX)? mismo día y salida a menos de 200 m → se le meten los puntos
+        const igual=ya||ts.find(t=>{if(t.src==="blog")return false;const q=MPI.ptsOf?MPI.ptsOf(t):t.pts;if(!q||q.length<2)return false;
+          const d0=map.distance([q[0][0],q[0][1]],pts[0]);const dd=[t.fh,t.tm&&t.tm.a,t.f].filter(Boolean).map(dia);return d0<200&&dd.includes(dia(it.t0))});
+        if(igual){if(igual.src!=="grab"&&!igual.gr){igual.gr=1;if(MPI.desn)MPI.desn(igual);cambio=true;ult=igual}   // es una grabación: desnivel con el filtro de lo grabado
+          if(ws.length){const k=meter(igual,ws);if(k){nw+=k;cambio=true;ult=igual}}continue}
         let km=0;for(let i=1;i<pts.length;i++)km+=map.distance(pts[i-1],pts[i]);
-        const o={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),n:it.n||"Recorrido grabado",km:Math.round(km/100)/10,pts,src:"grab",f:new Date(it.t0).toISOString(),est:"hecho",fh:new Date(it.t0).toISOString()};
-        // tiempos: la grabadora apunta un punto cada pocos metros; si entre dos pasa más de 1 min es que estabas parado (o en pausa)
+        const o={id:nid(),n:it.n||"Recorrido grabado",km:Math.round(km/100)/10,pts,src:"grab",f:new Date(it.t0).toISOString(),est:"hecho",fh:new Date(it.t0).toISOString()};
         {const g=(it.p||[]).map(q=>q[3]);if(g.length>1&&g.every(v=>v!=null&&isFinite(v))&&MPI.suben)o.ug=(MPI.sube||MPI.suben)((it.p||[]).map(q=>[q[0],q[1],+q[3]]))}
+        // tiempos: la grabadora apunta un punto cada pocos metros; si entre dos pasa más de 1 min es que estabas parado (o en pausa)
         {const tt=(it.p||[]).map(q=>+q[2]).filter(v=>v>1e12);if(tt.length>1){let mov=0;for(let i=1;i<tt.length;i++){const d=tt[i]-tt[i-1];if(d>0&&d<=60000)mov+=d}o.tm={a:tt[0],b:tt[tt.length-1],m:Math.round(mov/1000)}}}
-        ts.push(o);ult=o;n++}
-      if(n){MPI.saveTracks(ts);for(const o of ts.slice(-n))MPI.demAlt(o.id)}
+        if(ws.length)nw+=meter(o,ws);
+        if(MPI.desn)MPI.desn(o);   // desnivel ya (del GPS, filtrado); se afina al llegar las alturas del relieve
+        ts.push(o);ult=o;n++;cambio=true}
+      if(cambio){MPI.saveTracks(ts);for(const o of ts.slice(-n))if(n)MPI.demAlt(o.id)}
       await fs.deleteDoc(ref);
-      if(np&&!ult)toast(np===1?"✅ Punto guardado en Mis cosas › Puntos":`✅ ${np} puntos guardados en Mis cosas › Puntos`);
-      if(ult){toast((np?`📍 ${np} punto${np>1?"s":""} en Puntos · `:"")+(n===1?`✅ «${ult.n}» guardado en Mis cosas › Tracks`:`✅ ${n} grabaciones guardadas en Mis cosas › Tracks`));if(window.MISTRACKS)setTimeout(()=>MISTRACKS.open(ult.id,true),600)}}
+      const tp=nw?` con ${nw} punto${nw>1?"s":""}`:"";
+      if(np&&!ult)toast(np===1?"✅ Punto guardado en Mis cosas › Guardado":`✅ ${np} puntos guardados en Mis cosas › Guardado`);
+      if(ult){toast(n>1?`✅ ${n} grabaciones guardadas en Mis cosas › Guardado`:n?`✅ «${ult.n}» guardado${tp}`:`✅ ${nw} punto${nw>1?"s":""} añadido${nw>1?"s":""} a «${ult.n}»`);if(window.MISTRACKS)setTimeout(()=>MISTRACKS.open(ult.id,true),600)}}
   }catch(e){console.warn("buzón",e)}RECOG=false}
 if(enApp){setTimeout(recoger,2500);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")setTimeout(recoger,800)})}
 const bp=document.getElementById("b-pt");if(bp)bp.addEventListener("click",()=>{if(window.MISPUNTOS&&MISPUNTOS.gps)MISPUNTOS.gps()});

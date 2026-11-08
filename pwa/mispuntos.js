@@ -16,6 +16,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .mpk{width:0;height:0}
 .mpk span{position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:calc(var(--ms,24px)*1.15);height:calc(var(--ms,24px)*1.15);min-width:22px;min-height:22px;border-radius:50%;background:#fff;border:2.5px solid #7b2cbf;display:flex;align-items:center;justify-content:center;font-size:calc(var(--ms,24px)*.62);line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.35);cursor:pointer}
 .mpk.sel span{outline:3px solid #222;outline-offset:1px}
+.wpk span{border-color:#e8711a!important;box-shadow:0 0 0 2px #fff,0 1px 4px rgba(0,0,0,.35)}
 .mpcross{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;pointer-events:none;z-index:650}
 .mpcross:before,.mpcross:after{content:"";position:absolute;background:#7b2cbf;box-shadow:0 0 0 1.5px #fff}
 .mpcross:before{left:21px;top:0;width:3px;height:44px}.mpcross:after{top:21px;left:0;height:3px;width:44px}
@@ -67,10 +68,18 @@ function drawMP(){MPL.clearLayers();
 // los tracks del blog guardados no copian los puntos: se cogen de la ruta
 const ptsOf=t=>t.pts&&t.pts.length?t.pts:(t.src==="blog"?(((R.find(r=>r.u===t.u)||{}).gx)||{}).ln||null:null);
 let MTLOAD=false,MTTRY=false;
+// km (y altura del track) donde queda un punto de la grabación: el punto del track más cercano, con la misma escala que el perfil
+function kmW(t,w){const p=ptsOf(t);if(!p||p.length<2)return null;let c=0,best=1e18,bi=0,bc=0;
+  for(let i=0;i<p.length;i++){if(i)c+=dist(p[i-1],p[i]);const d=dist(p[i],[w.lat,w.lon]);if(d<best){best=d;bi=i;bc=c}}
+  const f=t.km&&c?t.km*1000/c:1;return{km:bc*f/1000,a:w.a!=null?w.a:p[bi][2],lejos:best>300}}
 function drawMT(){MTL.clearLayers();let falta=false;
   for(const t of MT){const p=ptsOf(t);if(!p){falta=true;continue}const ll=p.map(x=>[x[0],x[1]]);
     MTL.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.8,interactive:false}));
-    MTL.addLayer(L.polyline(ll,{color:"#e8711a",weight:3.5,opacity:.95}).bindTooltip(esc(t.n),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);if(window.MISTRACKS)MISTRACKS.open(t.id)}))}
+    MTL.addLayer(L.polyline(ll,{color:"#e8711a",weight:3.5,opacity:.95}).bindTooltip(esc(t.n),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);if(window.MISTRACKS)MISTRACKS.open(t.id)}));
+    // 8 nov 2026: los puntos de la grabación, encima de su track (se ven y se apagan con él)
+    for(const w of t.w||[]){const m=L.marker([w.lat,w.lon],{icon:L.divIcon({className:"mpk wpk",html:`<span>${EMO(w.ic)}</span>`,iconSize:[0,0]}),title:w.n,zIndexOffset:950,riseOnHover:true});
+      m.on("click",e=>{L.DomEvent.stopPropagation(e);if(window.MISTRACKS)MISTRACKS.punto(t.id,w.id)});
+      m.bindTooltip(esc(w.n),{permanent:true,direction:"right",offset:[12,0],className:"lbl mpl",interactive:false});MTL.addLayer(m)}}
   if(falta&&!MTLOAD&&!MTTRY&&window.loadTracks){MTLOAD=true;MTTRY=true;loadTracks().then(ok=>{MTLOAD=false;if(ok)drawMT();else MTTRY=false})}   // solo un intento: si aun así falta alguno, no se repite en bucle
   syncMP()}
 function syncMP(){const a=LAY.mp&&MP.length&&!window.FOLONLY,b=LAY.mt&&MT.length&&!window.FOLONLY;
@@ -165,8 +174,8 @@ const anchor=document.getElementById("colh-lugares");anchor.parentNode.insertBef
 const fin=document.createElement("input");fin.type="file";/* sin «accept»: en Android los .gpx suelen salir grises si se filtra por tipo */fin.hidden=true;document.body.appendChild(fin);
 function renderBox(){const ps=MP.slice().sort((a,b)=>(b.f||"").localeCompare(a.f||""));
   box.innerHTML=`<h2>📍 Mis puntos <small style="font-weight:500;color:#666">(${MP.length})</small></h2>
-  ${MP.length?"":`<p class="note">Guarda fuentes, aparcamientos, refugios o cualquier sitio. En el mapa: <b>Capas › Guardar dónde estoy</b> o <b>Marcar en el mapa</b>, o mantén pulsado sobre el mapa.</p>`}
-  <div class="mpacts" style="margin:6px 0 8px"><button class="mpb" data-mpx="gps">🎯 Dónde estoy</button><button class="mpb" data-mpx="cross">✛ En el mapa</button>
+  ${MP.length?"":`<p class="note">Los puntos se guardan al grabar un recorrido, con el botón 📍 de la grabadora, y van dentro de su track.</p>`}
+  <div class="mpacts" style="margin:6px 0 8px">
   ${MP.length?`<button class="mpb" data-mpx="gpx">⬇️ GPX</button><button class="mpb" data-mpx="kml">⬇️ KML</button>`:""}<button class="mpb" data-mpx="imp">⬆️ Importar puntos (GPX/KML)</button>${MP.some(p=>!p.c)||MT.some(t=>!t.c)?`<button class="mpb" data-mpx="fold" style="border-color:#7b2cbf;color:#7b2cbf;font-weight:700">📁 Agrupar en carpeta</button>`:""}</div>
   ${MP.length>=1?`<input class="mpq" id="mpq" type="search" placeholder="Buscar en mis puntos…" autocomplete="off">`:""}<div id="mplist"></div>
 `;pintaMP();const q=box.querySelector("#mpq");if(q){q.value=QP;q.addEventListener("input",()=>{QP=q.value.trim();pintaMP()})}if(window.MISTRACKS)MISTRACKS.render()}
@@ -218,10 +227,15 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
         if(i&&tms[i-1]){const dt=(tms[i]-tms[i-1])/1000;if(dt>0&&dt<=60&&dist(pts[i-1],pts[i])/dt>0.28)mov+=dt}}
       if(a&&b>a){o.tm={a,b,m:Math.round(mov)};o.fh=new Date(a).toISOString()}}MT.push(o);nuevos.push(o);nt++};const nuevos=[];
   if(doc.getElementsByTagName("gpx").length){
-    for(const w of doc.getElementsByTagName("wpt"))addP(+w.getAttribute("lat"),+w.getAttribute("lon"),tx(w,"name"),tx(w,"desc")||tx(w,"cmt"));
     const gpsAlt=/Los de las Claras/.test((doc.documentElement.getAttribute("creator")||""));   // grabado con la app: altura del GPS, poco fiable
+    // 8 nov 2026: en un GPX de la grabadora (un solo track) los puntos van dentro del track, no sueltos
+    const WP=[...doc.getElementsByTagName("wpt")],dentro=gpsAlt&&doc.getElementsByTagName("trk").length===1;
+    if(!dentro)for(const w of WP)addP(+w.getAttribute("lat"),+w.getAttribute("lon"),tx(w,"name"),tx(w,"desc")||tx(w,"cmt"));
     for(const t of doc.getElementsByTagName("trk")){const tp=[...t.getElementsByTagName("trkpt")],pts=tp.map(p=>{const e=gpsAlt?"":tx(p,"ele");return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});
       const tms=tp.map(p=>{const v=Date.parse(tx(p,"time"));return isFinite(v)?v:0});addT(pts,tx(t,"name"),tms.some(Boolean)?tms:null,gpsAlt?tp.map(p=>{const e=tx(p,"ele");return e===""?null:+e}):null)}
+    if(dentro&&nuevos.length===1&&WP.length){const o=nuevos[0];o.w=WP.map(w=>{const la=+w.getAttribute("lat"),lo=+w.getAttribute("lon"),e=tx(w,"ele"),t=Date.parse(tx(w,"time"));if(!isFinite(la)||!isFinite(lo))return null;
+        const q={id:nid(),n:tx(w,"name")||"Punto",ic:"otro",nota:tx(w,"desc")||"",lat:c5(la),lon:c5(lo)};if(e!=="")q.a=Math.round(+e);if(isFinite(t))q.t=t;return q}).filter(Boolean)}
+    else if(dentro)for(const w of WP)addP(+w.getAttribute("lat"),+w.getAttribute("lon"),tx(w,"name"),tx(w,"desc")||tx(w,"cmt"));
     for(const r of doc.getElementsByTagName("rte")){const pts=[...r.getElementsByTagName("rtept")].map(p=>[+p.getAttribute("lat"),+p.getAttribute("lon")]);addT(pts,tx(r,"name"))}}
   else{for(const pm of doc.getElementsByTagName("Placemark")){const n=tx(pm,"name"),d=tx(pm,"description").replace(/<[^>]+>/g," ").trim();
       for(const pt of pm.getElementsByTagName("Point")){const c=tx(pt,"coordinates").split(",");addP(+c[1],+c[0],n,d)}
@@ -401,7 +415,7 @@ window.MISPUNTOS={get:()=>MP,accion:carpetaAccion,nueva:nuevaCarpeta,cruz:()=>cr
   ver:id=>{const p=MP.find(x=>x.id===id);if(!p)return;showView("mapa");if(!LAY.mp){LAY.mp=true;saveLay();syncMP()}map.flyTo([p.lat,p.lon],Math.max(map.getZoom(),15));openMP(id)},
   exportar:k=>k==="kml"?dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml"):dl("mis-puntos.gpx",toGPX(),"application/gpx+xml"),
   guarda:()=>{saveMP();drawMP();renderBox()},verCompartidos,carpetaTrack,guardarCarpeta,fotoGet,fotoPut,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
-  addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),ptsOf,desn,suben,sube:sg,demAlt,dl,
+  addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),ptsOf,kmW,fotoDel,desn,suben,sube:sg,demAlt,dl,
   saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
   importText(txt,n,prev){try{imp(String(txt),n||"track.gpx",prev)}catch(e){toast("No he podido leer ese archivo (solo GPX o KML)")}},
   importar(){if(window.cuentaOk&&!cuentaOk(()=>toast("Ya has entrado. Pulsa otra vez «Cargar GPX/KML» para elegir el archivo"),"tracks"))return;fin.value="";fin.click()},

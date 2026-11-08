@@ -59,7 +59,7 @@ function panelHTML(){const r=F.r;
   <div class="bar"><i data-fbar style="width:0"></i></div>
   <div class="fg"><div><small>Hecho</small><b data-fdone>—</b></div><div><small>Falta</small><b data-fleft>${fk(F.T.tot)}</b></div>
    <div><small>Subida que falta</small><b data-fup>+${fm(F.T.up[F.T.up.length-1])}</b></div><div><small>Bajada que falta</small><b data-fdn>−${fm(F.T.dn[F.T.dn.length-1])}</b></div></div>
-  <div class="fb"><button data-fc class="on">◎ Centrar</button><button data-fr title="Si haces la ruta desde el otro extremo">⇄ Al revés</button><button data-fpt>📍 Marcar</button><button data-fx class="end">✕ Terminar</button></div>`}
+  <div class="fb"><button data-fc class="on">◎ Centrar</button><button data-fr title="Si haces la ruta desde el otro extremo">⇄ Al revés</button><button data-fx class="end">✕ Terminar</button></div>`}
 const Q=s=>F&&F.el.querySelector(s);
 function status(cls,html){const e=Q("[data-fst]");if(!e)return;e.className="fst "+cls;e.innerHTML=html}
 
