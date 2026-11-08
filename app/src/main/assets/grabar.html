@@ -26,6 +26,9 @@ body.segab #top{z-index:1100}
 #seg.fuera{background:#b3261e;color:#fff}#seg.fuera .ic{color:#fff}#seg.fin{background:#1f6b32;color:#fff}#seg.fin .ic{color:#fff}
 #seg[hidden],#segMas[hidden]{display:none}
 #segMas{margin-top:8px;font-weight:600}
+/* 8 nov 2026: plegar fácil con guantes y andando: flecha grande y barra ancha al final */
+#seg #segIc{flex:none;min-width:48px;height:48px;display:grid;place-items:center;font-size:24px;padding:0;border:2px solid currentColor;border-radius:12px;color:inherit;margin-left:4px}
+#seg .plg{display:block;width:100%;margin:12px 0 0;padding:14px;font-size:19px;font-weight:800;border-radius:12px;border:2px solid currentColor;background:rgba(255,255,255,.55);color:inherit}
 .bar{height:6px;border-radius:3px;background:rgba(0,0,0,.12);overflow:hidden;margin:2px 0 8px}.bar i{display:block;height:100%;background:#7b2cbf}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 4px;text-align:center}
 .g3 b{display:block;font-size:19px;font-variant-numeric:tabular-nums}.g3 small{display:block;font-size:12px;opacity:.8;font-weight:700;line-height:1.15}
@@ -212,8 +215,9 @@ function pintaSeg(d){if(d!==undefined)SEGD=d;d=SEGD;const e=$("seg");if(!T.lengt
    <div class="ir">${lejos||IDX<3?`<button onclick="llegar()">🚗 Cómo llegar a la salida</button>`:""}<button class="b" onclick="alReves()">⇄ Al revés</button><button class="b" onclick="verTrack()">🗺 Ver ${TR[1]?"los tracks":"el track"}</button><button class="x" onclick="dejar()">✕ Dejar de seguir</button></div>
    <div style="margin-top:8px">${TR.map((r,i)=>r?fila(r,i):"").join("")}</div>
    ${TR[1]?"":`<button class="b2" style="margin:8px 0 0;font-size:16px;padding:11px" onclick="anadir2()">➕ Añadir un segundo track (variante)</button>`}
-   <p style="font-size:13px;margin:8px 0 0;opacity:.8">${TR[1]?"Solo avisa si te sales de los dos, y antes de donde se separan.":"Con «➕ Añadir un segundo track» vas a la app: elige la ruta o el track y toca «▶ Seguir»; vuelve aquí como secundario."} «Al revés» si lo empiezas por el final.</p>`}
-function abreSeg(){SEGOPEN=!SEGOPEN;document.body.classList.toggle("segab",SEGOPEN);pintaSeg()}
+   <p style="font-size:13px;margin:8px 0 0;opacity:.8">${TR[1]?"Solo avisa si te sales de los dos, y antes de donde se separan.":"Con «➕ Añadir un segundo track» vas a la app: elige la ruta o el track y toca «▶ Seguir»; vuelve aquí como secundario."} «Al revés» si lo empiezas por el final.</p><button class="plg" onclick="abreSeg()">▴ Plegar</button>`}
+function abreSeg(){SEGOPEN=!SEGOPEN;if(!window.__plg){window.__plg=1;map.on("click",()=>{if(SEGOPEN)abreSeg()})}   /* tocar el mapa también pliega */
+ document.body.classList.toggle("segab",SEGOPEN);pintaSeg()}
 function alReves(){REV=!REV;lsS("rev:"+TN,REV?"1":null);prepara();TR[ACT].idx=0;IDX=0;FUERA=0;AVISADO=false;cruces();pintaLineas();SEPAV.clear();if(YO)sigueA(YO[0],YO[1]);else pintaSeg();toast(REV?"Track al revés: empiezas por el final":"Track en el sentido normal")}
 function cercaDe(r,p){let best=-1,bd=1e12;const a=Math.max(0,r.idx-60),b=Math.min(r.t.length,r.idx+400);for(let i=a;i<b;i++){const d=dm(p,r.t[i]);if(d<bd){bd=d;best=i}}
   if(bd>300)for(let i=0;i<r.t.length;i++){const d=dm(p,r.t[i]);if(d<bd){bd=d;best=i}}return[best,bd]}
