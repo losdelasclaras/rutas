@@ -10,6 +10,9 @@ function enc(pts){let o="",pl=0,pn=0;const e=v=>{v=v<0?~(v<<1):v<<1;let s="";whi
   for(const p of pts){const la=Math.round(p[0]*1e5),lo=Math.round(p[1]*1e5);o+=e(la-pl)+e(lo-pn);pl=la;pn=lo}return o}
 function dec(s){const out=[];let i=0,la=0,lo=0;const d=()=>{let r=0,sh=0,b;do{b=s.charCodeAt(i++)-63;r|=(b&0x1f)<<sh;sh+=5}while(b>=0x20&&i<=s.length);return r&1?~(r>>1):r>>1};
   while(i<s.length){la+=d();lo+=d();out.push([la/1e5,lo/1e5])}return out}
+// 8 nov 2026: polilínea con altura (lat, lon y metros), la que manda la APK al abrir un GPX desde WhatsApp
+function dec3(s){const out=[];let i=0,la=0,lo=0,al=0;const d=()=>{let r=0,sh=0,b;do{b=s.charCodeAt(i++)-63;r|=(b&0x1f)<<sh;sh+=5}while(b>=0x20&&i<=s.length);return r&1?~(r>>1):r>>1};
+  while(i<s.length){la+=d();lo+=d();al+=d();out.push([la/1e5,lo/1e5,al])}return out}
 // simplificar (Douglas-Peucker, ~6 m) para que el enlace sea corto
 function simple(p,tol){if(p.length<3)return p;const c=Math.cos(p[0][0]*Math.PI/180),X=q=>q[1]*111320*c,Y=q=>q[0]*110540;const keep=new Uint8Array(p.length);keep[0]=keep[p.length-1]=1;const st=[[0,p.length-1]];
   while(st.length){const[a,b]=st.pop();let mx=0,ix=-1;const ax=X(p[a]),ay=Y(p[a]),bx=X(p[b]),by=Y(p[b]),dx=bx-ax,dy=by-ay,l=Math.hypot(dx,dy)||1;
@@ -87,6 +90,15 @@ function abrirCompartido(){const h=location.hash||"";
   if(/^#c=[A-Za-z0-9]{4,20}$/.test(h)){const c=h.slice(3);try{history.replaceState(null,"",location.pathname+location.search.replace(/^\?g=\d+$/,""))}catch(e){}if(window.LDCFB)abrirCorto(c);return true}
   if(h.startsWith("#f=")){try{history.replaceState(null,"",location.pathname+location.search.replace(/^\?g=\d+$/,""))}catch(e){}
     try{const o=JSON.parse(decodeURIComponent(h.slice(3)));MPI.verCompartidos({n:o.n,ps:{ps:(o.p||[]).map(x=>({n:x[0],lat:x[1],lon:x[2],ic:x[3],a:x[4]})),ts:(o.t||[]).map(x=>({n:x[0],pts:dec(x[1])}))}})}catch(e){toast("Ese enlace no es válido")}return true}
+  // 8 nov 2026: «Abrir con» / WhatsApp desde la APK: track con alturas, puntos y horas (#t3=<polilínea>!<nombre>!<datos>)
+  if(h.startsWith("#t3=")){const pr=h.slice(4).split("!");let pts=[],x={};try{pts=dec3(decodeURIComponent(pr[0]))}catch(e){}try{if(pr[2])x=JSON.parse(decodeURIComponent(pr[2]))}catch(e){}
+    try{history.replaceState(null,"",location.pathname+location.search.replace(/^\?g=\d+$/,""))}catch(e){}
+    if(pts.length<2){toast("Ese archivo no tiene un recorrido que pueda leer");return true}
+    if(!x.a)pts=pts.map(q=>[q[0],q[1]]);
+    const n=decodeURIComponent(pr[1]||"Track");let km=0;for(let i=1;i<pts.length;i++)km+=map.distance([pts[i-1][0],pts[i-1][1]],[pts[i][0],pts[i][1]]);km=x.km||Math.round(km/100)/10;
+    const w=(x.w||[]).map((q,i)=>{const o={id:Date.now().toString(36)+"w"+i,n:q[0]||"Punto",ic:"otro",nota:q[4]||"",lat:q[1],lon:q[2]};if(q[3]!=null)o.a=q[3];if(q[5])o.t=q[5];return o});
+    const t={n,pts,km};if(w.length)t.w=w;if(x.g)t.gr=1;if(x.tm){t.tm=x.tm;t.fh=new Date(x.tm.a).toISOString()}
+    mostrar(t,"archivo");return true}
   if(!h.startsWith("#t="))return false;
   const raw=h.slice(3),cut=raw.lastIndexOf("!"),code=decodeURIComponent(cut>=0?raw.slice(0,cut):raw),nm=cut>=0?raw.slice(cut+1):"";let pts=[];try{pts=dec(code)}catch(e){}
   try{history.replaceState(null,"",location.pathname+location.search.replace(/^\?g=\d+$/,""))}catch(e){}
@@ -112,13 +124,14 @@ function soloVer(){const d=sheet._tmp;if(!d)return;ULT={t:Object.assign({},d,d.x
   PILL.querySelector(".qx").onclick=()=>{quitaPill();if(TMP){TMP.remove();TMP=null}sheet._tmp=null;ULT=null}}
 // enseñar un track sin guardarlo: desde un enlace o desde un archivo compartido con la app
 function mostrar(t,origen){const n=t.n,pts=t.pts,km=t.km;quitaPill();
-  if(t.up==null&&pts.length>1&&pts.every(x=>x[2]!=null)&&MPI.suben){const u=MPI.suben(pts);t=Object.assign({},t,{up:u[0],dn:u[1]})}
+  if(t.up==null&&pts.length>1&&pts.every(x=>x[2]!=null)&&MPI.suben){const u=(t.gr&&MPI.sube?MPI.sube:MPI.suben)(pts);t=Object.assign({},t,{up:u[0],dn:u[1]})}
   if(typeof showView==="function")showView("mapa");
-  if(TMP)TMP.remove();TMP=L.layerGroup([L.polyline(pts,{color:"#fff",weight:8,opacity:.9}),L.polyline(pts,{color:"#7b2cbf",weight:5,opacity:.95,dashArray:"10 6"})]).addTo(map);
+  if(TMP)TMP.remove();TMP=L.layerGroup([L.polyline(pts.map(x=>[x[0],x[1]]),{color:"#fff",weight:8,opacity:.9}),L.polyline(pts.map(x=>[x[0],x[1]]),{color:"#7b2cbf",weight:5,opacity:.95,dashArray:"10 6"})]).addTo(map);
+  for(const w of t.w||[])TMP.addLayer(L.marker([w.lat,w.lon],{icon:L.divIcon({className:"mpk wpk",html:`<span>${MPI.emo?MPI.emo(w.ic):"📍"}</span>`,iconSize:[0,0]}),title:w.n,zIndexOffset:950}).bindTooltip(esc(w.n),{permanent:true,direction:"right",offset:[12,0],className:"lbl mpl",interactive:false}));
   map.fitBounds(L.latLngBounds(pts),{paddingTopLeft:[30,90],paddingBottomRight:innerWidth>=860?[480,30]:[30,Math.round(innerHeight*.5)],maxZoom:15});
   const ya=MPI.tracks().find(t=>t.pts&&t.pts.length&&t.n===n&&Math.abs(t.pts[0][0]-pts[0][0])<1e-4);
   MPI.show(`<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-tmpx>×</button></div>
-    <div class="meta"><span class="tag">${origen==="archivo"?"Archivo GPX/KML":"Track compartido"}</span><span class="tag">${km.toLocaleString("es-ES")} km</span>${t.up!=null?`<span class="tag">+${t.up.toLocaleString("es-ES")} m</span>`:""}</div>
+    <div class="meta"><span class="tag">${origen==="archivo"?"Archivo GPX/KML":"Track compartido"}</span><span class="tag">${km.toLocaleString("es-ES")} km</span>${t.up!=null?`<span class="tag">+${t.up.toLocaleString("es-ES")} m</span>`:""}${(t.w||[]).length?`<span class="tag">📍 ${t.w.length} punto${t.w.length>1?"s":""}</span>`:""}</div>
     ${perfilTmp(pts,km)}
     <p class="note">${origen==="archivo"?"Aún no se ha guardado.":"Te lo han pasado por enlace."} Puedes solo verlo en el mapa, guardarlo en Mis cosas para tenerlo siempre, o seguirlo.</p>
     <div class="topacts"><button class="btn primary" data-tmpver>👁 Solo verlo</button><button class="btn ghost" data-tmpsave>${ya?"★ Ya guardado":"☆ Guardar"}</button><button class="btn ghost" data-tmpfol>▶ Seguir</button></div>${(()=>{const q=pts.reduce((b,x)=>x[2]!=null&&(b[2]==null||x[2]>b[2])?x:b,pts[0]);return`<div class="wx" data-lat="${q[0]}" data-lon="${q[1]}" data-alt="${q[2]!=null?Math.round(q[2]):""}"></div>`})()}`);

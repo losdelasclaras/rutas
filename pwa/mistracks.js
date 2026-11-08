@@ -84,13 +84,20 @@ const cambiaW=(tid,f)=>MPI.saveTracks(T().map(x=>{if(String(x.id)!==String(tid))
 function encuadra(t){const p=MPI.ptsOf(t);if(!p){if(window.loadTracks)loadTracks().then(ok=>{if(ok&&MPI.ptsOf(t))encuadra(t)});return}
   const b=L.latLngBounds(p.map(x=>[x[0],x[1]]));const wide=innerWidth>=860;
   map.fitBounds(b,{paddingTopLeft:[30,90],paddingBottomRight:wide?[480,30]:[30,Math.round(innerHeight*0.5)],maxZoom:15})}
-function open(id,fit){const t=T().find(x=>String(x.id)===String(id));if(!t)return;
+/* 8 nov 2026: «👁 Solo verlo»: se cierra la ficha y el mapa enseña el track entero, con una etiqueta para volver a la ficha */
+let PILL=null;const quitaPill=()=>{if(PILL){PILL.remove();PILL=null}};
+function soloVer(t){sheet.hidden=true;quitaPill();if(typeof showView==="function")showView("mapa");
+  PILL=document.createElement("div");PILL.className="tmppill";PILL.innerHTML=`<button class="pn" type="button">🧵 ${esc(t.n)}</button><button class="qx" type="button">✕ Cerrar</button>`;
+  (document.getElementById("v-mapa")||document.body).appendChild(PILL);
+  PILL.querySelector(".pn").onclick=()=>{quitaPill();open(t.id,false)};PILL.querySelector(".qx").onclick=quitaPill;
+  const p=MPI.ptsOf(t);if(p&&p.length)map.fitBounds(L.latLngBounds(p.map(x=>[x[0],x[1]])),{paddingTopLeft:[30,130],paddingBottomRight:[30,150],maxZoom:15})}
+function open(id,fit){const t=T().find(x=>String(x.id)===String(id));if(!t)return;quitaPill();
   if(t.pts&&t.pts.length>1&&!(t.dv>=2)&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
   if(typeof showView==="function")showView("mapa");
   if(!LAY.mt){LAY.mt=true;saveLay();const b=document.querySelector('[data-lay="mt"]');if(b)b.setAttribute("aria-pressed",true);MPI.sync()}
   const r=routeOf(t),d=datos(t),p=MPI.ptsOf(t)||(r&&r.gx&&r.gx.st?[r.gx.st]:null);
   MPI.show(`<div class="sheet-head"><h2>${esc(t.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
-  <div class="topacts"><button class="btn primary" data-mtfol="${esc(t.id)}">▶ Seguir track</button><button class="btn ghost" data-mtshare="${esc(t.id)}">📤 Compartir</button>${r?`<button class="btn ghost" data-mtroute="${esc(t.id)}">📘 Ver la ruta</button>`:""}</div>
+  <div class="topacts"><button class="btn ghost" data-mtver="${esc(t.id)}">👁 Solo verlo</button><button class="btn primary" data-mtfol="${esc(t.id)}">▶ Seguir track</button><button class="btn ghost" data-mtshare="${esc(t.id)}">📤 Compartir</button>${r?`<button class="btn ghost" data-mtroute="${esc(t.id)}">📘 Ver la ruta</button>`:""}</div>
   <div class="meta"><span class="tag">${r?"Ruta del blog":t.src==="grab"?"Grabado con la app":"Track cargado"}</span>${d.km?`<span class="tag">${kmTxt(d.km)}</span>`:""}${d.up!=null?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}${t.f?`<span class="tag">Guardado el ${fmtF(t.f)}</span>`:""}</div>
   <div class="estbox"><button class="mpb${t.est==="hecho"?" on":""}" data-mtest="hecho" data-id="${esc(t.id)}">✓ ${t.est==="hecho"?"Hecho":"Lo he hecho"}</button><button class="mpb${t.est==="pend"?" on":""}" data-mtest="pend" data-id="${esc(t.id)}">★ Pendiente</button>${t.est==="hecho"?`<label class="note" style="display:flex;align-items:center;gap:6px">el <input type="date" data-mtfh="${esc(t.id)}" value="${(t.fh||"").slice(0,10)}" max="${new Date().toISOString().slice(0,10)}"></label>`:""}</div>
   ${datosHTML(t,d)}
@@ -141,6 +148,7 @@ sheet.addEventListener("change",e=>{const d=e.target.closest("[data-mtfh]");if(!
 sheet.addEventListener("click",e=>{
   const id=(s)=>{const b=e.target.closest(s);return b?b.getAttribute(s.slice(1,-1)):null};
   let k;
+  if((k=id("[data-mtver]"))!=null){const t=T().find(x=>String(x.id)===k);if(t)soloVer(t);return}
   if((k=id("[data-mtfol]"))!=null){const t=T().find(x=>String(x.id)===k);if(!t)return;const r=routeOf(t);if(r)SEGUIR.start(r,false);else SEGUIR.start(comoRuta(t),false);return}
   if((k=id("[data-mtgpx]"))!=null){const t=T().find(x=>String(x.id)===k);if(!t)return;const r=routeOf(t);if(r)dlGPX(r);else MPI.dl(t.n.replace(/[\\/:*?"<>|]+/g," ").trim()+".gpx",gpxDe(t),"application/gpx+xml");return}
   const es=e.target.closest("[data-mtest]");if(es){const k2=es.dataset.id,v=es.dataset.mtest;

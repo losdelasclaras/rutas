@@ -215,7 +215,7 @@ function dl(name,txt,type){const a=document.createElement("a");a.href=URL.create
 function dist(a,b){const R=6371000,t=Math.PI/180,dl=(b[0]-a[0])*t,dn=(b[1]-a[1])*t,x=Math.sin(dl/2)**2+Math.cos(a[0]*t)*Math.cos(b[0]*t)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
 function thin(pts){if(pts.length<3)return pts;const out=[pts[0]];let acc=0;for(let i=1;i<pts.length;i++){acc+=dist(pts[i-1],pts[i]);if(acc>=15||i===pts.length-1){out.push(pts[i]);acc=0}}return out.map(p=>p[2]!=null&&isFinite(p[2])?[c5(p[0]),c5(p[1]),Math.round(p[2])]:[c5(p[0]),c5(p[1])])}
 fin.addEventListener("change",()=>{const f=fin.files&&fin.files[0];if(!f)return;if(/\.kmz$/i.test(f.name)){toast("Los .kmz no los leo: expórtalo como .kml");return}
-  const rd=new FileReader();rd.onload=()=>{try{imp(String(rd.result),f.name)}catch(e){toast("No he podido leer ese archivo")}};rd.readAsText(f)});
+  const rd=new FileReader();rd.onload=()=>{try{imp(String(rd.result),f.name,true)}catch(e){toast("No he podido leer ese archivo")}};rd.readAsText(f)});
 function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"application/xml");if(doc.getElementsByTagName("parsererror").length)throw 0;
   const tx=(el,tag)=>{const n=el.getElementsByTagName(tag)[0];return n?n.textContent.trim():""};
   const base=fname.replace(/\.[^.]+$/,"");let np=0,nt=0;const have=new Set(MP.map(p=>p.lat.toFixed(4)+","+p.lon.toFixed(4)+"|"+p.n));
@@ -229,9 +229,9 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
   if(doc.getElementsByTagName("gpx").length){
     const gpsAlt=/Los de las Claras/.test((doc.documentElement.getAttribute("creator")||""));   // grabado con la app: altura del GPS, poco fiable
     // 8 nov 2026: en un GPX de la grabadora (un solo track) los puntos van dentro del track, no sueltos
-    const WP=[...doc.getElementsByTagName("wpt")],dentro=gpsAlt&&doc.getElementsByTagName("trk").length===1;
+    const WP=[...doc.getElementsByTagName("wpt")],dentro=(gpsAlt||prev)&&doc.getElementsByTagName("trk").length===1;   // y, si se enseña antes de guardar, los de cualquier GPX de un track
     if(!dentro)for(const w of WP)addP(+w.getAttribute("lat"),+w.getAttribute("lon"),tx(w,"name"),tx(w,"desc")||tx(w,"cmt"));
-    for(const t of doc.getElementsByTagName("trk")){const tp=[...t.getElementsByTagName("trkpt")],pts=tp.map(p=>{const e=gpsAlt?"":tx(p,"ele");return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});
+    for(const t of doc.getElementsByTagName("trk")){const tp=[...t.getElementsByTagName("trkpt")],pts=tp.map(p=>{const e=gpsAlt&&!prev?"":tx(p,"ele");return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});
       const tms=tp.map(p=>{const v=Date.parse(tx(p,"time"));return isFinite(v)?v:0});addT(pts,tx(t,"name"),tms.some(Boolean)?tms:null,gpsAlt?tp.map(p=>{const e=tx(p,"ele");return e===""?null:+e}):null)}
     if(dentro&&nuevos.length===1&&WP.length){const o=nuevos[0];o.w=WP.map(w=>{const la=+w.getAttribute("lat"),lo=+w.getAttribute("lon"),e=tx(w,"ele"),t=Date.parse(tx(w,"time"));if(!isFinite(la)||!isFinite(lo))return null;
         const q={id:nid(),n:tx(w,"name")||"Punto",ic:"otro",nota:tx(w,"desc")||"",lat:c5(la),lon:c5(lo)};if(e!=="")q.a=Math.round(+e);if(isFinite(t))q.t=t;return q}).filter(Boolean)}
