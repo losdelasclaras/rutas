@@ -284,14 +284,14 @@ function sinRed(){toast("Sin cobertura: el mapa de la zona no se ha podido guard
 const ICOS=[["otro","📍","Punto"],["fuente","💧","Fuente"],["parking","🅿️","Aparcamiento"],["refugio","🏠","Refugio"],["cabana","🛖","Cabaña"],["cumbre","⛰️","Cumbre"],["collado","🥾","Collado / paso"],["vista","👀","Mirador"],["foto","📷","Foto"],["peligro","⚠️","Peligro"],["agua","🏊","Baño / poza"]];
 const EMOP=k=>(ICOS.find(x=>x[0]===k)||ICOS[0])[1];
 let NP=null;
-function nuevoPunto(){if(!YO){toast("Todavía no sé dónde estás: espera a que salga el punto azul");return}
+function nuevoPunto(){if(!S.activo){toast("Los puntos se guardan mientras grabas: empieza a grabar");return}if(!YO){toast("Todavía no sé dónde estás: espera a que salga el punto azul");return}
   const n=+(Nativo.nPuntos()||0)+1;NP={ic:"otro",fo:null,la:YO[0],lo:YO[1],al:YO[2]};
   $("sh").innerHTML=`<h2>📍 Guardar un punto aquí</h2><label>Nombre</label><input id="pn" maxlength="80" value="Punto ${n}">
   <label>Icono</label><div class="pics">${ICOS.map(x=>`<button type="button" data-pic="${x[0]}" aria-pressed="${x[0]==="otro"}"><span>${x[1]}</span>${x[2]}</button>`).join("")}</div>
   <label>Foto (opcional)</label><div id="pfprev"></div><label class="b2 pfb">📷 <span id="pfl">Añadir foto</span><input type="file" accept="image/*" id="pfin" style="display:none"></label>
   <label>Nota (opcional)</label><textarea id="pnota" rows="3" maxlength="1000" placeholder="Agua todo el año, sitio para aparcar 5 coches…"></textarea>
   <button class="b2 go" onclick="guardaPunto()">✓ Guardar punto</button><button class="b2" onclick="cierra()">Cancelar</button>
-  <p style="font-size:14px;color:#5d6b62">Pasa a tu app, en <b>Mis cosas › Puntos</b>${S.activo?", y va también dentro del GPX del recorrido":""}.</p>`;
+  <p style="font-size:14px;color:#5d6b62">Va dentro del recorrido que estás grabando: en la app lo verás en el mapa, en el perfil y en la ficha del track.</p>`;
   $("sheet").hidden=false;
   $("sh").querySelectorAll("[data-pic]").forEach(b=>b.onclick=()=>{NP.ic=b.dataset.pic;$("sh").querySelectorAll("[data-pic]").forEach(x=>x.setAttribute("aria-pressed",x===b))});
   $("pfin").onchange=async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;try{toast("Preparando la foto…");NP.fo=await reduceFoto(f,1000,.62);
@@ -343,7 +343,7 @@ function pinta(){
   $("b-bat").hidden=!S.activo||Nativo.sinBateria()}
 function nuevos(){const n=JSON.parse(Nativo.puntos(PTS.length));for(const p of n){if(PTS.length)D+=dm(PTS[PTS.length-1],p);PTS.push(p)}
   if(n.length){const ll=PTS.map(p=>[p[0],p[1]]);line.setLatLngs(ll);lineB.setLatLngs(ll)}}
-function refresca(){const antes=S&&S.activo;S=JSON.parse(Nativo.estado());if(S.activo&&!antes&&!T.length){const q=YO||(()=>{try{return JSON.parse(localStorage.getItem("ultpos")||"null")}catch(e){return null}})();if(q){SIGUE=true;map.setView([q[0],q[1]],Math.max(15,map.getZoom()),{animate:false})}}if(!S.activo){PTS=[];D=0;line.setLatLngs([]);lineB.setLatLngs([])}nuevos();pinta();pintaPuntos()}
+function refresca(){const antes=S&&S.activo;S=JSON.parse(Nativo.estado());$("b-pt").style.display=S.activo?"":"none";/* 8 nov 2026: puntos solo grabando */if(S.activo&&!antes&&!T.length){const q=YO||(()=>{try{return JSON.parse(localStorage.getItem("ultpos")||"null")}catch(e){return null}})();if(q){SIGUE=true;map.setView([q[0],q[1]],Math.max(15,map.getZoom()),{animate:false})}}if(!S.activo){PTS=[];D=0;line.setLatLngs([]);lineB.setLatLngs([])}nuevos();pinta();pintaPuntos()}
 function fin(){const d=new Date(S.t0),np=+(Nativo.nPuntos()||0);
   $("sh").innerHTML=`<h2>■ Terminar la grabación</h2><p><b>${hms(dur())}</b> · <b>${kmT(D)} km</b> · <b>+${sube()} m</b>${np?` · <b>${np}</b> punto${np>1?"s":""}`:""}</p>
   <label>Nombre</label><input id="nm" maxlength="80" value="Recorrido del ${d.toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}">
@@ -352,10 +352,10 @@ function fin(){const d=new Date(S.t0),np=+(Nativo.nPuntos()||0);
   <button class="b2" style="color:#b3261e" onclick="if(confirm('¿Tirar lo grabado? No se puede recuperar.')){cierra();Nativo.tirar()}">🗑 Tirar la grabación</button>`;
   $("sheet").hidden=false}
 function hecho(n,donde,est){const e=esc(n);
-  const msg=est==="ok"?`<p style="font-size:17px">✅ <b>Ya está en tu app</b>, en <b>Mis cosas › Tracks</b>.</p>`:
+  const msg=est==="ok"?`<p style="font-size:17px">✅ <b>Ya está en tu app</b>, en <b>Mis cosas › Guardado</b>, con sus puntos dentro.</p>`:
     est==="enviando"?`<p style="font-size:17px">⏳ Pasándolo a tu app…</p>`:
     est==="pendiente"?`<p style="font-size:17px">📶 <b>Sin cobertura</b>: pasará a tu app en cuanto haya conexión (vuelve a abrir esta pantalla con cobertura).</p>`:
-    `<p style="font-size:16px">Para tenerlo en Mis tracks: en la app ve a <b>Mis cosas › Tracks › ⬆️ Cargar GPX/KML</b> y elige el archivo en <b>Descargas › Los de las Claras</b>.</p>`;
+    `<p style="font-size:16px">Para tenerlo en la app: ve a <b>Mis cosas › Guardado › ⬆️ Abrir GPX o KML</b> y elige el archivo en <b>Descargas › Los de las Claras</b>. Los puntos van dentro.</p>`;
   $("sh").innerHTML=`<h2>✓ ${e}</h2>${msg}
   <button class="b2 go" onclick="Nativo.compartir()">📄 Enviar el archivo GPX (WhatsApp, Wikiloc…)</button>
   <button class="b2" onclick="cierra();Nativo.volver()">🏠 Volver a la app</button>
