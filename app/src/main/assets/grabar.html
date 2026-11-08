@@ -256,7 +256,8 @@ function guardadoAqui(){try{const c=map.getCenter();return JSON.parse(Nativo.cap
 function bajarZona(){if(T.length)try{Nativo.bajar(JSON.stringify(listaZona()),TN)}catch(e){}}
 const MB=(n,k)=>Math.max(1,Math.round(n*(k==="topo"?.018:k==="orto"?.035:.03)));
 // al empezar a seguir: ¿guardar el mapa de la zona del track? (si ya está guardado, no se pregunta)
-function ofreceZona(){if(!T.length||ZR)return;   // si se está ofreciendo una zona elegida en la app, no se pisa
+function ofreceZona(){if(!T.length||ZR)return;if(window.__NU||!$("sheet").hidden)return;   /* 8 nov 2026: no tapar una pregunta abierta (p. ej. ¿secundario?) */
+    // si se está ofreciendo una zona elegida en la app, no se pisa
  let f=0;try{f=+Nativo.faltan(JSON.stringify(listaZona()))}catch(e){}if(!f)return;
   $("sh").innerHTML=`<h2>🗺 ¿Guardar el mapa de la zona?</h2><p style="margin:0 0 6px">Para verlo aunque no haya cobertura en el monte. Elige el mapa:</p>`+
     Object.entries(CAPAS).map(([k,c])=>`<button class="capa" aria-pressed="${k===CAPA}" onclick="CAPA!=='${k}'&&ponCapaSin('${k}');ofreceZona()"><span>${k===CAPA?"✓":"○"}</span><span>${c.n}<small>${c.d}</small></span></button>`).join("")+
