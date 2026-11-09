@@ -579,6 +579,40 @@ def fotos_puntos_blog(co, new):
         p[5] = 'colab/' + fn
     if nuevas or mal: log(f'📷 Fotos de {co.get("nombre") or co["id"]} (de su blog): {nuevas} nuevas' + (f', {mal} sin foto' if mal else ''))
 
+def titulos_blog(co, new):
+    # 9 nov 2026: título de las entradas del blog que enlazan sus puntos sin ruta con track (p. ej. Camudando'l camín):
+    # en la app salen como rutas con su nombre. Se guardan en una caché (app/colab/titulos_<id>.json) y van en new['bt'] = {enlace: título}.
+    import time
+    us = sorted({p[4] for p in new.get('p', []) if p[4] and re.match(r'https?://', p[4]) and not (len(p) > 9 and p[9]) and not re.search(r'instagram\.com', p[4])})
+    if not us: new.pop('bt', None); return
+    cf = APP + f'colab/titulos_{co["id"]}.json'
+    T = json.load(open(cf)) if os.path.exists(cf) else {}
+    falta = [u for u in us if u not in T]
+    web = re.match(r'https?://[^/]+', falta[0]).group(0) if falta else ''
+    if falta and 'blogspot.' in web:
+        # Blogger: el índice de entradas (título y enlace) de 150 en 150
+        try:
+            for ini in range(1, 3001, 150):
+                j = json.loads(get(f'{web}/feeds/posts/summary?alt=json&max-results=150&start-index={ini}'))
+                es = j.get('feed', {}).get('entry', [])
+                for e in es:
+                    li = next((l['href'] for l in e.get('link', []) if l.get('rel') == 'alternate'), None)
+                    if li: T[li.replace('http://', 'https://')] = html.unescape(e.get('title', {}).get('$t', '')).strip()
+                if len(es) < 150: break
+        except Exception as e:
+            log(f'⚠ Títulos del blog de {co.get("nombre") or co["id"]}: {e}')
+    mal = 0
+    for u in [u for u in us if not T.get(u)][:40]:   # el resto, entrada a entrada (poco a poco: Blogger corta si se le piden muchas)
+        try:
+            time.sleep(1.5); h = get(u)
+            m = re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)', h) or re.search(r'<title>([^<]+)</title>', h)
+            if m: T[u] = html.unescape(m.group(1)).split(' | ')[0].strip()
+        except Exception: mal += 1
+    json.dump(T, open(cf, 'w'), ensure_ascii=False, indent=0)
+    new['bt'] = {u: T[u] for u in us if T.get(u)}
+    n = len(new['bt'])
+    if n < len(us): log(f'📝 Títulos de entradas de {co.get("nombre") or co["id"]}: {n} de {len(us)}' + (f' ({mal} no han respondido)' if mal else ''))
+
 def colaboradores():
     cf = APP + 'colaboradores.json'
     if not os.path.exists(cf): return
@@ -654,6 +688,8 @@ def colaboradores():
         if new.get('r'): new['r'] = json.loads(json.dumps(new['r'])); new['p'] = json.loads(json.dumps(new.get('p', [])))
         fotos_rutas(co, new)
         if co.get('fotos_blog'): fotos_puntos_blog(co, new)
+        try: titulos_blog(co, new)
+        except Exception as e: log(f'⚠ Títulos del blog de {co["id"]}: {e}')
         if not co.get('wp_rutas'): fechas_rutas(co, new)   # las de WordPress ya traen su «Fecha de realización»
         nom = co.get('nombre') or new.get('t') or co['id']
         if new != old:

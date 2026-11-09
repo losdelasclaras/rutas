@@ -24,13 +24,36 @@ const nk=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().
 const mkCo=(k,cum)=>{const s=MARKS[k]||"",L=cum?["Subida","Quiero subir"]:["He estado","Quiero ir"];
   return `<span class="mk" data-key="${esc(k)}"><button data-mk="hecha" aria-pressed="${s==="hecha"}" title="${L[0]}">✓ ${L[0]}</button><button data-mk="quiero" aria-pressed="${s==="quiero"}" title="${L[1]}">★ ${L[1]}</button></span>`};
 
+// 9 nov 2026: una entrada de blog sin track (p. ej. Camudando'l camín) es una ruta más: fila con su nombre y su ficha sencilla
+const tituloBlog=b=>((b.co&&b.co.bt)||{})[b.u]||decodeURIComponent((/\/([^\/]+?)(?:\.html?)?\/?$/.exec(b.u)||[,""])[1]).replace(/[-_]+/g," ").replace(/^./,m=>m.toUpperCase())||b.n;
+function rowBlog(b,i,y){const fo=b.p&&b.p[5];
+  return `<button class="row src-co" style="--cc:${b.c}" data-fbl="${i}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:""}<div class="t"><b>${esc(tituloBlog(b))}</b><span><em class="cosrc" style="color:${b.c}">${esc(b.n)}</em>${y?" · "+y:""} · Sin track</span></div></button>`}
+function fichaBlog(i){const F=sheet._fbl;if(!F)return;const b=F.bl[i],o=F.o;if(!b)return;const y=(/\/(20\d\d)\//.exec(b.u)||[])[1],fo=b.p&&b.p[5];
+  // las cumbres de esta entrada: los puntos (de cualquier blog) que enlazan a ella
+  const cums=[];if(window.COLX)for(const x of COLX.todo())if(x.pp&&x.pp[4]===b.u&&!cums.some(z=>z.pp===x.pp))cums.push(x);
+  sheet.classList.remove("full");sheet._cor=null;sheet._fblBack=o;
+  sheet.innerHTML=`<div class="grab"></div>${fo?`<div class="photo"><img src="${esc(fo)}" alt="" onerror="this.parentNode.remove()"></div>`:""}
+  <div class="sheet-head"><h2>${esc(tituloBlog(b))}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
+  <div class="meta"><span class="tag" style="background:${b.c};color:#fff;border-color:${b.c}">${esc(b.n)}</span>${y?`<span class="tag">${y}</span>`:""}</div>
+  <div class="acts2 fbl"><div class="aprim"><a class="btn primary" href="${esc(b.u)}" target="_blank" rel="noopener">📖 Leer en ${esc(b.n)}</a></div></div>
+  <p class="note">Esta ruta no tiene track en la app: está contada en el blog.</p>
+  <div class="sec"><h3>${cums.length>1?"Cumbres de esta ruta":"Cumbre de esta ruta"}</h3><div class="rows">${(cums.length?cums:[null]).map((x,k)=>`<button class="row" data-fblc="${x?x.ci:""}"><div class="t"><b>${esc(x?x.c:o.n)}</b><span>${o.cum?"Cumbre":"Lugar"}</span></div></button>`).join("")}</div></div>`;
+  sheet.hidden=false;sheet.scrollTop=0;if(window.showTrack)showTrack(null)}
+sheet.addEventListener("click",e=>{const f=e.target.closest(".fpt-rutas [data-fbl]");if(f){e.stopPropagation();fichaBlog(+f.dataset.fbl);return}
+  const c=e.target.closest("[data-fblc]");if(c){e.stopPropagation();const ci=c.dataset.fblc;if(ci!==""&&window.COLX)COLX.open(+ci);else if(sheet._fblBack)pinta(sheet._fblBack)}});
 function pinta(o){
   // 9 nov 2026: la ficha de cumbre o lugar es solo para elegir ruta: foto, nombre, altitud, ✓ ★ y las rutas de todos los blogs
   // (cada una abre su ficha, que es donde están Seguir, Compartir, Cómo llegar…). Sin «Más opciones», sin Google Maps ni el tiempo.
   // Si un blog tiene la cumbre pero sin ruta con track, sale el enlace a su entrada.
+  // las entradas de blog sin track también son rutas: con su nombre, en el grupo de su blog
+  o=Object.assign({},o,{src:o.src.map(x=>Object.assign({},x,{rows:x.rows.slice()}))});   // copia: se puede volver a pintar (← desde la ficha de una entrada)
+  const bl=(o.blogs||[]).filter(b=>!/instagram\.com/i.test(b.u));
+  for(const[i,b]of bl.entries()){let x=o.src.find(y=>y.n===b.n);if(!x)o.src.push(x={n:b.n,c:b.c,cnt:0,y:0,rows:[],its:[]});
+    const y=(/\/(20\d\d)\//.exec(b.u)||[])[1];x.rows.push(rowBlog(b,i,y));x.cnt++;x.y=Math.max(x.y||0,+y||0)}
   const ord=o.src.filter(x=>x.cnt).sort((A,B)=>B.cnt-A.cnt||((B.grp&&B.y>=RECIENTE)?1:0)-((A.grp&&A.y>=RECIENTE)?1:0)||(B.y||0)-(A.y||0));
-  const tot=ord.reduce((t,x)=>t+x.cnt,0),bl=(o.blogs||[]).filter(b=>!ord.some(x=>x.n===b.n));
+  const tot=ord.reduce((t,x)=>t+x.cnt,0);
   const tit=o.cum?"Rutas que suben aquí":"Rutas que pasan por aquí";
+  sheet._fbl={o,bl};
   sheet.classList.remove("full");sheet._cor=null;
   sheet.innerHTML=`<div class="grab"></div>${o.foto?`<div class="photo"><img src="${esc(o.foto)}" alt="" onerror="this.parentNode.remove()"></div>`:""}
   <div class="sheet-head"><h2>${esc(o.n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
@@ -39,8 +62,7 @@ function pinta(o){
   <div class="mkblock fpt" data-ll="${o.lat},${o.lon}"><span>${o.cum?"¿La has subido?":"¿Has estado?"}</span>${o.mk}</div>
   <div class="sec fpt-rutas"><h3>${tit}${tot>1?` (${tot})`:""}</h3>
    ${ord.map(x=>`<div class="fpt-src"><i style="background:${x.c}"></i>${esc(x.n)}${x.cnt>1?` · ${x.cnt}`:""}</div><div class="rows">${x.rows.join("")}</div>`).join("")}
-   ${bl.map(b=>`<div class="fpt-src"><i style="background:${b.c}"></i>${esc(b.n)}</div><div class="rows"><a class="row fpt-blog" href="${esc(b.u)}" target="_blank" rel="noopener"><div class="t"><b>${/instagram\.com/i.test(b.u)?"📷 Ver en Instagram":"📖 Leer la entrada del blog"}</b><span>Sin track en la app</span></div></a></div>`).join("")}
-   ${!ord.length&&!bl.length?`<p class="note fpt-none">Este punto todavía no tiene enlazada ninguna ruta.</p>`:""}
+   ${!ord.length?`<p class="note fpt-none">Este punto todavía no tiene enlazada ninguna ruta.</p>`:""}
   </div>`;
   sheet._pt={n:o.n,lat:o.lat,lon:o.lon,alt:o.a||null,cum:o.cum,co:""};
   sheet._fptKeys=o.keys;
@@ -58,7 +80,7 @@ function deGrupo(gi){const p=P[gi];const cum=p.t==="cumbre";
 function junta(o,ms){const by={},alias=new Set(),keys=[];let foto=o.rs&&o.rs.find(r=>r.f!=null);foto=foto?`fotos/${foto.f}.jpg`:null;
   o.blogs=o.blogs||[];
   for(const{c,p}of ms){if(nk(p[0])!==nk(o.n))alias.add(p[0]);
-    if(p[4]&&/^https?:/.test(p[4])&&!(p[9]||[]).length&&!o.blogs.some(b=>b.n===c.n))o.blogs.push({n:c.n,c:c.c,u:p[4]});
+    if(p[4]&&/^https?:/.test(p[4])&&!(p[9]||[]).length&&!o.blogs.some(b=>b.u===p[4]))o.blogs.push({n:c.n,c:c.c,u:p[4],co:c,p});
     if(!foto&&p[5]&&/^https?:|\.(jpe?g|png|webp)/i.test(p[5]))foto=p[5];if(o.cum&&COLX.coKey)keys.push(COLX.coKey(c,p[0]));
     const b=by[c.id]||(by[c.id]={n:c.n,c:c.c,cnt:0,y:0,rows:[],its:[],vis:new Set()});
     for(const i of (p[9]||[])){if(b.vis.has(i))continue;b.vis.add(i);const it=COLX.rutaItem(c,i);if(!it)continue;b.rows.push(COLX.rrow(it));b.its.push({c,i});b.cnt++;b.y=Math.max(b.y,it.y||0);
