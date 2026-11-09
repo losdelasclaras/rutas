@@ -1,4 +1,4 @@
-# Cumbres de Rutinas Varias NO encontradas en OpenStreetMap (siguen en el punto más alto de su track): 20 de 97
+# Cumbres de Rutinas Varias NO encontradas en OpenStreetMap (siguen en el punto más alto de su track): 19 de 97
 Alto de los Forgos
 Alto de los Navallos
 Alto del Beigardón
@@ -12,7 +12,6 @@ Monte Meno
 Monte Ranedo
 Pena Falcueira
 Peña Armada
-Peña Negra
 Peña Roguera
 Peña Valdiglesia
 Peñas Albas

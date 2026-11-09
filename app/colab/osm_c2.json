@@ -35,9 +35,9 @@
 "Peña Orniz"
 ],
 "Peña Ubiña Pequeña|43.0|-5.95": [
-43.00189,
--5.95125,
-"Peña Ubiña Pequeña"
+43.01833,
+-5.95673,
+"Peña Ubiña"
 ],
 "Peña Redonda|43.0|-6.13": [
 42.99757,
@@ -283,7 +283,11 @@
 -6.14218,
 "El Rastrillo"
 ],
-"Peña Negra|42.91|-6.09": null,
+"Peña Negra|42.91|-6.09": [
+42.90171,
+-6.11029,
+"Peña Negra"
+],
 "Alto de las Cabaninas|42.89|-6.27": [
 42.88893,
 -6.24783,
