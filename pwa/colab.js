@@ -150,10 +150,10 @@ function abrirR(c,i,nofit){coPill(null);const keep=!!(nofit&&TRCO&&TRCO.__i===c.
   // 9 nov 2026: ficha de ruta unificada (ficharuta.js); lo que depende del track se enseña cuando llega (extraR)
   if(window.FRUTA){const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");
     sheet.innerHTML=FRUTA.pinta({grab:"",foto:fo,quien:c.n,y:fe?+fe[1]:null,m:fe?+fe[2]:null,titulo:String(n).split("|").pop().trim(),mk:rmkH,
-      de:deN?"+"+deN+" m":"",km:km||"",dif:dif?cap1(dif):"",blog:blog||"",seguir:"data-cofol",trk:false,
-      gRuta:"data-frgrc",gRutaOn:FRUTA.coGuardada(c,n),gTrack:"data-cosave",share:"data-coshare",llegar:null,
+      de:deN?"+"+deN+" m":"",km:km||"",dif:dif?cap1(dif):"",blog:blog||"",seguir:"data-cofol",trk:true,
+      gRuta:"data-frgrc",gRutaOn:FRUTA.coGuardada(c,n),gTrack:"data-cosave",share:"data-coshare",llegar:ini||null,
       cumbres:(c.p||[]).filter(q=>q[9]&&q[9].includes(i)&&catCo(q)==="cumbre").map(q=>({n:q[0],a:altCo(q[0],q[3]),k:coKey(c,q[0],"cumbre")})),
-      otras:ini?FRUTA.otras(ini[0],ini[1],null,COLX.rutaItem?COLX.rutaItem(c,i):null):"",close:" data-trcox"})}
+      otras:ini?(FRUTA.otras.yo=n,FRUTA.otras(ini[0],ini[1],null,COLX.rutaItem?COLX.rutaItem(c,i):null)):"",close:" data-trcox"})}
   else sheet.innerHTML=`<div class="grab"></div>${fo?`<div class="photo"><img src="${esc(fo)}" alt="" onerror="this.parentNode.remove()"></div>`:""}${tipoHTML("ruta",c.n)}<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
   <div class="meta">${act?`<span class="tag">${esc(act)}</span>`:""}<span class="tag">${esc(z)}</span>${(()=>{const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");return fe?`<span class="tag">📅 ${MESES[+fe[2]]?MESES[+fe[2]]+" ":""}${fe[1]}</span>`:""})()}</div>
   ${(c.p||[]).filter(q=>q[9]&&q[9].includes(i)&&catCo(q)==="cumbre").map(q=>{const kq=coKey(c,q[0],"cumbre"),sq=MARKS[kq]||"";return `<div class="mkblock"><span>${esc(q[0])}</span><span class="mk" data-key="${esc(kq)}"><button data-mk="hecha" aria-pressed="${sq==="hecha"}" title="Subida">✓ Subida</button><button data-mk="quiero" aria-pressed="${sq==="quiero"}" title="Quiero subir">★ Quiero subir</button></span></div>`}).join("")}
