@@ -23,10 +23,9 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .frav.o{background:#ffe1c7;color:#6b2c00;border:1px solid #f0a35e}
 .fracts{display:flex;gap:8px;margin:12px 0 8px}
 .fracts>*{flex:1 1 0;min-width:0;min-height:52px;display:flex;align-items:center;justify-content:center;margin:0;padding:8px 6px;box-sizing:border-box;font-size:16px;font-weight:800;text-align:center;line-height:1.15}
-.fracts .frmasb{flex:0 0 58px;font-size:24px;letter-spacing:1px}
 .fracts .frseg{border:0;color:#fff;background:var(--ink)}
 .fracts .frsin{border:1.5px dashed var(--edge,#bbb);border-radius:12px;color:var(--muted);font-weight:700;background:transparent}
-.fracts .frmasb{border:1.5px solid var(--edge,#bbb);background:var(--card);color:var(--ink)}
+.fru .frmasb{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;margin:0 0 10px;box-sizing:border-box;border:1.5px solid var(--edge,#bbb);background:var(--card);color:var(--ink);font-size:16px;font-weight:800}
 /* «··· Más opciones»: hoja que sube desde abajo, como en el tablero */
 .frvel{position:fixed;inset:0;background:rgba(20,26,23,.5);z-index:3000}
 .frmas{position:fixed;left:0;right:0;bottom:0;z-index:3001;background:var(--card,#fff);border-radius:18px 18px 0 0;padding:10px 16px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px;box-shadow:0 -6px 24px rgba(0,0,0,.25);max-width:640px;margin:0 auto}
@@ -68,8 +67,8 @@ function pinta(d){
   ${d.mk||""}
   ${dat.length?`<div class="ficha" style="grid-template-columns:repeat(${dat.length},1fr)">${dat.map(([l,v])=>`<div><b>${esc(v)}</b><span>${l}</span></div>`).join("")}</div>`:""}
   ${aviso(d.y,d.m)}
-  <div class="fracts">${d.blog?`<a class="btn primary" href="${esc(d.blog)}" target="_blank" rel="noopener">📖 Leer en el blog</a>`:""}${d.seguir?`<button class="btn ghost frseg frtrk" ${d.seguir}${t}>▶ Seguir</button>`:`<span class="frsin" title="Esta ruta no tiene track para seguirla">Sin track</span>`}<button class="btn ghost frmasb" data-frmas aria-expanded="false" aria-label="Más opciones" title="Más opciones">···</button></div>
-  <div class="frvel" data-frx hidden></div><div class="frmas" hidden><div class="ag"></div><h3>Más opciones</h3>
+  <div class="fracts">${d.blog?`<a class="btn primary" href="${esc(d.blog)}" target="_blank" rel="noopener">📖 Leer en el blog</a>`:""}${d.seguir?`<button class="btn ghost frseg frtrk" ${d.seguir}${t}>▶ Seguir</button>`:`<span class="frsin" title="Esta ruta no tiene track para seguirla">Sin track</span>`}</div><button class="btn ghost frmasb" data-frmas aria-expanded="false">··· Otras opciones</button>
+  <div class="frvel" data-frx hidden></div><div class="frmas" hidden><div class="ag"></div><h3>Otras opciones</h3>
     ${d.gRuta?`<button class="btn ghost" ${d.gRuta}>${gRL(d.gRutaOn)}</button>`:""}
     ${d.gTrack?`<button class="btn ghost frtrk" ${d.gTrack}${t}>〰️ <span>Guardar track<small>Copia en Mis cosas, para usar sin cobertura</small></span></button>`:""}
     ${d.share?`<button class="btn ghost" ${d.share}>📤 Compartir</button>`:""}
@@ -119,7 +118,7 @@ function menu(f,abre){
   if(abre){if(!f)return;menu(null,false);const b=f.querySelector(".frmas"),v=f.querySelector(".frvel"),t=f.querySelector("[data-frmas]");if(!b||!v)return;
     document.body.append(v,b);v.hidden=false;b.hidden=false;if(t)t.setAttribute("aria-expanded",true);MENU={f,b,v,t};return}
   if(!MENU)return;const{f:F,b,v,t}=MENU;MENU=null;b.hidden=true;v.hidden=true;if(t)t.setAttribute("aria-expanded",false);
-  if(F&&F.isConnected){const a=F.querySelector(".fracts");if(a)a.after(v,b)}else{b.remove();v.remove()}}
+  if(F&&F.isConnected){const a=F.querySelector(".frmasb");if(a)a.after(v,b)}else{b.remove();v.remove()}}
 /* ---- botones ---- */
 document.addEventListener("click",e=>{
   const m=e.target.closest("[data-frmas]");if(m){menu(m.closest(".fru"),true);return}
