@@ -26,6 +26,9 @@ body.segab #top{z-index:1100}
 #seg.fuera{background:#b3261e;color:#fff}#seg.fuera .ic{color:#fff}#seg.fin{background:#1f6b32;color:#fff}#seg.fin .ic{color:#fff}
 #seg[hidden],#segMas[hidden]{display:none}
 #segMas{margin-top:8px;font-weight:600}
+/* 9 nov 2026: desplegado, el panel se desliza si no cabe (antes se cortaba abajo sin poder ver el resto) */
+body.segab #segMas{max-height:calc(100vh - 150px);max-height:calc(100dvh - 150px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding-bottom:4px}
+#segMas .g3{margin-top:10px}#segMas .ir{margin-top:12px}#segMas .avf{margin-top:16px}#segMas .plg{margin-top:16px}
 /* 8 nov 2026: plegar fácil con guantes y andando: flecha grande y barra ancha al final */
 #seg #segIc{flex:none;min-width:48px;height:48px;display:grid;place-items:center;font-size:24px;padding:0;border:2px solid currentColor;border-radius:12px;color:inherit;margin-left:4px}
 #seg .plg{display:block;width:100%;margin:12px 0 0;padding:14px;font-size:19px;font-weight:800;border-radius:12px;border:2px solid currentColor;background:rgba(255,255,255,.55);color:inherit}
@@ -224,9 +227,10 @@ function pintaSeg(d){if(d!==undefined)SEGD=d;d=SEGD;const e=$("seg");if(!T.lengt
    <div class="g3"><div><b>${kmT(hecho)}</b><small>km hechos</small></div><div><b>${kmT(queda)}</b><small>km que faltan</small></div><div><b>${kmT(tot)}</b><small>km en total</small></div>
    <div><b>+${fmM(UPC[IDX]||0)}</b><small>subida hecha</small></div><div><b>+${fmM(upQ)}</b><small>subida que falta</small></div><div><b>−${fmM(dnQ)}</b><small>bajada que falta</small></div></div>
    <div class="ir">${lejos||IDX<3?`<button onclick="llegar()">🚗 Cómo llegar a la salida</button>`:""}<button class="b" onclick="alReves()">⇄ Al revés</button><button class="b" onclick="verTrack()">🗺 Ver ${TR[1]?"los tracks":"el track"}</button><button class="x" onclick="dejar()">✕ Dejar de seguir</button></div>
-   <div style="margin-top:8px">${TR.map((r,i)=>r?fila(r,i):"").join("")}</div>
-   ${TR[1]?"":`<button class="b2" style="margin:8px 0 0;font-size:16px;padding:11px" onclick="anadir2()">➕ Añadir un segundo track (variante)</button>`}
-   <p style="font-size:13px;margin:8px 0 0;opacity:.8">${TR[1]?"Solo avisa si te sales de los dos, y antes de donde se separan.":"Con «➕ Añadir un segundo track» vas a la app: elige la ruta o el track y toca «▶ Seguir»; vuelve aquí como secundario."} «Al revés» si lo empiezas por el final.</p>${filaAviso()}<button class="plg" onclick="abreSeg()">▴ Plegar</button>`}
+   ${TR[1]?`<div style="margin-top:12px">${TR.map((r,i)=>r?fila(r,i):"").join("")}</div>`:""}
+   ${filaAviso()}
+   ${TR[1]?`<p style="font-size:14px;margin:10px 0 0;opacity:.85">Solo avisa si te sales de los dos, y antes de donde se separan.</p>`:`<button class="b2" style="margin:16px 0 0;font-size:16px;padding:11px" onclick="anadir2()">➕ Añadir un segundo track (variante)</button>
+   <p style="font-size:14px;margin:6px 0 0;opacity:.85">Vas a la app: elige la ruta o el track y toca «▶ Seguir». Vuelve aquí como secundario.</p>`}<button class="plg" onclick="abreSeg()">▴ Plegar</button>`}
 function abreSeg(){SEGOPEN=!SEGOPEN;if(!window.__plg){window.__plg=1;map.on("click",()=>{if(SEGOPEN)abreSeg()})}   /* tocar el mapa también pliega */
  document.body.classList.toggle("segab",SEGOPEN);pintaSeg()}
 function alReves(){REV=!REV;lsS("rev:"+TN,REV?"1":null);prepara();TR[ACT].idx=0;IDX=0;FUERA=0;AVISADO=false;cruces();pintaLineas();SEPAV.clear();if(YO)sigueA(YO[0],YO[1]);else pintaSeg();toast(REV?"Track al revés: empiezas por el final":"Track en el sentido normal")}
