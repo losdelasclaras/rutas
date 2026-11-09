@@ -1,4 +1,4 @@
-# Informe del robot · 09/11/2026 13:44
+# Informe del robot · 09/11/2026 14:39
 
 **Cambios:** colaborador Camudando'l camín; regeneración forzada
 
@@ -11,7 +11,7 @@
 - 📷 Fotos de rutas de Rutinas Varias (de su blog): 0 nuevas, 139 en total, 7 sin foto
 - 📅 Fechas de rutas de Rutinas Varias: 0 nuevas (146 de 401 con fecha); Wikiloc no responde (8 fallos).
 - Colaborador «Rutinas Varias»: sin cambios.
-- 📝 Títulos de entradas de Camudando'l camín: 12 de 49 (30 no han respondido)
+- 📝 Títulos de entradas de Camudando'l camín: 27 de 49 (22 no han respondido)
 - 🤝 Colaborador «Camudando'l camín»: 73 puntos, 0 tracks.
 -    (39 peticiones a su web en 1.4 min)
 - 🐾 Gata con botas: 204 entradas en sus zonas, 190 rutas en la app (0 nuevas).
