@@ -42,13 +42,13 @@ addEventListener("popstate",e=>{const s=e.state||{},i=typeof s.ldci==="number"?s
   // Se ofrece «Salir», que en la APK la manda al fondo como deslizar hacia arriba (ldcrutas://salir → SalirActivity).
   ap("atrás","ofrece salir"+(i?"":" (sin reserva)"));barra()});
 const apk=(()=>{try{return sessionStorage.getItem("ldc-apk")==="1"}catch(e){return false}})();
-document.head.insertAdjacentHTML("beforeend",`<style>.salbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:3600;display:flex;align-items:center;gap:12px;width:min(420px,calc(100% - 24px));box-sizing:border-box;background:var(--ink);color:var(--card);border-radius:14px;padding:10px 10px 10px 16px;box-shadow:0 4px 16px rgba(0,0,0,.35);font-weight:700;font-size:17px}
-.salbar span{flex:1}.salbar a,.salbar button{flex:none;min-height:46px;display:grid;place-items:center;border:0;border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-weight:800;padding:0 18px;text-decoration:none;cursor:pointer}</style>`);
+document.head.insertAdjacentHTML("beforeend",`<style>.salbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:3600;display:flex;align-items:center;gap:12px;width:min(460px,calc(100% - 20px));box-sizing:border-box;background:var(--ink);color:var(--card);border-radius:14px;padding:14px 14px 14px 20px;box-shadow:0 4px 16px rgba(0,0,0,.35);font-weight:800;font-size:21px}
+.salbar span{flex:1}.salbar a,.salbar button{flex:none;min-height:58px;min-width:110px;display:grid;place-items:center;border:0;border-radius:12px;background:var(--card);color:var(--ink);font:inherit;font-weight:900;font-size:22px;padding:0 22px;text-decoration:none;cursor:pointer}</style>`);
 let BAR=null,btm=null;
 function barra(){if(BAR)BAR.remove();clearTimeout(btm);BAR=document.createElement("div");BAR.className="salbar";
   const fb=encodeURIComponent(location.href.split("#")[0]+"#");
   BAR.innerHTML=apk?`<span>¿Salir de la app?</span><a href="intent://salir#Intent;scheme=ldcrutas;package=es.losdelasclaras.rutas;S.browser_fallback_url=${fb};end">Salir</a>`
     :`<span>Para salir, desliza hacia arriba</span>`;
   document.body.appendChild(BAR);const a=BAR.querySelector("a");if(a)a.addEventListener("click",()=>{ap("atrás","Salir");setTimeout(()=>{if(BAR){BAR.remove();BAR=null}},300)});
-  btm=setTimeout(()=>{if(BAR){BAR.remove();BAR=null}},4000)}
+  btm=setTimeout(()=>{if(BAR){BAR.remove();BAR=null}},8000)}   // 8 s (9 nov: 4 s era poco)
 })();
