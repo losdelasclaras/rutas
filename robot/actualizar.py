@@ -672,6 +672,12 @@ def colaboradores():
                 if len(rutas) < 0.9 * len(old.get('r', [])):
                     log(f'⚠ Los mapas de {co.get("nombre") or co["id"]} han devuelto solo {len(rutas)} rutas (había {len(old["r"])}): no lo toco.')
                 else:
+                    # rutas fijas que no están en sus mapas de zona (robot/extra_<id>.json, p. ej. Anboto)
+                    xf = os.path.join(os.path.dirname(os.path.abspath(__file__)), f'extra_{co["id"]}.json')
+                    if os.path.exists(xf):
+                        ya = {r[0] for r in rutas}
+                        for r in json.load(open(xf)).get('r', []):
+                            if r[0] not in ya: rutas.append(r)
                     new.update(t=co.get('nombre') or old.get('t') or co['id'], p=cps, r=rutas, l=[])
                     enlazar_cumbres(co, new)
                     cumbres_osm(co, new)
