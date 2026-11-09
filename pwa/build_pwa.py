@@ -47,7 +47,7 @@ rep('</style>','''html,body{height:100%;margin:0}
 </style>
 </head><body>''')
 # cada módulo va protegido: si uno falla en un móvil concreto, los demás y la app siguen funcionando
-_mods=['diag','mispuntos','colab','capas','sync','seguir','mistracks','offline','yo','sos','resumen','listas','seguidores','salidas','guardado','pestanas','novedades','instalar','compartir','enlaces','perfil','cerca','buscar','agrupar','inicio','capas2','orden','explorar2','fichas2','botones','atras']
+_mods=['diag','mispuntos','colab','capas','sync','seguir','mistracks','offline','yo','sos','resumen','listas','seguidores','salidas','guardado','pestanas','novedades','instalar','compartir','enlaces','perfil','cerca','buscar','agrupar','inicio','capas2','orden','explorar2','fichas2','techos','botones','atras']
 _w=lambda n:'try{\n'+open(f'/home/claude/pwa/{n}.js').read()+'\n}catch(e){console.error("módulo '+n+'",e);(window.__ERRS=window.__ERRS||[]).push("'+n+': "+(e&&e.message))}'
 i=t.rindex('</script>'); t=t[:i]+'\n'+'\n'.join(_w(n) for n in _mods)+'\n'+t[i:]
 # colaboradores (app/colaboradores.json + app/colab/<id>.json, los rellena el robot): van dentro de la página, así se ven también sin cobertura
@@ -126,6 +126,11 @@ rep('function renderList(){','function renderList(){if(window.rfSync)setTimeout(
 rep('${r.ds?`<p class="desc">','${window.rMk?rMk(r):""}\n  ${r.ds?`<p class="desc">')
 # franjas de altura: «Menos de 1.500» solo con altura conocida (las que no la tienen salen en «Todas»)
 rep('(g==="0"&&p.a<1500)','(g==="0"&&!!p.a&&p.a<1500)')
+# 9 nov 2026 · 🏔 Techos de Asturias (pwa/techos.js): la lista del filtro «techo» sale de Camudando'l camín, con botón y cabecera
+rep('["techo","Techos de concejo"]','["techo","🏔 Techos de Asturias"]')
+rep('const list=C.items.filter(p=>(!window.COLX','let list=C.items.filter(p=>(!window.COLX')
+rep('const HTML=`${window.cercaBar?cercaBar(kind,C):""}','if(kind==="cumbres"&&C.g==="techo"&&window.TECHOS){const tl=TECHOS.lista(C.items,C);if(tl)list=tl}\n  const HTML=`${window.cercaBar?cercaBar(kind,C):""}${kind==="cumbres"&&window.TECHOS?TECHOS.boton(C):""}')
+rep('<div class="rows">${list.length?','<div class="rows">${kind==="cumbres"&&C.g==="techo"&&window.TECHOS?TECHOS.cab():""}${list.length?')
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
 t=re.sub(r'\s*<button class="lay" data-lay="towns".*?</button>','',t,count=1,flags=re.S)

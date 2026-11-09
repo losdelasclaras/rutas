@@ -27,7 +27,7 @@ function render(){if(box.hidden)return;
   <p class="note">${quiero.length?`★ ${quiero.length} en tu lista de «quiero subir»`:"Aún no tienes cumbres en «quiero subir»"}${alta?` · La más alta: <b>${esc(alta.c)}</b> (${(alta.a||0).toLocaleString("es-ES")} m)`:""}</p>
   <h3>Por zonas</h3>${Z.map(z=>fila(...z)).join("")}
   <h3>Por altura</h3>${B.map(b=>fila(...b)).join("")}
-  ${techos.length?`<h3>Techos de concejo</h3>${fila("Techos subidos",th.length,techos.length)}${th.length?`<div class="chips2">${th.map(p=>`<span>⛰️ ${esc(p.techo)}</span>`).join("")}</div>`:""}`:""}
+  ${window.TECHOS&&TECHOS.ok()?(n=>`<h3>Techos de Asturias</h3>${fila("Concejos con su techo subido",n.h,n.t)}`)(TECHOS.cuenta()):techos.length?`<h3>Techos de concejo</h3>${fila("Techos subidos",th.length,techos.length)}${th.length?`<div class="chips2">${th.map(p=>`<span>⛰️ ${esc(p.techo)}</span>`).join("")}</div>`:""}`:""}
   <h3>Lugares</h3>${fila("Lugares visitados",lv,L.length)}${lq?`<p class="note">★ ${lq} en «quiero ir»</p>`:""}
   <h3>Lo tuyo</h3><div class="cards"><div><b>${MISPUNTOS.get().length}</b><small>puntos</small></div><div><b>${MT.length}</b><small>tracks${kmT?` · ${Math.round(kmT).toLocaleString("es-ES")} km`:""}</small></div><div><b>${window.OFFLINE?OFFLINE.list().length:0}</b><small>mapas</small></div></div>`}
 window.RESUMEN={box,render};
