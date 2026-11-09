@@ -1445,7 +1445,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-8306927f.json", "ln": "colab-ln-2a978cd8.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-80c0db64.json", "ln": "colab-ln-2a978cd8.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -4900,7 +4900,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .frav.o{background:#ffe1c7;color:#6b2c00;border:1px solid #f0a35e}
 .fracts{display:flex;gap:8px;margin:12px 0 8px}
 .fracts>*{flex:1 1 0;min-width:0;min-height:52px;display:flex;align-items:center;justify-content:center;margin:0;padding:8px 6px;box-sizing:border-box;font-size:16px;font-weight:800;text-align:center;line-height:1.15}
-.fracts .frseg{border:0;color:#fff;background:var(--ink)}
+.fracts .frseg{border:0;color:var(--paper,#fff);background:var(--ink)}
+.fracts .btn.primary{background:#c3262e;border-color:#c3262e;color:#fff}
 .fracts .frsin{border:1.5px dashed var(--edge,#bbb);border-radius:12px;color:var(--muted);font-weight:700;background:transparent}
 .fru .frmasb{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;margin:0 0 10px;box-sizing:border-box;border:1.5px solid var(--edge,#bbb);background:var(--card);color:var(--ink);font-size:16px;font-weight:800}
 /* «··· Más opciones»: hoja que sube desde abajo, como en el tablero */
@@ -4908,7 +4909,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .frmas{position:fixed;left:0;right:0;bottom:0;z-index:3001;background:var(--card,#fff);border-radius:18px 18px 0 0;padding:10px 16px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px;box-shadow:0 -6px 24px rgba(0,0,0,.25);max-width:640px;margin:0 auto}
 .frmas[hidden],.frvel[hidden]{display:none!important}
 .frmas .ag{width:44px;height:5px;border-radius:9px;background:var(--edge,#bbb);align-self:center;margin-bottom:6px}
-.frmas h3{margin:0 0 4px;font-size:20px}
+.frmas .frmh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 4px}.frmas h3{margin:0;font-size:20px}
+.frmas .frmx{width:44px;height:44px;flex:none;border-radius:999px;border:0;background:var(--mark,#c3262e);color:#fff;font-size:26px;line-height:1;cursor:pointer}
 .frmas>.btn{display:flex;align-items:center;justify-content:flex-start;gap:12px;width:100%;min-height:56px;margin:0;padding:8px 14px;box-sizing:border-box;font-size:17px;font-weight:700;text-align:left;border:0;background:var(--paper,#f4f6f2);border-radius:12px;color:var(--ink)}
 .frmas>.btn small{display:block;font-weight:400;color:var(--muted);font-size:13px}
 .frmas>.btn span{display:flex;flex-direction:column}
@@ -4949,7 +4951,7 @@ function pinta(d){
   ${dat.length?`<div class="ficha" style="grid-template-columns:repeat(${dat.length},1fr)">${dat.map(([l,v])=>`<div><b>${esc(v)}</b><span>${l}</span></div>`).join("")}</div>`:""}
   ${aviso(d.y,d.m)}
   <div class="fracts">${d.blog?`<a class="btn primary" href="${esc(d.blog)}" target="_blank" rel="noopener">📖 Leer en el blog</a>`:""}${d.seguir?`<button class="btn ghost frseg frtrk" ${d.seguir}${t}>▶ Seguir</button>`:`<span class="frsin" title="Esta ruta no tiene track para seguirla">Sin track</span>`}${d.gTrack?`<button class="btn ghost frseg frgtpc frtrk" ${d.gTrack}${t}>〰️ Guardar track</button>`:""}</div><button class="btn ghost frmasb" data-frmas aria-expanded="false">··· Otras opciones</button>
-  <div class="frvel" data-frx hidden></div><div class="frmas" hidden><div class="ag"></div><h3>Otras opciones</h3>
+  <div class="frvel" data-frx hidden></div><div class="frmas" hidden><div class="ag"></div><div class="frmh"><h3>Otras opciones</h3><button class="frmx" data-frx aria-label="Cerrar">×</button></div>
     ${d.gRuta?`<button class="btn ghost" ${d.gRuta}>${gRL(d.gRutaOn)}</button>`:""}
     ${d.gTrack?`<button class="btn ghost frtrk frgtm" ${d.gTrack}${t}>〰️ <span>Guardar track<small>Copia en Mis cosas, para usar sin cobertura</small></span></button>`:""}
     ${d.share?`<button class="btn ghost" ${d.share}>📤 Compartir</button>`:""}
@@ -5228,5 +5230,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="7240aa759a";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="d4a9aeef6e";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
