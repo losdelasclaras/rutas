@@ -66,5 +66,9 @@ class WebActivity : LauncherActivity() {
     private fun vigilar() { h.removeCallbacks(vigia); h.postDelayed(vigia, 10000) }
     override fun onResume() { super.onResume(); if (!tapada && !preguntando && !aGrabar) vigilar() }
     override fun onPause() { super.onPause(); if (!preguntando) tapada = true; h.removeCallbacks(vigia) }
+    /** 9 nov 2026: si la web se ha cerrado (gesto «Atrás» al principio) y se vuelve aquí, se cierra la app del todo y se quita
+     *  de recientes. Antes (LauncherActivity solo hacía finish) quedaba una tarjeta en recientes que al tocarla se quedaba
+     *  en blanco o negro. La próxima vez arranca limpia desde el icono. */
+    override fun onRestart() { if (tapada && !preguntando && !aGrabar) finishAndRemoveTask(); super.onRestart() }
     override fun onDestroy() { h.removeCallbacks(vigia); super.onDestroy() }
 }
