@@ -266,7 +266,8 @@ window.COLX={
     return `<div class="chips" data-k="${kind}" data-grp="o">${ops.map(([v,l,col])=>`<button class="chip" data-v="${v}" aria-pressed="${o===v}">${col?`<span class="dot" style="background:${col}"></span>`:""}${esc(l)}</button>`).join("")}</div>`},
   cls:p=>(p.co?` src-co${p.both?" both":""}" style="--cc:${p.co.c}`:` src-g${p.both?" both":""}`),
   ico:(p,kind)=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true" style="border-radius:50%;box-shadow:0 0 0 2.5px ${p.co.c}"><use href="#ic-${p.k}" x="-12" y="-12" width="24" height="24"/></svg>`,
-  src:p=>p.co?`<em class="cosrc" style="color:${p.co.c}">${esc(p.co.n)}</em>${p.both?` · <em class="cosrc dos">también en otro blog</em>`:""} · `:p.both?`<em class="cosrc dos">También en ${esc(p.both)}</em> · `:"",
+  // 9 nov 2026: cada fila dice solo de quién es (sin «También en…»)
+  src:p=>p.co?`<em class="cosrc" style="color:${p.co.c}">${esc(p.co.n)}</em> · `:`<em class="cosrc" style="color:#c3262e">Los de las Claras</em> · `,
   open(ci){const it=ALL[ci];if(!it)return;if(it.rr!=null){if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>verR(it.co,it.rr),80);return}if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>abrirCum(it.co,it.pp,it.k),80)}};
 /* ---------- también en la pestaña Rutas: sus puntos que son rutas (capas de rutas o con «Distancia:») ---------- */
 document.head.insertAdjacentHTML("beforeend",`<style>
