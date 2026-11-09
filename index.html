@@ -940,6 +940,13 @@ try{
    Nada sale del móvil: en «Tu cuenta» hay un botón para copiar el informe y pegárselo a Claude.
    Además (arreglo preventivo): al irse a segundo plano se cierra el panel de Capas.
    Para quitarlo: borrar 'diag' de _mods en pwa/build_pwa.py. */
+/* 9 nov 2026: saber si estamos dentro del APK sin depender solo de cómo se abrió la página. Antes solo se miraba el origen
+   (android-app://…) del primer arranque; si la página arrancaba de otra forma, desaparecía el botón Grabar y Seguir usaba el GPS
+   de la web. Ahora, una vez visto el APK en este móvil, se recuerda (localStorage) y vale en cualquier arranque en Android.
+   Va aquí porque diag es el primer módulo: todos los demás miran sessionStorage «ldc-apk». */
+try{const ref=document.referrer.startsWith("android-app://es.losdelasclaras.rutas"),and=/Android/i.test(navigator.userAgent);
+  if(ref){sessionStorage.setItem("ldc-apk","1");localStorage.setItem("ldc-apk-visto","1")}
+  else if(and&&localStorage.getItem("ldc-apk-visto")==="1")sessionStorage.setItem("ldc-apk","1")}catch(e){}
 (function(){
 const K="ldc-diag",HB="ldc-diag-hb",MAX=250,T0=Date.now();
 const hh=t=>{const d=new Date(t);return d.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit"})+" "+d.toLocaleTimeString("es-ES",{hour12:false})+"."+String(d.getMilliseconds()).padStart(3,"0")};
@@ -1429,7 +1436,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-8e3f7eb0.json", "ln": "colab-ln-69762414.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-0573f3ab.json", "ln": "colab-ln-69762414.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -4986,5 +4993,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="c8e47eee70";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="b0d7c07c50";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
