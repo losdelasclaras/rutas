@@ -1436,7 +1436,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-0573f3ab.json", "ln": "colab-ln-69762414.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-ee0e134c.json", "ln": "colab-ln-69762414.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -2268,7 +2268,7 @@ const trs=`<svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor
 function grande(t,d){const m=t.tm,tie=m&&m.b>m.a?hm(m.m||(m.b-m.a)/1000):d.km?"≈ "+hm((Math.max(d.km/4,(d.up||0)/400)+Math.min(d.km/4,(d.up||0)/400)/2)*3600):"—";
   return`<div class="tgr"><span><b>${tie}</b><small>${m&&m.b>m.a?"en movimiento":"tiempo estimado"}</small></span><span><b>${d.km?d.km.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2}):"—"}</b><small>km</small></span><span><b>${d.up!=null?"+"+d.up.toLocaleString("es-ES"):"—"}</b><small>m de subida</small></span></div>`}
 function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t)return;quitaPill();
-  if(t.pts&&t.pts.length>1&&!(t.dv>=2)&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
+  if(t.src!=="blog"&&t.pts&&t.pts.length>1&&!(t.dv>=2)&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
   if(typeof showView==="function")showView("mapa");
   if(!LAY.mt){LAY.mt=true;saveLay();const b=document.querySelector('[data-lay="mt"]');if(b)b.setAttribute("aria-pressed",true);MPI.sync()}
   const r=routeOf(t),d=datos(t),p=MPI.ptsOf(t)||(r&&r.gx&&r.gx.st?[r.gx.st]:null),ie=esc(t.id),off=window.OFFLINE&&OFFLINE.has(r?r.u:"mt:"+t.id);
@@ -2384,6 +2384,15 @@ document.head.insertAdjacentHTML("beforeend",`<style>.wplist{display:grid;gap:6p
 .wpt{display:flex;flex-direction:column;min-width:0}.wpt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wpt small{color:var(--muted);font-weight:700}</style>`);
 window.MISTRACKS={render,open,refresh,punto,route:id=>{const t=T().find(x=>String(x.id)===String(id));return t&&t.pts?comoRuta(t):null}};
 render();
+
+/* 9 nov 2026: todo lo guardado en Mis cosas lleva su recorrido dentro, también las rutas del blog (antes solo una referencia
+   a la ruta: si la app se actualizaba por detrás y se abría sin cobertura, salían sin línea). Las ya guardadas se completan solas. */
+function completar(){if(!window.loadTracks||!T().some(t=>t.src==="blog"&&!(t.pts&&t.pts.length)))return;
+  loadTracks().then(ok=>{if(!ok)return;let ch=false;
+    const ts=T().map(t=>{if(t.src!=="blog"||(t.pts&&t.pts.length))return t;const r=R.find(x=>x.u===t.u),ln=r&&r.gx&&r.gx.ln;if(!ln||ln.length<2)return t;ch=true;return{...t,pts:ln.map(q=>q.slice())}});
+    if(ch)MPI.saveTracks(ts)})}
+{const o=MPI.saveTracks;MPI.saveTracks=function(){const x=o.apply(this,arguments);setTimeout(completar,300);return x}}
+setTimeout(completar,4000);addEventListener("online",()=>setTimeout(completar,2000));
 })();
 
 }catch(e){console.error("módulo mistracks",e);(window.__ERRS=window.__ERRS||[]).push("mistracks: "+(e&&e.message))}
@@ -2558,7 +2567,12 @@ function syncZ(){const on=LAY.off&&list().length&&map.getZoom()>=9;if(on&&!map.h
 map.on("zoomend",syncZ);
 if(grp&&grp.nextElementSibling)grp.nextElementSibling.insertAdjacentHTML("beforeend",`<button class="lay" data-lay="off" aria-pressed="${!!LAY.off}" ${list().length?"":"hidden"}><span class="lico" style="background:rgba(42,122,59,.35)"></span>Zonas descargadas</button>`);
 document.querySelector(".legend").addEventListener("click",e=>{if(e.target.closest('[data-lay="off"]'))setTimeout(syncZ,0)});
-window.OFFLINE={has,list,zona,rutaOffline,ofrecer,wanted,setWanted:a=>{saveWanted(a,true);pintar()}};
+/* 9 nov 2026: ¿está descargado el mapa por donde pasa esta línea? (para «Listo sin cobertura» en Mis cosas) */
+let UC=null,UK="";
+function union(){const a=list(),k=a.map(m=>m.id+":"+(m.t||[]).length).join("|");if(k!==UK){UK=k;UC=new Set();for(const m of a)for(const t of m.t||[])if(t.startsWith("14/"))UC.add(t)}return UC}
+function cubre(ln){if(!ln||!ln.length)return false;const u=union();if(!u.size)return false;const en=p=>u.has("14/"+tx(p[1],14)+"/"+ty(p[0],14));
+  const st=Math.max(1,Math.floor(ln.length/60));for(let i=0;i<ln.length;i+=st)if(!en(ln[i]))return false;return en(ln[ln.length-1])}
+window.OFFLINE={cubre,has,list,zona,rutaOffline,ofrecer,wanted,setWanted:a=>{saveWanted(a,true);pintar()}};
 pintar();
 })();
 
@@ -3462,6 +3476,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .gdl .gdr{display:flex;align-items:center;gap:10px;width:100%;border:0;border-bottom:1px solid var(--edge);background:none;color:var(--ink);padding:10px 2px;font:inherit;text-align:left;cursor:pointer}
 .gdl .gdr:last-child{border-bottom:0}.gdl .gdr .e{font-size:22px;width:28px;text-align:center;flex:none}
 .gdl .gdr b{display:block;font-size:15.5px;line-height:1.25}.gdl .gdr small{display:block;color:var(--muted);font-size:13px}
+.gdr .gdoff{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:999px;background:#e3f1e6;color:#1d5a2b;font-size:14px;font-weight:700;font-style:normal}
 .gdl .gdr .st{margin-left:auto;font-weight:900;font-size:18px}.gdr .st.h{color:#2a7a3b}.gdr .st.p{color:#d4a000}
 #gdbox .gdvacio{color:var(--muted);margin:10px 2px}
 /* 8 nov 2026: papelera en cada fila (dos toques) y aviso con Deshacer */
@@ -3486,11 +3501,13 @@ const estDe=x=>x.est==="hecho"?"h":x.est==="pend"?"p":"";
 const kmT=k=>k?(k<10?String(Math.round(k*10)/10).replace(".",","):Math.round(k))+" km":"";
 function items(){const ps=MPI.get().map(p=>({k:"p",o:p,n:p.n,c:p.c,f:p.f,e:estDe(p)})),ts=MPI.tracks().map(t=>({k:"t",o:t,n:t.n,c:t.c,f:t.f,e:estDe(t)}));
   return ps.concat(ts).sort((a,b)=>(b.f||"").localeCompare(a.f||""))}
+// 9 nov 2026: «Listo sin cobertura»: el recorrido está en el móvil y el mapa de su zona, descargado
+const listo=ln=>!!(window.OFFLINE&&OFFLINE.cubre&&OFFLINE.cubre(ln)),OFFB=`<em class="gdoff">✈ Listo sin cobertura</em>`;
 function fila(x){const o=x.o;
   if(x.k==="t"){const sub=[kmT(o.km),o.up!=null?"+"+Math.round(o.up).toLocaleString("es-ES")+" m":"",o.src==="blog"?"Del blog":o.src==="grab"?"Grabado":"Cargado"].filter(Boolean).join(" · ");
-    return`<button class="gdr" data-gdt="${esc(o.id)}"><span class="e">${o.src==="blog"?"📘":o.src==="grab"?"⏺️":"〰️"}</span><span><b>${esc(o.n)}</b><small>${esc(sub)}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small></span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
+    return`<button class="gdr" data-gdt="${esc(o.id)}"><span class="e">${o.src==="blog"?"📘":o.src==="grab"?"⏺️":"〰️"}</span><span><b>${esc(o.n)}</b><small>${esc(sub)}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small>${listo(MPI.ptsOf?MPI.ptsOf(o):o.pts)?"<br>"+OFFB:""}</span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
   const ic=MPI.ico?MPI.ico(o.ic):null,tipo=ic?ic[2]:"Punto";
-  return`<button class="gdr" data-gdp="${esc(o.id)}"><span class="e">${MPI.emo?MPI.emo(o.ic):"📍"}</span><span><b>${esc(o.n)}</b><small>${esc([tipo,o.a!=null?Math.round(o.a).toLocaleString("es-ES")+" m":"",o.f?fmtF(o.f):""].filter(Boolean).join(" · "))}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small></span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
+  return`<button class="gdr" data-gdp="${esc(o.id)}"><span class="e">${MPI.emo?MPI.emo(o.ic):"📍"}</span><span><b>${esc(o.n)}</b><small>${esc([tipo,o.a!=null?Math.round(o.a).toLocaleString("es-ES")+" m":"",o.f?fmtF(o.f):""].filter(Boolean).join(" · "))}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small>${o.lat!=null&&listo([[o.lat,o.lon]])?"<br>"+OFFB:""}</span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
 const conX=x=>`<div class="gdw">${fila(x)}<button class="gdx" data-gdx="${x.k}:${esc(x.o.id)}" data-n="${esc(x.n)}" aria-label="Borrar">🗑</button></div>`;
 function render(){if(box.hidden)return;const all=items(),nh=all.filter(x=>x.e==="h").length,np=all.filter(x=>x.e==="p").length;
   const ok=x=>(FIL==="todos"||(FIL==="hecho"?x.e==="h":x.e==="p"))&&(!Q||nk(x.n).includes(Q)||nk(x.c).includes(Q));
@@ -3816,7 +3833,7 @@ async function enviaGpx(n,pts,wps){if(pts.length>3000)pts=simple(pts,3);const tx
   setTimeout(()=>toast("Guardado en Descargas. En WhatsApp: 📎 › Documento › Descargas"),1500)}
 window.enviaGpx=enviaGpx;
 function compartir(t){const r=t.src==="blog"?R.find(x=>x.u===t.u):null;
-  if(!t.pts||t.pts.length<2){if(r)shareRoute(r);return}
+  if(r||!t.pts||t.pts.length<2){if(r)shareRoute(r);return}   // las del blog: su enlace de ruta (aunque ya lleven el recorrido dentro)
   MPI.show(`<div class="sheet-head"><h2>📤 Compartir «${esc(t.n)}»</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
     <div class="topacts" style="flex-direction:column"><button class="btn primary" data-shk="gpx">📄 Enviar el archivo GPX</button><button class="btn ghost" data-shk="url">🔗 Enviar un enlace a la app</button></div>
     <p class="note">El <b>archivo GPX</b> se abre con Wikiloc, OruxMaps, Google Earth o esta misma app. Con el <b>enlace</b>, quien lo toque ve el track en la app de Los de las Claras.</p>`);
@@ -4993,5 +5010,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="7d3faf29e2";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="3084fe9bd6";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
