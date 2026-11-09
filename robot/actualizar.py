@@ -468,6 +468,29 @@ def fechas_rutas(co, new):
     if pedidas: log(f'📅 Fechas de rutas de {co.get("nombre") or co["id"]}: {nuevas} nuevas ({con} de {len(rs)} con fecha)'
                     + (f'; Wikiloc no responde ({mal["w"]} fallos)' if mal['w'] and not ok['w'] else '') + (f'; su blog no responde ({mal["b"]} fallos)' if mal['b'] and not ok['b'] else '') + '.')
 
+def enlazar_cumbres(co, new, lim=0.25):
+    """9 nov 2026: cada cumbre del colaborador queda enlazada a TODAS sus rutas cuyo track pasa a menos de 250 m de ella,
+    aunque él no las haya enlazado (p. ej. Monte Pindo: 3 rutas suben a su cima, A Moa, y solo 1 estaba enlazada)."""
+    rs = new.get('r', []); ps = [p for p in new.get('p', []) if len(p) > 7 and (p[7] == 'CUMBRES' or (len(p) > 6 and p[6] == '1634'))]
+    if not rs or not ps: return
+    def dseg(p, a, b):   # distancia en km de p al tramo a-b (plano local)
+        k = math.cos(math.radians(p[0])); ax, ay = (a[1] - p[1]) * 111.2 * k, (a[0] - p[0]) * 111.2; bx, by = (b[1] - p[1]) * 111.2 * k, (b[0] - p[0]) * 111.2
+        dx, dy = bx - ax, by - ay; L2 = dx * dx + dy * dy; t = 0 if L2 == 0 else max(0, min(1, -(ax * dx + ay * dy) / L2))
+        return math.hypot(ax + t * dx, ay + t * dy)
+    nuevos = 0
+    for p in ps:
+        while len(p) < 10: p.append(None)
+        ya = set(p[9] or [])
+        for i, r in enumerate(rs):
+            if i in ya: continue
+            t = r[8] if len(r) > 8 and isinstance(r[8], list) else []
+            if len(t) < 2 or not isinstance(t[0], (list, tuple)): continue
+            pp = (p[1], p[2])
+            if min(abs(q[0] - pp[0]) for q in t) > 0.05: continue   # lejos: ni se mira
+            if min(dseg(pp, t[j], t[j + 1]) for j in range(len(t) - 1)) <= lim: ya.add(i); nuevos += 1
+        if ya: p[9] = sorted(ya)
+    if nuevos: log(f'⛰ {co.get("nombre") or co["id"]}: {nuevos} enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de {int(lim*1000)} m).')
+
 def cumbres_osm(co, new):
     """Cumbres sacadas de sus tracks: se buscan en OpenStreetMap (picos con el mismo nombre por donde pasa su track)
     y, si están, se ponen en el sitio exacto del pico. Si no, se quedan en el punto más alto del track.
@@ -650,6 +673,7 @@ def colaboradores():
                     log(f'⚠ Los mapas de {co.get("nombre") or co["id"]} han devuelto solo {len(rutas)} rutas (había {len(old["r"])}): no lo toco.')
                 else:
                     new.update(t=co.get('nombre') or old.get('t') or co['id'], p=cps, r=rutas, l=[])
+                    enlazar_cumbres(co, new)
                     cumbres_osm(co, new)
             except Exception as e:
                 log(f'⚠ No he podido leer los mapas de rutas del colaborador {co["id"]}: {e} (se queda como estaba)')
@@ -662,6 +686,7 @@ def colaboradores():
                 if res:
                     rutas, cps, salt = res
                     new.update(t=co.get('nombre') or co['id'], p=cps, r=rutas, l=[], x=salt)
+                    enlazar_cumbres(co, new)
                     cumbres_osm(co, new)
             except Exception as e:
                 log(f'⚠ No he podido leer la web del colaborador {co["id"]}: {e} (se queda como estaba)')

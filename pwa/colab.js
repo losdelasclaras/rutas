@@ -252,7 +252,11 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 </style>`);
 const EXTRA=[["aloja","Alojamientos"],["pueblo","Pueblos con encanto"],["activo","Turismo activo"],["area","Áreas recreativas"]];
 const ALL=[],PAR={};
-const regAt=(la,lo)=>{let b=null,bd=1e9;for(const q of P){const d=(q.lat-la)**2+((q.lon-lo)*.73)**2;if(d<bd){bd=d;b=q}}return b&&bd<.04?String(b.r).split(" / ")[0]:"Asturias"};
+// zona de un punto: la del punto del grupo o la ruta de colaborador más cercana (9 nov 2026: antes, lejos de lo vuestro salía «Asturias», p. ej. el Monte Pindo)
+const RREG=[];for(const c of CO)for(const r of c.r||[])if(r[8]&&r[1])RREG.push({lat:r[8][0],lon:r[8][1],r:r[1]});
+const regAt=(la,lo)=>{let b=null,bd=1e9;for(const q of P){const d=(q.lat-la)**2+((q.lon-lo)*.73)**2;if(d<bd){bd=d;b=q}}
+  let c=null,cd=1e9;for(const q of RREG){const d=(q.lat-la)**2+((q.lon-lo)*.73)**2;if(d<cd){cd=d;c=q}}
+  if(b&&bd<.04&&bd<=cd)return String(b.r).split(" / ")[0];if(c&&cd<.25)return String(c.r).split(" / ")[0];if(b&&bd<.04)return String(b.r).split(" / ")[0];return ""};
 const kmd=(a,b)=>Math.hypot(a.lat-b.lat,(a.lon-b.lon)*.73)*111;
 const sig=n=>new Set(nk(n).split(" ").filter(w=>w.length>=4&&!/^(pico|pena|picu|ruta|senda|desde|circular|braña|brana|playa|mirador|cascada|bosque|cueva)$/.test(w)));
 for(const c of CO)for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
