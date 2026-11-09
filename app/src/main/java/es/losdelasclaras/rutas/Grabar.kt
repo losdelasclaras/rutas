@@ -28,6 +28,18 @@ import java.net.URLEncoder
 
 /** Datos de la grabación: puntos en un archivo de texto (lat,lon,alt,ms por línea) y el estado en preferencias. */
 object Grab {
+    /* 9 nov 2026: aviso si te sales del track (más de 100 m). Modo guardado: "vs" vibrar y sonar (por defecto), "v" solo vibrar, "no" nada. */
+    fun modoAviso(c: Context): String = prefs(c).getString("aviso_fuera", "vs") ?: "vs"
+    fun avisar(c: Context, fuerte: Boolean) {
+        val m = modoAviso(c); if (m == "no") return
+        try { val v = c.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            val w = if (fuerte) longArrayOf(0, 500, 200, 500, 200, 500) else longArrayOf(0, 150, 120, 150)
+            if (Build.VERSION.SDK_INT >= 26) v.vibrate(VibrationEffect.createWaveform(w, -1)) else @Suppress("DEPRECATION") v.vibrate(w, -1) } catch (e: Exception) {}
+        // el pitido por el canal de alarma: se oye aunque las notificaciones estén en silencio
+        if (m == "vs" && fuerte) try { val tg = android.media.ToneGenerator(android.media.AudioManager.STREAM_ALARM, 90)
+            tg.startTone(android.media.ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 1600)
+            Handler(Looper.getMainLooper()).postDelayed({ try { tg.release() } catch (e: Exception) {} }, 2200) } catch (e: Exception) {}
+    }
     fun archivo(c: Context) = File(c.filesDir, "grabacion.txt")
     fun ultima(c: Context) = File(c.filesDir, "ultima.txt")
     fun prefs(c: Context) = c.getSharedPreferences("grabar", Context.MODE_PRIVATE)
@@ -133,6 +145,38 @@ object Buzon {
 class GrabarService : Service(), LocationListener {
     private var lm: LocationManager? = null
     private var ultimo: Location? = null
+    /* 9 nov 2026: aviso fuera del track aquí, en el servicio, para que funcione con la pantalla apagada */
+    private var segCache = ""; private var segPts: List<DoubleArray> = emptyList()
+    private var fuera = 0; private var avisado = false; private var ultAviso = 0L
+    private fun puntosSeguir(): List<DoubleArray> {
+        val p = Grab.prefs(this); val k = (p.getString("seguir", "") ?: "") + "|" + (p.getString("seguir2", "") ?: "")
+        if (k == segCache) return segPts
+        segCache = k; val out = ArrayList<DoubleArray>()
+        for (j in listOf(p.getString("seguir", ""), p.getString("seguir2", ""))) try {
+            val a = JSONObject(j ?: "").getJSONArray("t"); var prev: DoubleArray? = null
+            for (i in 0 until a.length()) { val q = a.getJSONArray(i); val x = doubleArrayOf(q.getDouble(0), q.getDouble(1))
+                if (prev != null) out.add(doubleArrayOf(prev[0], prev[1], x[0], x[1])); prev = x } } catch (e: Exception) {}
+        segPts = out; return out
+    }
+    /** distancia en metros de un punto a un tramo (proyección plana local, de sobra para estas distancias) */
+    private fun aTramo(la: Double, lo: Double, s: DoubleArray): Double {
+        val k = Math.cos(Math.toRadians(la)) * 111320.0; val m = 110540.0
+        val ax = (s[1] - lo) * k; val ay = (s[0] - la) * m; val bx = (s[3] - lo) * k; val by = (s[2] - la) * m
+        val dx = bx - ax; val dy = by - ay; val l2 = dx * dx + dy * dy
+        val t = if (l2 > 0) Math.max(0.0, Math.min(1.0, -(ax * dx + ay * dy) / l2)) else 0.0
+        val px = ax + t * dx; val py = ay + t * dy; return Math.sqrt(px * px + py * py)
+    }
+    private fun mirarTrack(l: Location) {
+        val ts = puntosSeguir(); if (ts.isEmpty()) { fuera = 0; avisado = false; return }
+        var d = Double.MAX_VALUE; for (s in ts) { val x = aTramo(l.latitude, l.longitude, s); if (x < d) d = x }
+        val ahora = System.currentTimeMillis()
+        if (d > 100 && d <= 3000) { fuera++
+            // aviso al salir (2 posiciones seguidas fuera) y, si sigues fuera, otra vez cada 3 minutos
+            if (fuera >= 2 && (!avisado || ahora - ultAviso > 180000)) { avisado = true; ultAviso = ahora; Grab.avisar(this, true)
+                notificar("⚠️ Te has salido del track (a ${Math.round(d)} m)") } }
+        else if (d <= 60) { if (avisado) { Grab.avisar(this, false); notificar("✓ De vuelta en el track") }
+            fuera = 0; avisado = false }
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -173,6 +217,7 @@ class GrabarService : Service(), LocationListener {
         ultimo = l
         val alt = if (l.hasAltitude()) Math.round(l.altitude).toString() else ""
         Grab.archivo(this).appendText("${"%.6f".format(java.util.Locale.US, l.latitude)},${"%.6f".format(java.util.Locale.US, l.longitude)},$alt,${l.time}\n")
+        try { mirarTrack(l) } catch (e: Exception) {}
     }
     @Deprecated("") override fun onStatusChanged(p: String?, s: Int, e: Bundle?) {}
     override fun onProviderEnabled(p: String) {}
@@ -535,6 +580,10 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
             e.apply() }
         /** Zona elegida en el mapa de la app para guardarla sin cobertura (se lee una vez). */
         @JavascriptInterface fun zona(): String { val p = Grab.prefs(c); val z = p.getString("zona", "") ?: ""; p.edit().remove("zona").apply(); return z }
+        @JavascriptInterface fun modoAviso(): String = Grab.modoAviso(c)
+        @JavascriptInterface fun ponModoAviso(m: String) { if (m in listOf("vs", "v", "no")) Grab.prefs(c).edit().putString("aviso_fuera", m).apply() }
+        /** aviso desde la pantalla (cuando no se graba o en pausa: entonces no lo hace el servicio) */
+        @JavascriptInterface fun avisoFuera(fuerte: Boolean) = Grab.avisar(c, fuerte)
         @JavascriptInterface fun vibrar() { try { val v = getSystemService(VIBRATOR_SERVICE) as Vibrator
             if (Build.VERSION.SDK_INT >= 26) v.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 400, 200, 400), -1)) else @Suppress("DEPRECATION") v.vibrate(longArrayOf(0, 400, 200, 400), -1) } catch (e: Exception) {} }
         // puntos

@@ -74,6 +74,9 @@ body.segab #top{z-index:1100}
 .pml .ic{flex:none;font-size:24px;width:30px;text-align:center}.pml .tx{flex:1;min-width:0;font-size:16px;line-height:1.3}.pml .tx small{display:block;color:#5d6b62;font-size:14px}
 .pml button{flex:none;min-height:46px;border:0;border-radius:10px;background:#c62828;color:#fff;font:inherit;font-weight:800;font-size:15px;padding:0 12px}
 .pml li.ok button{display:none}.pml li.op button{background:#5d6b62}
+.avf{margin:12px 0 0;font-size:16px}.avf div{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px}
+.avb{min-height:52px;border:2px solid currentColor;border-radius:12px;background:rgba(255,255,255,.55);color:inherit;font:inherit;font-size:14.5px;font-weight:700;padding:4px}
+.avb.on{background:#1d1d1d;color:#fff;border-color:#1d1d1d}
 .avgps{background:#fff4e5;border:1px solid #f0b357;border-radius:12px;padding:10px 12px;margin:8px 0;font-size:16px}
 </style></head><body>
 <div id="map"></div>
@@ -223,7 +226,7 @@ function pintaSeg(d){if(d!==undefined)SEGD=d;d=SEGD;const e=$("seg");if(!T.lengt
    <div class="ir">${lejos||IDX<3?`<button onclick="llegar()">🚗 Cómo llegar a la salida</button>`:""}<button class="b" onclick="alReves()">⇄ Al revés</button><button class="b" onclick="verTrack()">🗺 Ver ${TR[1]?"los tracks":"el track"}</button><button class="x" onclick="dejar()">✕ Dejar de seguir</button></div>
    <div style="margin-top:8px">${TR.map((r,i)=>r?fila(r,i):"").join("")}</div>
    ${TR[1]?"":`<button class="b2" style="margin:8px 0 0;font-size:16px;padding:11px" onclick="anadir2()">➕ Añadir un segundo track (variante)</button>`}
-   <p style="font-size:13px;margin:8px 0 0;opacity:.8">${TR[1]?"Solo avisa si te sales de los dos, y antes de donde se separan.":"Con «➕ Añadir un segundo track» vas a la app: elige la ruta o el track y toca «▶ Seguir»; vuelve aquí como secundario."} «Al revés» si lo empiezas por el final.</p><button class="plg" onclick="abreSeg()">▴ Plegar</button>`}
+   <p style="font-size:13px;margin:8px 0 0;opacity:.8">${TR[1]?"Solo avisa si te sales de los dos, y antes de donde se separan.":"Con «➕ Añadir un segundo track» vas a la app: elige la ruta o el track y toca «▶ Seguir»; vuelve aquí como secundario."} «Al revés» si lo empiezas por el final.</p>${filaAviso()}<button class="plg" onclick="abreSeg()">▴ Plegar</button>`}
 function abreSeg(){SEGOPEN=!SEGOPEN;if(!window.__plg){window.__plg=1;map.on("click",()=>{if(SEGOPEN)abreSeg()})}   /* tocar el mapa también pliega */
  document.body.classList.toggle("segab",SEGOPEN);pintaSeg()}
 function alReves(){REV=!REV;lsS("rev:"+TN,REV?"1":null);prepara();TR[ACT].idx=0;IDX=0;FUERA=0;AVISADO=false;cruces();pintaLineas();SEPAV.clear();if(YO)sigueA(YO[0],YO[1]);else pintaSeg();toast(REV?"Track al revés: empiezas por el final":"Track en el sentido normal")}
@@ -235,7 +238,11 @@ function sigueA(la,lo){if(!TR[0])return;const p=[la,lo];
   let on=0;if(TR[1]){if(TR[0].d>60&&TR[1].d<=60)on=1;else if(TR[0].d>60&&TR[1].d<TR[0].d)on=1}
   if(TR[1]&&on!==ACT&&Math.min(TR[0].d,TR[1].d)<=60)toast(on?`🟠 Vas por el secundario: «${TR[1].n}»`:`▶ De vuelta al principal: «${TR[0].n}»`);
   act(on);const bd=TR[on].d;
-  if(bd>60&&bd<=1000){FUERA++;if(FUERA>=2&&!AVISADO){AVISADO=true;try{Nativo.vibrar()}catch(e){}}}else{FUERA=0;AVISADO=false}
+  // 9 nov 2026: aviso a más de 100 m, según el ajuste (vibrar y sonar / solo vibrar / nada). Grabando lo hace el servicio
+  // (funciona con la pantalla apagada); aquí solo si no se graba o en pausa
+  const yoAviso=!S.activo||S.pz;
+  if(bd>100&&bd<=3000){FUERA++;if(FUERA>=2&&!AVISADO){AVISADO=true;if(yoAviso)try{Nativo.avisoFuera?Nativo.avisoFuera(true):Nativo.vibrar()}catch(e){}}}
+  else if(bd<=60){if(AVISADO&&yoAviso)try{Nativo.avisoFuera&&Nativo.avisoFuera(false)}catch(e){}FUERA=0;AVISADO=false}
   // aviso antes de que los dos tracks se separen (unos 150 m antes, una vez por sitio)
   const r=TR[on];if(TR[1]&&bd<=60&&r.sep)for(const k of r.sep){const falta=r.tc[k]-r.tc[r.idx],key=on+":"+k;if(falta>0&&falta<=150&&!SEPAV.has(key)){SEPAV.add(key);try{Nativo.vibrar()}catch(e){}
       toast(`⚠️ En ${Math.round(falta/10)*10} m se separan los dos tracks: «${TR[0].n}» (morado) y «${TR[1].n}» (naranja)`,8000)}}
@@ -355,6 +362,11 @@ function pinta(){
     `<button class="big ${S.pz?"pl":"ps"}" onclick="Nativo.pausa()" aria-label="${S.pz?"Seguir grabando":"Pausa"}"><i></i></button><button class="big fn" onclick="fin()" aria-label="Terminar"><i></i></button>`;
   $("b-bat").hidden=!S.activo||Nativo.sinBateria();
   $("b-prep").hidden=S.activo;if(!S.activo){const m=movil();$("b-prep").querySelector(".avi").hidden=!m||!falta(m).length}}
+/* ---------- 9 nov 2026: aviso si te sales del track (más de 100 m) ---------- */
+function filaAviso(){let m="vs";try{m=Nativo.modoAviso?Nativo.modoAviso():"vs"}catch(e){}
+  const b=(k,t)=>`<button class="avb${m===k?" on":""}" onclick="event.stopPropagation();ponAviso('${k}')">${t}</button>`;
+  return`<div class="avf"><b>Si me salgo del track (más de 100 m):</b><div>${b("vs","🔊 Vibrar y sonar")}${b("v","📳 Solo vibrar")}${b("no","🔕 Nada")}</div></div>`}
+function ponAviso(k){try{Nativo.ponModoAviso(k)}catch(e){}pintaSeg();toast(k==="vs"?"🔊 Si te sales del track, vibrará y sonará":k==="v"?"📳 Si te sales del track, solo vibrará":"🔕 Sin aviso al salirte del track");if(k!=="no")try{Nativo.avisoFuera(true)}catch(e){}}
 /* ---------- 9 nov 2026: preparar el móvil para grabar ----------
    Los móviles antiguos y algunas marcas (Xiaomi, Huawei, Oppo, Vivo, Samsung…) cortan el GPS con la pantalla apagada aunque
    haya aviso de «Grabando». Aquí se ve qué le falta al móvil y cada cosa tiene su botón. La primera vez que se toca ● y falta
