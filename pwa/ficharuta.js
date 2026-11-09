@@ -25,6 +25,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .fracts>*{flex:1 1 0;min-width:0;min-height:52px;display:flex;align-items:center;justify-content:center;margin:0;padding:8px 6px;box-sizing:border-box;font-size:16px;font-weight:800;text-align:center;line-height:1.15}
 .fracts .frmasb{flex:0 0 58px;font-size:24px;letter-spacing:1px}
 .fracts .frseg{border:0;color:#fff;background:var(--ink)}
+.fracts .frsin{border:1.5px dashed var(--edge,#bbb);border-radius:12px;color:var(--muted);font-weight:700;background:transparent}
 .fracts .frmasb{border:1.5px solid var(--edge,#bbb);background:var(--card);color:var(--ink)}
 /* «··· Más opciones»: hoja que sube desde abajo, como en el tablero */
 .frvel{position:fixed;inset:0;background:rgba(20,26,23,.5);z-index:3000}
@@ -67,7 +68,7 @@ function pinta(d){
   ${d.mk||""}
   ${dat.length?`<div class="ficha" style="grid-template-columns:repeat(${dat.length},1fr)">${dat.map(([l,v])=>`<div><b>${esc(v)}</b><span>${l}</span></div>`).join("")}</div>`:""}
   ${aviso(d.y,d.m)}
-  <div class="fracts">${d.blog?`<a class="btn primary" href="${esc(d.blog)}" target="_blank" rel="noopener">📖 Leer en el blog</a>`:""}${d.seguir?`<button class="btn ghost frseg frtrk" ${d.seguir}${t}>▶ Seguir</button>`:""}<button class="btn ghost frmasb" data-frmas aria-expanded="false" aria-label="Más opciones" title="Más opciones">···</button></div>
+  <div class="fracts">${d.blog?`<a class="btn primary" href="${esc(d.blog)}" target="_blank" rel="noopener">📖 Leer en el blog</a>`:""}${d.seguir?`<button class="btn ghost frseg frtrk" ${d.seguir}${t}>▶ Seguir</button>`:`<span class="frsin" title="Esta ruta no tiene track para seguirla">Sin track</span>`}<button class="btn ghost frmasb" data-frmas aria-expanded="false" aria-label="Más opciones" title="Más opciones">···</button></div>
   <div class="frvel" data-frx hidden></div><div class="frmas" hidden><div class="ag"></div><h3>Más opciones</h3>
     ${d.gRuta?`<button class="btn ghost" ${d.gRuta}>${gRL(d.gRutaOn)}</button>`:""}
     ${d.gTrack?`<button class="btn ghost frtrk" ${d.gTrack}${t}>〰️ <span>Guardar track<small>Copia en Mis cosas, para usar sin cobertura</small></span></button>`:""}
