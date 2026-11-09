@@ -26,15 +26,6 @@ function estado(){const q=s=>document.querySelector(s),sh=q("#sheet"),h2=sh&&!sh
   const apk=/android-app:\/\/es\.losdelasclaras/.test(document.referrer)||sessionStorage.getItem("ldc-apk")==="1";
   apunta("ARRANQUE",`${tipo}${document.wasDiscarded?" · Android la había descartado":""} · ${apk?"APK":"navegador"} · ${navigator.userAgent.replace(/^.*Android/,"Android").slice(0,90)}`);
   if(hb)apunta("antes",`último latido ${hh(hb.t)} (${hb.v?"visible":"en segundo plano"}${hb.e?" · "+hb.e:""})`)}
-// tiempos del arranque (9 nov 2026): cuánto tarda cada parte desde que Chrome empieza a abrir la página
-{const nv=()=>{try{return performance.getEntriesByType("navigation")[0]||null}catch(e){return null}};
-  let mapa=null;const mira=()=>{if(mapa==null&&document.querySelector(".leaflet-tile-loaded"))mapa=Math.round(performance.now())};
-  const iv=setInterval(mira,150);
-  addEventListener("load",()=>setTimeout(()=>{const n=nv();const f=v=>v?Math.round(v)+" ms":"?";
-    const t0=Date.now();const fin=()=>{mira();clearInterval(iv);
-      apunta("TIEMPOS",n?`página ${f(n.responseEnd)} (${n.transferSize===0?"guardada en el móvil":"de internet"}) · código listo ${f(n.domContentLoadedEventEnd)} · todo cargado ${f(n.loadEventEnd||performance.now())} · primer trozo de mapa ${mapa!=null?mapa+" ms":"aún no"}`:"sin datos")};
-    // se espera al primer trozo de mapa (como mucho 15 s)
-    (function esp(){mira();if(mapa!=null||Date.now()-t0>15000)fin();else setTimeout(esp,200)})()},0))}
 // latido: la última hora en que la página respondía
 let ultLat=0;function latido(){if(document.visibilityState!=="visible")return;try{localStorage.setItem(HB,JSON.stringify({t:Date.now(),v:1,e:estado().slice(0,160)}))}catch(e){}ultLat=Date.now()}
 setInterval(latido,2000);latido();
