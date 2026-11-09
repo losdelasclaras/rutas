@@ -16,7 +16,7 @@ self.addEventListener("fetch",e=>{
         const c=await caches.open("ldc-share");await c.put("recibido",new Response(JSON.stringify(out),{headers:{"content-type":"application/json"}}))}catch(err){}
       return Response.redirect(new URL("./?recibido=1",self.registration.scope).href,303)})());return}
   if(e.request.method!=="GET")return;
-  if(u.hostname.endsWith("opentopomap.org")||u.hostname.endsWith("ign.es")){
+  if(u.hostname.endsWith("opentopomap.org")||u.hostname.endsWith("ign.es")||u.hostname==="tile.waymarkedtrails.org"){
     e.respondWith(caches.open(TILES).then(async c=>{let hit=await (await caches.open(OFF)).match(e.request.url)||await c.match(e.request);if(hit&&hit.type==="opaque"&&e.request.mode==="cors")hit=null;
       const net=fetch(e.request).then(r=>{if(r.ok){c.put(e.request,r.clone());trimTiles()}return r}).catch(()=>hit||Response.error());
       return hit||net}));return}
