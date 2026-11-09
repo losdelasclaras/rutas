@@ -503,7 +503,7 @@ function nearestRoutes(lat,lon,n,excl){return R.filter(r=>r.id!==excl&&routeOk(r
 const fmtKm=v=>v.toLocaleString("es-ES",{maximumFractionDigits:1})+" km";
 const thumbHTML=r=>r.f!=null?`<img class="thumb" src="fotos/${r.f}.jpg" alt="" loading="lazy">`:`<span class="thumb none" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20l7-12 4 6 3-4 6 10z"/></svg></span>`;
 function rowHTML(r,extra,compact){const nums=[r.km?fmtKm(r.km):"",r.de?"+"+r.de.toLocaleString("es-ES")+" m":""].filter(Boolean).join(" · ");
- return `<button class="row${compact?" compact":""}" data-r="${r.id}">${compact?"":thumbHTML(r)}<div class="t"><b>${esc(routeTitle(r))}</b><span>${r.iv?`<i class="ivm" style="font-style:normal">❄ Invernal</i> · `:""}${r.y?(r.m?MESES[r.m]+" ":"")+r.y:"Sin fecha"} · ${esc(r.r)}${extra?" · "+extra:""}</span></div><span class="alt">${nums||fmtA(r.a)}</span></button>`}
+ return `<button class="row${compact?" compact":""}" data-r="${r.id}">${compact?"":thumbHTML(r)}<div class="t"><b>${esc(routeTitle(r))}</b><span><em class="cosrc" style="font-style:normal;font-weight:800;color:#c3262e">Los de las Claras</em> · ${r.iv?`<i class="ivm" style="font-style:normal">❄ Invernal</i> · `:""}${r.y?(r.m?MESES[r.m]+" ":"")+r.y:"Sin fecha"} · ${esc(r.r)}${extra?" · "+extra:""}</span></div><span class="alt">${nums||fmtA(r.a)}</span></button>`}
 // enlace directo a una ruta: https://losdelasclaras.github.io/rutas/#r-2023-02-lago-del-valle-invernal
 const APPURL="https://losdelasclaras.github.io/rutas/";
 const slug=r=>r.u?"r-"+r.u.replace(/^https?:\/\/[^/]+\//,"").replace(/\.html$/,"").replace(/[^A-Za-z0-9]+/g,"-").replace(/-+$/,"").toLowerCase():null;
