@@ -110,7 +110,7 @@ function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t
       ${p?`<a class="mpb" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p[0][0]},${p[0][1]}">🚗 Cómo llegar al inicio</a>`:""}
       ${r?`<button class="mpb" data-mtroute="${ie}">📘 Ver la ruta del blog</button>`:""}
       ${off?`<button class="mpb" data-offt="${ie}">✓ Mapa sin cobertura</button>`:""}
-      <button class="mpb" data-mtcar="${ie}">📁 ${t.c?esc(t.c):"Meter en carpeta"}</button><button class="mpb" data-mtren="${ie}">✏️ Cambiar nombre</button>
+      <button class="mpb" data-mtren="${ie}">✏️ Cambiar nombre</button>
       <button class="mpb dan" data-mtdel="${ie}">${trs} Quitar de mis tracks</button></div>`}
   else h=cab+`<div class="meta">${d.km?`<span class="tag">${kmTxt(d.km)}</span>`:""}${d.up!=null?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}</div>
     <div class="tbot"><button class="btn primary" data-mtfol="${ie}">▶ Seguir</button><button class="btn ghost" data-mtver="${ie}">👁 Solo ver</button><button class="btn ghost" data-mtdat="${ie}">📊 Datos</button><button class="btn ghost" data-mtmas="${ie}">··· Más opciones</button></div>
