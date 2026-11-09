@@ -1445,7 +1445,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-8306927f.json", "ln": "colab-ln-2a978cd8.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-525d0afe.json", "ln": "colab-ln-2a978cd8.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -4921,12 +4921,11 @@ function aviso(y,m){const a=anos(y,m);if(a<=5)return"";const o=a>10;
   return`<details class="frav ${o?"o":"y"}"><summary>${o?`⛔ Ruta de ${y}: información antigua, comprueba el estado antes de ir.`:`⚠️ Ruta de ${y}: el camino puede haber cambiado.`}</summary><p>No garantizamos el estado actual de caminos, pasos y señales: pueden haber cambiado desde que se hizo la ruta (argayos, cierres, vegetación…). Infórmate antes de ir.</p></details>`}
 /* d = {grab, foto, quien, y, m, titulo, mk, de, km, dif, blog, seguir, trk, gRuta, gRutaOn, gTrack, share, llegar, perfil, cumbres:[{n,a,k}], otras, close} */
 function pinta(d){
-  const fe=d.y?(d.m&&MES[d.m]?cap(MES[d.m])+" ":"")+d.y:"";
   const dat=[["Desnivel",d.de],["Distancia",d.km],["Dificultad",d.dif]].filter(x=>x[1]);
   const t=d.trk?"":" hidden";   // lo que depende del track (colaboradores: se enseña al llegar su track)
   return`${d.grab!=null?`<div class="grab"${d.grab}></div>`:""}${d.foto?`<div class="photo"><img src="${esc(d.foto)}" alt="" onerror="this.parentNode.remove()"></div>`:""}
   <div class="fru">
-  <div class="frtop">${tipoHTML("ruta",d.quien||"")}${fe?`<span class="frfe">📅 ${fe}</span>`:""}</div>
+  <div class="frtop">${tipoHTML("ruta",d.quien||"")}</div>
   <div class="sheet-head"><h2>${esc(d.titulo)}</h2><button class="x" aria-label="Cerrar" data-close${d.close||""}>×</button></div>
   ${d.mk||""}
   ${dat.length?`<div class="ficha" style="grid-template-columns:repeat(${dat.length},1fr)">${dat.map(([l,v])=>`<div><b>${esc(v)}</b><span>${l}</span></div>`).join("")}</div>`:""}
@@ -5194,5 +5193,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="b7b2cded8f";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="78ae99cd8e";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
