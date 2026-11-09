@@ -22,6 +22,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 #gdbox .gdfa{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:6px 0 4px}
 #gdbox .gdfa button{min-height:42px;border:1px solid var(--edge);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-weight:700;font-size:14px;cursor:pointer}
 #gdbox .gdfa .pri{background:var(--ink);color:var(--card);border-color:var(--ink)}
+/* 9 nov 2026: al abrir una carpeta, un solo botón «Opciones de carpeta» (nombre, deshacer, borrar) y su contenido */
+#gdbox .gdfop{display:block;width:100%;min-height:48px;margin:6px 0 4px;border:1px solid var(--edge);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;font-size:16px;font-weight:800;cursor:pointer}
 #gdbox .gdmas{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 6px}#gdbox .gdmas button{border:0;background:none;color:var(--muted);font:inherit;font-size:14px;text-decoration:underline;cursor:pointer;padding:4px}
 .gdl .gdsep{margin:16px 2px 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:800}
 .gdl .gdr{display:flex;align-items:center;gap:10px;width:100%;border:0;border-bottom:1px solid var(--edge);background:none;color:var(--ink);padding:10px 2px;font:inherit;text-align:left;cursor:pointer}
@@ -67,8 +69,7 @@ function render(){if(box.hidden)return;const all=items(),nh=all.filter(x=>x.e===
     const names=Object.keys(fs).sort((a,b)=>(fs[b][0].f||"").localeCompare(fs[a][0].f||""));
     body=names.map(n=>{const xs=fs[n],nt=xs.filter(x=>x.k==="t").length,npt=xs.length-nt,op=OPEN.has(n);
       return`<button class="gdf" data-gdf="${esc(n)}" aria-expanded="${op}"><span class="e">📁</span><span><b>${esc(n)}</b><small>${[nt?nt+(nt===1?" track":" tracks"):"",npt?npt+(npt===1?" punto":" puntos"):""].filter(Boolean).join(" · ")}</small></span><svg class="chev" width="14" viewBox="0 0 10 10"><path d="M3 1.5 7 5 3 8.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>`+
-        (op?`<div class="gdfin" data-fn="${esc(n)}"><div class="gdfa"><button class="pri" data-gda="ver">🗺 Ver en el mapa</button><button data-gda="share">📤 Compartir</button><button data-gda="gpx">⬇ GPX</button></div>
-          <div class="gdmas"><button data-gda="ren">✏️ Cambiar nombre</button><button data-gda="undo">📂 Deshacer carpeta</button><button class="gdfdel" data-gdfdel>🗑 Borrar la carpeta y lo que tiene</button></div>${xs.map(x=>conX(Object.assign({inF:1},x))).join("")}</div>`:"")}).join("")+
+        (op?`<div class="gdfin" data-fn="${esc(n)}"><button class="gdfop" data-gdfop>⚙ Opciones de carpeta</button>${xs.map(x=>conX(Object.assign({inF:1},x))).join("")}</div>`:"")}).join("")+
       (sueltos.length?(names.length?`<p class="gdsep">Sin carpeta</p>`:"")+sueltos.map(x=>conX(x)).join(""):"")}
   box.innerHTML=`<div class="gdtop"><button class="pri" data-gdadd>⬆️ Abrir GPX o KML</button><button data-gdmas>··· Más</button></div>
   ${all.length?`<div class="gdfil">${[["todos","Todo",all.length],["pend","★ Pendientes",np],["hecho","✓ Hechos",nh]].map(([k,t,c])=>`<button data-gdfil="${k}" aria-pressed="${FIL===k}">${t} <small>${c}</small></button>`).join("")}</div>
@@ -97,6 +98,9 @@ box.addEventListener("click",e=>{
   const dx=e.target.closest("[data-gdx]");if(dx){if(!seguro(dx,"¿Borrar?"))return;const v=dx.dataset.gdx;borrar([{k:v[0],id:v.slice(2)}],dx.dataset.n);return}
   const fd=e.target.closest("[data-gdfdel]");if(fd){if(!seguro(fd,"¿Seguro? Toca otra vez"))return;const n=fd.closest("[data-fn]").dataset.fn;
     borrar(items().filter(x=>x.c===n).map(x=>({k:x.k,id:String(x.o.id)})),"carpeta "+n);OPEN.delete(n);return}
+  const fo=e.target.closest("[data-gdfop]");if(fo){const n=fo.closest("[data-fn]").dataset.fn,ac=k=>()=>{MPI.accion(n,k);setTimeout(render,300)};
+    elige("📁 "+esc(n),[["✏️","Cambiar nombre",ac("ren")],["📂","Deshacer carpeta (no borra nada)",ac("undo")],["🗑","Borrar la carpeta y lo que tiene",()=>{if(!confirm(`¿Borrar la carpeta «${n}» y todo lo que tiene dentro?`))return;
+      borrar(items().filter(x=>x.c===n).map(x=>({k:x.k,id:String(x.o.id)})),"carpeta "+n);OPEN.delete(n)}]]);return}
   if(e.target.closest("[data-gdadd]")){MPI.importar();return}   // 8 nov 2026: ya no se añaden puntos sueltos
   if(e.target.closest("[data-gdmas]")){const hay=MPI.get().length;elige("Más opciones",[["📁","Crear una carpeta",()=>MPI.nueva()],...(hay?[["⬇️","Exportar mis puntos (GPX)",()=>MPI.exportar("gpx")],["⬇️","Exportar mis puntos (KML, Google Earth)",()=>MPI.exportar("kml")]]:[])]);return}
   const fb=e.target.closest("[data-gdfil]");if(fb){FIL=fb.dataset.gdfil;render();return}
