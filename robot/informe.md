@@ -1,4 +1,4 @@
-# Informe del robot · 09/11/2026 16:08
+# Informe del robot · 09/11/2026 16:41
 
 **Cambios:** colaborador Camudando'l camín; regeneración forzada
 
@@ -11,11 +11,11 @@
 - 📷 Fotos de rutas de Rutinas Varias (de su blog): 0 nuevas, 139 en total, 7 sin foto
 - 📅 Fechas de rutas de Rutinas Varias: 0 nuevas (146 de 401 con fecha); Wikiloc no responde (8 fallos).
 - Colaborador «Rutinas Varias»: sin cambios.
-- 📝 Títulos de entradas de Camudando'l camín: 32 de 49 (17 no han respondido)
+- 📝 Títulos de entradas de Camudando'l camín: 38 de 49 (11 no han respondido)
 - 🤝 Colaborador «Camudando'l camín»: 73 puntos, 0 tracks.
 -    (39 peticiones a su web en 1.2 min)
 - 🐾 Gata con botas: 204 entradas en sus zonas, 190 rutas en la app (0 nuevas).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 18 colocadas en el pico de OpenStreetMap; 1 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 187 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
