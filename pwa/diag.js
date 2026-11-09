@@ -6,6 +6,13 @@
    Nada sale del móvil: en «Tu cuenta» hay un botón para copiar el informe y pegárselo a Claude.
    Además (arreglo preventivo): al irse a segundo plano se cierra el panel de Capas.
    Para quitarlo: borrar 'diag' de _mods en pwa/build_pwa.py. */
+/* 9 nov 2026: saber si estamos dentro del APK sin depender solo de cómo se abrió la página. Antes solo se miraba el origen
+   (android-app://…) del primer arranque; si la página arrancaba de otra forma, desaparecía el botón Grabar y Seguir usaba el GPS
+   de la web. Ahora, una vez visto el APK en este móvil, se recuerda (localStorage) y vale en cualquier arranque en Android.
+   Va aquí porque diag es el primer módulo: todos los demás miran sessionStorage «ldc-apk». */
+try{const ref=document.referrer.startsWith("android-app://es.losdelasclaras.rutas"),and=/Android/i.test(navigator.userAgent);
+  if(ref){sessionStorage.setItem("ldc-apk","1");localStorage.setItem("ldc-apk-visto","1")}
+  else if(and&&localStorage.getItem("ldc-apk-visto")==="1")sessionStorage.setItem("ldc-apk","1")}catch(e){}
 (function(){
 const K="ldc-diag",HB="ldc-diag-hb",MAX=250,T0=Date.now();
 const hh=t=>{const d=new Date(t);return d.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit"})+" "+d.toLocaleTimeString("es-ES",{hour12:false})+"."+String(d.getMilliseconds()).padStart(3,"0")};
