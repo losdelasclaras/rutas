@@ -23,7 +23,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .frav.o{background:#ffe1c7;color:#6b2c00;border:1px solid #f0a35e}
 .fracts{display:flex;gap:8px;margin:12px 0 8px}
 .fracts>*{flex:1 1 0;min-width:0;min-height:52px;display:flex;align-items:center;justify-content:center;margin:0;padding:8px 6px;box-sizing:border-box;font-size:16px;font-weight:800;text-align:center;line-height:1.15}
-.fracts .frseg{border:0;color:#fff;background:var(--ink)}
+.fracts .frseg{border:0;color:var(--paper,#fff);background:var(--ink)}
+.fracts .btn.primary{background:#c3262e;border-color:#c3262e;color:#fff}
 .fracts .frsin{border:1.5px dashed var(--edge,#bbb);border-radius:12px;color:var(--muted);font-weight:700;background:transparent}
 .fru .frmasb{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;margin:0 0 10px;box-sizing:border-box;border:1.5px solid var(--edge,#bbb);background:var(--card);color:var(--ink);font-size:16px;font-weight:800}
 /* «··· Más opciones»: hoja que sube desde abajo, como en el tablero */
@@ -31,7 +32,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .frmas{position:fixed;left:0;right:0;bottom:0;z-index:3001;background:var(--card,#fff);border-radius:18px 18px 0 0;padding:10px 16px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px;box-shadow:0 -6px 24px rgba(0,0,0,.25);max-width:640px;margin:0 auto}
 .frmas[hidden],.frvel[hidden]{display:none!important}
 .frmas .ag{width:44px;height:5px;border-radius:9px;background:var(--edge,#bbb);align-self:center;margin-bottom:6px}
-.frmas h3{margin:0 0 4px;font-size:20px}
+.frmas .frmh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 4px}.frmas h3{margin:0;font-size:20px}
+.frmas .frmx{width:44px;height:44px;flex:none;border-radius:999px;border:0;background:var(--mark,#c3262e);color:#fff;font-size:26px;line-height:1;cursor:pointer}
 .frmas>.btn{display:flex;align-items:center;justify-content:flex-start;gap:12px;width:100%;min-height:56px;margin:0;padding:8px 14px;box-sizing:border-box;font-size:17px;font-weight:700;text-align:left;border:0;background:var(--paper,#f4f6f2);border-radius:12px;color:var(--ink)}
 .frmas>.btn small{display:block;font-weight:400;color:var(--muted);font-size:13px}
 .frmas>.btn span{display:flex;flex-direction:column}
@@ -72,7 +74,7 @@ function pinta(d){
   ${dat.length?`<div class="ficha" style="grid-template-columns:repeat(${dat.length},1fr)">${dat.map(([l,v])=>`<div><b>${esc(v)}</b><span>${l}</span></div>`).join("")}</div>`:""}
   ${aviso(d.y,d.m)}
   <div class="fracts">${d.blog?`<a class="btn primary" href="${esc(d.blog)}" target="_blank" rel="noopener">📖 Leer en el blog</a>`:""}${d.seguir?`<button class="btn ghost frseg frtrk" ${d.seguir}${t}>▶ Seguir</button>`:`<span class="frsin" title="Esta ruta no tiene track para seguirla">Sin track</span>`}${d.gTrack?`<button class="btn ghost frseg frgtpc frtrk" ${d.gTrack}${t}>〰️ Guardar track</button>`:""}</div><button class="btn ghost frmasb" data-frmas aria-expanded="false">··· Otras opciones</button>
-  <div class="frvel" data-frx hidden></div><div class="frmas" hidden><div class="ag"></div><h3>Otras opciones</h3>
+  <div class="frvel" data-frx hidden></div><div class="frmas" hidden><div class="ag"></div><div class="frmh"><h3>Otras opciones</h3><button class="frmx" data-frx aria-label="Cerrar">×</button></div>
     ${d.gRuta?`<button class="btn ghost" ${d.gRuta}>${gRL(d.gRutaOn)}</button>`:""}
     ${d.gTrack?`<button class="btn ghost frtrk frgtm" ${d.gTrack}${t}>〰️ <span>Guardar track<small>Copia en Mis cosas, para usar sin cobertura</small></span></button>`:""}
     ${d.share?`<button class="btn ghost" ${d.share}>📤 Compartir</button>`:""}
