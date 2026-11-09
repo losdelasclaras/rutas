@@ -19,6 +19,7 @@ async function mandar(title,text,url){
 /* ---- 1. botón en las fichas de cumbres y lugares ---- */
 function datosFicha(c){
   const h2=c.querySelector(".sheet-head h2");if(!h2)return null;
+  if(c.querySelector(".fpt-rutas"))return null;   // 9 nov 2026: la ficha de cumbre/lugar ya no lleva botones (van en la ficha de cada ruta)
   if(c.querySelector("[data-share],[data-coshare],[data-follow],[data-cofol],[data-mtfol],[data-mpedit],[data-tmpcs],[data-ptshare]"))return null;
   const mk=c.querySelector(".mkblock .mk[data-key]");if(!mk)return null;const key=mk.dataset.key;if(!/^[cl]:/.test(key))return null;
   // sitio: el enlace de Google Maps de la ficha o, si no, el punto del grupo con ese nombre
