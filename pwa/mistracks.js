@@ -95,7 +95,7 @@ const trs=`<svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor
 function grande(t,d){const m=t.tm,tie=m&&m.b>m.a?hm(m.m||(m.b-m.a)/1000):d.km?"≈ "+hm((Math.max(d.km/4,(d.up||0)/400)+Math.min(d.km/4,(d.up||0)/400)/2)*3600):"—";
   return`<div class="tgr"><span><b>${tie}</b><small>${m&&m.b>m.a?"en movimiento":"tiempo estimado"}</small></span><span><b>${d.km?d.km.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2}):"—"}</b><small>km</small></span><span><b>${d.up!=null?"+"+d.up.toLocaleString("es-ES"):"—"}</b><small>m de subida</small></span></div>`}
 function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t)return;quitaPill();
-  if(t.pts&&t.pts.length>1&&!(t.dv>=2)&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
+  if(t.src!=="blog"&&t.pts&&t.pts.length>1&&!(t.dv>=2)&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
   if(typeof showView==="function")showView("mapa");
   if(!LAY.mt){LAY.mt=true;saveLay();const b=document.querySelector('[data-lay="mt"]');if(b)b.setAttribute("aria-pressed",true);MPI.sync()}
   const r=routeOf(t),d=datos(t),p=MPI.ptsOf(t)||(r&&r.gx&&r.gx.st?[r.gx.st]:null),ie=esc(t.id),off=window.OFFLINE&&OFFLINE.has(r?r.u:"mt:"+t.id);
@@ -211,4 +211,13 @@ document.head.insertAdjacentHTML("beforeend",`<style>.wplist{display:grid;gap:6p
 .wpt{display:flex;flex-direction:column;min-width:0}.wpt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wpt small{color:var(--muted);font-weight:700}</style>`);
 window.MISTRACKS={render,open,refresh,punto,route:id=>{const t=T().find(x=>String(x.id)===String(id));return t&&t.pts?comoRuta(t):null}};
 render();
+
+/* 9 nov 2026: todo lo guardado en Mis cosas lleva su recorrido dentro, también las rutas del blog (antes solo una referencia
+   a la ruta: si la app se actualizaba por detrás y se abría sin cobertura, salían sin línea). Las ya guardadas se completan solas. */
+function completar(){if(!window.loadTracks||!T().some(t=>t.src==="blog"&&!(t.pts&&t.pts.length)))return;
+  loadTracks().then(ok=>{if(!ok)return;let ch=false;
+    const ts=T().map(t=>{if(t.src!=="blog"||(t.pts&&t.pts.length))return t;const r=R.find(x=>x.u===t.u),ln=r&&r.gx&&r.gx.ln;if(!ln||ln.length<2)return t;ch=true;return{...t,pts:ln.map(q=>q.slice())}});
+    if(ch)MPI.saveTracks(ts)})}
+{const o=MPI.saveTracks;MPI.saveTracks=function(){const x=o.apply(this,arguments);setTimeout(completar,300);return x}}
+setTimeout(completar,4000);addEventListener("online",()=>setTimeout(completar,2000));
 })();

@@ -168,6 +168,11 @@ function syncZ(){const on=LAY.off&&list().length&&map.getZoom()>=9;if(on&&!map.h
 map.on("zoomend",syncZ);
 if(grp&&grp.nextElementSibling)grp.nextElementSibling.insertAdjacentHTML("beforeend",`<button class="lay" data-lay="off" aria-pressed="${!!LAY.off}" ${list().length?"":"hidden"}><span class="lico" style="background:rgba(42,122,59,.35)"></span>Zonas descargadas</button>`);
 document.querySelector(".legend").addEventListener("click",e=>{if(e.target.closest('[data-lay="off"]'))setTimeout(syncZ,0)});
-window.OFFLINE={has,list,zona,rutaOffline,ofrecer,wanted,setWanted:a=>{saveWanted(a,true);pintar()}};
+/* 9 nov 2026: ¿está descargado el mapa por donde pasa esta línea? (para «Listo sin cobertura» en Mis cosas) */
+let UC=null,UK="";
+function union(){const a=list(),k=a.map(m=>m.id+":"+(m.t||[]).length).join("|");if(k!==UK){UK=k;UC=new Set();for(const m of a)for(const t of m.t||[])if(t.startsWith("14/"))UC.add(t)}return UC}
+function cubre(ln){if(!ln||!ln.length)return false;const u=union();if(!u.size)return false;const en=p=>u.has("14/"+tx(p[1],14)+"/"+ty(p[0],14));
+  const st=Math.max(1,Math.floor(ln.length/60));for(let i=0;i<ln.length;i+=st)if(!en(ln[i]))return false;return en(ln[ln.length-1])}
+window.OFFLINE={cubre,has,list,zona,rutaOffline,ofrecer,wanted,setWanted:a=>{saveWanted(a,true);pintar()}};
 pintar();
 })();

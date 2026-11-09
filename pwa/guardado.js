@@ -29,6 +29,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .gdl .gdr{display:flex;align-items:center;gap:10px;width:100%;border:0;border-bottom:1px solid var(--edge);background:none;color:var(--ink);padding:10px 2px;font:inherit;text-align:left;cursor:pointer}
 .gdl .gdr:last-child{border-bottom:0}.gdl .gdr .e{font-size:22px;width:28px;text-align:center;flex:none}
 .gdl .gdr b{display:block;font-size:15.5px;line-height:1.25}.gdl .gdr small{display:block;color:var(--muted);font-size:13px}
+.gdr .gdoff{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:999px;background:#e3f1e6;color:#1d5a2b;font-size:14px;font-weight:700;font-style:normal}
 .gdl .gdr .st{margin-left:auto;font-weight:900;font-size:18px}.gdr .st.h{color:#2a7a3b}.gdr .st.p{color:#d4a000}
 #gdbox .gdvacio{color:var(--muted);margin:10px 2px}
 /* 8 nov 2026: papelera en cada fila (dos toques) y aviso con Deshacer */
@@ -53,11 +54,13 @@ const estDe=x=>x.est==="hecho"?"h":x.est==="pend"?"p":"";
 const kmT=k=>k?(k<10?String(Math.round(k*10)/10).replace(".",","):Math.round(k))+" km":"";
 function items(){const ps=MPI.get().map(p=>({k:"p",o:p,n:p.n,c:p.c,f:p.f,e:estDe(p)})),ts=MPI.tracks().map(t=>({k:"t",o:t,n:t.n,c:t.c,f:t.f,e:estDe(t)}));
   return ps.concat(ts).sort((a,b)=>(b.f||"").localeCompare(a.f||""))}
+// 9 nov 2026: «Listo sin cobertura»: el recorrido está en el móvil y el mapa de su zona, descargado
+const listo=ln=>!!(window.OFFLINE&&OFFLINE.cubre&&OFFLINE.cubre(ln)),OFFB=`<em class="gdoff">✈ Listo sin cobertura</em>`;
 function fila(x){const o=x.o;
   if(x.k==="t"){const sub=[kmT(o.km),o.up!=null?"+"+Math.round(o.up).toLocaleString("es-ES")+" m":"",o.src==="blog"?"Del blog":o.src==="grab"?"Grabado":"Cargado"].filter(Boolean).join(" · ");
-    return`<button class="gdr" data-gdt="${esc(o.id)}"><span class="e">${o.src==="blog"?"📘":o.src==="grab"?"⏺️":"〰️"}</span><span><b>${esc(o.n)}</b><small>${esc(sub)}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small></span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
+    return`<button class="gdr" data-gdt="${esc(o.id)}"><span class="e">${o.src==="blog"?"📘":o.src==="grab"?"⏺️":"〰️"}</span><span><b>${esc(o.n)}</b><small>${esc(sub)}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small>${listo(MPI.ptsOf?MPI.ptsOf(o):o.pts)?"<br>"+OFFB:""}</span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
   const ic=MPI.ico?MPI.ico(o.ic):null,tipo=ic?ic[2]:"Punto";
-  return`<button class="gdr" data-gdp="${esc(o.id)}"><span class="e">${MPI.emo?MPI.emo(o.ic):"📍"}</span><span><b>${esc(o.n)}</b><small>${esc([tipo,o.a!=null?Math.round(o.a).toLocaleString("es-ES")+" m":"",o.f?fmtF(o.f):""].filter(Boolean).join(" · "))}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small></span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
+  return`<button class="gdr" data-gdp="${esc(o.id)}"><span class="e">${MPI.emo?MPI.emo(o.ic):"📍"}</span><span><b>${esc(o.n)}</b><small>${esc([tipo,o.a!=null?Math.round(o.a).toLocaleString("es-ES")+" m":"",o.f?fmtF(o.f):""].filter(Boolean).join(" · "))}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small>${o.lat!=null&&listo([[o.lat,o.lon]])?"<br>"+OFFB:""}</span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
 const conX=x=>`<div class="gdw">${fila(x)}<button class="gdx" data-gdx="${x.k}:${esc(x.o.id)}" data-n="${esc(x.n)}" aria-label="Borrar">🗑</button></div>`;
 function render(){if(box.hidden)return;const all=items(),nh=all.filter(x=>x.e==="h").length,np=all.filter(x=>x.e==="p").length;
   const ok=x=>(FIL==="todos"||(FIL==="hecho"?x.e==="h":x.e==="p"))&&(!Q||nk(x.n).includes(Q)||nk(x.c).includes(Q));

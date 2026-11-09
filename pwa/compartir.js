@@ -55,7 +55,7 @@ async function enviaGpx(n,pts,wps){if(pts.length>3000)pts=simple(pts,3);const tx
   setTimeout(()=>toast("Guardado en Descargas. En WhatsApp: 📎 › Documento › Descargas"),1500)}
 window.enviaGpx=enviaGpx;
 function compartir(t){const r=t.src==="blog"?R.find(x=>x.u===t.u):null;
-  if(!t.pts||t.pts.length<2){if(r)shareRoute(r);return}
+  if(r||!t.pts||t.pts.length<2){if(r)shareRoute(r);return}   // las del blog: su enlace de ruta (aunque ya lleven el recorrido dentro)
   MPI.show(`<div class="sheet-head"><h2>📤 Compartir «${esc(t.n)}»</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
     <div class="topacts" style="flex-direction:column"><button class="btn primary" data-shk="gpx">📄 Enviar el archivo GPX</button><button class="btn ghost" data-shk="url">🔗 Enviar un enlace a la app</button></div>
     <p class="note">El <b>archivo GPX</b> se abre con Wikiloc, OruxMaps, Google Earth o esta misma app. Con el <b>enlace</b>, quien lo toque ve el track en la app de Los de las Claras.</p>`);
