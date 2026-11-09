@@ -250,7 +250,7 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
     }
     private var desdeIcono = false
     override fun onNewIntent(i: Intent?) { super.onNewIntent(i); setIntent(i); desdeIcono = i?.getBooleanExtra("desdeIcono", false) == true; datosDe(i); web.evaluateJavascript("cargaSeguir();refresca();miraZona()", null) }
-    override fun onResume() { super.onResume(); mirar(); brujula(true) }
+    override fun onResume() { super.onResume(); mirar(); brujula(true); try { web.evaluateJavascript("window.movilListo&&movilListo()", null) } catch (e: Exception) {} }   // al volver de un ajuste, la lista «Preparar el móvil» se pone al día
     override fun onPause() { super.onPause(); soltar(); brujula(false) }
 
     // ---------- brújula: hacia dónde mira el móvil (sensor de rotación), corregida al norte geográfico ----------
@@ -383,6 +383,8 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
     }
     override fun onRequestPermissionsResult(rc: Int, p: Array<out String>, r: IntArray) {
         super.onRequestPermissionsResult(rc, p, r)
+        if (rc == 6) { if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) mirar()
+            web.evaluateJavascript("window.movilListo&&movilListo()", null); return }
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) { mirar(); if (empezarTrasPermiso) arrancar() }
         else web.evaluateJavascript("sinPermiso()", null)
         empezarTrasPermiso = false
@@ -449,6 +451,63 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         @JavascriptInterface fun bateria() = runOnUiThread {
             try { startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName"))) }
             catch (e: Exception) { try { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) } catch (x: Exception) {} } }
+        /* ---------- 9 nov 2026: «⚙️ Preparar el móvil para grabar» (móviles antiguos y marcas que cortan el GPS en segundo plano) ---------- */
+        private fun tiene(x: String) = checkSelfPermission(x) == PackageManager.PERMISSION_GRANTED
+        @JavascriptInterface fun movil(): String {
+            val pm = getSystemService(POWER_SERVICE) as PowerManager; val lm = getSystemService(LOCATION_SERVICE) as LocationManager
+            val gps = try { lm.isProviderEnabled(LocationManager.GPS_PROVIDER) } catch (e: Exception) { true }
+            return JSONObject().put("sdk", Build.VERSION.SDK_INT).put("android", Build.VERSION.RELEASE).put("marca", Build.MANUFACTURER.lowercase()).put("modelo", Build.MODEL)
+                .put("fina", tiene(Manifest.permission.ACCESS_FINE_LOCATION))
+                .put("siempre", if (Build.VERSION.SDK_INT >= 29) tiene(Manifest.permission.ACCESS_BACKGROUND_LOCATION) else true)
+                .put("notif", if (Build.VERSION.SDK_INT >= 33) tiene(Manifest.permission.POST_NOTIFICATIONS) else (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).areNotificationsEnabled())
+                .put("bateria", sinBateria()).put("gps", gps).put("ahorro", pm.isPowerSaveMode).toString()
+        }
+        @JavascriptInterface fun pedirUbic() = runOnUiThread { requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 6) }
+        /** «Permitir siempre»: en Android 10 sale como pregunta; desde el 11, Android lleva directo a la pantalla del permiso. */
+        @JavascriptInterface fun pedirSiempre() = runOnUiThread {
+            if (Build.VERSION.SDK_INT < 29) return@runOnUiThread
+            if (!tiene(Manifest.permission.ACCESS_FINE_LOCATION)) { requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 6); return@runOnUiThread }
+            try { requestPermissions(arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION), 6) } catch (e: Exception) { ajustesApp() } }
+        @JavascriptInterface fun pedirNotif() = runOnUiThread {
+            // la primera vez se pregunta; si ya se dijo que no, Android no vuelve a preguntar: se abre su pantalla de ajustes
+            val pr = Grab.prefs(c)
+            if (Build.VERSION.SDK_INT >= 33 && !tiene(Manifest.permission.POST_NOTIFICATIONS) && !pr.getBoolean("notif_pedida", false)) {
+                pr.edit().putBoolean("notif_pedida", true).apply(); requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 6) }
+            else try { startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName)) } catch (e: Exception) { ajustesApp() } }
+        @JavascriptInterface fun ajustesGps() = runOnUiThread { try { startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) } catch (e: Exception) {} }
+        @JavascriptInterface fun ajustesAhorro() = runOnUiThread { try { startActivity(Intent(Settings.ACTION_BATTERY_SAVER_SETTINGS)) } catch (e: Exception) { ajustesApp() } }
+        @JavascriptInterface fun ajustesApp() = runOnUiThread { try { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) } catch (e: Exception) {} }
+        /** Pantallas propias de cada marca (inicio automático, segundo plano). Se prueba una a una; si ninguna existe, los ajustes de la app. */
+        @JavascriptInterface fun ajustesMarca() = runOnUiThread {
+            val l = listOf(
+                "com.miui.securitycenter/com.miui.permcenter.autostart.AutoStartManagementActivity",
+                "com.miui.powerkeeper/com.miui.powerkeeper.ui.HiddenAppsConfigActivity",
+                "com.huawei.systemmanager/com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity",
+                "com.huawei.systemmanager/com.huawei.systemmanager.optimize.process.ProtectActivity",
+                "com.hihonor.systemmanager/com.hihonor.systemmanager.startupmgr.ui.StartupNormalAppListActivity",
+                "com.coloros.safecenter/com.coloros.safecenter.permission.startup.StartupAppListActivity",
+                "com.coloros.safecenter/com.coloros.safecenter.startupapp.StartupAppListActivity",
+                "com.oppo.safe/com.oppo.safe.permission.startup.StartupAppListActivity",
+                "com.vivo.permissionmanager/com.vivo.permissionmanager.activity.BgStartUpManagerActivity",
+                "com.iqoo.secure/com.iqoo.secure.ui.phoneoptimize.BgStartUpManager",
+                "com.oneplus.security/com.oneplus.security.chainlaunch.view.ChainLaunchAppListActivity",
+                "com.samsung.android.lool/com.samsung.android.sm.battery.ui.BatteryActivity",
+                "com.samsung.android.lool/com.samsung.android.sm.ui.battery.BatteryActivity",
+                "com.asus.mobilemanager/com.asus.mobilemanager.MainActivity",
+                "com.meizu.safe/com.meizu.safe.permission.SmartBGActivity",
+                "com.letv.android.letvsafe/com.letv.android.letvsafe.AutobootManageActivity")
+            val m = Build.MANUFACTURER.lowercase()
+            val propias = l.filter { n -> val k = n.substringBefore('/')
+                when { m.contains("xiaomi") || m.contains("redmi") || m.contains("poco") -> k.contains("miui")
+                    m.contains("huawei") -> k.contains("huawei"); m.contains("honor") -> k.contains("honor") || k.contains("huawei")
+                    m.contains("oppo") || m.contains("realme") -> k.contains("coloros") || k.contains("oppo")
+                    m.contains("vivo") || m.contains("iqoo") -> k.contains("vivo") || k.contains("iqoo")
+                    m.contains("oneplus") -> k.contains("oneplus") || k.contains("coloros"); m.contains("samsung") -> k.contains("samsung")
+                    m.contains("asus") -> k.contains("asus"); m.contains("meizu") -> k.contains("meizu"); else -> false } }
+            for (n in propias) { try { val i = Intent().setComponent(android.content.ComponentName.unflattenFromString(n)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .putExtra("package_name", packageName).putExtra("package_label", getString(R.string.app_name))
+                if (packageManager.resolveActivity(i, 0) != null) { startActivity(i); return@runOnUiThread } } catch (e: Exception) {} }
+            ajustesApp() }
         @JavascriptInterface fun sinBateria(): Boolean = if (Build.VERSION.SDK_INT >= 23) (getSystemService(POWER_SERVICE) as PowerManager).isIgnoringBatteryOptimizations(packageName) else true
         /** 🏠: si esta pantalla se abrió sola desde el icono (porque se estaba grabando), detrás no está la app: se abre como al tocar el icono. */
         @JavascriptInterface fun volver() = runOnUiThread {
