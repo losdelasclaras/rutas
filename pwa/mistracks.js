@@ -101,10 +101,9 @@ function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t
   const r=routeOf(t),d=datos(t),p=MPI.ptsOf(t)||(r&&r.gx&&r.gx.st?[r.gx.st]:null),ie=esc(t.id),off=window.OFFLINE&&OFFLINE.has(r?r.u:"mt:"+t.id);
   const cab=`<div class="sheet-head"><h2>${esc(t.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>`,volver=`<button class="btn ghost tvol" data-mtback="${ie}">← Volver</button>`;
   let h;
-  if(vista==="datos"){const q=p&&p.length?p.reduce((b,x)=>x[2]!=null&&(b[2]==null||x[2]>b[2])?x:b,p[0]):null;
-    h=cab+volver+grande(t,d)+datosHTML(t,d)+perfil(t)+puntosHTML(t)+
-      (!r&&t.pts&&t.pts.some(x=>x[2]==null)?`<p class="note">${navigator.onLine?"Calculando las alturas…":"Este track no trae alturas; se calcularán cuando haya conexión."}</p>`:"")+
-      (q?H3("El tiempo"+(q[2]!=null?" en el punto más alto":""))+`<div class="wx" data-lat="${q[0]}" data-lon="${q[1]}" data-alt="${q[2]!=null?Math.round(q[2]):""}"></div>`:"")}
+  if(vista==="datos"){   // 9 nov 2026: solo la cuadrícula de datos, el perfil y los puntos (sin la franja grande ni el tiempo)
+    h=cab+volver+`<div class="tdat">`+datosHTML(t,d)+perfil(t)+puntosHTML(t)+
+      (!r&&t.pts&&t.pts.some(x=>x[2]==null)?`<p class="note">${navigator.onLine?"Calculando las alturas…":"Este track no trae alturas; se calcularán cuando haya conexión."}</p>`:"")+`</div>`}
   else if(vista==="mas"){
     h=cab+volver+`<div class="tmas"><button class="mpb pri" data-mtshare="${ie}">📤 Compartir (GPX o enlace de la app)</button>
       ${p?`<a class="mpb" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p[0][0]},${p[0][1]}">🚗 Cómo llegar al inicio</a>`:""}
@@ -144,7 +143,7 @@ function datosHTML(t,d){const c=[],x=(v,l,w)=>c.push(`<div${w?' class="w"':""}><
       if(d.up&&m.m>600)x(Math.round(d.up/(m.m/3600)).toLocaleString("es-ES")+" m/h","Subida por hora en movimiento")}}
   else if(d.km){const a=d.km/4,b=(d.up||0)/400,h=Math.max(a,b)+Math.min(a,b)/2;x("≈ "+hm(h*3600),"Tiempo estimado andando, sin paradas",1)}
   return c.length?`<h3 style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 0">📊 Datos</h3><div class="dat">${c.join("")}</div>`:""}
-function refresh(id){render();if(!sheet.hidden&&String(sheet._mt)===String(id)&&sheet.querySelector("[data-mtfol],[data-mtdat],.tgr,.tmas"))open(id,false,sheet._mv)}
+function refresh(id){render();if(!sheet.hidden&&String(sheet._mt)===String(id)&&sheet.querySelector("[data-mtfol],[data-mtdat],.tdat,.tmas"))open(id,false,sheet._mv)}
 
 function gpxDe(t){const x=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   return`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${x(t.n)}</name></metadata>\n`+
@@ -174,7 +173,7 @@ sheet.addEventListener("click",e=>{
   if((k=id("[data-mtrensave]"))!=null){const v=(document.getElementById("mtn").value||"").trim();if(!v)return;
     const ts=T().map(x=>String(x.id)===k?{...x,n:v}:x);MPI.saveTracks(ts);toast("Nombre cambiado");open(k,false);return}
   if((k=id("[data-mtback]"))!=null){open(k,false);return}
-  if((k=id("[data-mtdat]"))!=null){open(k,false,"datos");return}
+  if((k=id("[data-mtdat]"))!=null){open(k,true,"datos");return}
   if((k=id("[data-mtmas]"))!=null){open(k,false,"mas");return}
   if((k=id("[data-mtdel]"))!=null){const b=e.target.closest("[data-mtdel]");if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="¿Seguro? Toca otra vez";return}
     borraFotos(k);MPI.saveTracks(T().filter(x=>String(x.id)!==k));sheet.hidden=true;toast("Quitado de Mis tracks");return}

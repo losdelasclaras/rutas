@@ -105,7 +105,7 @@ function limpia(c){
 function ordena(c){if(!c||c.hidden)return;
   try{limpia(c)}catch(e){console.error(e)}
   if(c.querySelector(".fpt"))return;
-  if(c.querySelector(".tbot,.tgr,.tmas"))return;   // 9 nov 2026: ficha de un track de Mis cosas: ya viene hecha (sin el «Más opciones» de arriba)
+  if(c.querySelector(".tbot,.tdat,.tmas"))return;   // 9 nov 2026: ficha de un track de Mis cosas: ya viene hecha (sin el «Más opciones» de arriba)
   const pr=[...c.querySelectorAll(PRIM)].find(x=>!x.closest(FUERA));
   const ruta=!!(pr||c.querySelector(".grab[data-route]")||c.querySelector(".mkblock.rmk"));if(!ruta)return;
   // ⌚ si no está

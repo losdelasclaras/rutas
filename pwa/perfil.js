@@ -7,6 +7,8 @@ function rutaDe(svg){const c=svg.closest("#sheet,#ov");if(!c)return null;
   if(c.id==="sheet"&&sheet._cor&&window.COLX&&COLX.trkOf){const t=COLX.trkOf(sheet._cor);if(t)return t}
   const g=c.querySelector("[data-gpx]");if(g){const r=R[+g.dataset.gpx];return r&&r.gx&&r.gx.ln?{ln:r.gx.ln,km:r.gx.km}:null}
   const m=c.querySelector("[data-mtfol]");if(m&&window.MISPUNTOS){const t=MISPUNTOS.tracks().find(x=>String(x.id)===m.dataset.mtfol);const ln=t&&MISPUNTOS.ptsOf(t);return ln?{ln,km:t.km}:null}
+  // 9 nov 2026: «📊 Datos» de un track de Mis cosas (ahí no está el botón ▶ Seguir)
+  if(c.id==="sheet"&&c.querySelector(".tdat")&&sheet._mt!=null&&window.MISPUNTOS){const t=MISPUNTOS.tracks().find(x=>String(x.id)===String(sheet._mt));const ln=t&&MISPUNTOS.ptsOf(t);return ln?{ln,km:t.km}:null}
   return null}
 function puntoEn(rt,km){const ln=rt.ln;let tot=0;const cum=[0];for(let i=1;i<ln.length;i++){tot+=map.distance([ln[i-1][0],ln[i-1][1]],[ln[i][0],ln[i][1]]);cum.push(tot)}
   const d=Math.min(tot,km*1000*(tot/((rt.km||tot/1000)*1000)));let i=1;while(i<cum.length-1&&cum[i]<d)i++;const f=cum[i]>cum[i-1]?(d-cum[i-1])/(cum[i]-cum[i-1]):0;
