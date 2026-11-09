@@ -128,7 +128,7 @@ const BASES={topo:[OTM],
   ign:[OTM,L.tileLayer(wmts("mapa-raster","MTN","jpeg"),{minZoom:4,maxNativeZoom:17,maxZoom:18,bounds:ESP,crossOrigin:true,attribution:"Mapa ráster "+IGNATT})],
   orto:[OTM,L.tileLayer(wmts("pnoa-ma","OI.OrthoimageCoverage","jpeg"),{minZoom:4,maxNativeZoom:19,maxZoom:18,bounds:ESP,crossOrigin:true,attribution:"Ortofoto PNOA "+IGNATT})],
   none:[]};
-let BASE=store.get("ldc-base",store.get("ldc-ign","0")==="1"?"ign":"topo");if(!BASES[BASE])BASE="topo";
+let BASE=store.get("ldc-base",store.get("ldc-ign","0")==="1"?"ign":"topo");if(!BASES[BASE]||BASE==="none")BASE="topo";   // 9 nov 2026: quitado «Sin mapa» de Capas
 window.__TL={};for(const k in BASES)for(const l of BASES[k]){if(l.__w)continue;l.__w=1;const h=(l._url||"").split("/")[2]||"?";l.on("tileload",()=>{(__TL[h]=__TL[h]||{ok:0,err:0}).ok++}).on("tileerror",()=>{(__TL[h]=__TL[h]||{ok:0,err:0}).err++})}
 function setBase(b){BASE=b;store.set("ldc-base",b);const want=new Set(BASES[b]);
   for(const k in BASES)for(const l of BASES[k])if(!want.has(l)&&map.hasLayer(l))l.remove();
