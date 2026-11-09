@@ -16,7 +16,9 @@ const N=6,ap=(t,x)=>{if(window.DIAG)DIAG.apunta(t,x)};
 let cur=0,salir=0,ign=false;   // cur: en qué entrada nuestra estamos (null si en una de otros)
 try{history.replaceState(Object.assign({},history.state||{},{ldc0:1,ldci:0}),"")}catch(e){cur=null}
 function rellena(){if(salir||cur===null||cur>=N)return;try{for(let i=cur+1;i<=N;i++)history.pushState({ldcg:1,ldci:i},"");cur=N}catch(e){}}
-addEventListener("pointerdown",rellena,{capture:true,passive:true});
+// al LEVANTAR el dedo (9 nov 2026): con el dedo, Chrome solo cuenta el toque al soltar (pointerup/touchend/click); las guardias
+// puestas al apoyar el dedo (pointerdown) no valían y el segundo «Atrás» seguido cerraba la app (informe 9:38:51 y 9:39:47)
+for(const ev of ["pointerup","touchend","click"])addEventListener(ev,e=>{if(e.isTrusted)rellena()},{capture:true,passive:true});   // solo toques de verdad (no la ✕ que pulsa el propio gesto)
 addEventListener("keydown",rellena,{capture:true});
 function unPaso(){
   // 1) cuadros: cuenta, instalar…
