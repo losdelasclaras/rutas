@@ -47,7 +47,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>.salbar{position:fixed;left
 let BAR=null,btm=null;
 function barra(){if(BAR)BAR.remove();clearTimeout(btm);BAR=document.createElement("div");BAR.className="salbar";
   const fb=encodeURIComponent(location.href.split("#")[0]+"#");
-  BAR.innerHTML=apk?`<span>¿Salir de la app?</span><a href="intent://salir#Intent;scheme=ldcrutas;package=es.losdelasclaras.rutas;S.browser_fallback_url=${fb};end">Salir</a>`
+  /* 9 nov: siempre el botón; la app no siempre sabe que viene del APK (al arrancar de nuevo) y salía «desliza hacia arriba» */
+  BAR.innerHTML=true?`<span>¿Salir de la app?</span><a href="intent://salir#Intent;scheme=ldcrutas;package=es.losdelasclaras.rutas;S.browser_fallback_url=${fb};end">Salir</a>`
     :`<span>Para salir, desliza hacia arriba</span>`;
   document.body.appendChild(BAR);const a=BAR.querySelector("a");if(a)a.addEventListener("click",()=>{ap("atrás","Salir");setTimeout(()=>{if(BAR){BAR.remove();BAR=null}},300)});
   btm=setTimeout(()=>{if(BAR){BAR.remove();BAR=null}},8000)}   // 8 s (9 nov: 4 s era poco)
