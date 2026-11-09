@@ -1013,10 +1013,18 @@ const ICO=k=>(ICOS.find(x=>x[0]===k)||ICOS[0]);
 const EMO=k=>k==="cumbre"?'<svg viewBox="-12 -12 24 24" style="width:1.15em;height:1.15em;vertical-align:-.2em"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>':ICO(k)[1];
 let MP=store.get(MPK,[]), MT=store.get(MTK,[]);
 if(LAY.mp===undefined)LAY.mp=true; if(LAY.mt===undefined)LAY.mt=true;
-const saveMP=()=>{store.set(MPK,MP);if(window.ldcSync)ldcSync("puntos")}, saveMT=()=>{try{localStorage.setItem(MTK,JSON.stringify(MT));if(window.ldcSync)ldcSync("tracks");return true}catch(e){toast("No queda sitio en el móvil para más tracks");return false}};
+const c5=x=>Math.round(x*1e5)/1e5;
+/* 9 nov 2026: tracks más ligeros, para que quepan muchos en el móvil (el almacén de los tracks es de unos 5 MB): posición a ~1 m
+   (5 decimales), altura en metros enteros y fuera los puntos a menos de 3 m del anterior (parado o GPS cada segundo).
+   No cambia el recorrido, el perfil ni el desnivel guardado (km y desnivel no se recalculan). Una sola vez por track (lz). */
+function ligero(t){if(!t||t.lz||!t.pts||t.pts.length<3)return false;const P=t.pts,q=[];let u=null;
+  const d=(a,b)=>Math.hypot((a[0]-b[0])*111195,(a[1]-b[1])*111195*Math.cos(a[0]*Math.PI/180));
+  for(let i=0;i<P.length;i++){const p=P[i];if(!p||!isFinite(p[0])||!isFinite(p[1]))continue;const n=p.slice();n[0]=c5(p[0]);n[1]=c5(p[1]);if(n.length>2&&n[2]!=null&&isFinite(n[2]))n[2]=Math.round(n[2]);
+    if(u&&i<P.length-1&&d(u,n)<3)continue;q.push(n);u=n}
+  if(q.length>=2)t.pts=q;t.lz=1;return true}
+const saveMP=()=>{store.set(MPK,MP);if(window.ldcSync)ldcSync("puntos")}, saveMT=()=>{for(const t of MT)ligero(t);try{localStorage.setItem(MTK,JSON.stringify(MT));if(window.ldcSync)ldcSync("tracks");return true}catch(e){toast("No queda sitio en el móvil para más tracks");return false}};
 const nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const fmtF=f=>{try{return new Date(f).toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}catch(e){return""}};
-const c5=x=>Math.round(x*1e5)/1e5;
 function alti(p){if(!navigator.onLine)return;fetch(`https://api.open-meteo.com/v1/elevation?latitude=${p.lat}&longitude=${p.lon}`).then(r=>r.json()).then(j=>{const a=j&&j.elevation&&j.elevation[0];if(a==null||!isFinite(a))return;const q=MP.find(x=>x.id===p.id);if(!q)return;q.a=Math.round(a);saveMP();drawMP();renderBox();if(MPSEL===q.id&&!sheet.hidden&&!sheet._mp)openMP(q.id)}).catch(()=>{})}
 
 document.head.insertAdjacentHTML("beforeend",`<style>
@@ -1276,6 +1284,7 @@ function desn(o){const p=o.pts;if(!p.length||p.some(x=>x[2]==null)){if(o.ug){o.u
 function fixDv(l){let k=0;for(const o of l||[])if(esGrab(o)&&o.dv!==3&&o.pts&&o.pts.length>1){
     if(!o.pts.every(x=>x[2]!=null))continue;desn(o);k++}return k}   // sin alturas: se arregla cuando llegan las del relieve (demAlt)
 if(fixDv(MT))try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}
+if(MT.some(t=>t&&!t.lz&&t.pts&&t.pts.length>2))setTimeout(()=>{if(MT.some(t=>ligero(t)))saveMT()},3000);
 // si el GPX no trae alturas, se sacan del modelo de relieve (hace falta conexión)
 async function demAlt(id){const o=MT.find(x=>x.id===id);if(!o||!navigator.onLine)return;const p=o.pts;
   const idx=[];const step=Math.max(1,Math.ceil(p.length/1000));for(let i=0;i<p.length;i+=step)idx.push(i);if(idx[idx.length-1]!==p.length-1)idx.push(p.length-1);
@@ -3501,13 +3510,13 @@ const estDe=x=>x.est==="hecho"?"h":x.est==="pend"?"p":"";
 const kmT=k=>k?(k<10?String(Math.round(k*10)/10).replace(".",","):Math.round(k))+" km":"";
 function items(){const ps=MPI.get().map(p=>({k:"p",o:p,n:p.n,c:p.c,f:p.f,e:estDe(p)})),ts=MPI.tracks().map(t=>({k:"t",o:t,n:t.n,c:t.c,f:t.f,e:estDe(t)}));
   return ps.concat(ts).sort((a,b)=>(b.f||"").localeCompare(a.f||""))}
-// 9 nov 2026: «Listo sin cobertura»: el recorrido está en el móvil y el mapa de su zona, descargado
-const listo=ln=>!!(window.OFFLINE&&OFFLINE.cubre&&OFFLINE.cubre(ln)),OFFB=`<em class="gdoff">✈ Listo sin cobertura</em>`;
+// 9 nov 2026: «Listo sin cobertura»: el recorrido del track está guardado en el móvil (los mapas los ofrece Grabar o Seguir)
+const listo=t=>!!(t&&t.pts&&t.pts.length>1),OFFB=`<em class="gdoff">✈ Listo sin cobertura</em>`;
 function fila(x){const o=x.o;
   if(x.k==="t"){const sub=[kmT(o.km),o.up!=null?"+"+Math.round(o.up).toLocaleString("es-ES")+" m":"",o.src==="blog"?"Del blog":o.src==="grab"?"Grabado":"Cargado"].filter(Boolean).join(" · ");
-    return`<button class="gdr" data-gdt="${esc(o.id)}"><span class="e">${o.src==="blog"?"📘":o.src==="grab"?"⏺️":"〰️"}</span><span><b>${esc(o.n)}</b><small>${esc(sub)}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small>${listo(MPI.ptsOf?MPI.ptsOf(o):o.pts)?"<br>"+OFFB:""}</span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
+    return`<button class="gdr" data-gdt="${esc(o.id)}"><span class="e">${o.src==="blog"?"📘":o.src==="grab"?"⏺️":"〰️"}</span><span><b>${esc(o.n)}</b><small>${esc(sub)}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small>${listo(o)?"<br>"+OFFB:""}</span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
   const ic=MPI.ico?MPI.ico(o.ic):null,tipo=ic?ic[2]:"Punto";
-  return`<button class="gdr" data-gdp="${esc(o.id)}"><span class="e">${MPI.emo?MPI.emo(o.ic):"📍"}</span><span><b>${esc(o.n)}</b><small>${esc([tipo,o.a!=null?Math.round(o.a).toLocaleString("es-ES")+" m":"",o.f?fmtF(o.f):""].filter(Boolean).join(" · "))}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small>${o.lat!=null&&listo([[o.lat,o.lon]])?"<br>"+OFFB:""}</span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
+  return`<button class="gdr" data-gdp="${esc(o.id)}"><span class="e">${MPI.emo?MPI.emo(o.ic):"📍"}</span><span><b>${esc(o.n)}</b><small>${esc([tipo,o.a!=null?Math.round(o.a).toLocaleString("es-ES")+" m":"",o.f?fmtF(o.f):""].filter(Boolean).join(" · "))}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small></span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
 const conX=x=>`<div class="gdw">${fila(x)}<button class="gdx" data-gdx="${x.k}:${esc(x.o.id)}" data-n="${esc(x.n)}" aria-label="Borrar">🗑</button></div>`;
 function render(){if(box.hidden)return;const all=items(),nh=all.filter(x=>x.e==="h").length,np=all.filter(x=>x.e==="p").length;
   const ok=x=>(FIL==="todos"||(FIL==="hecho"?x.e==="h":x.e==="p"))&&(!Q||nk(x.n).includes(Q)||nk(x.c).includes(Q));
@@ -5010,5 +5019,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="3084fe9bd6";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="0562fe8edd";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
