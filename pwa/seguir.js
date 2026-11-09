@@ -15,7 +15,11 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .fol .fst a{color:inherit}
 .fol .fg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;text-align:center}
 .fol .fg small{display:block;font-size:11.5px;color:var(--muted);font-weight:600;line-height:1.15}.fol .fg b{font-size:19px;font-variant-numeric:tabular-nums}
-.fol .fb{display:flex;gap:6px;margin-top:10px}.fol .fb button{flex:1;border:1px solid var(--edge);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 6px;font-weight:700;font-size:14px;cursor:pointer}
+.fol .fb{display:flex;gap:6px;margin-top:10px}
+.fol .fav{margin-top:10px}.fol .fav small{font-weight:700;color:var(--muted)}.fol .fav div{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:4px}
+.fol .fav button{min-height:48px;border:1px solid var(--edge);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-size:14px;font-weight:700;padding:2px 4px}
+.fol .fav button.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.fol.min .fav{display:none}.fol .fb button{flex:1;border:1px solid var(--edge);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 6px;font-weight:700;font-size:14px;cursor:pointer}
 .fol .fb button.on{background:#1a73e8;color:#fff;border-color:#1a73e8}.fol .fb button.end{color:#b3261e}
 .fol .bar{height:6px;border-radius:3px;background:#e6e6e6;margin:8px 0 2px;overflow:hidden}.fol .bar i{display:block;height:100%;background:#c3262e}
 .folme{width:20px;height:20px}
@@ -59,7 +63,11 @@ function panelHTML(){const r=F.r;
   <div class="bar"><i data-fbar style="width:0"></i></div>
   <div class="fg"><div><small>Hecho</small><b data-fdone>—</b></div><div><small>Falta</small><b data-fleft>${fk(F.T.tot)}</b></div>
    <div><small>Subida que falta</small><b data-fup>+${fm(F.T.up[F.T.up.length-1])}</b></div><div><small>Bajada que falta</small><b data-fdn>−${fm(F.T.dn[F.T.dn.length-1])}</b></div></div>
-  <div class="fb"><button data-fc class="on">◎ Centrar</button><button data-fr title="Si haces la ruta desde el otro extremo">⇄ Al revés</button><button data-fx class="end">✕ Terminar</button></div>`}
+  <div class="fb"><button data-fc class="on">◎ Centrar</button><button data-fr title="Si haces la ruta desde el otro extremo">⇄ Al revés</button><button data-fx class="end">✕ Terminar</button></div>
+  ${(()=>{const m=modoAv(),b=(k,t)=>`<button data-fav="${k}" class="${m===k?"on":""}">${t}</button>`;return`<div class="fav"><small>Si me salgo del track (más de 100 m):</small><div>${b("vs","🔊 Vibrar y sonar")}${b("v","📳 Solo vibrar")}${b("no","🔕 Nada")}</div></div>`})()}`}
+/* 9 nov 2026: aviso al salirse del track (a más de 100 m), con ajuste: vibrar y sonar / solo vibrar / nada. Solo con la pantalla encendida */
+const modoAv=()=>{try{return localStorage.getItem("ldc-avisofuera")||"vs"}catch(e){return"vs"}};
+function avisoFuera(){const m=modoAv();if(m==="no")return;vib([400,200,400]);if(m==="vs")beep()}
 const Q=s=>F&&F.el.querySelector(s);
 function status(cls,html){const e=Q("[data-fst]");if(!e)return;e.className="fst "+cls;e.innerHTML=html}
 
@@ -78,7 +86,7 @@ const vib=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
 function fix(pos){if(!F)return;const c=pos.coords,la=c.latitude,lo=c.longitude,acc=c.accuracy||30;F.fixes++;
   F.me.setLatLng([la,lo]);F.acc.setLatLng([la,lo]).setRadius(acc);if(!map.hasLayer(F.me)){F.acc.addTo(map);F.me.addTo(map)}
   if(F.follow)map.setView([la,lo],Math.max(map.getZoom(),15),{animate:true});
-  const T=F.T,p=locate(la,lo),thr=Math.max(50,Math.min(150,acc*1.3));
+  const T=F.T,p=locate(la,lo),thr=Math.max(100,Math.min(150,acc*1.3));   // 9 nov 2026: 100 m (antes 50)
   if(p.d<=thr){F.s=p.s;F.i=p.i;F.t=p.t}   // la posición en el track solo cambia si estás encima
   const s=F.s,left=Math.max(0,T.tot-s),i=F.i||0,t=F.t||0;
   Q("[data-fdone]").textContent=fk(s);Q("[data-fleft]").textContent=fk(left);
@@ -93,14 +101,14 @@ function fix(pos){if(!F)return;const c=pos.coords,la=c.latitude,lo=c.longitude,a
   const alt=dz!=null?` · ${fm(dz)}`:(p.d<=thr&&ta!=null?` · ${fm(ta)}`:"");
   if(p.d<=thr){
     if(!F.on){F.on=true;if(F.fixes>1)vib(120)}
-    if(F.off){F.off=0;vib(120);toast("De nuevo en la ruta")}
+    if(F.off){F.off=0;if(modoAv()!=="no")vib(120);toast("De nuevo en la ruta")}
     if(left<60&&s>T.tot*0.5){if(!F.fin){F.fin=true;vib([200,100,200,100,400])}status("fin","🏁 ¡Has llegado al final de la ruta!")}
     else status("ok",`✓ En la ruta${alt}`)}
   else if(!F.on){ // aún no has llegado al track
     const ds=dm([la,lo],T.ln[0]);
     status("far",ds<=p.d+30?`Estás a ${fk(ds)} del inicio · <a href="https://www.google.com/maps/dir/?api=1&destination=${T.ln[0][0]},${T.ln[0][1]}" target="_blank" rel="noopener">Cómo llegar</a>`:`Estás a ${fk(p.d)} del track`)}
   else{F.off++;
-    if(F.off===2){vib([400,200,400]);beep()}
+    if(F.off===2)avisoFuera()
     if(F.off>=2)status("off",`⚠️ Te has salido de la ruta: el track está a ${fk(p.d)}`);else status("ok",`✓ En la ruta${alt}`)}
   save()}
 function err(e){if(!F)return;status("wait",e&&e.code===1?"⛔ La app no tiene permiso para usar tu ubicación. Actívalo en los ajustes del navegador.":"📡 Sin señal de GPS todavía…")}
@@ -144,6 +152,9 @@ map.on("dragstart",()=>{if(F&&F.follow){F.follow=false;const b=Q("[data-fc]");if
 vm.addEventListener("click",e=>{if(!F||!F.el.contains(e.target))return;
   if(e.target.closest("[data-fx]")){stop();return}
   if(e.target.closest("[data-fmin]")){minimiza(!F.min);return}
+  {const av=e.target.closest("[data-fav]");if(av){const k=av.dataset.fav;try{localStorage.setItem("ldc-avisofuera",k)}catch(er){}
+    F.el.querySelectorAll("[data-fav]").forEach(x=>x.classList.toggle("on",x===av));
+    toast(k==="vs"?"🔊 Si te sales del track, vibrará y sonará":k==="v"?"📳 Si te sales del track, solo vibrará":"🔕 Sin aviso al salirte del track");avisoFuera();return}}
   if(e.target.closest("[data-fpt]")){minimiza(true);if(MPI&&MPI.gps)MPI.gps();return}
   if(e.target.closest("[data-fc]")){F.follow=true;Q("[data-fc]").classList.add("on");const ll=F.me.getLatLng();if(map.hasLayer(F.me))map.setView(ll,Math.max(map.getZoom(),15));return}
   if(e.target.closest("[data-fr]")){const r=F.r,rv=!F.rev;start(r,rv);toast(rv?"Ruta al revés: empiezas por el final":"Ruta en el sentido normal");return}});
