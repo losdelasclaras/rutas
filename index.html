@@ -2587,6 +2587,30 @@ pintar();
 
 }catch(e){console.error("módulo offline",e);(window.__ERRS=window.__ERRS||[]).push("offline: "+(e&&e.message))}
 try{
+/* ---------- 🥾 Senderos marcados (9 nov 2026): GR, PR, SL… encima de cualquier mapa ----------
+   Capa transparente de Waymarked Trails (datos © OpenStreetMap, CC BY-SA). Sus normas: se puede usar en otras webs con un uso
+   moderado, guardando en caché lo que se ve y sin descargas masivas. Por eso: apagada de serie, solo con el mapa acercado
+   (zoom 10 o más) y sin descarga para sin cobertura (lo ya visto lo guarda el service worker, como el resto del mapa). */
+(function(){
+if(typeof L==="undefined"||!window.map)return;
+if(LAY.sendero===undefined)LAY.sendero=false;
+map.createPane("senderos");map.getPane("senderos").style.zIndex=250;map.getPane("senderos").style.pointerEvents="none";
+const CAPA=L.tileLayer("https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png",{pane:"senderos",minZoom:10,maxNativeZoom:18,maxZoom:20,opacity:.9,
+  attribution:'Senderos © <a href="https://hiking.waymarkedtrails.org" target="_blank" rel="noopener">Waymarked Trails</a> (CC BY-SA)'});
+function sync(){const on=!!LAY.sendero;if(on&&!map.hasLayer(CAPA))CAPA.addTo(map);else if(!on&&map.hasLayer(CAPA))CAPA.remove();
+  const b=document.querySelector('[data-lay="sendero"]');if(b)b.setAttribute("aria-pressed",on);
+  const n=document.querySelector(".sendnota");if(n)n.hidden=!(on&&map.getZoom()<10)}
+// interruptor en Capas › Mapa (debajo de los mapas de fondo)
+const grp=[...document.querySelectorAll(".laypanel button.laygh")].find(x=>/^mapa$/i.test((x.querySelector(".tt")||x).textContent.trim()));
+const sitio=grp&&grp.nextElementSibling;
+if(sitio){sitio.insertAdjacentHTML("beforeend",`<button class="lay" data-lay="sendero" aria-pressed="${!!LAY.sendero}"><span class="lico" style="background:#c62828;border-radius:3px;height:4px;align-self:center"></span>Senderos marcados (GR, PR, SL)</button><p class="note sendnota" hidden style="margin:2px 6px 6px;font-size:13px">Acerca el mapa para ver los senderos.</p>`)}
+document.querySelector(".legend").addEventListener("click",e=>{if(e.target.closest('[data-lay="sendero"]'))setTimeout(()=>{sync();if(typeof saveLay==="function")saveLay()},0)});
+map.on("zoomend",sync);
+sync();
+})();
+
+}catch(e){console.error("módulo senderos",e);(window.__ERRS=window.__ERRS||[]).push("senderos: "+(e&&e.message))}
+try{
 /* ---------- «Yo»: ubicación en directo ----------
    1.er toque: el punto azul te sigue y el mapa se mueve contigo.
    Si mueves el mapa con el dedo deja de centrarte (el punto se sigue moviendo); otro toque vuelve a centrarte.
@@ -5019,5 +5043,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="0562fe8edd";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="3a59867902";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
