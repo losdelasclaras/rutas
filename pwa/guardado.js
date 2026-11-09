@@ -57,8 +57,8 @@ function items(){const ps=MPI.get().map(p=>({k:"p",o:p,n:p.n,c:p.c,f:p.f,e:estDe
 // 9 nov 2026: «Listo sin cobertura»: el recorrido del track está guardado en el móvil (los mapas los ofrece Grabar o Seguir)
 const listo=t=>!!(t&&t.pts&&t.pts.length>1),OFFB=`<em class="gdoff">✈ Listo sin cobertura</em>`;
 function fila(x){const o=x.o;
-  if(x.k==="t"){const sub=[kmT(o.km),o.up!=null?"+"+Math.round(o.up).toLocaleString("es-ES")+" m":"",o.src==="blog"?"Del blog":o.src==="grab"?"Grabado":"Cargado"].filter(Boolean).join(" · ");
-    return`<button class="gdr" data-gdt="${esc(o.id)}"><span class="e">${o.src==="blog"?"📘":o.src==="grab"?"⏺️":"〰️"}</span><span><b>${esc(o.n)}</b><small>${esc(sub)}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small>${listo(o)?"<br>"+OFFB:""}</span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
+  if(x.k==="t"){const sub=[kmT(o.km),o.up!=null?"+"+Math.round(o.up).toLocaleString("es-ES")+" m":"",o.src==="blog"?"Del blog":o.src==="co"?"Ruta guardada":o.src==="grab"?"Grabado":"Cargado"].filter(Boolean).join(" · ");
+    return`<button class="gdr" data-gdt="${esc(o.id)}"><span class="e">${o.src==="blog"||o.src==="co"?"📘":o.src==="grab"?"⏺️":"〰️"}</span><span><b>${esc(o.n)}</b><small>${esc(sub)}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small>${listo(o)?"<br>"+OFFB:""}</span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
   const ic=MPI.ico?MPI.ico(o.ic):null,tipo=ic?ic[2]:"Punto";
   return`<button class="gdr" data-gdp="${esc(o.id)}"><span class="e">${MPI.emo?MPI.emo(o.ic):"📍"}</span><span><b>${esc(o.n)}</b><small>${esc([tipo,o.a!=null?Math.round(o.a).toLocaleString("es-ES")+" m":"",o.f?fmtF(o.f):""].filter(Boolean).join(" · "))}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small></span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
 const conX=x=>`<div class="gdw">${fila(x)}<button class="gdx" data-gdx="${x.k}:${esc(x.o.id)}" data-n="${esc(x.n)}" aria-label="Borrar">🗑</button></div>`;

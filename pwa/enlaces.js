@@ -19,7 +19,7 @@ async function mandar(title,text,url){
 /* ---- 1. botón en las fichas de cumbres y lugares ---- */
 function datosFicha(c){
   const h2=c.querySelector(".sheet-head h2");if(!h2)return null;
-  if(c.querySelector(".fpt-rutas"))return null;   // 9 nov 2026: la ficha de cumbre/lugar ya no lleva botones (van en la ficha de cada ruta)
+  if(c.querySelector(".fpt-rutas,.fru"))return null;   // 9 nov 2026: la ficha de cumbre/lugar ya no lleva botones (van en la ficha de cada ruta)
   if(c.querySelector("[data-share],[data-coshare],[data-follow],[data-cofol],[data-mtfol],[data-mpedit],[data-tmpcs],[data-ptshare]"))return null;
   const mk=c.querySelector(".mkblock .mk[data-key]");if(!mk)return null;const key=mk.dataset.key;if(!/^[cl]:/.test(key))return null;
   // sitio: el enlace de Google Maps de la ficha o, si no, el punto del grupo con ese nombre
@@ -104,6 +104,7 @@ function limpia(c){
     const mb=sec.querySelector('a[href*="meteoblue"]'),ae=sec.querySelector('a[href*="aemet"]');
     if(mb){mb.textContent="☁ Ver el tiempo";mb.dataset.wxl="1";sec.before(mb)}if(ae){ae.textContent="☁ "+ae.textContent.trim();ae.dataset.wxl="1";sec.before(ae)}sec.remove()}}
 function ordena(c){if(!c||c.hidden)return;
+  if(c.querySelector(".fru"))return;   // 9 nov 2026: ficha de ruta unificada (ficharuta.js): ya viene hecha
   try{limpia(c)}catch(e){console.error(e)}
   if(c.querySelector(".fpt"))return;
   if(c.querySelector(".tbot,.tdat,.tmas"))return;   // 9 nov 2026: ficha de un track de Mis cosas: ya viene hecha (sin el «Más opciones» de arriba)

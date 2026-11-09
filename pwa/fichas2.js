@@ -32,6 +32,12 @@ function fichaBlog(i){const F=sheet._fbl;if(!F)return;const b=F.bl[i],o=F.o;if(!
   // las cumbres de esta entrada: los puntos (de cualquier blog) que enlazan a ella
   const cums=[];if(window.COLX)for(const x of COLX.todo())if(x.pp&&x.pp[4]===b.u&&!cums.some(z=>z.pp===x.pp))cums.push(x);
   sheet.classList.remove("full");sheet._cor=null;sheet._fblBack=o;
+  // 9 nov 2026: ficha de ruta unificada (ficharuta.js)
+  if(window.FRUTA){const ym=/\/(20\d\d)\/(\d\d)\//.exec(b.u);
+    sheet.innerHTML=FRUTA.pinta({grab:"",foto:fo,quien:b.n||"",y:y?+y:null,m:ym?+ym[2]:null,titulo:tituloBlog(b),blog:b.u,
+      share:`data-frshu="${esc(b.u)}" data-frsht="${esc(tituloBlog(b))}"`,
+      cumbres:cums.map(x=>({n:x.c,a:x.a||null,k:x.co&&COLX.coKey?COLX.coKey(x.co,x.c):null})),close:" data-trcox"});
+    sheet.hidden=false;sheet.scrollTop=0;if(window.showTrack)showTrack(null);return}
   sheet.innerHTML=`<div class="grab"></div>${fo?`<div class="photo"><img src="${esc(fo)}" alt="" onerror="this.parentNode.remove()"></div>`:""}
   ${tipoHTML("ruta",b.n||"")}<div class="sheet-head"><h2>${esc(tituloBlog(b))}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
   ${y?`<div class="meta"><span class="tag">${y}</span></div>`:""}

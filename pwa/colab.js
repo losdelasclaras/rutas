@@ -146,7 +146,15 @@ function pintaCo(c,ls,noms,extra,nofit){if(TRCO){TRCO.remove();TRCO=null}const L
 function abrirR(c,i,nofit){coPill(null);const keep=!!(nofit&&TRCO&&TRCO.__i===c.id+":"+i);const r=c.r[i],[n,z,act,km,de,dif,wl,blog,ini,fo]=r;
   const key=rKeyCo(c,n),st=MARKS[key]||"",deN=(/(\d[\d.]*)/.exec(de)||[])[1];
   sheet.classList.remove("full");
-  sheet.innerHTML=`<div class="grab"></div>${fo?`<div class="photo"><img src="${esc(fo)}" alt="" onerror="this.parentNode.remove()"></div>`:""}${tipoHTML("ruta",c.n)}<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
+  const rmkH=`<div class="mkblock rmk"><span>Esta ruta</span><span class="mk" data-key="${esc(key)}"><button data-mk="hecha" aria-pressed="${st==="hecha"}" title="Hecha">✓ Hecha</button><button data-mk="quiero" aria-pressed="${st==="quiero"}" title="Quiero hacerla">★ Quiero hacerla</button></span></div>`;
+  // 9 nov 2026: ficha de ruta unificada (ficharuta.js); lo que depende del track se enseña cuando llega (extraR)
+  if(window.FRUTA){const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");
+    sheet.innerHTML=FRUTA.pinta({grab:"",foto:fo,quien:c.n,y:fe?+fe[1]:null,m:fe?+fe[2]:null,titulo:String(n).split("|").pop().trim(),mk:rmkH,
+      de:deN?"+"+deN+" m":"",km:km||"",dif:dif?cap1(dif):"",blog:blog||"",seguir:"data-cofol",trk:false,
+      gRuta:"data-frgrc",gRutaOn:FRUTA.coGuardada(c,n),gTrack:"data-cosave",share:"data-coshare",llegar:null,
+      cumbres:(c.p||[]).filter(q=>q[9]&&q[9].includes(i)&&catCo(q)==="cumbre").map(q=>({n:q[0],a:altCo(q[0],q[3]),k:coKey(c,q[0],"cumbre")})),
+      otras:ini?FRUTA.otras(ini[0],ini[1],null,COLX.rutaItem?COLX.rutaItem(c,i):null):"",close:" data-trcox"})}
+  else sheet.innerHTML=`<div class="grab"></div>${fo?`<div class="photo"><img src="${esc(fo)}" alt="" onerror="this.parentNode.remove()"></div>`:""}${tipoHTML("ruta",c.n)}<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
   <div class="meta">${act?`<span class="tag">${esc(act)}</span>`:""}<span class="tag">${esc(z)}</span>${(()=>{const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");return fe?`<span class="tag">📅 ${MESES[+fe[2]]?MESES[+fe[2]]+" ":""}${fe[1]}</span>`:""})()}</div>
   ${(c.p||[]).filter(q=>q[9]&&q[9].includes(i)&&catCo(q)==="cumbre").map(q=>{const kq=coKey(c,q[0],"cumbre"),sq=MARKS[kq]||"";return `<div class="mkblock"><span>${esc(q[0])}</span><span class="mk" data-key="${esc(kq)}"><button data-mk="hecha" aria-pressed="${sq==="hecha"}" title="Subida">✓ Subida</button><button data-mk="quiero" aria-pressed="${sq==="quiero"}" title="Quiero subir">★ Quiero subir</button></span></div>`}).join("")}
   <div class="mkblock rmk"><span>Esta ruta</span><span class="mk" data-key="${esc(key)}"><button data-mk="hecha" aria-pressed="${st==="hecha"}" title="Hecha">✓ Hecha</button><button data-mk="quiero" aria-pressed="${st==="quiero"}" title="Quiero hacerla">★ Quiero hacerla</button></span></div>
@@ -180,6 +188,7 @@ function gxDe(ll){const cum=[0];for(let j=1;j<ll.length;j++)cum.push(cum[j-1]+ma
   return g}
 let GXC=null;
 function extraR(c,i,ll){const r=c.r[i],g=gxDe(ll);GXC={c,i,g};
+  if(window.FRUTA&&sheet.querySelector(".fru")){FRUTA.track(c,i,ll,g);return}
   let hi=ll[0];if(g.mx!=null)for(const q of ll)if(q[2]!=null&&q[2]>(hi[2]??-1e9))hi=q;
   const az=typeof aemetZone==="function"?aemetZone(hi[0],hi[1]):null,alt=g.mx!=null?Math.round(hi[2]):"";
   const fmt=n=>Number(n).toLocaleString("es-ES");
@@ -205,9 +214,9 @@ sheet.addEventListener("click",e=>{const k=sheet._cor;if(!k)return;
   lineas().then(J=>{const ll=(J[k.c.id]||[])[k.i];if(!ll||ll.length<2){toast("No tengo el track de esta ruta");return}
     if(fol){if(TRCO){TRCO.remove();TRCO=null}if(window.SEGUIR)SEGUIR.start({u:"tmp",ti:r[0],gx:{ln:ll,km:kmN}},false);return}
     const go=()=>{const M=window.MISPUNTOS;if(!M||!M.saveTracks){toast("No se ha podido guardar");return}
-      if(M.tracks().some(t=>t.n===r[0])){toast("Ya la tenías en Mis tracks");return}
+      if(M.tracks().some(t=>t.n===r[0]&&t.src!=="co")){toast("Ese track ya lo tenías en Mis cosas");return}
       const o={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),n:r[0],km:kmN,pts:ll.map(q=>q.slice()),src:"gpx",f:new Date().toISOString()};
-      if(M.desn)M.desn(o);M.saveTracks([...M.tracks(),o]);toast("Guardada en Mis cosas › Tracks")};
+      if(M.desn)M.desn(o);M.saveTracks([...M.tracks(),o]);toast("Track guardado en Mis cosas")};
     if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go()})});
 map.on("click",()=>{});
 function coMarks(m){const el=m.getElement();if(!el)return;const v=MARKS[m.__k],on=(v==="hecha"&&LAY.mh)||(v==="quiero"&&LAY.mq);el.classList.toggle("mk-h",v==="hecha"&&LAY.mh);el.classList.toggle("mk-q",v==="quiero"&&LAY.mq);const off=(!!LAY.solo||!!LOFF[m.__g])&&!on;el.classList.toggle("co-off",off);const tt=m.getTooltip();if(tt)tt.setOpacity(off?0:1)}

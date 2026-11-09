@@ -28,7 +28,7 @@ const estado=t=>t.est==="hecho"?`<span class="est h">✓ Hecho${t.fh?" "+fmtF(t.
 function filas(){const all=T().slice().sort((a,b)=>(b.f||"").localeCompare(a.f||""));
   const ts=all.filter(t=>(FIL==="todos"||(FIL==="hecho"?t.est==="hecho":t.est==="pend"))&&(!QT||nk2(t.n).includes(QT)));
   if(!ts.length)return`<p class="note" style="margin:10px 2px">${all.length?"Ningún track con ese filtro o búsqueda.":""}</p>`;
-  return ts.map(t=>{const d=datos(t);return`<div class="mprow" data-mtopen="${esc(t.id)}"><span class="e">${t.src==="blog"?"📘":"〰️"}</span><span><b>${esc(t.n)}</b><small>${[kmTxt(d.km),d.up!=null?"+"+d.up.toLocaleString("es-ES")+" m":"",t.src==="blog"?"Del blog":"Cargado",t.c?"📁 "+esc(t.c):""].filter(Boolean).join(" · ")}</small>${estado(t)}</span><span class="rbs"><button class="rb" data-mtred="${esc(t.id)}" aria-label="Cambiar nombre"><svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button><button class="rb dan" data-mtrdel="${esc(t.id)}" aria-label="Quitar"><svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button></span></div>`}).join("")}
+  return ts.map(t=>{const d=datos(t);return`<div class="mprow" data-mtopen="${esc(t.id)}"><span class="e">${t.src==="blog"||t.src==="co"?"📘":"〰️"}</span><span><b>${esc(t.n)}</b><small>${[kmTxt(d.km),d.up!=null?"+"+d.up.toLocaleString("es-ES")+" m":"",t.src==="blog"?"Del blog":"Cargado",t.c?"📁 "+esc(t.c):""].filter(Boolean).join(" · ")}</small>${estado(t)}</span><span class="rbs"><button class="rb" data-mtred="${esc(t.id)}" aria-label="Cambiar nombre"><svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button><button class="rb dan" data-mtrdel="${esc(t.id)}" aria-label="Quitar"><svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button></span></div>`}).join("")}
 function render(){const all=T(),nh=all.filter(t=>t.est==="hecho").length,np=all.filter(t=>t.est==="pend").length;
   if(!box.querySelector("#mtlist")||box.dataset.n!==String(all.length>0)){
     box.dataset.n=String(all.length>0);
@@ -95,6 +95,8 @@ const trs=`<svg class="trs" viewBox="0 0 24 24" fill="none" stroke="currentColor
 function grande(t,d){const m=t.tm,tie=m&&m.b>m.a?hm(m.m||(m.b-m.a)/1000):d.km?"≈ "+hm((Math.max(d.km/4,(d.up||0)/400)+Math.min(d.km/4,(d.up||0)/400)/2)*3600):"—";
   return`<div class="tgr"><span><b>${tie}</b><small>${m&&m.b>m.a?"en movimiento":"tiempo estimado"}</small></span><span><b>${d.km?d.km.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2}):"—"}</b><small>km</small></span><span><b>${d.up!=null?"+"+d.up.toLocaleString("es-ES"):"—"}</b><small>m de subida</small></span></div>`}
 function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t)return;quitaPill();
+  // 9 nov 2026: una ruta de colaborador guardada abre su ficha de ruta (si no se encuentra, se ve como track)
+  if(t.src==="co"&&window.COLX&&!vista){const x=COLX.todo().find(x=>x.rr!=null&&x.co.id===t.co&&x.co.r[x.rr][0]===t.n);if(x){if(typeof showView==="function")showView("mapa");COLX.abrirRuta(x.ci);return}}
   if(t.src!=="blog"&&t.pts&&t.pts.length>1&&!(t.dv>=2)&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
   if(typeof showView==="function")showView("mapa");
   if(!LAY.mt){LAY.mt=true;saveLay();const b=document.querySelector('[data-lay="mt"]');if(b)b.setAttribute("aria-pressed",true);MPI.sync()}
@@ -188,6 +190,9 @@ function borraFotos(k){const t=T().find(x=>String(x.id)===String(k));for(const w
 
 /* en la ficha de una ruta del blog: «☆ Guardar en mis tracks» */
 window.MTSAVED=r=>!!savedOf(r);
+// 9 nov 2026 (ficha de ruta unificada): «☆ Guardar ruta» del grupo, con o sin track (el recorrido lo pone completar())
+window.MTRUTA={es:r=>!!savedOf(r),alterna:r=>{const s=savedOf(r);if(s){MPI.saveTracks(T().filter(x=>x!==s));return false}
+  MPI.saveTracks([...T(),{id:blogId(r),src:"blog",u:r.u,n:routeTitle(r),...(r.gx?{km:r.gx.km,up:r.gx.up,dn:r.gx.dn}:{}),f:new Date().toISOString()}]);return true}};
 /* en la ficha de una ruta del blog: «✓ La he hecho» / «★ Pendiente» (se guarda en Mis tracks con esa marca) */
 window.RESTBTN=r=>{const s=savedOf(r),e=s&&s.est;return`<span class="rest" data-r="${r.id}"><button class="btn ghost${e==="hecho"?" on":""}" data-rest="hecho">✓ ${e==="hecho"?"Hecha"+(s.fh?" ("+fmtF(s.fh)+")":""):"La he hecho"}</button><button class="btn ghost${e==="pend"?" on":""}" data-rest="pend">★ ${e==="pend"?"Pendiente":"La quiero hacer"}</button></span>`};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-rest]");if(!b)return;e.preventDefault();e.stopPropagation();
