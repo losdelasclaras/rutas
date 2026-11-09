@@ -69,7 +69,7 @@ function puntosHTML(t){const ws=t.w||[];if(!ws.length)return"";
 async function fotos(el){for(const s of el.querySelectorAll("[data-wpfoto]")){const j=await MPI.fotoGet(s.dataset.wpfoto);if(j&&s.isConnected)s.innerHTML=`<img src="${j}" alt="">`;else if(s.isConnected){s.className="wpe";s.textContent="📷"}}}
 function punto(tid,pid){const t=T().find(x=>String(x.id)===String(tid)),w=t&&(t.w||[]).find(x=>x.id===pid);if(!t||!w)return;
   if(typeof showView==="function")showView("mapa");const q=MPI.kmW&&MPI.kmW(t,w);
-  MPI.show(`<div class="sheet-head"><h2>${MPI.emo(w.ic)} ${esc(w.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  MPI.show(`${tipoHTML("punto","de «"+t.n+"»")}<div class="sheet-head"><h2>${MPI.emo(w.ic)} ${esc(w.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="meta"><span class="tag">Punto de «${esc(t.n)}»</span>${q?`<span class="tag">${kmF(q.km)}</span>`:""}${q&&q.a!=null?`<span class="tag alt">${Math.round(q.a).toLocaleString("es-ES")} m</span>`:""}${w.t?`<span class="tag">${hora(w.t)}</span>`:""}</div>
   ${w.fo?`<div data-wpbig="${esc(w.id)}" style="min-height:40px"></div>`:""}
   ${w.nota?`<p class="desc" style="white-space:pre-wrap">${esc(w.nota)}</p>`:""}
@@ -99,7 +99,7 @@ function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t
   if(typeof showView==="function")showView("mapa");
   if(!LAY.mt){LAY.mt=true;saveLay();const b=document.querySelector('[data-lay="mt"]');if(b)b.setAttribute("aria-pressed",true);MPI.sync()}
   const r=routeOf(t),d=datos(t),p=MPI.ptsOf(t)||(r&&r.gx&&r.gx.st?[r.gx.st]:null),ie=esc(t.id),off=window.OFFLINE&&OFFLINE.has(r?r.u:"mt:"+t.id);
-  const cab=`<div class="sheet-head"><h2>${esc(t.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>`,volver=`<button class="btn ghost tvol" data-mtback="${ie}">← Volver</button>`;
+  const cab=`${r?tipoHTML("ruta","Guardada · Los de las Claras"):tipoHTML("track",t.src==="grab"?"Tuyo · grabado":"Tuyo")}<div class="sheet-head"><h2>${esc(t.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>`,volver=`<button class="btn ghost tvol" data-mtback="${ie}">← Volver</button>`;
   let h;
   if(vista==="datos"){   // 9 nov 2026: solo la cuadrícula de datos, el perfil y los puntos (sin la franja grande ni el tiempo)
     h=cab+volver+`<div class="tdat">`+datosHTML(t,d)+perfil(t)+puntosHTML(t)+

@@ -98,7 +98,7 @@ function limpia(c){
       if(t.hasAttribute("style")){src=true;continue}
       const y=/\b(19|20)\d{2}\b/.exec(tx);if(y&&!ano){ano=true;t.textContent=y[0];continue}
       t.remove()}
-    if(!src&&c.querySelector(".grab[data-route],[data-follow],[data-share]"))me.insertAdjacentHTML("afterbegin",`<span class="tag" style="background:#c3262e;color:#fff;border-color:#c3262e">Los de las Claras</span>`)}
+    if(!src&&!c.querySelector(".tipo")&&c.querySelector(".grab[data-route],[data-follow],[data-share]"))   /* 9 nov: la etiqueta de arriba ya dice de quién es */ me.insertAdjacentHTML("afterbegin",`<span class="tag" style="background:#c3262e;color:#fff;border-color:#c3262e">Los de las Claras</span>`)}
   // el tiempo: fuera de la ficha; sus enlaces van a «Más opciones»
   for(const h of [...c.querySelectorAll(".sec>h3")])if(/^el tiempo$/i.test(h.textContent.trim())){const sec=h.parentNode;
     const mb=sec.querySelector('a[href*="meteoblue"]'),ae=sec.querySelector('a[href*="aemet"]');

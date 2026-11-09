@@ -102,7 +102,7 @@ async function pintaFoto(el,id){const j=await fotoGet(id);if(j&&el.isConnected){
 document.addEventListener("click",e=>{const im=e.target.closest("[data-fotobig]");if(!im)return;const v=document.createElement("div");v.style.cssText="position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.92);display:grid;place-items:center;cursor:zoom-out";v.innerHTML=`<img src="${im.src}" style="max-width:100%;max-height:100%">`;v.onclick=()=>v.remove();document.body.appendChild(v)});
 function openMP(id){const p=MP.find(x=>x.id===id);if(!p)return;MPSEL=id;sheet._mp=null;drawMP();if(p.a==null)alti(p);
   const ll=`${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}`;
-  show(`<div class="sheet-head"><h2>${EMO(p.ic)} ${esc(p.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  show(`${tipoHTML("punto","Tuyo")}<div class="sheet-head"><h2>${EMO(p.ic)} ${esc(p.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="meta"><span class="tag">Mi punto · ${esc(ICO(p.ic)[2])}</span>${p.a!=null?`<span class="tag alt">${p.a.toLocaleString("es-ES")} m</span>`:""}${p.f?`<span class="tag">${fmtF(p.f)}</span>`:""}</div>
   ${p.fo?`<div data-fotov="${p.id}" style="min-height:40px"></div>`:""}
   ${p.nota?`<p class="desc" style="white-space:pre-wrap">${esc(p.nota)}</p>`:""}

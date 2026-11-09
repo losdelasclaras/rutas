@@ -150,7 +150,7 @@ function mostrar(t,origen){const n=t.n,pts=t.pts,km=t.km;quitaPill();
   for(const w of t.w||[])TMP.addLayer(L.marker([w.lat,w.lon],{icon:L.divIcon({className:"mpk wpk",html:`<span>${MPI.emo?MPI.emo(w.ic):"📍"}</span>`,iconSize:[0,0]}),title:w.n,zIndexOffset:950}).bindTooltip(esc(w.n),{permanent:true,direction:"right",offset:[12,0],className:"lbl mpl",interactive:false}));
   map.fitBounds(L.latLngBounds(pts),{paddingTopLeft:[30,90],paddingBottomRight:innerWidth>=860?[480,30]:[30,Math.round(innerHeight*.5)],maxZoom:15});
   const ya=MPI.tracks().find(t=>t.pts&&t.pts.length&&t.n===n&&Math.abs(t.pts[0][0]-pts[0][0])<1e-4);
-  MPI.show(`<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-tmpx>×</button></div>
+  MPI.show(`${tipoHTML("track",origen==="archivo"?"Abierto de un archivo":"Compartido")}<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-tmpx>×</button></div>
     ${(()=>{const c=[],x=(v,l)=>c.push(`<div><b>${v}</b><span>${l}</span></div>`);x(km.toLocaleString("es-ES")+" km","Distancia");   // 8 nov 2026: sin etiquetas; datos en una fila
       if(t.up!=null)x("+"+t.up.toLocaleString("es-ES")+" m","Subida");if(t.dn!=null)x("−"+t.dn.toLocaleString("es-ES")+" m","Bajada");if((t.w||[]).length)x("📍 "+t.w.length,t.w.length>1?"Puntos":"Punto");
       return`<div class="dat">${c.join("")}</div>`})()}
