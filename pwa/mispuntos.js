@@ -6,10 +6,18 @@ const ICO=k=>(ICOS.find(x=>x[0]===k)||ICOS[0]);
 const EMO=k=>k==="cumbre"?'<svg viewBox="-12 -12 24 24" style="width:1.15em;height:1.15em;vertical-align:-.2em"><use href="#ic-cumbre" x="-12" y="-12" width="24" height="24"/></svg>':ICO(k)[1];
 let MP=store.get(MPK,[]), MT=store.get(MTK,[]);
 if(LAY.mp===undefined)LAY.mp=true; if(LAY.mt===undefined)LAY.mt=true;
-const saveMP=()=>{store.set(MPK,MP);if(window.ldcSync)ldcSync("puntos")}, saveMT=()=>{try{localStorage.setItem(MTK,JSON.stringify(MT));if(window.ldcSync)ldcSync("tracks");return true}catch(e){toast("No queda sitio en el móvil para más tracks");return false}};
+const c5=x=>Math.round(x*1e5)/1e5;
+/* 9 nov 2026: tracks más ligeros, para que quepan muchos en el móvil (el almacén de los tracks es de unos 5 MB): posición a ~1 m
+   (5 decimales), altura en metros enteros y fuera los puntos a menos de 3 m del anterior (parado o GPS cada segundo).
+   No cambia el recorrido, el perfil ni el desnivel guardado (km y desnivel no se recalculan). Una sola vez por track (lz). */
+function ligero(t){if(!t||t.lz||!t.pts||t.pts.length<3)return false;const P=t.pts,q=[];let u=null;
+  const d=(a,b)=>Math.hypot((a[0]-b[0])*111195,(a[1]-b[1])*111195*Math.cos(a[0]*Math.PI/180));
+  for(let i=0;i<P.length;i++){const p=P[i];if(!p||!isFinite(p[0])||!isFinite(p[1]))continue;const n=p.slice();n[0]=c5(p[0]);n[1]=c5(p[1]);if(n.length>2&&n[2]!=null&&isFinite(n[2]))n[2]=Math.round(n[2]);
+    if(u&&i<P.length-1&&d(u,n)<3)continue;q.push(n);u=n}
+  if(q.length>=2)t.pts=q;t.lz=1;return true}
+const saveMP=()=>{store.set(MPK,MP);if(window.ldcSync)ldcSync("puntos")}, saveMT=()=>{for(const t of MT)ligero(t);try{localStorage.setItem(MTK,JSON.stringify(MT));if(window.ldcSync)ldcSync("tracks");return true}catch(e){toast("No queda sitio en el móvil para más tracks");return false}};
 const nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const fmtF=f=>{try{return new Date(f).toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}catch(e){return""}};
-const c5=x=>Math.round(x*1e5)/1e5;
 function alti(p){if(!navigator.onLine)return;fetch(`https://api.open-meteo.com/v1/elevation?latitude=${p.lat}&longitude=${p.lon}`).then(r=>r.json()).then(j=>{const a=j&&j.elevation&&j.elevation[0];if(a==null||!isFinite(a))return;const q=MP.find(x=>x.id===p.id);if(!q)return;q.a=Math.round(a);saveMP();drawMP();renderBox();if(MPSEL===q.id&&!sheet.hidden&&!sheet._mp)openMP(q.id)}).catch(()=>{})}
 
 document.head.insertAdjacentHTML("beforeend",`<style>
@@ -269,6 +277,7 @@ function desn(o){const p=o.pts;if(!p.length||p.some(x=>x[2]==null)){if(o.ug){o.u
 function fixDv(l){let k=0;for(const o of l||[])if(esGrab(o)&&o.dv!==3&&o.pts&&o.pts.length>1){
     if(!o.pts.every(x=>x[2]!=null))continue;desn(o);k++}return k}   // sin alturas: se arregla cuando llegan las del relieve (demAlt)
 if(fixDv(MT))try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}
+if(MT.some(t=>t&&!t.lz&&t.pts&&t.pts.length>2))setTimeout(()=>{if(MT.some(t=>ligero(t)))saveMT()},3000);
 // si el GPX no trae alturas, se sacan del modelo de relieve (hace falta conexión)
 async function demAlt(id){const o=MT.find(x=>x.id===id);if(!o||!navigator.onLine)return;const p=o.pts;
   const idx=[];const step=Math.max(1,Math.ceil(p.length/1000));for(let i=0;i<p.length;i+=step)idx.push(i);if(idx[idx.length-1]!==p.length-1)idx.push(p.length-1);
