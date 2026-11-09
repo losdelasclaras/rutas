@@ -149,6 +149,9 @@ select.chip{appearance:none;padding-right:26px;background-image:linear-gradient(
 @media (min-width:860px){.sheet .onlymob{display:none}.sheet{left:auto;right:16px;bottom:16px;top:56px;width:380px;max-height:none;border-radius:14px;border:1px solid var(--edge)}}
 .grab{width:40px;height:4px;border-radius:2px;background:var(--edge);margin:4px auto 10px}
 .sheet-head{display:flex;gap:10px;align-items:flex-start}
+/* 9 nov 2026: qué es cada ficha (CUMBRE, LUGAR, RUTA, TRACK, PUNTO, SALIDA) y de quién */
+.tipo{display:inline-flex;align-items:center;gap:6px;margin:0 0 6px;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--tc,#5d6b62)}
+.tipo i{font-style:normal;font-weight:700;letter-spacing:0;text-transform:none;opacity:.92}
 .sheet-head h2{flex:1;min-width:0;margin:0;font-family:var(--f-display);font-weight:700;font-size:24px;line-height:1.05;text-wrap:balance}
 .x{border:0;background:var(--paper);border-radius:999px;width:32px;height:32px;cursor:pointer;flex:none;font-size:18px;line-height:1}
 .meta{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}
@@ -368,6 +371,9 @@ const MAIN = new Set(["Asturias","León"]);
 const MESES=["","enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 R.forEach((r,i)=>{r.id=i; r.p.forEach(pi=>{(P[pi].rs ||= []).push(i)})});
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+// 9 nov 2026: etiqueta encima del título de cada ficha. RUTA = salida contada en un blog (crónica); TRACK = solo la línea
+const TIPOS={cumbre:["⛰","Cumbre","#2e7d32"],lugar:["📍","Lugar","#00838f"],ruta:["🥾","Ruta","#c62828"],track:["🧵","Track","#7b2cbf"],punto:["📌","Punto","#e8711a"],salida:["📅","Salida","#1565c0"]};
+function tipoHTML(k,quien){const t=TIPOS[k];if(!t)return"";return`<div class="tipo" style="--tc:${t[2]}">${t[0]} ${t[1]}${quien?` <i>· ${esc(quien)}</i>`:""}</div>`}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmtA=a=>a? a.toLocaleString("es-ES")+" m":"";
 const norm=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
@@ -692,7 +698,7 @@ function routeBody(r){
   const techos=pts.filter(p=>p.techo);
   return `
   ${r.f!=null?`<div class="photo"><img src="fotos/${r.f}.jpg" alt=""></div>`:""}
-  <div class="sheet-head"><h2>${esc(routeTitle(r))}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  ${tipoHTML("ruta","Los de las Claras")}<div class="sheet-head"><h2>${esc(routeTitle(r))}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="topacts">${r.gx?`<button class="btn primary" data-follow="${r.id}">▶ Seguir track</button>`:""}${r.u?`<a class="btn ${r.gx?"ghost":"primary"}" href="${esc(r.u)}" target="_blank" rel="noopener">Leer en el blog</a><button class="btn ghost" data-share="${r.id}">↗ Compartir</button>`:""}<button class="btn ghost ovonly" data-ovmap="${r.id}">🗺 Ver en mapa</button></div>
   <div class="meta">${r.iv?`<span class="tag iv">❄ Invernal</span>`:""}${r.nv?`<span class="tag new">Renovada</span>`:""}${r.y?`<span class="tag">${r.m?MESES[r.m]+" ":""}${r.y}</span>`:""}${(r.co&&r.co.length?r.co:r.grp?[r.r,r.grp]:[r.r]).map(c=>`<span class="tag">${esc(c)}</span>`).join("")}${r.a&&!r.tk?`<span class="tag alt">${fmtA(r.a)}</span>`:""}${techos.map(t=>`<span class="tag">Techo de ${esc(t.techo)}</span>`).join("")}</div>
   ${window.rMk?rMk(r):""}
@@ -712,14 +718,14 @@ function routeBody(r){
 }
 function pickRoute(pi){const rs=(P[pi].rs||[]).filter(ri=>R[ri].u);if(rs.length<2){openRoute(rs.length?rs[0]:(P[pi].rs?P[pi].rs[0]:null),pi);return}
   ensureZone(zoneOf(P[pi].r));nodes.classed("sel",i=>i===pi);if(window.showTrack)showTrack(null);{const tp=document.getElementById("trkpill");if(tp)tp.hidden=true}
-  sheet.classList.remove("full");sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(P[pi].c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>${P[pi].a?`<div class="meta"><span class="tag alt">${fmtA(P[pi].a)}</span></div>`:""}${mkBlock(pi)}<p class="note">Está en ${rs.length} rutas. Elige cuál ver:</p><div class="rows">${rs.map(ri=>R[ri]).sort(byDate).map(r=>rowHTML(r)).join("")}</div>`;
+  sheet.classList.remove("full");sheet.innerHTML=`<div class="grab"></div>${tipoHTML(P[pi].a?"cumbre":"lugar","Los de las Claras")}<div class="sheet-head"><h2>${esc(P[pi].c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>${P[pi].a?`<div class="meta"><span class="tag alt">${fmtA(P[pi].a)}</span></div>`:""}${mkBlock(pi)}<p class="note">Está en ${rs.length} rutas. Elige cuál ver:</p><div class="rows">${rs.map(ri=>R[ri]).sort(byDate).map(r=>rowHTML(r)).join("")}</div>`;
   sheet.hidden=false;sheet.scrollTop=0}
 function openRoute(ri,pi){
   const wasFull=sheet.classList.contains("full")&&!sheet.hidden; sheet.classList.remove("full");
   ensureZone(zoneOf(ri!=null?R[ri].r:P[pi].r));
   nodes.classed("sel",i=>ri!=null?R[ri].p.includes(i):i===pi);
   tracks.classed("sel",r=>r.id===ri);if(window.showTrack)showTrack(ri!=null?R[ri]:null);{const tp=document.getElementById("trkpill");if(tp)tp.hidden=true}
-  if(ri==null){const p=P[pi];sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(p.c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><div class="meta">${p.a?`<span class="tag alt">${fmtA(p.a)}</span>`:""}<span class="tag">${esc(p.r)}</span></div><p class="note">Este punto del mapa todavía no tiene enlazada su entrada del blog.</p>${mkBlock(pi)}`;sheet.hidden=false;return}
+  if(ri==null){const p=P[pi];sheet.innerHTML=`<div class="grab"></div>${tipoHTML(p.a?"cumbre":"lugar","Los de las Claras")}<div class="sheet-head"><h2>${esc(p.c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><div class="meta">${p.a?`<span class="tag alt">${fmtA(p.a)}</span>`:""}<span class="tag">${esc(p.r)}</span></div><p class="note">Este punto del mapa todavía no tiene enlazada su entrada del blog.</p>${mkBlock(pi)}`;sheet.hidden=false;return}
   const r=R[ri];
   sheet.innerHTML=`<div class="grab" data-route="${r.id}"></div>`+routeBody(r);
   if(pi!=null&&mkKey(P[pi])){const h=sheet.querySelector(".sheet-head");if(h)h.insertAdjacentHTML("afterend",mkBlock(pi))}
@@ -1096,7 +1102,7 @@ async function pintaFoto(el,id){const j=await fotoGet(id);if(j&&el.isConnected){
 document.addEventListener("click",e=>{const im=e.target.closest("[data-fotobig]");if(!im)return;const v=document.createElement("div");v.style.cssText="position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.92);display:grid;place-items:center;cursor:zoom-out";v.innerHTML=`<img src="${im.src}" style="max-width:100%;max-height:100%">`;v.onclick=()=>v.remove();document.body.appendChild(v)});
 function openMP(id){const p=MP.find(x=>x.id===id);if(!p)return;MPSEL=id;sheet._mp=null;drawMP();if(p.a==null)alti(p);
   const ll=`${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}`;
-  show(`<div class="sheet-head"><h2>${EMO(p.ic)} ${esc(p.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  show(`${tipoHTML("punto","Tuyo")}<div class="sheet-head"><h2>${EMO(p.ic)} ${esc(p.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="meta"><span class="tag">Mi punto · ${esc(ICO(p.ic)[2])}</span>${p.a!=null?`<span class="tag alt">${p.a.toLocaleString("es-ES")} m</span>`:""}${p.f?`<span class="tag">${fmtF(p.f)}</span>`:""}</div>
   ${p.fo?`<div data-fotov="${p.id}" style="min-height:40px"></div>`:""}
   ${p.nota?`<p class="desc" style="white-space:pre-wrap">${esc(p.nota)}</p>`:""}
@@ -1423,7 +1429,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-7ae1bd89.json", "ln": "colab-ln-69762414.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-b22cf71c.json", "ln": "colab-ln-69762414.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -1494,8 +1500,8 @@ function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);const deR=k==="c
   const desc=resto.filter(l=>!/^\W*\w[\w ]{1,20}:\s/u.test(l)),otros=resto.filter(l=>/^\W*\w[\w ]{1,20}:\s/u.test(l));
   sheet.classList.remove("full");
   sheet.innerHTML=`<div class="grab"></div>`+(f?`<div class="photo"><img src="${esc(f)}" alt="" onerror="this.parentNode.remove()"></div>`:"")+
-  `<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
-  <div class="meta"><span class="tag" style="background:${c.c};color:#fff;border-color:${c.c}">${esc(c.n)}</span>${deR?"":`<span class="tag">${esc(CATN[k]||"Lugar")}</span>`}${a&&k==="cumbre"?`<span class="tag alt">${a.toLocaleString("es-ES")} m</span>`:""}</div>
+  `${tipoHTML(k==="cumbre"?"cumbre":"lugar",c.n)}<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  <div class="meta">${k!=="cumbre"&&CATN[k]&&CATN[k]!=="Lugar"?`<span class="tag">${esc(CATN[k])}</span>`:""}${a&&k==="cumbre"?`<span class="tag alt">${a.toLocaleString("es-ES")} m</span>`:""}</div>
   ${(()=>{const key=coKey(c,n,k),st=MARKS[key]||"",L=k==="cumbre"?["Subida","Quiero subir"]:["He estado","Quiero ir"];return `<div class="mkblock"><span>${esc(n)}${a&&k==="cumbre"?" · "+a.toLocaleString("es-ES")+" m":""}</span><span class="mk" data-key="${esc(key)}"><button data-mk="hecha" aria-pressed="${st==="hecha"}" title="${L[0]}">✓ ${L[0]}</button><button data-mk="quiero" aria-pressed="${st==="quiero"}" title="${L[1]}">★ ${L[1]}</button></span></div>`})()}
   ${desc.length?`<p class="desc">${desc.map(esc).join("<br>")}</p>`:""}
   ${(F.km||F.de||F.tm||F.dif)?`<div class="ficha">${F.km?`<div><b>${esc(F.km)}</b><span>Distancia</span></div>`:""}${F.de?`<div><b>${esc(F.de)}</b><span>Desnivel</span></div>`:""}${F.tm?`<div><b>${esc(F.tm)}</b><span>Duración</span></div>`:""}${F.dif?`<div><b>${esc(cap1(F.dif))}</b><span>Dificultad</span></div>`:""}</div>`:""}
@@ -1568,8 +1574,8 @@ function pintaCo(c,ls,noms,extra,nofit){if(TRCO){TRCO.remove();TRCO=null}const L
 function abrirR(c,i,nofit){coPill(null);const keep=!!(nofit&&TRCO&&TRCO.__i===c.id+":"+i);const r=c.r[i],[n,z,act,km,de,dif,wl,blog,ini,fo]=r;
   const key=rKeyCo(c,n),st=MARKS[key]||"",deN=(/(\d[\d.]*)/.exec(de)||[])[1];
   sheet.classList.remove("full");
-  sheet.innerHTML=`<div class="grab"></div>${fo?`<div class="photo"><img src="${esc(fo)}" alt="" onerror="this.parentNode.remove()"></div>`:""}<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
-  <div class="meta"><span class="tag" style="background:${c.c};color:#fff;border-color:${c.c}">${esc(c.n)}</span>${act?`<span class="tag">${esc(act)}</span>`:""}<span class="tag">${esc(z)}</span>${(()=>{const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");return fe?`<span class="tag">📅 ${MESES[+fe[2]]?MESES[+fe[2]]+" ":""}${fe[1]}</span>`:""})()}</div>
+  sheet.innerHTML=`<div class="grab"></div>${fo?`<div class="photo"><img src="${esc(fo)}" alt="" onerror="this.parentNode.remove()"></div>`:""}${tipoHTML(blog?"ruta":"track",c.n)}<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
+  <div class="meta">${act?`<span class="tag">${esc(act)}</span>`:""}<span class="tag">${esc(z)}</span>${(()=>{const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");return fe?`<span class="tag">📅 ${MESES[+fe[2]]?MESES[+fe[2]]+" ":""}${fe[1]}</span>`:""})()}</div>
   ${(c.p||[]).filter(q=>q[9]&&q[9].includes(i)&&catCo(q)==="cumbre").map(q=>{const kq=coKey(c,q[0],"cumbre"),sq=MARKS[kq]||"";return `<div class="mkblock"><span>${esc(q[0])}</span><span class="mk" data-key="${esc(kq)}"><button data-mk="hecha" aria-pressed="${sq==="hecha"}" title="Subida">✓ Subida</button><button data-mk="quiero" aria-pressed="${sq==="quiero"}" title="Quiero subir">★ Quiero subir</button></span></div>`}).join("")}
   <div class="mkblock rmk"><span>Esta ruta</span><span class="mk" data-key="${esc(key)}"><button data-mk="hecha" aria-pressed="${st==="hecha"}" title="Hecha">✓ Hecha</button><button data-mk="quiero" aria-pressed="${st==="quiero"}" title="Quiero hacerla">★ Quiero hacerla</button></span></div>
   ${(km||de||dif)?`<div class="ficha">${km?`<div><b>${esc(km)}</b><span>Distancia</span></div>`:""}${deN?`<div><b>+${esc(deN)} m</b><span>Desnivel</span></div>`:""}${dif?`<div><b>${esc(cap1(dif))}</b><span>Dificultad</span></div>`:""}</div>`:""}
@@ -2218,7 +2224,7 @@ function puntosHTML(t){const ws=t.w||[];if(!ws.length)return"";
 async function fotos(el){for(const s of el.querySelectorAll("[data-wpfoto]")){const j=await MPI.fotoGet(s.dataset.wpfoto);if(j&&s.isConnected)s.innerHTML=`<img src="${j}" alt="">`;else if(s.isConnected){s.className="wpe";s.textContent="📷"}}}
 function punto(tid,pid){const t=T().find(x=>String(x.id)===String(tid)),w=t&&(t.w||[]).find(x=>x.id===pid);if(!t||!w)return;
   if(typeof showView==="function")showView("mapa");const q=MPI.kmW&&MPI.kmW(t,w);
-  MPI.show(`<div class="sheet-head"><h2>${MPI.emo(w.ic)} ${esc(w.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  MPI.show(`${tipoHTML("punto","de «"+t.n+"»")}<div class="sheet-head"><h2>${MPI.emo(w.ic)} ${esc(w.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="meta"><span class="tag">Punto de «${esc(t.n)}»</span>${q?`<span class="tag">${kmF(q.km)}</span>`:""}${q&&q.a!=null?`<span class="tag alt">${Math.round(q.a).toLocaleString("es-ES")} m</span>`:""}${w.t?`<span class="tag">${hora(w.t)}</span>`:""}</div>
   ${w.fo?`<div data-wpbig="${esc(w.id)}" style="min-height:40px"></div>`:""}
   ${w.nota?`<p class="desc" style="white-space:pre-wrap">${esc(w.nota)}</p>`:""}
@@ -2248,7 +2254,7 @@ function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t
   if(typeof showView==="function")showView("mapa");
   if(!LAY.mt){LAY.mt=true;saveLay();const b=document.querySelector('[data-lay="mt"]');if(b)b.setAttribute("aria-pressed",true);MPI.sync()}
   const r=routeOf(t),d=datos(t),p=MPI.ptsOf(t)||(r&&r.gx&&r.gx.st?[r.gx.st]:null),ie=esc(t.id),off=window.OFFLINE&&OFFLINE.has(r?r.u:"mt:"+t.id);
-  const cab=`<div class="sheet-head"><h2>${esc(t.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>`,volver=`<button class="btn ghost tvol" data-mtback="${ie}">← Volver</button>`;
+  const cab=`${r?tipoHTML("ruta","Guardada · Los de las Claras"):tipoHTML("track",t.src==="grab"?"Tuyo · grabado":"Tuyo")}<div class="sheet-head"><h2>${esc(t.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>`,volver=`<button class="btn ghost tvol" data-mtback="${ie}">← Volver</button>`;
   let h;
   if(vista==="datos"){   // 9 nov 2026: solo la cuadrícula de datos, el perfil y los puntos (sin la franja grande ni el tiempo)
     h=cab+volver+`<div class="tdat">`+datosHTML(t,d)+perfil(t)+puntosHTML(t)+
@@ -3331,7 +3337,7 @@ async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
   const apH=apu||telH;
   const puede=esAdm()||(MIO&&MIO.estado==="ok"&&MIO.id===s.club);
   sheet.classList.remove("full");
-  sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(s.ti)}</h2><button class="x" aria-label="Cerrar" data-close data-salx>×</button></div>
+  sheet.innerHTML=`<div class="grab"></div>${tipoHTML("salida",s.cn||"")}<div class="sheet-head"><h2>${esc(s.ti)}</h2><button class="x" aria-label="Cerrar" data-close data-salx>×</button></div>
   <div class="meta"><span class="tag" style="background:#1e8e3e;color:#fff;border-color:#1e8e3e">📅 ${esc(fFecha(s.fecha))}</span><span class="tag">${esc(s.cn)}</span>${s.prueba?`<span class="tag">Prueba</span>`:""}</div>
   <div class="ficha">${s.km?`<div><b>${kmF(s.km)}</b><span>Distancia</span></div>`:""}${s.up?`<div><b>+${Math.round(s.up).toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${s.dif?`<div><b>${esc(s.dif)}</b><span>Dificultad</span></div>`:""}</div>
   ${s.enc?`<p class="salida">📍 Punto de encuentro: <b>${esc(s.enc)}</b></p>`:""}
@@ -3887,7 +3893,7 @@ function mostrar(t,origen){const n=t.n,pts=t.pts,km=t.km;quitaPill();
   for(const w of t.w||[])TMP.addLayer(L.marker([w.lat,w.lon],{icon:L.divIcon({className:"mpk wpk",html:`<span>${MPI.emo?MPI.emo(w.ic):"📍"}</span>`,iconSize:[0,0]}),title:w.n,zIndexOffset:950}).bindTooltip(esc(w.n),{permanent:true,direction:"right",offset:[12,0],className:"lbl mpl",interactive:false}));
   map.fitBounds(L.latLngBounds(pts),{paddingTopLeft:[30,90],paddingBottomRight:innerWidth>=860?[480,30]:[30,Math.round(innerHeight*.5)],maxZoom:15});
   const ya=MPI.tracks().find(t=>t.pts&&t.pts.length&&t.n===n&&Math.abs(t.pts[0][0]-pts[0][0])<1e-4);
-  MPI.show(`<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-tmpx>×</button></div>
+  MPI.show(`${tipoHTML("track",origen==="archivo"?"Abierto de un archivo":"Compartido")}<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-tmpx>×</button></div>
     ${(()=>{const c=[],x=(v,l)=>c.push(`<div><b>${v}</b><span>${l}</span></div>`);x(km.toLocaleString("es-ES")+" km","Distancia");   // 8 nov 2026: sin etiquetas; datos en una fila
       if(t.up!=null)x("+"+t.up.toLocaleString("es-ES")+" m","Subida");if(t.dn!=null)x("−"+t.dn.toLocaleString("es-ES")+" m","Bajada");if((t.w||[]).length)x("📍 "+t.w.length,t.w.length>1?"Puntos":"Punto");
       return`<div class="dat">${c.join("")}</div>`})()}
@@ -4021,7 +4027,7 @@ function limpia(c){
       if(t.hasAttribute("style")){src=true;continue}
       const y=/\b(19|20)\d{2}\b/.exec(tx);if(y&&!ano){ano=true;t.textContent=y[0];continue}
       t.remove()}
-    if(!src&&c.querySelector(".grab[data-route],[data-follow],[data-share]"))me.insertAdjacentHTML("afterbegin",`<span class="tag" style="background:#c3262e;color:#fff;border-color:#c3262e">Los de las Claras</span>`)}
+    if(!src&&!c.querySelector(".tipo")&&c.querySelector(".grab[data-route],[data-follow],[data-share]"))   /* 9 nov: la etiqueta de arriba ya dice de quién es */ me.insertAdjacentHTML("afterbegin",`<span class="tag" style="background:#c3262e;color:#fff;border-color:#c3262e">Los de las Claras</span>`)}
   // el tiempo: fuera de la ficha; sus enlaces van a «Más opciones»
   for(const h of [...c.querySelectorAll(".sec>h3")])if(/^el tiempo$/i.test(h.textContent.trim())){const sec=h.parentNode;
     const mb=sec.querySelector('a[href*="meteoblue"]'),ae=sec.querySelector('a[href*="aemet"]');
@@ -4703,8 +4709,8 @@ function fichaBlog(i){const F=sheet._fbl;if(!F)return;const b=F.bl[i],o=F.o;if(!
   const cums=[];if(window.COLX)for(const x of COLX.todo())if(x.pp&&x.pp[4]===b.u&&!cums.some(z=>z.pp===x.pp))cums.push(x);
   sheet.classList.remove("full");sheet._cor=null;sheet._fblBack=o;
   sheet.innerHTML=`<div class="grab"></div>${fo?`<div class="photo"><img src="${esc(fo)}" alt="" onerror="this.parentNode.remove()"></div>`:""}
-  <div class="sheet-head"><h2>${esc(tituloBlog(b))}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
-  <div class="meta"><span class="tag" style="background:${b.c};color:#fff;border-color:${b.c}">${esc(b.n)}</span>${y?`<span class="tag">${y}</span>`:""}</div>
+  ${tipoHTML("ruta",b.n||"")}<div class="sheet-head"><h2>${esc(tituloBlog(b))}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
+  ${y?`<div class="meta"><span class="tag">${y}</span></div>`:""}
   <div class="acts2 fbl"><div class="aprim"><a class="btn primary" href="${esc(b.u)}" target="_blank" rel="noopener">📖 Leer en ${esc(b.n)}</a></div></div>
   <p class="note">Esta ruta no tiene track en la app: está contada en el blog.</p>
   <div class="sec"><h3>${cums.length>1?"Cumbres de esta ruta":"Cumbre de esta ruta"}</h3><div class="rows">${(cums.length?cums:[null]).map((x,k)=>`<button class="row" data-fblc="${x?x.ci:""}"><div class="t"><b>${esc(x?x.c:o.n)}</b><span>${o.cum?"Cumbre":"Lugar"}</span></div></button>`).join("")}</div></div>`;
@@ -4726,7 +4732,7 @@ function pinta(o){
   sheet._fbl={o,bl};
   sheet.classList.remove("full");sheet._cor=null;
   sheet.innerHTML=`<div class="grab"></div>${o.foto?`<div class="photo"><img src="${esc(o.foto)}" alt="" onerror="this.parentNode.remove()"></div>`:""}
-  <div class="sheet-head"><h2>${esc(o.n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
+  ${tipoHTML(o.cum||o.a?"cumbre":"lugar","")}<div class="sheet-head"><h2>${esc(o.n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
   ${o.a?`<div class="meta"><span class="tag alt">${fmtA(o.a)}</span></div>`:""}
   ${o.alias.length?`<p class="fpt-alias">También llamada ${o.alias.map(esc).join(", ")}</p>`:""}
   <div class="mkblock fpt" data-ll="${o.lat},${o.lon}"><span>${o.cum?"¿La has subido?":"¿Has estado?"}</span>${o.mk}</div>
@@ -4969,5 +4975,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="ca4233b480";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="1caf072594";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
