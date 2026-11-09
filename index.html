@@ -2258,7 +2258,7 @@ function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t
       ${p?`<a class="mpb" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p[0][0]},${p[0][1]}">🚗 Cómo llegar al inicio</a>`:""}
       ${r?`<button class="mpb" data-mtroute="${ie}">📘 Ver la ruta del blog</button>`:""}
       ${off?`<button class="mpb" data-offt="${ie}">✓ Mapa sin cobertura</button>`:""}
-      <button class="mpb" data-mtcar="${ie}">📁 ${t.c?esc(t.c):"Meter en carpeta"}</button><button class="mpb" data-mtren="${ie}">✏️ Cambiar nombre</button>
+      <button class="mpb" data-mtren="${ie}">✏️ Cambiar nombre</button>
       <button class="mpb dan" data-mtdel="${ie}">${trs} Quitar de mis tracks</button></div>`}
   else h=cab+`<div class="meta">${d.km?`<span class="tag">${kmTxt(d.km)}</span>`:""}${d.up!=null?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}</div>
     <div class="tbot"><button class="btn primary" data-mtfol="${ie}">▶ Seguir</button><button class="btn ghost" data-mtver="${ie}">👁 Solo ver</button><button class="btn ghost" data-mtdat="${ie}">📊 Datos</button><button class="btn ghost" data-mtmas="${ie}">··· Más opciones</button></div>
@@ -4028,6 +4028,7 @@ function limpia(c){
 function ordena(c){if(!c||c.hidden)return;
   try{limpia(c)}catch(e){console.error(e)}
   if(c.querySelector(".fpt"))return;
+  if(c.querySelector(".tbot,.tgr,.tmas"))return;   // 9 nov 2026: ficha de un track de Mis cosas: ya viene hecha (sin el «Más opciones» de arriba)
   const pr=[...c.querySelectorAll(PRIM)].find(x=>!x.closest(FUERA));
   const ruta=!!(pr||c.querySelector(".grab[data-route]")||c.querySelector(".mkblock.rmk"));if(!ruta)return;
   // ⌚ si no está
@@ -4871,5 +4872,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="e1ed8dd67f";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="3983370404";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
