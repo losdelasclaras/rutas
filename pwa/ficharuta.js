@@ -44,12 +44,11 @@ function aviso(y,m){const a=anos(y,m);if(a<=5)return"";const o=a>10;
   return`<details class="frav ${o?"o":"y"}"><summary>${o?`⛔ Ruta de ${y}: información antigua, comprueba el estado antes de ir.`:`⚠️ Ruta de ${y}: el camino puede haber cambiado.`}</summary><p>No garantizamos el estado actual de caminos, pasos y señales: pueden haber cambiado desde que se hizo la ruta (argayos, cierres, vegetación…). Infórmate antes de ir.</p></details>`}
 /* d = {grab, foto, quien, y, m, titulo, mk, de, km, dif, blog, seguir, trk, gRuta, gRutaOn, gTrack, share, llegar, perfil, cumbres:[{n,a,k}], otras, close} */
 function pinta(d){
-  const fe=d.y?(d.m&&MES[d.m]?cap(MES[d.m])+" ":"")+d.y:"";
   const dat=[["Desnivel",d.de],["Distancia",d.km],["Dificultad",d.dif]].filter(x=>x[1]);
   const t=d.trk?"":" hidden";   // lo que depende del track (colaboradores: se enseña al llegar su track)
   return`${d.grab!=null?`<div class="grab"${d.grab}></div>`:""}${d.foto?`<div class="photo"><img src="${esc(d.foto)}" alt="" onerror="this.parentNode.remove()"></div>`:""}
   <div class="fru">
-  <div class="frtop">${tipoHTML("ruta",d.quien||"")}${fe?`<span class="frfe">📅 ${fe}</span>`:""}</div>
+  <div class="frtop">${tipoHTML("ruta",d.quien||"")}</div>
   <div class="sheet-head"><h2>${esc(d.titulo)}</h2><button class="x" aria-label="Cerrar" data-close${d.close||""}>×</button></div>
   ${d.mk||""}
   ${dat.length?`<div class="ficha" style="grid-template-columns:repeat(${dat.length},1fr)">${dat.map(([l,v])=>`<div><b>${esc(v)}</b><span>${l}</span></div>`).join("")}</div>`:""}
