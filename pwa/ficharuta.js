@@ -47,6 +47,10 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .frcum .frc .mk{display:flex;gap:8px;margin-top:8px}.frcum .frc .mk button{flex:1;min-height:44px;font-size:15px}
 .fru .frtrk[hidden]{display:none!important}
 html.pc .fru .frseg{display:none!important}
+/* en el ordenador (sin Seguir): el segundo botón grande es «Guardar track», y sale de «Otras opciones» */
+.fracts .frgtpc{display:none!important}
+html.pc .fracts .frgtpc:not([hidden]){display:flex!important}
+html.pc .frmas .frgtm{display:none!important}
 </style>`);
 const gRL=on=>on?"★ <span>Ruta guardada<small>En Mis cosas · toca para quitarla</small></span>":"☆ <span>Guardar ruta<small>En Mis cosas, para encontrarla luego</small></span>";
 const MES=typeof MESES!=="undefined"?MESES:[];
@@ -67,10 +71,10 @@ function pinta(d){
   ${d.mk||""}
   ${dat.length?`<div class="ficha" style="grid-template-columns:repeat(${dat.length},1fr)">${dat.map(([l,v])=>`<div><b>${esc(v)}</b><span>${l}</span></div>`).join("")}</div>`:""}
   ${aviso(d.y,d.m)}
-  <div class="fracts">${d.blog?`<a class="btn primary" href="${esc(d.blog)}" target="_blank" rel="noopener">📖 Leer en el blog</a>`:""}${d.seguir?`<button class="btn ghost frseg frtrk" ${d.seguir}${t}>▶ Seguir</button>`:`<span class="frsin" title="Esta ruta no tiene track para seguirla">Sin track</span>`}</div><button class="btn ghost frmasb" data-frmas aria-expanded="false">··· Otras opciones</button>
+  <div class="fracts">${d.blog?`<a class="btn primary" href="${esc(d.blog)}" target="_blank" rel="noopener">📖 Leer en el blog</a>`:""}${d.seguir?`<button class="btn ghost frseg frtrk" ${d.seguir}${t}>▶ Seguir</button>`:`<span class="frsin" title="Esta ruta no tiene track para seguirla">Sin track</span>`}${d.gTrack?`<button class="btn ghost frseg frgtpc frtrk" ${d.gTrack}${t}>〰️ Guardar track</button>`:""}</div><button class="btn ghost frmasb" data-frmas aria-expanded="false">··· Otras opciones</button>
   <div class="frvel" data-frx hidden></div><div class="frmas" hidden><div class="ag"></div><h3>Otras opciones</h3>
     ${d.gRuta?`<button class="btn ghost" ${d.gRuta}>${gRL(d.gRutaOn)}</button>`:""}
-    ${d.gTrack?`<button class="btn ghost frtrk" ${d.gTrack}${t}>〰️ <span>Guardar track<small>Copia en Mis cosas, para usar sin cobertura</small></span></button>`:""}
+    ${d.gTrack?`<button class="btn ghost frtrk frgtm" ${d.gTrack}${t}>〰️ <span>Guardar track<small>Copia en Mis cosas, para usar sin cobertura</small></span></button>`:""}
     ${d.share?`<button class="btn ghost" ${d.share}>📤 Compartir</button>`:""}
     <a class="btn ghost frtrk frlleg"${d.llegar?` href="https://www.google.com/maps/dir/?api=1&destination=${d.llegar[0]},${d.llegar[1]}"`:""} target="_blank" rel="noopener"${d.llegar?"":" hidden"}>🚗 Cómo llegar al inicio</a>
   </div>
