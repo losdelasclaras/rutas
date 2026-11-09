@@ -116,13 +116,12 @@ window.FRUTA={pinta,perfilHTML,otras,coGuardada:(c,n)=>!!(MPI&&MPI.tracks().some
     const pf=s.querySelector(".frperf");if(pf&&!pf.children.length)pf.innerHTML=perfilHTML(g,true);
     const o=s.querySelector(".frotr");if(o&&ll&&ll.length){otras.yo=c.r[i][0];const h=otras(ll[0][0],ll[0][1],null,window.COLX&&COLX.rutaItem?COLX.rutaItem(c,i):null);o.innerHTML=h?`<div class="sec"><h3>Otras rutas por la zona</h3>${h}</div>`:""}}};
 
-// el menú se lleva al final de la página mientras está abierto (la ficha se mueve y recorta lo que tiene dentro)
+// el menú se abre en su sitio (dentro de la ficha), para que sus botones funcionen igual que los de la ficha
 let MENU=null;
 function menu(f,abre){
   if(abre){if(!f)return;menu(null,false);const b=f.querySelector(".frmas"),v=f.querySelector(".frvel"),t=f.querySelector("[data-frmas]");if(!b||!v)return;
-    document.body.append(v,b);v.hidden=false;b.hidden=false;if(t)t.setAttribute("aria-expanded",true);MENU={f,b,v,t};return}
-  if(!MENU)return;const{f:F,b,v,t}=MENU;MENU=null;b.hidden=true;v.hidden=true;if(t)t.setAttribute("aria-expanded",false);
-  if(F&&F.isConnected){const a=F.querySelector(".frmasb");if(a)a.after(v,b)}else{b.remove();v.remove()}}
+    v.hidden=false;b.hidden=false;if(t)t.setAttribute("aria-expanded",true);MENU={f,b,v,t};return}
+  if(!MENU)return;const{b,v,t}=MENU;MENU=null;b.hidden=true;v.hidden=true;if(t)t.setAttribute("aria-expanded",false)}
 /* ---- botones ---- */
 document.addEventListener("click",e=>{
   const m=e.target.closest("[data-frmas]");if(m){menu(m.closest(".fru"),true);return}
