@@ -139,6 +139,9 @@ select.chip{appearance:none;padding-right:26px;background-image:linear-gradient(
 @media (min-width:860px){.sheet .onlymob{display:none}.sheet{left:auto;right:16px;bottom:16px;top:56px;width:380px;max-height:none;border-radius:14px;border:1px solid var(--edge)}}
 .grab{width:40px;height:4px;border-radius:2px;background:var(--edge);margin:4px auto 10px}
 .sheet-head{display:flex;gap:10px;align-items:flex-start}
+/* 9 nov 2026: qué es cada ficha (CUMBRE, LUGAR, RUTA, TRACK, PUNTO, SALIDA) y de quién */
+.tipo{display:inline-flex;align-items:center;gap:6px;margin:0 0 6px;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--tc,#5d6b62)}
+.tipo i{font-style:normal;font-weight:700;letter-spacing:0;text-transform:none;opacity:.92}
 .sheet-head h2{flex:1;min-width:0;margin:0;font-family:var(--f-display);font-weight:700;font-size:24px;line-height:1.05;text-wrap:balance}
 .x{border:0;background:var(--paper);border-radius:999px;width:32px;height:32px;cursor:pointer;flex:none;font-size:18px;line-height:1}
 .meta{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}
@@ -314,6 +317,9 @@ const MAIN = new Set(["Asturias","León"]);
 const MESES=["","enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 R.forEach((r,i)=>{r.id=i; r.p.forEach(pi=>{(P[pi].rs ||= []).push(i)})});
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+// 9 nov 2026: etiqueta encima del título de cada ficha. RUTA = salida contada en un blog (crónica); TRACK = solo la línea
+const TIPOS={cumbre:["⛰","Cumbre","#2e7d32"],lugar:["📍","Lugar","#00838f"],ruta:["🥾","Ruta","#c62828"],track:["🧵","Track","#7b2cbf"],punto:["📌","Punto","#e8711a"],salida:["📅","Salida","#1565c0"]};
+function tipoHTML(k,quien){const t=TIPOS[k];if(!t)return"";return`<div class="tipo" style="--tc:${t[2]}">${t[0]} ${t[1]}${quien?` <i>· ${esc(quien)}</i>`:""}</div>`}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmtA=a=>a? a.toLocaleString("es-ES")+" m":"";
 const norm=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
@@ -584,7 +590,7 @@ function routeBody(r){
   const techos=pts.filter(p=>p.techo);
   return `
   ${r.f!=null?`<div class="photo"><img src="fotos/${r.f}.jpg" alt=""></div>`:""}
-  <div class="sheet-head"><h2>${esc(routeTitle(r))}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  ${tipoHTML("ruta","Los de las Claras")}<div class="sheet-head"><h2>${esc(routeTitle(r))}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   <div class="meta">${r.iv?`<span class="tag iv">❄ Invernal</span>`:""}${r.nv?`<span class="tag new">Renovada</span>`:""}${r.y?`<span class="tag">${r.m?MESES[r.m]+" ":""}${r.y}</span>`:""}${(r.co&&r.co.length?r.co:r.grp?[r.r,r.grp]:[r.r]).map(c=>`<span class="tag">${esc(c)}</span>`).join("")}${r.a&&!r.tk?`<span class="tag alt">${fmtA(r.a)}</span>`:""}${techos.map(t=>`<span class="tag">Techo de ${esc(t.techo)}</span>`).join("")}</div>
   ${r.ds?`<p class="desc">${esc(r.ds.replace(/\s*📝.*$/,""))}</p>`:""}
   ${(r.km||r.de||r.tm||r.dif||r.dl)?`<div class="ficha">${r.km?`<div><b>${fmtKm(r.km)}</b><span>Distancia</span></div>`:""}${r.de?`<div><b>+${r.de.toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${r.tm?`<div><b>${esc(r.tm)}</b><span>Duración</span></div>`:""}${r.dl?`<div><b>${DIFN[r.dl]}</b><span>Dificultad</span></div>`:r.dif?`<div><b>${esc(r.dif)}</b><span>Dificultad</span></div>`:""}</div>`:""}
@@ -601,14 +607,14 @@ function routeBody(r){
 }
 function pickRoute(pi){const rs=(P[pi].rs||[]).filter(ri=>R[ri].u);if(rs.length<2){openRoute(rs.length?rs[0]:(P[pi].rs?P[pi].rs[0]:null),pi);return}
   ensureZone(zoneOf(P[pi].r));nodes.classed("sel",i=>i===pi);if(window.showTrack)showTrack(null);{const tp=document.getElementById("trkpill");if(tp)tp.hidden=true}
-  sheet.classList.remove("full");sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(P[pi].c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>${P[pi].a?`<div class="meta"><span class="tag alt">${fmtA(P[pi].a)}</span></div>`:""}${mkBlock(pi)}<p class="note">Está en ${rs.length} rutas. Elige cuál ver:</p><div class="rows">${rs.map(ri=>R[ri]).sort(byDate).map(r=>rowHTML(r)).join("")}</div>`;
+  sheet.classList.remove("full");sheet.innerHTML=`<div class="grab"></div>${tipoHTML(P[pi].a?"cumbre":"lugar","Los de las Claras")}<div class="sheet-head"><h2>${esc(P[pi].c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>${P[pi].a?`<div class="meta"><span class="tag alt">${fmtA(P[pi].a)}</span></div>`:""}${mkBlock(pi)}<p class="note">Está en ${rs.length} rutas. Elige cuál ver:</p><div class="rows">${rs.map(ri=>R[ri]).sort(byDate).map(r=>rowHTML(r)).join("")}</div>`;
   sheet.hidden=false;sheet.scrollTop=0}
 function openRoute(ri,pi){
   const wasFull=sheet.classList.contains("full")&&!sheet.hidden; sheet.classList.remove("full");
   ensureZone(zoneOf(ri!=null?R[ri].r:P[pi].r));
   nodes.classed("sel",i=>ri!=null?R[ri].p.includes(i):i===pi);
   tracks.classed("sel",r=>r.id===ri);if(window.showTrack)showTrack(ri!=null?R[ri]:null);{const tp=document.getElementById("trkpill");if(tp)tp.hidden=true}
-  if(ri==null){const p=P[pi];sheet.innerHTML=`<div class="grab"></div><div class="sheet-head"><h2>${esc(p.c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><div class="meta">${p.a?`<span class="tag alt">${fmtA(p.a)}</span>`:""}<span class="tag">${esc(p.r)}</span></div><p class="note">Este punto del mapa todavía no tiene enlazada su entrada del blog.</p>${mkBlock(pi)}`;sheet.hidden=false;return}
+  if(ri==null){const p=P[pi];sheet.innerHTML=`<div class="grab"></div>${tipoHTML(p.a?"cumbre":"lugar","Los de las Claras")}<div class="sheet-head"><h2>${esc(p.c)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div><div class="meta">${p.a?`<span class="tag alt">${fmtA(p.a)}</span>`:""}<span class="tag">${esc(p.r)}</span></div><p class="note">Este punto del mapa todavía no tiene enlazada su entrada del blog.</p>${mkBlock(pi)}`;sheet.hidden=false;return}
   const r=R[ri];
   sheet.innerHTML=`<div class="grab" data-route="${r.id}"></div>`+routeBody(r);
   if(pi!=null&&mkKey(P[pi])){const h=sheet.querySelector(".sheet-head");if(h)h.insertAdjacentHTML("afterend",mkBlock(pi))}
