@@ -7,7 +7,8 @@ def fixlab(u):
         if l in ET: return 'https://losdelasclaras.blogspot.com/'+ET[l]
     return u
 for p in pts:
-    p['us']=list(dict.fromkeys(fixlab(u) for u in (p.get('us') or ([p['u']] if p['u'] else []))))
+    # 10 nov 2026: el enlace a la propia app (track compartido #c=…) no es una ruta: antes salía repetida en la ficha de la cumbre
+    p['us']=list(dict.fromkeys(fixlab(u) for u in (p.get('us') or ([p['u']] if p['u'] else [])) if u and 'losdelasclaras.github.io' not in u))
     p['u']=p['us'][0] if p['us'] else None
     if p['u']:
         m=re.search(r'blogspot\.com/(\d{4})/',p['u']); p['y']=int(m.group(1)) if m else p['y']
