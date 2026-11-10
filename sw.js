@@ -36,7 +36,11 @@ self.addEventListener("fetch",e=>{
           await c.put("index.html",cp);
           if(old&&nt!==ot){const cl=await self.clients.matchAll({type:"window"});cl.forEach(x=>x.postMessage({t:"ldc-nueva"}))}}return r});
       e.waitUntil(net.catch(()=>{}));
-      e.respondWith(caches.match("index.html").then(hit=>hit||net));return}
-    e.respondWith(caches.match(e.request).then(hit=>hit||fetch(e.request).then(r=>{if(r.ok){const cp=r.clone();caches.open(V).then(c=>c.put(e.request,cp))}return r})));
+      // 10 nov 2026: la página se busca SOLO en el almacén de la app (antes en todos, también en los miles de teselas de mapa),
+      // y si el almacén tarda más de 2,5 s se va a la red: al reabrir tras cerrar la app desde recientes podía quedarse en negro
+      const deCaja=caches.open(V).then(c=>c.match("index.html"));
+      const espera=new Promise(r=>setTimeout(()=>r(null),2500));
+      e.respondWith(Promise.race([deCaja,espera]).then(hit=>hit||net.catch(()=>deCaja.then(h=>h||Response.error()))).catch(()=>net));return}
+    e.respondWith(caches.open(V).then(c=>c.match(e.request)).then(hit=>hit||fetch(e.request).then(r=>{if(r.ok){const cp=r.clone();caches.open(V).then(c=>c.put(e.request,cp))}return r})));   // solo en el almacén de la app (10 nov 2026)
   }
 });
