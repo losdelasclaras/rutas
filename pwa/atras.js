@@ -51,5 +51,23 @@ function barra(){if(BAR)BAR.remove();clearTimeout(btm);BAR=document.createElemen
   BAR.innerHTML=true?`<span>¿Salir de la app?</span><a href="intent://salir#Intent;scheme=ldcrutas;package=es.losdelasclaras.rutas;S.browser_fallback_url=${fb};end">Salir</a>`
     :`<span>Para salir, desliza hacia arriba</span>`;
   document.body.appendChild(BAR);const a=BAR.querySelector("a");if(a)a.addEventListener("click",()=>{ap("atrás","Salir");setTimeout(()=>{if(BAR){BAR.remove();BAR=null}},300)});
-  btm=setTimeout(()=>{if(BAR){BAR.remove();BAR=null}},8000)}   // 8 s (9 nov: 4 s era poco)
+  btm=setTimeout(()=>{if(BAR){BAR.remove();BAR=null}},5000)}   // 5 s (9 nov: 4 s era poco; 10 nov: 8 s, mucho)
 })();
+
+/* 10 nov 2026: cerrar una ficha deslizándola hacia abajo (además de la × y del «atrás» de cada móvil).
+   Va fuera del bloque de arriba: vale también en el navegador del móvil, no solo en la app.
+   Solo cuando la ficha está arriba del todo (si no, el dedo sirve para subir por ella); la ficha baja con el dedo
+   y, si se suelta lejos (más de 90 px o rápido), se cierra; si no, vuelve a su sitio. */
+{const sh=document.getElementById("sheet");if(sh){let y0=null,x0=0,t0=0,dy=0,tira=false;
+  const fuera=e=>e.target.closest("input,textarea,select,.frmas,.frvel,.leaflet-container,svg,.perf,.pf,[data-noswipe]");
+  sh.addEventListener("touchstart",e=>{if(e.touches.length!==1||sh.scrollTop>2||fuera(e)){y0=null;return}
+    y0=e.touches[0].clientY;x0=e.touches[0].clientX;t0=Date.now();dy=0;tira=false},{passive:true});
+  sh.addEventListener("touchmove",e=>{if(y0==null)return;const t=e.touches[0],d=t.clientY-y0,dx=Math.abs(t.clientX-x0);
+    if(!tira){if(d<8)return;if(dx>d||sh.scrollTop>2){y0=null;return}tira=true;sh.style.transition="none"}
+    dy=Math.max(0,d);sh.style.transform=`translateY(${dy}px)`;if(e.cancelable)e.preventDefault()},{passive:false});
+  const suelta=()=>{if(y0==null)return;y0=null;if(!tira)return;tira=false;const v=dy/Math.max(1,Date.now()-t0);
+    sh.style.transition="transform .2s ease";
+    if(dy>90||(dy>30&&v>.6)){sh.style.transform="translateY(100%)";setTimeout(()=>{const x=sh.querySelector(".sheet-head [data-close],[data-close]");if(x)x.click();else sh.hidden=true;
+        sh.style.transition="none";sh.style.transform="";if(window.DIAG)DIAG.apunta("ficha","cerrada deslizando hacia abajo")},180)}
+    else{sh.style.transform="";setTimeout(()=>{sh.style.transition=""},220)}};
+  sh.addEventListener("touchend",suelta,{passive:true});sh.addEventListener("touchcancel",suelta,{passive:true})}}
