@@ -4772,6 +4772,14 @@ try{
 (function(){
 if(typeof pickRoute!=="function")return;
 document.head.insertAdjacentHTML("beforeend",`<style>
+/* 10 nov 2026: las rutas de la ficha de una cumbre o un lugar se ven como botones (antes no parecía que se pudieran tocar) */
+.fpt-rutas .rows>.row{position:relative;border:1.5px solid var(--edge,#ccc)!important;border-radius:12px;background:var(--card);margin:0 0 8px;padding:10px 10px 40px 10px!important;box-shadow:0 1px 3px rgba(0,0,0,.08);transition:background .15s,transform .1s}
+.fpt-rutas .rows>.row::before{content:"";position:absolute;left:0;right:0;bottom:0;height:34px;border-top:1px solid var(--edge,#ddd);border-radius:0 0 11px 11px;background:rgba(195,38,46,.05)}
+.fpt-rutas .rows>.row::after{content:"Ver ruta ›";position:absolute;right:12px;bottom:10px;color:#c3262e;font-weight:800;font-size:15px;white-space:nowrap}
+.fpt-rutas .rows>.row:active{background:rgba(195,38,46,.12);transform:scale(.99)}
+.fpt-rutas .rows>.row .fpth{position:absolute;left:10px;bottom:11px;font-size:12.5px;font-weight:700;color:#c3262e;font-style:normal}
+.fpt-rutas .fpttoca{margin:-2px 0 10px;font-size:14px;color:var(--muted)}
+@media (prefers-color-scheme:dark){.fpt-rutas .rows>.row::after,.fpt-rutas .rows>.row .fpth{color:#ff7a7f}}
 .fpt-src{margin:14px 0 4px;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
 .fpt-src i{display:inline-block;width:12px;height:12px;border-radius:50%;flex:none}
 .fpt-alias{margin:-2px 0 8px;color:var(--muted);font-size:14px}
@@ -4809,6 +4817,7 @@ function fichaBlog(i){const F=sheet._fbl;if(!F)return;const b=F.bl[i],o=F.o;if(!
   <p class="note">Esta ruta no tiene track en la app: está contada en el blog.</p>
   <div class="sec"><h3>${cums.length>1?"Cumbres de esta ruta":"Cumbre de esta ruta"}</h3><div class="rows">${(cums.length?cums:[null]).map((x,k)=>`<button class="row" data-fblc="${x?x.ci:""}"><div class="t"><b>${esc(x?x.c:o.n)}</b><span>${o.cum?"Cumbre":"Lugar"}</span></div></button>`).join("")}</div></div>`;
   sheet.hidden=false;sheet.scrollTop=0;if(window.showTrack)showTrack(null)}
+sheet.addEventListener("click",e=>{if(e.target.closest(".fpt-rutas .rows>.row"))try{localStorage.setItem("ldc-fpttoca","1")}catch(er){}},true);
 sheet.addEventListener("click",e=>{const f=e.target.closest(".fpt-rutas [data-fbl]");if(f){e.stopPropagation();fichaBlog(+f.dataset.fbl);return}
   const c=e.target.closest("[data-fblc]");if(c){e.stopPropagation();const ci=c.dataset.fblc;if(ci!==""&&window.COLX)COLX.open(+ci);else if(sheet._fblBack)pinta(sheet._fblBack)}});
 function pinta(o){
@@ -4836,6 +4845,12 @@ function pinta(o){
   </div>`;
   sheet._pt={n:o.n,lat:o.lat,lon:o.lon,alt:o.a||null,cum:o.cum,co:""};
   sheet._fptKeys=o.keys;
+  // qué hay detrás de cada ruta (en letra pequeña) y, hasta que se toque una, cómo usar la lista
+  sheet.querySelectorAll(".fpt-rutas .rows>.row").forEach(b=>{const t=b.querySelector(".t")||b;if(t.querySelector(".fpth"))return;
+    let trk=!!b.dataset.cor;if(b.dataset.r!=null){const r=R[+b.dataset.r];trk=!!(r&&r.gx)}
+    t.insertAdjacentHTML("beforeend",`<em class="fpth">${trk?"Track · Perfil · Seguir":"Entrada del blog"}</em>`)});
+  {let vis=false;try{vis=localStorage.getItem("ldc-fpttoca")==="1"}catch(e){}
+    const h=sheet.querySelector(".fpt-rutas>h3");if(h&&!vis&&sheet.querySelector(".fpt-rutas .rows>.row"))h.insertAdjacentHTML("afterend",`<p class="fpttoca">👆 Toca una ruta para ver su track, perfil y cómo seguirla.</p>`)}
   if(o.gi!=null)nodes.classed("sel",i=>i===o.gi);else nodes.classed("sel",false);
   if(window.showTrack)showTrack(o.solo||null);{const tp=document.getElementById("trkpill");if(tp)tp.hidden=true}
   if(typeof ensureZone==="function")ensureZone(zoneAt(o.lat,o.lon));
@@ -5234,5 +5249,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="191e9d9049";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="7ffcf541a4";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
