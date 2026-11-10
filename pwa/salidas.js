@@ -30,18 +30,41 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .salchips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
 .salrow{display:flex;align-items:center;gap:8px;border-top:1px solid var(--edge);padding:8px 0}.salrow:first-of-type{border-top:0}.salrow span{flex:1;min-width:0}
 .salaviso{font-size:13px;color:var(--muted);margin:8px 0 0}
+/* 10 nov 2026 · lista compacta por semanas y filtros */
+#v-salidas h1.salhd{font-size:19px;letter-spacing:0;text-transform:none;margin:2px 0 10px}
+#v-salidas .inner>div:empty{display:none}#v-salidas .inner{row-gap:10px}
+.salwk{display:flex;gap:6px;overflow-x:auto;margin:0 -2px 8px;padding:2px;scrollbar-width:none}.salwk::-webkit-scrollbar{display:none}
+.salwk .chip{flex:none;white-space:nowrap}
+.salfil{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+.salfil select{width:100%;box-sizing:border-box;border:1px solid var(--edge);border-radius:10px;padding:9px 8px;font:inherit;font-size:15px;background:var(--card);color:var(--ink)}
+.salg{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:14px 2px 6px}
+.salr{display:flex;gap:10px;align-items:center;border:1px solid var(--edge);border-radius:12px;padding:8px 10px;margin:0 0 6px;background:var(--card);cursor:pointer}
+.salr .fd{flex:none;width:46px;border-radius:9px;background:#1e8e3e;color:#fff;text-align:center;line-height:1.05;padding:5px 0}
+.salr .fd small{display:block;font-size:11px;font-weight:800;text-transform:uppercase}.salr .fd b{font-size:20px}
+.salr .t{flex:1;min-width:0}.salr .t b{display:block;font-size:16px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.salr .t small{display:block;color:var(--muted);font-size:13.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.salr .t .cl{color:#1e8e3e;font-weight:800}
+.salpie{font-size:13px;color:var(--muted);margin:18px 2px 8px;line-height:1.4}
 </style>`);
 
 /* --- la pestaña --- */
 const main=document.querySelector("main");
 const sec=document.createElement("section");sec.className="view pad";sec.id="v-salidas";sec.hidden=true;
-sec.innerHTML=`<div class="inner"><h1 class="vt">Próximas salidas</h1>
-<p class="lead">Salidas que anuncian los clubes y grupos de montaña: fecha, punto de encuentro, cómo apuntarse y el track.</p>
-<div id="sal-adm"></div><div id="sal-yo"></div><div id="sal-form"></div><div id="sal-chips"></div><div id="sal-lista"><p class="note">Cargando…</p></div></div>`;
+sec.innerHTML=`<div class="inner"><h1 class="vt salhd">📅 Salidas de clubes de montaña</h1>
+<div id="sal-adm"></div><div id="sal-yo"></div><div id="sal-form"></div><div id="sal-chips"></div><div id="sal-lista"><p class="note">Cargando…</p></div><div id="sal-pie"></div></div>`;
 main.appendChild(sec);
 const $=id=>document.getElementById(id);
 
-let A=null,CLUBS=[],SALS=[],MIO=null,FIL="todos",CARGADO=0;
+let A=null,CLUBS=[],SALS=[],MIO=null,FIL="todos",CARGADO=0,FSEM="todas",FSD="",FDIF="";
+// 10 nov 2026 · «Sale desde»: dónde quedan (para quien va en el autobús del club). El club lo elige de esta lista.
+const SDS=["Gijón","Oviedo","Avilés","Langreo","Mieres","Siero","Oriente","Occidente","León","Otro sitio"];
+const MAXS=2;   // salidas próximas que puede tener anunciadas cada club a la vez
+// semana (lunes) de una fecha, y su etiqueta por el fin de semana
+// (el lunes y martes cuentan con el fin de semana de antes: así un puente sale junto)
+const lun=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()-2);x.setDate(x.getDate()-((x.getDay()+6)%7));return x};
+function semEt(k){const l=new Date(+k),hoyL=lun(new Date(Date.now()+2*864e5)),s=new Date(l);s.setDate(l.getDate()+5);const dg=new Date(l);dg.setDate(l.getDate()+6);
+  const sem=Math.round((l-hoyL)/6048e5);if(sem<=0)return"Este fin de semana";if(sem===1)return"El que viene · "+s.getDate()+"-"+dg.getDate()+" "+MS[dg.getMonth()].slice(0,3);
+  return s.getMonth()===dg.getMonth()?`${s.getDate()}-${dg.getDate()} ${MS[dg.getMonth()].slice(0,3)}`:`${s.getDate()} ${MS[s.getMonth()].slice(0,3)} - ${dg.getDate()} ${MS[dg.getMonth()].slice(0,3)}`}
 const fs=()=>A.fs,db=()=>A.db;
 async function base(){if(A)return A;if(!window.LDCFB)throw new Error("sin cuenta");A=await LDCFB.load();return A}
 async function carga(fuerza){if(!fuerza&&Date.now()-CARGADO<60000)return pinta();
@@ -71,14 +94,23 @@ function pinta(){
   else if(MIO&&MIO.estado==="ok")$("sal-yo").innerHTML=`<div class="salbox"><h2>🏔 ${esc(MIO.n)}</h2><p class="note" style="margin:0 0 8px">Tu club está dado de alta: lo que publiques sale al momento.</p><div class="salbtns"><button class="btn ghost" data-scedit="${MIO.id}">✏️ Datos del club</button><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>${fijo(MIO)}`;
   else if(MIO&&MIO.estado==="pend")$("sal-yo").innerHTML=`<div class="salbox"><h2>⏳ Solicitud enviada</h2><p class="note" style="margin:0">«${esc(MIO.n)}» está pendiente de que Los de las Claras lo apruebe. Cuando esté, aquí te saldrá «Nueva salida».</p></div>`;
   else if(altaOk())$("sal-yo").innerHTML=`<div class="salbtns" style="grid-template-columns:1fr;margin:0 0 12px"><button class="btn primary" data-sclub>🏔 Dar de alta nuestro club</button></div>`;
-  else $("sal-yo").innerHTML=`<div class="salbox"><p class="note" style="margin:0">¿Sois un club o grupo de montaña y queréis anunciar aquí vuestras salidas? Escribid al creador de la app: <a href="mailto:${CORREO}?subject=${encodeURIComponent("Salidas de nuestro club en la app")}"><b>${CORREO}</b></a></p></div>`;
-  // filtro por club
-  const cs=[...new Set(SALS.map(s=>s.cn))];
-  $("sal-chips").innerHTML=cs.length>1?`<div class="salchips"><button class="chip" data-sfil="todos" aria-pressed="${FIL==="todos"}">Todos</button>${cs.map(c=>`<button class="chip" data-sfil="${esc(c)}" aria-pressed="${FIL===c}">${esc(c)}</button>`).join("")}</div>`:"";
-  const L0=SALS.filter(s=>FIL==="todos"||s.cn===FIL);
-  $("sal-lista").innerHTML=L0.length?L0.map(s=>{const d=new Date(s.fecha);return `<div class="salc" data-sopen="${s.id}"><div class="fd"><small>${isNaN(d)?"":DS[d.getDay()].slice(0,3)}</small><b>${isNaN(d)?"?":d.getDate()}</b><small>${isNaN(d)?"":MS[d.getMonth()].slice(0,3)}</small></div>
-    <div class="t"><b>${esc(s.ti)}</b><small><span class="cl">${esc(s.cn)}</span> · ${esc(fFecha(s.fecha))}</small><small>${[s.km?kmF(s.km):"",s.up?"+"+Math.round(s.up).toLocaleString("es-ES")+" m":"",s.dif||""].filter(Boolean).join(" · ")}${s.enc?" · 📍 "+esc(s.enc):""}</small></div></div>`}).join("")
-    :`<p class="note">No hay salidas anunciadas todavía.</p>`;
+  else $("sal-yo").innerHTML="";
+  $("sal-pie").innerHTML=esAdm()||MIO?"":`<p class="salpie">¿Eres de un club o grupo de montaña y queréis anunciar aquí vuestras salidas? Escribe a <a href="mailto:${CORREO}?subject=${encodeURIComponent("Salidas de nuestro club en la app")}">${CORREO}</a></p>`;
+  // 10 nov 2026 · semanas (por su fin de semana), «Sale desde» y dificultad; lista compacta agrupada por semanas
+  const fe=s=>new Date(s.fecha),wk=s=>{const d=fe(s);return isNaN(d)?0:+lun(d)};
+  const ks=[...new Set(SALS.map(wk))].sort((a,b)=>a-b),pri=ks.slice(0,3),mas=ks.length>3;
+  if(FSEM!=="todas"&&FSEM!=="mas"&&!pri.includes(+FSEM))FSEM="todas";
+  const sds=[...new Set(SALS.map(s=>s.sd).filter(Boolean))].sort((a,b)=>SDS.indexOf(a)-SDS.indexOf(b)),dfs=DIFS.filter(d=>SALS.some(s=>s.dif===d));
+  if(FSD&&!sds.includes(FSD))FSD="";if(FDIF&&!dfs.includes(FDIF))FDIF="";
+  const ch=(v,l)=>`<button class="chip" data-ssem="${v}" aria-pressed="${String(FSEM)===String(v)}">${esc(l)}</button>`;
+  $("sal-chips").innerHTML=SALS.length>1?`${ks.length>1?`<div class="salwk">${ch("todas","Todas")}${pri.map(k=>ch(k,semEt(k).replace(/^El que viene · /,""))).join("")}${mas?ch("mas","Más adelante"):""}</div>`:""}
+    ${sds.length>1||dfs.length>1?`<div class="salfil"><select data-ssd aria-label="Sale desde"><option value="">📍 Desde: todos</option>${sds.map(x=>`<option${x===FSD?" selected":""}>${esc(x)}</option>`).join("")}</select>
+    <select data-sdif aria-label="Dificultad"><option value="">⛰ Dificultad</option>${dfs.map(x=>`<option${x===FDIF?" selected":""}>${esc(x)}</option>`).join("")}</select></div>`:""}`:"";
+  const L0=SALS.filter(s=>(FSEM==="todas"||(FSEM==="mas"?!pri.includes(wk(s)):wk(s)===+FSEM))&&(!FSD||s.sd===FSD)&&(!FDIF||s.dif===FDIF));
+  const fila=s=>{const d=fe(s);return `<div class="salr" data-sopen="${s.id}"><div class="fd"><small>${isNaN(d)?"":DS[d.getDay()].slice(0,3)}</small><b>${isNaN(d)?"?":d.getDate()}</b><small>${isNaN(d)?"":MS[d.getMonth()].slice(0,3)}</small></div>
+    <div class="t"><b>${esc(s.ti)}</b><small><span class="cl">${esc(s.cn)}</span>${s.sd?" · "+esc(s.sd):""}${s.prueba?" · prueba":""}</small><small>${[isNaN(d)?"":String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+" h",s.km?kmF(s.km):"",s.up?"+"+Math.round(s.up).toLocaleString("es-ES")+" m":"",s.dif||""].filter(Boolean).join(" · ")}</small></div></div>`};
+  let H="",g=null;for(const s of L0){const k=wk(s);if(k!==g){g=k;H+=`<div class="salg">${esc(semEt(k))}</div>`}H+=fila(s)}
+  $("sal-lista").innerHTML=L0.length?H:SALS.length?`<p class="note">No hay salidas con esos filtros.</p>`:`<p class="note">No hay salidas anunciadas todavía.</p>`;
   if(AVC&&Date.now()-AVC.t<120000)$("sal-lista").insertAdjacentHTML("afterbegin",AVC.h);else AVC=null}
 
 let AVC=null;
@@ -89,6 +121,7 @@ const altaOk=()=>{try{return localStorage.getItem("ldc-altaclub")==="1"}catch(e)
 function deAlta(){if((location.hash||"")!=="#altaclub")return;try{localStorage.setItem("ldc-altaclub","1");localStorage.setItem("ldc-salinv","1")}catch(e){}
   try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}visTab();showView("salidas");carga(true)}
 addEventListener("hashchange",deAlta);setTimeout(deAlta,0);   // aviso «este club no tiene salidas próximas» (al entrar con su enlace fijo), se queda 2 minutos
+sec.addEventListener("change",e=>{const el=e.target;if(el.matches("[data-ssd]")){FSD=el.value;pinta()}else if(el.matches("[data-sdif]")){FDIF=el.value;pinta()}});
 /* --- 🔗 enlace fijo de un club (10 nov 2026): …/rutas/#club=<id> abre siempre su próxima salida publicada --- */
 const URLF=id=>"https://losdelasclaras.github.io/rutas/#club="+encodeURIComponent(id);
 const BOTON=id=>`<a href="${URLF(id)}" target="_blank" rel="noopener" style="display:inline-block;padding:12px 18px;background:#1e8e3e;color:#fff;border-radius:10px;font-family:sans-serif;font-weight:bold;text-decoration:none">📅 Próxima salida · Ver en la app</a>`;
@@ -118,6 +151,7 @@ function formSalida(ed){const adm=esAdm(),cl=adm?CLUBS:[MIO];GPX=null;SED=ed||nu
   ${adm?`<label>Club</label><select id="ss-c">${cl.map(c=>`<option value="${c.id}">${esc(c.n)}</option>`).join("")}</select>`:`<p class="note" style="margin:0">Club: <b>${esc(MIO.n)}</b></p>`}
   <label>Título</label><input id="ss-t" maxlength="100" placeholder="Por ejemplo: Peña Ubiña desde Tuíza">
   <div class="two"><div><label>Día</label><input id="ss-d" type="date" min="${hoy()}"></div><div><label>Hora</label><input id="ss-h" type="time" value="08:00"></div></div>
+  <label>Sale desde</label><select id="ss-sd"><option value="">— Elige —</option>${SDS.map(x=>`<option>${x}</option>`).join("")}</select>
   <label>Punto de encuentro</label><input id="ss-e" maxlength="120" placeholder="Por ejemplo: aparcamiento de Tuíza de Arriba">
   <label>Dificultad</label><select id="ss-f">${DIFS.map(d=>`<option>${d}</option>`).join("")}</select>
   <label>Enlace para apuntarse (opcional)</label><input id="ss-u" type="url" maxlength="400" placeholder="https://… (formulario de Google, web del club…)">
@@ -131,8 +165,9 @@ function formSalida(ed){const adm=esAdm(),cl=adm?CLUBS:[MIO];GPX=null;SED=ed||nu
   <div class="salbtns"><button class="btn ghost" data-sfx>Cancelar</button><button class="btn primary" data-sssave>${ed?"Guardar cambios":"Publicar"}</button></div></div>`;
   if(ed){const v=(i,x)=>{const el=$(i);if(el&&x!=null)el.value=x};
     v("ss-c",ed.club);v("ss-t",ed.ti);v("ss-d",(ed.fecha||"").slice(0,10));v("ss-h",(ed.fecha||"").slice(11,16)||"08:00");v("ss-e",ed.enc);v("ss-f",ed.dif);
-    v("ss-u",ed.apu||(/^https?:\/\//i.test(ed.ap||"")?ed.ap:""));v("ss-a",/^https?:\/\//i.test(ed.ap||"")?"":ed.ap);v("ss-o",ed.apo);v("ss-x",ed.txt);v("ss-pdfu",ed.pdfu);
+    v("ss-u",ed.apu||(/^https?:\/\//i.test(ed.ap||"")?ed.ap:""));v("ss-a",/^https?:\/\//i.test(ed.ap||"")?"":ed.ap);v("ss-o",ed.apo);v("ss-x",ed.txt);v("ss-pdfu",ed.pdfu);v("ss-sd",ed.sd);
     if($("ss-c"))$("ss-c").disabled=true}
+  if(!ed){const ult=()=>{const c=$("ss-c")?$("ss-c").value:MIO.id;const p=SALS.find(x=>x.club===c&&x.sd)||{};$("ss-sd").value=p.sd||(CLUBS.find(x=>x.id===c)||MIO||{}).sd||""};ult();if($("ss-c"))$("ss-c").addEventListener("change",ult)}
   $("ss-g").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;const t=await f.text();GPX=leeTrack(t);
     $("ss-gi").textContent=GPX?`✓ ${kmF(GPX.km)} · +${Math.round(GPX.up).toLocaleString("es-ES")} m`:"No he encontrado ningún recorrido en ese archivo";
     if(GPX&&!$("ss-t").value&&GPX.n)$("ss-t").value=GPX.n});
@@ -165,7 +200,9 @@ async function guardaClub(adm){const n=$("sc-n").value.trim();if(n.length<3){toa
 async function guardaSalida(){const adm=esAdm(),cid=adm?$("ss-c").value:MIO.id,club=(adm?CLUBS.find(c=>c.id===cid):MIO);
   const ti=$("ss-t").value.trim(),dia=$("ss-d").value,h=$("ss-h").value||"08:00";
   if(ti.length<4){toast("Pon un título");return}if(!dia){toast("Pon el día");return}if(dia<hoy()){toast("El día ya ha pasado");return}
-  const s={club:cid,cn:club.n,cc:club.contacto||"",cw:club.web||"",ti,fecha:dia+"T"+h,enc:$("ss-e").value.trim(),dif:$("ss-f").value,ap:$("ss-a").value.trim(),apu:$("ss-u").value.trim(),apo:$("ss-o").value.trim(),pdfu:$("ss-pdfu").value.trim(),txt:$("ss-x").value.trim(),t:Date.now()};
+  const sd=$("ss-sd").value;if(!sd){toast("Elige desde dónde sale");return}
+  if(!SED&&SALS.filter(x=>x.club===cid).length>=MAXS){toast(`Ya tenéis ${MAXS} salidas anunciadas: podréis publicar la siguiente cuando pase la primera`);return}
+  const s={sd,club:cid,cn:club.n,cc:club.contacto||"",cw:club.web||"",ti,fecha:dia+"T"+h,enc:$("ss-e").value.trim(),dif:$("ss-f").value,ap:$("ss-a").value.trim(),apu:$("ss-u").value.trim(),apo:$("ss-o").value.trim(),pdfu:$("ss-pdfu").value.trim(),txt:$("ss-x").value.trim(),t:Date.now()};
   if(GPX)Object.assign(s,{km:GPX.km,up:GPX.up,mx:GPX.mx,lat:GPX.pts[0][0],lon:GPX.pts[0][1]});
   if(!SED)s.uid=usr().uid;
   if(club.prueba)s.prueba=true;
@@ -246,13 +283,14 @@ new MutationObserver(()=>{if(sheet._sal&&!sheet.querySelector("[data-salx]"))she
 sec.addEventListener("click",async e=>{const t=e.target;
   const o=t.closest("[data-sopen]");if(o){abre(o.dataset.sopen);return}
   const fl=t.closest("[data-sfil]");if(fl){FIL=fl.dataset.sfil;pinta();return}
+  const sm=t.closest("[data-ssem]");if(sm){FSEM=sm.dataset.ssem;pinta();return}
   if(t.closest("[data-sfx]")){$("sal-form").innerHTML="";SED=null;return}
   if(t.closest("[data-sclub]")&&!altaOk()&&!esAdm()){toast("Escribe a "+CORREO+" para dar de alta tu club");return}
   if(t.closest("[data-sclub]")){if(window.cuentaOk&&!cuentaOk(()=>{showView("salidas");carga(true).then(()=>formClub(false))},"club"))return;formClub(false);return}
   if(t.closest("[data-scnew]")){formClub(true);return}
   const ce=t.closest("[data-scedit]");if(ce){const c=CLUBS.find(x=>x.id===ce.dataset.scedit)||(MIO&&MIO.id===ce.dataset.scedit?MIO:null);if(c)formClub(esAdm(),c);return}
   const sv=t.closest("[data-scsave]");if(sv){guardaClub(sv.dataset.scsave==="1");return}
-  if(t.closest("[data-snew]")){formSalida();return}
+  if(t.closest("[data-snew]")){if(!esAdm()&&MIO&&SALS.filter(x=>x.club===MIO.id).length>=MAXS){toast(`Ya tenéis ${MAXS} salidas anunciadas: podréis publicar la siguiente cuando pase la primera`);return}formSalida();return}
   const fj=t.closest("[data-sfijo]");if(fj){const c=CLUBS.find(x=>x.id===fj.dataset.sfijo);if(!c)return;const v=$("sf-"+c.id);if(v){v.remove();return}fj.closest(".salrow").insertAdjacentHTML("afterend",fijo(c,true));return}
   if(t.closest("[data-scalta]")){copia(ALTA,"Enlace de alta copiado: mándaselo al club");return}
   const cp=t.closest("[data-scopia]");if(cp){copia(URLF(cp.dataset.scopia),"Enlace copiado");return}
