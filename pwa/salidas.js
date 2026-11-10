@@ -115,7 +115,7 @@ function pinta(){
     <select data-sdif aria-label="Dificultad"><option value="">⛰ Dificultad</option>${dfs.map(x=>`<option${x===FDIF?" selected":""}>${esc(x)}</option>`).join("")}</select></div>`:""}`:"";
   const L0=SALS.filter(s=>(!SOLOFAV||esFav(s.club))&&(FSEM==="todas"||(FSEM==="mas"?!pri.includes(wk(s)):wk(s)===+FSEM))&&(!FSD||s.sd===FSD)&&(!FDIF||s.dif===FDIF));
   const fila=s=>{const d=fe(s),dw=isNaN(d)?-1:d.getDay();return `<div class="salr" data-sopen="${s.id}"><div class="fd ${dw===6?"sab":dw===0?"dom":"lab"}"><small>${isNaN(d)?"":DS[d.getDay()].slice(0,3)}</small><b>${isNaN(d)?"?":d.getDate()}</b><small>${isNaN(d)?"":MS[d.getMonth()].slice(0,3)}</small></div>
-    <div class="t"><b>${esc(s.ti)}</b><small>${esFav(s.club)?`<span class="fav">★ </span>`:""}<span class="cl">${esc(s.cn)}</span>${s.sd?" · "+esc(s.sd):""}${s.prueba?" · prueba":""}</small><small>${[isNaN(d)?"":String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+" h",s.km?kmF(s.km):"",s.up?"+"+Math.round(s.up).toLocaleString("es-ES")+" m":"",s.dif||""].filter(Boolean).join(" · ")}</small></div></div>`};
+    <div class="t"><b>${esc(s.ti)}</b><small>${esFav(s.club)?`<span class="fav">★ </span>`:""}<span class="cl">${esc(s.cn)}</span>${s.sd?" · "+esc(s.sd):""}${s.prueba?" · prueba":""}</small><small>${[isNaN(d)?"":String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+" h",s.km?kmF(s.km):"",s.up?"+"+Math.round(s.up).toLocaleString("es-ES")+" m":"",s.hr?"⏱ "+s.hr:"",s.dif||""].filter(Boolean).join(" · ")}</small></div></div>`};
   let H="",g=null;for(const s of L0){const k=wk(s);if(k!==g){g=k;H+=`<div class="salg">${esc(semEt(k))}</div>`}H+=fila(s)}
   $("sal-lista").innerHTML=L0.length?H:SALS.length?`<p class="note">No hay salidas con esos filtros.</p>`:`<p class="note">No hay salidas anunciadas todavía.</p>`;
   if(AVC&&Date.now()-AVC.t<120000)$("sal-lista").insertAdjacentHTML("afterbegin",AVC.h);else AVC=null}
@@ -173,6 +173,7 @@ function formSalida(ed){const adm=esAdm(),cl=adm?CLUBS:[MIO];GPX=null;SED=ed||nu
   <div class="two"><div><label>Día</label><input id="ss-d" type="date" min="${hoy()}"></div><div><label>Hora</label><input id="ss-h" type="time" value="08:00"></div></div>
   <label>Sale desde</label><select id="ss-sd"><option value="">— Elige —</option>${SDS.map(x=>`<option>${x}</option>`).join("")}</select>
   <label>Punto de encuentro</label><input id="ss-e" maxlength="120" placeholder="Por ejemplo: aparcamiento de Tuíza de Arriba">
+  <label>Horario de la ruta (opcional)</label><input id="ss-hr" maxlength="30" placeholder="Por ejemplo: 7 h  ·  5 h 30 min">
   <label>Dificultad</label><select id="ss-f">${DIFS.map(d=>`<option>${d}</option>`).join("")}</select>
   <label>Enlace para apuntarse (opcional)</label><input id="ss-u" type="url" maxlength="400" placeholder="https://… (formulario de Google, web del club…)">
   <label>Teléfono o WhatsApp para apuntarse (opcional)</label><input id="ss-a" maxlength="60" placeholder="Por ejemplo: 600 123 456">
@@ -187,7 +188,7 @@ function formSalida(ed){const adm=esAdm(),cl=adm?CLUBS:[MIO];GPX=null;SED=ed||nu
   <div class="salbtns"><button class="btn ghost" data-sfx>Cancelar</button><button class="btn primary" data-sssave>${ed?"Guardar cambios":"Publicar"}</button></div></div>`;
   if(ed){const v=(i,x)=>{const el=$(i);if(el&&x!=null)el.value=x};
     v("ss-c",ed.club);v("ss-t",ed.ti);v("ss-d",(ed.fecha||"").slice(0,10));v("ss-h",(ed.fecha||"").slice(11,16)||"08:00");v("ss-e",ed.enc);v("ss-f",ed.dif);
-    v("ss-u",ed.apu||(/^https?:\/\//i.test(ed.ap||"")?ed.ap:""));v("ss-a",/^https?:\/\//i.test(ed.ap||"")?"":ed.ap);v("ss-o",ed.apo);v("ss-x",ed.txt);v("ss-pdfu",ed.pdfu);v("ss-sd",ed.sd);v("ss-mideu",ed.mideu);
+    v("ss-u",ed.apu||(/^https?:\/\//i.test(ed.ap||"")?ed.ap:""));v("ss-a",/^https?:\/\//i.test(ed.ap||"")?"":ed.ap);v("ss-o",ed.apo);v("ss-x",ed.txt);v("ss-pdfu",ed.pdfu);v("ss-sd",ed.sd);v("ss-mideu",ed.mideu);v("ss-hr",ed.hr);
     if($("ss-c"))$("ss-c").disabled=true}
   if(!ed){const ult=()=>{const c=$("ss-c")?$("ss-c").value:MIO.id;const p=SALS.find(x=>x.club===c&&x.sd)||{};$("ss-sd").value=p.sd||(CLUBS.find(x=>x.id===c)||MIO||{}).sd||""};ult();if($("ss-c"))$("ss-c").addEventListener("change",ult)}
   $("ss-g").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;const t=await f.text();GPX=leeTrack(t);
@@ -224,7 +225,7 @@ async function guardaSalida(){const adm=esAdm(),cid=adm?$("ss-c").value:MIO.id,c
   if(ti.length<4){toast("Pon un título");return}if(!dia){toast("Pon el día");return}if(dia<hoy()){toast("El día ya ha pasado");return}
   const sd=$("ss-sd").value;if(!sd){toast("Elige desde dónde sale");return}
   if(!SED&&SALS.filter(x=>x.club===cid).length>=MAXS){toast(`Ya tenéis ${MAXS} salidas anunciadas: podréis publicar la siguiente cuando pase la primera`);return}
-  const s={sd,club:cid,cn:club.n,cc:club.contacto||"",cw:club.web||"",ti,fecha:dia+"T"+h,enc:$("ss-e").value.trim(),dif:$("ss-f").value,ap:$("ss-a").value.trim(),apu:$("ss-u").value.trim(),apo:$("ss-o").value.trim(),pdfu:$("ss-pdfu").value.trim(),txt:$("ss-x").value.trim(),t:Date.now()};
+  const s={sd,hr:$("ss-hr").value.trim(),club:cid,cn:club.n,cc:club.contacto||"",cw:club.web||"",ti,fecha:dia+"T"+h,enc:$("ss-e").value.trim(),dif:$("ss-f").value,ap:$("ss-a").value.trim(),apu:$("ss-u").value.trim(),apo:$("ss-o").value.trim(),pdfu:$("ss-pdfu").value.trim(),txt:$("ss-x").value.trim(),t:Date.now()};
   if(GPX)Object.assign(s,{km:GPX.km,up:GPX.up,mx:GPX.mx,lat:GPX.pts[0][0],lon:GPX.pts[0][1]});
   if(!SED)s.uid=usr().uid;
   if(club.prueba)s.prueba=true;
@@ -292,7 +293,7 @@ async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
   sheet.classList.remove("full");
   sheet.innerHTML=`<div class="grab"></div>${tipoHTML("salida",s.cn||"")}<div class="sheet-head"><h2>${esc(s.ti)}</h2><button class="x" aria-label="Cerrar" data-close data-salx>×</button></div>
   <div class="meta"><span class="tag" style="background:#1e8e3e;color:#fff;border-color:#1e8e3e">📅 ${esc(fFecha(s.fecha))}</span><span class="tag">${esc(s.cn)}</span>${s.prueba?`<span class="tag">Prueba</span>`:""}</div>
-  <div class="ficha">${s.km?`<div><b>${kmF(s.km)}</b><span>Distancia</span></div>`:""}${s.up?`<div><b>+${Math.round(s.up).toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${s.dif?`<div><b>${esc(s.dif)}</b><span>Dificultad</span></div>`:""}</div>
+  <div class="ficha"${[s.km,s.up,s.hr,s.dif].filter(Boolean).length===4?' style="grid-template-columns:1fr 1fr"':""}>${s.km?`<div><b>${kmF(s.km)}</b><span>Distancia</span></div>`:""}${s.up?`<div><b>+${Math.round(s.up).toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${s.hr?`<div><b>${esc(s.hr)}</b><span>Horario</span></div>`:""}${s.dif?`<div><b>${esc(s.dif)}</b><span>Dificultad</span></div>`:""}</div>
   ${s.enc?`<p class="salida">📍 Punto de encuentro: <b>${esc(s.enc)}</b></p>`:""}
   ${s.txt?`<p class="desc">${esc(s.txt).replace(/\n/g,"<br>")}</p>`:""}
   ${apu||tel||s.apo?`<div class="salbox" style="margin-top:10px"><b>✍️ Cómo apuntarse</b>${tel?`<p style="margin:6px 0 0">📞 ${esc(tel)}</p>`:""}${s.apo?`<p style="margin:6px 0 0">${esc(s.apo)}</p>`:""}
