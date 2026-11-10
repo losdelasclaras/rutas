@@ -61,13 +61,13 @@ function pinta(){
   // administrador: solicitudes y clubes
   if(esAdm()){$("sal-adm").innerHTML=`<div class="salbox adm"><h2>🛡 Clubes (solo lo ves tú)</h2>
     ${PEND.length?`<p style="margin:0 0 4px"><b>Solicitudes pendientes</b></p>`+PEND.map(c=>`<div class="salrow"><span><b>${esc(c.n)}</b><br><small>${esc(c.web||"")} ${esc(c.contacto||"")}${c.msg?"<br>"+esc(c.msg):""}<br>${esc(c.email||"")}</small></span><button class="btn primary" data-scok="${c.id}">✓ Aprobar</button><button class="btn ghost" data-scno="${c.id}">✕</button></div>`).join(""):`<p class="note" style="margin:0 0 6px">No hay solicitudes pendientes.</p>`}
-    <p style="margin:10px 0 4px"><b>Clubes aprobados (${CLUBS.length})</b></p>${CLUBS.map(c=>`<div class="salrow"><span>${esc(c.n)}${c.prueba?" <small>(prueba)</small>":""}</span><button class="btn ghost" data-scedit="${c.id}">✏️</button><button class="btn ghost" data-scdel="${c.id}">Quitar</button></div>`).join("")||`<p class="note">Ninguno todavía.</p>`}
+    <p style="margin:10px 0 4px"><b>Clubes aprobados (${CLUBS.length})</b></p>${CLUBS.map(c=>`<div class="salrow"><span>${esc(c.n)}${c.prueba?" <small>(prueba)</small>":""}</span><button class="btn ghost" data-sfijo="${c.id}" title="Enlace fijo">🔗</button><button class="btn ghost" data-scedit="${c.id}">✏️</button><button class="btn ghost" data-scdel="${c.id}">Quitar</button></div>`).join("")||`<p class="note">Ninguno todavía.</p>`}
     <div class="salbtns"><button class="btn ghost" data-scnew>＋ Crear un club</button><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>`}
   else $("sal-adm").innerHTML="";
   // tú: club aprobado, pendiente, o pedir
   const u=usr();
   if(esAdm())$("sal-yo").innerHTML="";
-  else if(MIO&&MIO.estado==="ok")$("sal-yo").innerHTML=`<div class="salbox"><h2>🏔 ${esc(MIO.n)}</h2><p class="note" style="margin:0 0 8px">Tu club está dado de alta: lo que publiques sale al momento.</p><div class="salbtns"><button class="btn ghost" data-scedit="${MIO.id}">✏️ Datos del club</button><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>`;
+  else if(MIO&&MIO.estado==="ok")$("sal-yo").innerHTML=`<div class="salbox"><h2>🏔 ${esc(MIO.n)}</h2><p class="note" style="margin:0 0 8px">Tu club está dado de alta: lo que publiques sale al momento.</p><div class="salbtns"><button class="btn ghost" data-scedit="${MIO.id}">✏️ Datos del club</button><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>${fijo(MIO)}`;
   else if(MIO&&MIO.estado==="pend")$("sal-yo").innerHTML=`<div class="salbox"><h2>⏳ Solicitud enviada</h2><p class="note" style="margin:0">«${esc(MIO.n)}» está pendiente de que Los de las Claras lo apruebe. Cuando esté, aquí te saldrá «Nueva salida».</p></div>`;
   else $("sal-yo").innerHTML=`<div class="salbtns" style="grid-template-columns:1fr;margin:0 0 12px"><button class="btn ghost" data-sclub>🏔 Soy un club: quiero publicar salidas</button></div>`;
   // filtro por club
@@ -76,7 +76,19 @@ function pinta(){
   const L0=SALS.filter(s=>FIL==="todos"||s.cn===FIL);
   $("sal-lista").innerHTML=L0.length?L0.map(s=>{const d=new Date(s.fecha);return `<div class="salc" data-sopen="${s.id}"><div class="fd"><small>${isNaN(d)?"":DS[d.getDay()].slice(0,3)}</small><b>${isNaN(d)?"?":d.getDate()}</b><small>${isNaN(d)?"":MS[d.getMonth()].slice(0,3)}</small></div>
     <div class="t"><b>${esc(s.ti)}</b><small><span class="cl">${esc(s.cn)}</span> · ${esc(fFecha(s.fecha))}</small><small>${[s.km?kmF(s.km):"",s.up?"+"+Math.round(s.up).toLocaleString("es-ES")+" m":"",s.dif||""].filter(Boolean).join(" · ")}${s.enc?" · 📍 "+esc(s.enc):""}</small></div></div>`}).join("")
-    :`<p class="note">No hay salidas anunciadas todavía.${esAdm()||(MIO&&MIO.estado==="ok")?"":" Si eres de un club, pulsa «Soy un club» para publicar las vuestras."}</p>`}
+    :`<p class="note">No hay salidas anunciadas todavía.${esAdm()||(MIO&&MIO.estado==="ok")?"":" Si eres de un club, pulsa «Soy un club» para publicar las vuestras."}</p>`;
+  if(AVC&&Date.now()-AVC.t<120000)$("sal-lista").insertAdjacentHTML("afterbegin",AVC.h);else AVC=null}
+
+let AVC=null;   // aviso «este club no tiene salidas próximas» (al entrar con su enlace fijo), se queda 2 minutos
+/* --- 🔗 enlace fijo de un club (10 nov 2026): …/rutas/#club=<id> abre siempre su próxima salida publicada --- */
+const URLF=id=>"https://losdelasclaras.github.io/rutas/#club="+encodeURIComponent(id);
+const BOTON=id=>`<a href="${URLF(id)}" target="_blank" rel="noopener" style="display:inline-block;padding:12px 18px;background:#1e8e3e;color:#fff;border-radius:10px;font-family:sans-serif;font-weight:bold;text-decoration:none">📅 Próxima salida · Ver en la app</a>`;
+function fijo(c,adm){return `<div class="salbox salfijo" id="sf-${esc(c.id)}"><h2>🔗 Enlace fijo para vuestra web${adm?" · "+esc(c.n):""}</h2>
+  <p class="note" style="margin:0 0 8px">Ponedlo una vez en vuestra página (por ejemplo en «Próximas salidas») y no hay que volver a tocarlo: siempre abre la próxima salida que tengáis publicada aquí, con el track para seguirla. Cuando pasa, lleva a la siguiente.</p>
+  <input readonly value="${esc(URLF(c.id))}" onclick="this.select()" style="width:100%;box-sizing:border-box;border:1px solid var(--edge);border-radius:10px;padding:10px;font-size:14px;background:var(--paper);color:var(--ink)">
+  <div class="salbtns"><button class="btn primary" data-scopia="${esc(c.id)}">📋 Copiar el enlace</button><button class="btn ghost" data-scopib="${esc(c.id)}">📋 Copiar un botón</button></div>
+  <p class="salaviso">«Copiar un botón» es un trocito de código para pegar en la web (en modo HTML) y que salga un botón verde «📅 Próxima salida · Ver en la app».</p></div>`}
+async function copia(txt,ok){try{await navigator.clipboard.writeText(txt);toast(ok)}catch(e){toast("Mantén pulsado el enlace para copiarlo")}}
 
 /* --- formularios --- */
 let EDIT=null;
@@ -232,6 +244,9 @@ sec.addEventListener("click",async e=>{const t=e.target;
   const ce=t.closest("[data-scedit]");if(ce){const c=CLUBS.find(x=>x.id===ce.dataset.scedit)||(MIO&&MIO.id===ce.dataset.scedit?MIO:null);if(c)formClub(esAdm(),c);return}
   const sv=t.closest("[data-scsave]");if(sv){guardaClub(sv.dataset.scsave==="1");return}
   if(t.closest("[data-snew]")){formSalida();return}
+  const fj=t.closest("[data-sfijo]");if(fj){const c=CLUBS.find(x=>x.id===fj.dataset.sfijo);if(!c)return;const v=$("sf-"+c.id);if(v){v.remove();return}fj.closest(".salrow").insertAdjacentHTML("afterend",fijo(c,true));return}
+  const cp=t.closest("[data-scopia]");if(cp){copia(URLF(cp.dataset.scopia),"Enlace copiado");return}
+  const cb=t.closest("[data-scopib]");if(cb){copia(BOTON(cb.dataset.scopib),"Botón copiado: pégalo en tu web en modo HTML");return}
   if(t.closest("[data-sssave]")){guardaSalida();return}
   const ok=t.closest("[data-scok]"),no=t.closest("[data-scno]"),dl=t.closest("[data-scdel]");
   if(ok||no||dl){try{await base();const F=fs(),id=(ok||no||dl).dataset[ok?"scok":no?"scno":"scdel"];
@@ -254,5 +269,12 @@ new MutationObserver(()=>{if(!sec.hidden)carga(false)}).observe(sec,{attributes:
 async function deHash(){const m=/^#sal=([\w-]+)/.exec(location.hash||"");if(!m)return;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
   await carga(true);if(SALS.find(s=>s.id===m[1]))abre(m[1]);else toast("Esa salida ya no está (puede que haya pasado)")}
 addEventListener("hashchange",deHash);setTimeout(deHash,900);
+async function deClub(){const m=/^#club=([\w-]+)/.exec(location.hash||"");if(!m)return;const id=m[1];try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+  await carga(true);const ahora=new Date();
+  const s=SALS.filter(x=>x.club===id).find(x=>{const d=new Date(x.fecha.length>10?x.fecha:x.fecha+"T23:59");return isNaN(d)||d>=new Date(ahora-6*3600e3)});
+  if(s){abre(s.id);return}
+  const c=CLUBS.find(x=>x.id===id);showView("salidas");
+  AVC={t:Date.now(),h:`<div class="salbox"><h2>📅 ${c?esc(c.n):"Este club"}</h2><p class="note" style="margin:0">No tiene ninguna salida próxima publicada todavía.${c&&c.web?` Mira su web: <a href="${esc(c.web)}" target="_blank" rel="noopener">${esc(c.web)}</a>`:""}</p></div>`};pinta()}
+addEventListener("hashchange",deClub);setTimeout(deClub,900);
 window.SALIDAS={carga,leeTrack};
 })();
