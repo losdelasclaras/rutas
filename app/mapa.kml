@@ -5859,6 +5859,16 @@
           </coordinates>
         </Point>
       </Placemark>
+      <Placemark>
+        <name>Pico Coalnegro (1217 m.) Sierra de Collarroces o del Pino</name>
+        <description><![CDATA[https://losdelasclaras.blogspot.com/2026/11/pinganones-del-llarin-y-castro-pico.html<br><br>TRACK   https://losdelasclaras.github.io/rutas/#c=Sw3NFDZv]]></description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.5119895,43.120531,0
+          </coordinates>
+        </Point>
+      </Placemark>
     </Folder>
     <Folder>
       <name>Capa sin nombre</name>
