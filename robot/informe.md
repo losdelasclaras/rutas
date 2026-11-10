@@ -1,8 +1,8 @@
-# Informe del robot · 10/11/2026 09:37
+# Informe del robot · 10/11/2026 10:25
 
-**Cambios:** blog: 1 nuevas, 0 actualizadas; regeneración forzada
+**Cambios:** regeneración forzada
 
-- 🆕 Entrada nueva: «Pinganones del L.larín y Castro, Pico Coalnegro desde Pola del Pino» (2026-11-10) · 8,7 km · +630 m · Fácil (media con la cumbre) · foto ✓
+- Blog: sin entradas nuevas.
 - Mapa: sin cambios.
 - Drive: sin tracks nuevos.
 - ⛰ Rutinas Varias: 89 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
@@ -16,7 +16,7 @@
 -    (39 peticiones a su web en 1.2 min)
 - 🐾 Gata con botas: 204 entradas en sus zonas, 190 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 504: Gateway Timeout <?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"     "http://www.w3.org/T; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 18 colocadas en el pico de OpenStreetMap; 1 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 187 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
