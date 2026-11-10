@@ -5,7 +5,7 @@ window.NEAR=null;    // {lat,lon,label,rad}
 // aviso fino de una línea (antes era un cuadro grande que tapaba la lista): «📍 Lugo · a menos de 15 km  [Cambiar] [✕]»
 const banner=()=>NEAR?`<div class="nearchip"><span>📍 <b>${esc(NEAR.label)}</b> · a menos de ${NEAR.rad} km${NEAR.amp?" (ampliado)":""}</span><button data-cnear>Cambiar</button><button class="x" data-cnoff aria-label="Quitar «cerca de»" title="Ver todo">✕</button></div>`:"";
 // Wikiloc al final de la lista de rutas: primero lo nuestro, y si no basta, «más rutas por aquí»
-const wkFin=()=>NEAR&&window.wkUrl?`<a class="btn ghost wkbtn" href="${wkUrl(NEAR.lat,NEAR.lon,Math.min(NEAR.rad||8,8))}" target="_blank" rel="noopener">🔎 Más rutas por esta zona en Wikiloc</a>`:"";
+const wkFin=()=>"";   // 10 nov 2026: quitado el botón de Wikiloc al final de «rutas cerca»
 document.head.insertAdjacentHTML("beforeend",`<style>.nearchip{display:flex;align-items:center;gap:8px;margin:6px 0 4px;padding:6px 6px 6px 12px;border:1.5px solid var(--mark);border-radius:999px;font-size:15px}
 .nearchip span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nearchip button{flex:none;border:0;border-radius:999px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer;background:rgba(127,127,127,.18);color:inherit}
