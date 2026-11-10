@@ -270,6 +270,9 @@ function descarga(blob,nm){const a=document.createElement("a");a.href=URL.create
 
 /* --- la ficha de una salida (en el mapa, con su track) --- */
 let LAY=null;
+// 10 nov 2026 · un enlace a un PDF de la web del club se abre en el visor de Google (se ve en pantalla, no se descarga:
+// en el móvil Chrome descarga los PDF y algunas webs de clubes lo entregan mal → «archivo dañado»). Las páginas normales y Drive, tal cual.
+const verUrl=u=>/\.pdf(\?|#|$)/i.test(String(u||""))&&!/(^|\.)google\.com\//i.test(u)?"https://docs.google.com/viewer?url="+encodeURIComponent(u):u;
 const xe=x=>String(x).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const gpxDe=(n,pts)=>`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${xe(n)}</name></metadata>\n<trk><name>${xe(n)}</name><trkseg>\n`+
   pts.map(p=>`<trkpt lat="${(+p[0]).toFixed(6)}" lon="${(+p[1]).toFixed(6)}">${p[2]!=null?`<ele>${Math.round(p[2])}</ele>`:""}</trkpt>`).join("\n")+`\n</trkseg></trk>\n</gpx>\n`;
@@ -295,9 +298,9 @@ async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
   ${apu||tel||s.apo?`<div class="salbox" style="margin-top:10px"><b>✍️ Cómo apuntarse</b>${tel?`<p style="margin:6px 0 0">📞 ${esc(tel)}</p>`:""}${s.apo?`<p style="margin:6px 0 0">${esc(s.apo)}</p>`:""}
    <div class="salbtns">${apu?`<a class="btn primary" href="${esc(apu)}" target="_blank" rel="noopener" style="grid-column:1/-1">✍️ Apuntarse</a>`:""}${telH?`<a class="btn ghost" href="${esc(telH)}">📞 Llamar</a><a class="btn ghost" href="${esc(waH)}" target="_blank" rel="noopener">💬 WhatsApp</a>`:""}</div></div>`:""}
   ${(()=>{const b=[];   // 10 nov 2026 · hoja de ruta y MIDE, cada una con su botón (archivo subido o enlace)
-    if(s.pdf)b.push(`<button class="btn ghost" data-saldoc="pdf">📄 Hoja de ruta</button>`);else if(s.pdfu)b.push(`<a class="btn ghost" href="${esc(s.pdfu)}" target="_blank" rel="noopener">📄 Hoja de ruta</a>`);
-    if(s.mide)b.push(`<button class="btn ghost" data-saldoc="mide">📊 Ficha MIDE</button>`);else if(s.mideu)b.push(`<a class="btn ghost" href="${esc(s.mideu)}" target="_blank" rel="noopener">📊 Ficha MIDE</a>`);
-    if(s.pdf&&s.pdfu)b.push(`<a class="btn ghost" href="${esc(s.pdfu)}" target="_blank" rel="noopener">🔗 Hoja de ruta (web)</a>`);
+    if(s.pdf)b.push(`<button class="btn ghost" data-saldoc="pdf">📄 Hoja de ruta</button>`);else if(s.pdfu)b.push(`<a class="btn ghost" href="${esc(verUrl(s.pdfu))}" target="_blank" rel="noopener">📄 Hoja de ruta</a>`);
+    if(s.mide)b.push(`<button class="btn ghost" data-saldoc="mide">📊 Ficha MIDE</button>`);else if(s.mideu)b.push(`<a class="btn ghost" href="${esc(verUrl(s.mideu))}" target="_blank" rel="noopener">📊 Ficha MIDE</a>`);
+    if(s.pdf&&s.pdfu)b.push(`<a class="btn ghost" href="${esc(verUrl(s.pdfu))}" target="_blank" rel="noopener">🔗 Hoja de ruta (web)</a>`);
     return b.length?`<div class="salbtns" style="grid-template-columns:${b.length>1?"1fr 1fr":"1fr"}">${b.join("")}</div>`:""})()}
   ${pts&&pts.length>1?`<div class="saltrk"><button class="btn primary" data-saltrk style="width:100%">🧭 Track de la ruta ▾</button><div class="opts" hidden>
     <button class="btn ghost" data-salfol>▶ Seguir</button><button class="btn ghost" data-salgpx>⬇ Descargar GPX</button><button class="btn ghost" data-salsave>💾 Guardar en mis tracks</button></div></div>`:""}
