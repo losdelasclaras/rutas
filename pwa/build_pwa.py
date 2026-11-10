@@ -72,6 +72,30 @@ assert t.count('__COLAB__')==1
 # sus datos en un archivo aparte (colab-<huella>.json), que la app pide después de arrancar
 import hashlib as _hl,glob as _gl
 for _old in _gl.glob(O+'colab-*.json'):os.remove(_old)
+# 10 nov 2026: rutas de los colaboradores que pasan por cada cumbre (a menos de 250 m de su track), aunque ese colaborador
+# no tenga la cumbre en su mapa (p. ej. Rutinas Varias sube al Tiatordos pero no tiene ese punto). Claves: "g<índice>" (cumbres del grupo)
+# y "<colaborador>:<índice>" (cumbres de los colaboradores). Cada colaborador lleva 'pz': {clave: [sus rutas]}.
+import math as _m
+def _pasan(lim=0.25):
+    cums=[('g%d'%i,q['lat'],q['lon']) for i,q in enumerate(json.load(open(A+'final_data.json'))['pts']) if q.get('t')=='cumbre']
+    for _c in _CO:
+        for i,q in enumerate(_c['p']):
+            if len(q)>7 and (q[7]=='CUMBRES' or (len(q)>6 and q[6]=='1634')):cums.append(('%s:%d'%(_c['id'],i),q[1],q[2]))
+    def dseg(la,lo,a,b):
+        k=_m.cos(_m.radians(la));ax,ay=(a[1]-lo)*111.2*k,(a[0]-la)*111.2;bx,by=(b[1]-lo)*111.2*k,(b[0]-la)*111.2
+        dx,dy=bx-ax,by-ay;L2=dx*dx+dy*dy;t=0 if L2==0 else max(0,min(1,-(ax*dx+ay*dy)/L2));return _m.hypot(ax+t*dx,ay+t*dy)
+    tot=0
+    for _c in _CO:
+        pz={}
+        for ri,t in enumerate(_c['_rl']):
+            if not isinstance(t,list) or len(t)<2 or not isinstance(t[0],(list,tuple)):continue
+            la0=min(x[0] for x in t)-.003;la1=max(x[0] for x in t)+.003;lo0=min(x[1] for x in t)-.004;lo1=max(x[1] for x in t)+.004
+            for k,la,lo in cums:
+                if not(la0<=la<=la1 and lo0<=lo<=lo1):continue
+                if min(dseg(la,lo,t[j],t[j+1]) for j in range(len(t)-1))<=lim:pz.setdefault(k,[]).append(ri);tot+=1
+        _c['pz']=pz
+    print('rutas de colaboradores que pasan por cumbres:',tot)
+if _CO:_pasan()
 if _CO:
     # los tracks de sus rutas, en otro archivo que solo se pide al ver sus tracks o abrir una de sus rutas
     _RL={_c['id']:_c.pop('_rl') for _c in _CO}

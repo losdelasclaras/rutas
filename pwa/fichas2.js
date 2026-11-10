@@ -106,6 +106,10 @@ function junta(o,ms){const by={},alias=new Set(),keys=[];let foto=o.rs&&o.rs.fin
     const b=by[c.id]||(by[c.id]={n:c.n,c:c.c,cnt:0,y:0,rows:[],its:[],vis:new Set()});
     for(const i of (p[9]||[])){if(b.vis.has(i))continue;b.vis.add(i);const it=COLX.rutaItem(c,i);if(!it)continue;b.rows.push(COLX.rrow(it));b.its.push({c,i});b.cnt++;b.y=Math.max(b.y,it.y||0);
       if(!foto&&c.r&&c.r[i]&&c.r[i][9])foto=c.r[i][9]}}
+  // 10 nov 2026: y las rutas de cualquier colaborador cuyo track pasa por la cumbre, aunque no tenga el punto en su mapa
+  if(o.cum&&COLX.pasan){const ks=[];if(o.gi!=null)ks.push("g"+o.gi);for(const{c,p}of ms){const j=c.p.indexOf(p);if(j>=0)ks.push(c.id+":"+j)}
+    for(const k of ks)for(const{c,i}of COLX.pasan(k)){const b=by[c.id]||(by[c.id]={n:c.n,c:c.c,cnt:0,y:0,rows:[],its:[],vis:new Set()});if(b.vis.has(i))continue;b.vis.add(i);
+      const it=COLX.rutaItem(c,i);if(!it)continue;b.rows.push(COLX.rrow(it));b.its.push({c,i});b.cnt++;b.y=Math.max(b.y,it.y||0);if(!foto&&c.r&&c.r[i]&&c.r[i][9])foto=c.r[i][9]}}
   o.src=o.src.concat(Object.values(by));o.alias=[...alias];o.keys=keys.filter(k=>k!==o.main);o.foto=foto;
   const g=o.rs||[];o.solo=g.length===1&&o.src.every(x=>x.grp||!x.cnt)?g[0]:null;
   return o}
