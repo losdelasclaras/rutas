@@ -145,6 +145,33 @@ function wpMapa(){const s=document.getElementById("sheet"),b=s&&!s.hidden&&s.que
 {const s=document.getElementById("sheet");if(s)new MutationObserver(wpMapa).observe(s,{attributes:true,attributeFilter:["hidden"],childList:true})}
 document.addEventListener("click",e=>{const b=e.target.closest(".frwp [data-frwi]");if(!b)return;const id=b.closest("[data-frw]").dataset.frw,q=((R[+id]||{}).gx||{}).w[+b.dataset.frwi];
   if(q){map.setView([q[1],q[2]],Math.max(map.getZoom(),15));const s=document.getElementById("sheet");if(s&&s.classList.contains("full"))s.classList.remove("full")}});
+/* ---- 10 nov 2026: «🗺 Ver en el mapa» en la ficha a pantalla completa (la que se abre desde las listas de Explorar) ----
+   Pasa al mapa con esa ruta, deja la ficha minimizada abajo y pone arriba «← Volver a la lista» (también vale el «atrás» del móvil). */
+document.head.insertAdjacentHTML("beforeend",`<style>
+#ov .frovm{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;margin:8px 0 4px;font-size:17px;font-weight:800}
+#ov .fru~.actions{display:none}
+.frvolver{position:absolute;top:68px;left:8px;z-index:40;min-height:46px;padding:0 16px;border-radius:999px;border:0;background:var(--ink);color:var(--paper,#fff);font:700 16px/1 inherit;font-family:inherit;box-shadow:0 2px 10px rgba(0,0,0,.3);cursor:pointer}
+</style>`);
+{const ov=document.getElementById("ov");if(ov)new MutationObserver(()=>{const f=ov.querySelector(".fru");if(!f||f.querySelector(".frovm"))return;
+  const b=f.querySelector("[data-frgr],[data-share],[data-frgt]");if(!b)return;const id=b.dataset.frgr||b.dataset.share||b.dataset.frgt;
+  const h=f.querySelector(".sheet-head");if(h)h.insertAdjacentHTML("afterend",`<button class="btn primary frovm" data-frovmap="${id}">🗺 Ver en el mapa</button>`)}).observe(ov,{childList:true,subtree:true})}
+let VOLVER=null;
+function quitaVolver(){if(VOLVER){VOLVER.btn.remove();VOLVER=null}}
+window.FRVOLVER=()=>{if(!VOLVER)return false;const v=VOLVER;quitaVolver();const s=document.getElementById("sheet");
+  if(s&&!s.hidden){const x=s.querySelector(".sheet-head [data-close],[data-close]");if(x)x.click();else s.hidden=true}
+  if(typeof showView==="function")showView(v.view);setTimeout(()=>{try{const el=document.getElementById("v-"+v.view);if(el)el.scrollTop=v.y;window.scrollTo(0,v.wy)}catch(e){}},60);return true};
+{const s=document.getElementById("sheet");if(s)new MutationObserver(()=>{if(!VOLVER)return;
+  const g=s.querySelector(".grab[data-route]");if(s.hidden||!g||g.dataset.route!==String(VOLVER.id))quitaVolver()}).observe(s,{attributes:true,attributeFilter:["hidden"],childList:true})}
+document.addEventListener("click",e=>{const vm=e.target.closest("[data-frovmap]");if(!vm)return;e.preventDefault();e.stopPropagation();
+  const id=+vm.dataset.frovmap,r=R[id];if(!r)return;
+  const vv=[...document.querySelectorAll(".view")].find(x=>!x.hidden&&x.id!=="v-mapa"&&x.offsetParent!==null);
+  const view=vv?vv.id.replace(/^v-/,""):"rutas",y=vv?vv.scrollTop:0,wy=window.scrollY;
+  if(typeof ovCloseAll==="function")ovCloseAll();
+  setTimeout(()=>{if(typeof showView==="function")showView("mapa");openRoute(id);
+    setTimeout(()=>{try{const ln=r.gx&&r.gx.ln;if(ln&&ln.length>1)map.fitBounds(L.latLngBounds(ln.map(q=>[q[0],q[1]])),{padding:[40,40]});else map.setView([r.lat,r.lon],13)}catch(er){}
+      if(window.FICHAMIN)FICHAMIN.min();
+      quitaVolver();const btn=document.createElement("button");btn.className="frvolver";btn.textContent="← Volver a la lista";btn.addEventListener("click",()=>FRVOLVER());
+      document.getElementById("v-mapa").appendChild(btn);VOLVER={id,view,y,wy,btn}},350)},120)},true);
 /* ---- botones ---- */
 document.addEventListener("click",e=>{
   const m=e.target.closest("[data-frmas]");if(m){menu(m.closest(".fru"),true);return}

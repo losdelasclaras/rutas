@@ -21,6 +21,8 @@ function rellena(){if(salir||cur===null||cur>=N)return;try{for(let i=cur+1;i<=N;
 for(const ev of ["pointerup","touchend","click"])addEventListener(ev,e=>{if(e.isTrusted)rellena()},{capture:true,passive:true});   // solo toques de verdad (no la ✕ que pulsa el propio gesto)
 addEventListener("keydown",rellena,{capture:true});
 function unPaso(){
+  // 0) venías de una lista de Explorar con «Ver en el mapa»: vuelve a esa lista (10 nov 2026)
+  if(window.FRVOLVER&&FRVOLVER())return"a la lista"
   // 1) cuadros: cuenta, instalar…
   for(const bg of document.querySelectorAll(".accbg,.instbg,.cdbg"))if(!bg.hidden){const x=bg.querySelector("[data-close]");if(x)x.click();else bg.hidden=true;return"cuadro"}
   // 2) la ficha de abajo, como la ✕
@@ -85,6 +87,7 @@ function barra(){if(BAR)BAR.remove();clearTimeout(btm);BAR=document.createElemen
     let by=null;BAR.addEventListener("touchstart",e=>{by=e.touches[0].clientY},{passive:true});
     BAR.addEventListener("touchend",e=>{if(by==null)return;const d=e.changedTouches[0].clientY-by;by=null;if(d<-25)restaura();else if(d>25)cierra()},{passive:true});
     BAR.addEventListener("click",e=>{if(e.target.closest("[data-fmx]")){cierra();return}if(e.target.closest("[data-fmup]"))restaura()})}
+  window.FICHAMIN={min:minimiza,abre:restaura};
   // si la ficha cambia o se cierra estando minimizada, fuera la barra
   new MutationObserver(()=>{if(sh.hidden){if(sh.classList.contains("fmin"))sh.classList.remove("fmin");quitaBar()}else if(BAR&&!sh.classList.contains("fmin"))quitaBar()}).observe(sh,{attributes:true,attributeFilter:["hidden","class"]});   // ojo: classList.remove sin comprobar vuelve a avisar al observador (bucle)
   new MutationObserver(()=>{if(sh.classList.contains("fmin")){sh.classList.remove("fmin");quitaBar()}}).observe(sh,{childList:true});
