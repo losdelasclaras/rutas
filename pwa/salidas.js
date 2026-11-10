@@ -93,7 +93,6 @@ function pinta(){
   if(esAdm())$("sal-yo").innerHTML="";
   else if(MIO&&MIO.estado==="ok")$("sal-yo").innerHTML=`<div class="salbox"><h2>🏔 ${esc(MIO.n)}</h2><p class="note" style="margin:0 0 8px">Tu club está dado de alta: lo que publiques sale al momento.</p><div class="salbtns"><button class="btn ghost" data-scedit="${MIO.id}">✏️ Datos del club</button><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>${fijo(MIO)}`;
   else if(MIO&&MIO.estado==="pend")$("sal-yo").innerHTML=`<div class="salbox"><h2>⏳ Solicitud enviada</h2><p class="note" style="margin:0">«${esc(MIO.n)}» está pendiente de que Los de las Claras lo apruebe. Cuando esté, aquí te saldrá «Nueva salida».</p></div>`;
-  else if(altaOk())$("sal-yo").innerHTML=`<div class="salbtns" style="grid-template-columns:1fr;margin:0 0 12px"><button class="btn primary" data-sclub>🏔 Dar de alta nuestro club</button></div>`;
   else $("sal-yo").innerHTML="";
   $("sal-pie").innerHTML=esAdm()||MIO?"":`<p class="salpie">¿Eres de un club o grupo de montaña y queréis anunciar aquí vuestras salidas? Escribe a <a href="mailto:${CORREO}?subject=${encodeURIComponent("Salidas de nuestro club en la app")}">${CORREO}</a></p>`;
   // 10 nov 2026 · semanas (por su fin de semana), «Sale desde» y dificultad; lista compacta agrupada por semanas
@@ -117,9 +116,12 @@ let AVC=null;
 /* 10 nov 2026 · el alta de clubes NO es pública: solo puede pedirla quien abre el enlace personal que manda Jonathan
    (https://losdelasclaras.github.io/rutas/#altaclub, queda recordado en ese móvil). El resto ve el correo de contacto. */
 const CORREO="losdelasclaras@gmail.com",ALTA="https://losdelasclaras.github.io/rutas/#altaclub";
-const altaOk=()=>{try{return localStorage.getItem("ldc-altaclub")==="1"}catch(e){return false}};
-function deAlta(){if((location.hash||"")!=="#altaclub")return;try{localStorage.setItem("ldc-altaclub","1");localStorage.setItem("ldc-salinv","1")}catch(e){}
-  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}visTab();showView("salidas");carga(true)}
+// (10 nov tarde) ya no queda un botón fijo: el enlace abre el formulario de alta en ese momento y nada más
+let ALTAV=false;const altaOk=()=>ALTAV;try{localStorage.removeItem("ldc-altaclub")}catch(e){}
+function deAlta(){if((location.hash||"")!=="#altaclub")return;ALTAV=true;try{localStorage.setItem("ldc-salinv","1")}catch(e){}
+  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}visTab();showView("salidas");
+  carga(true).then(()=>{if(esAdm()||MIO)return;   // el club abre el enlace: va directo a entrar con Google y al formulario
+    if(window.cuentaOk&&!cuentaOk(()=>{showView("salidas");carga(true).then(()=>{if(!MIO)formClub(false)})},"club"))return;formClub(false)})}
 addEventListener("hashchange",deAlta);setTimeout(deAlta,0);   // aviso «este club no tiene salidas próximas» (al entrar con su enlace fijo), se queda 2 minutos
 sec.addEventListener("change",e=>{const el=e.target;if(el.matches("[data-ssd]")){FSD=el.value;pinta()}else if(el.matches("[data-sdif]")){FDIF=el.value;pinta()}});
 /* --- 🔗 enlace fijo de un club (10 nov 2026): …/rutas/#club=<id> abre siempre su próxima salida publicada --- */
