@@ -44,6 +44,12 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .salr .t{flex:1;min-width:0}.salr .t b{display:block;font-size:16px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .salr .t small{display:block;color:var(--muted);font-size:13.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .salr .t .cl{color:#1e8e3e;font-weight:800}
+.salr .fd.sab{background:#1e8e3e}.salr .fd.dom{background:#1e6fd9}.salr .fd.lab{background:#6b7280}
+.salr .fav{color:#e6a700;font-weight:900}
+.salfav{border:none;background:none;font-size:22px;line-height:1;padding:4px 6px;cursor:pointer;color:#e6a700}
+.saltrk{margin:8px 0 0}.saltrk .opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+.saltrk .opts .btn{padding:10px 4px;font-size:14.5px;white-space:normal;line-height:1.2}
+.salmine{margin:10px 0 0}.salmine .salr{cursor:pointer}.salmine .ok{color:#1e8e3e;font-weight:800}.salmine .no{color:var(--muted)}
 .salpie{font-size:13px;color:var(--muted);margin:18px 2px 8px;line-height:1.4}
 </style>`);
 
@@ -91,7 +97,7 @@ function pinta(){
   // tú: club aprobado, pendiente, o pedir
   const u=usr();
   if(esAdm())$("sal-yo").innerHTML="";
-  else if(MIO&&MIO.estado==="ok")$("sal-yo").innerHTML=`<div class="salbox"><h2>🏔 ${esc(MIO.n)}</h2><p class="note" style="margin:0 0 8px">Tu club está dado de alta: lo que publiques sale al momento.</p><div class="salbtns"><button class="btn ghost" data-scedit="${MIO.id}">✏️ Datos del club</button><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>${fijo(MIO)}`;
+  else if(MIO&&MIO.estado==="ok")$("sal-yo").innerHTML=`<div class="salbox"><h2>🏔 ${esc(MIO.n)}</h2><p class="note" style="margin:0 0 8px">Tu club está dado de alta: lo que publiques sale al momento.</p><div class="salbtns"><button class="btn ghost" data-scedit="${MIO.id}">✏️ Datos del club</button><button class="btn primary" data-snew>＋ Nueva salida</button></div>${misSal(MIO.id)}</div>${fijo(MIO)}`;
   else if(MIO&&MIO.estado==="pend")$("sal-yo").innerHTML=`<div class="salbox"><h2>⏳ Solicitud enviada</h2><p class="note" style="margin:0">«${esc(MIO.n)}» está pendiente de que Los de las Claras lo apruebe. Cuando esté, aquí te saldrá «Nueva salida».</p></div>`;
   else $("sal-yo").innerHTML="";
   $("sal-pie").innerHTML=esAdm()||MIO?"":`<p class="salpie">¿Eres de un club o grupo de montaña y queréis anunciar aquí vuestras salidas? Escribe a <a href="mailto:${CORREO}?subject=${encodeURIComponent("Salidas de nuestro club en la app")}">${CORREO}</a></p>`;
@@ -102,17 +108,24 @@ function pinta(){
   const sds=[...new Set(SALS.map(s=>s.sd).filter(Boolean))].sort((a,b)=>SDS.indexOf(a)-SDS.indexOf(b)),dfs=DIFS.filter(d=>SALS.some(s=>s.dif===d));
   if(FSD&&!sds.includes(FSD))FSD="";if(FDIF&&!dfs.includes(FDIF))FDIF="";
   const ch=(v,l)=>`<button class="chip" data-ssem="${v}" aria-pressed="${String(FSEM)===String(v)}">${esc(l)}</button>`;
-  $("sal-chips").innerHTML=SALS.length>1?`${ks.length>1?`<div class="salwk">${ch("todas","Todas")}${pri.map(k=>ch(k,semEt(k).replace(/^El que viene · /,""))).join("")}${mas?ch("mas","Más adelante"):""}</div>`:""}
+  const hayFav=SALS.some(s=>esFav(s.club));if(!hayFav)SOLOFAV=false;
+  const chF=hayFav?`<button class="chip" data-ssolofav aria-pressed="${SOLOFAV}">★ Mis clubes</button>`:"";
+  $("sal-chips").innerHTML=SALS.length>1?`${ks.length>1||hayFav?`<div class="salwk">${chF}${ch("todas","Todas")}${pri.map(k=>ch(k,semEt(k).replace(/^El que viene · /,""))).join("")}${mas?ch("mas","Más adelante"):""}</div>`:""}
     ${sds.length>1||dfs.length>1?`<div class="salfil"><select data-ssd aria-label="Sale desde"><option value="">📍 Desde: todos</option>${sds.map(x=>`<option${x===FSD?" selected":""}>${esc(x)}</option>`).join("")}</select>
     <select data-sdif aria-label="Dificultad"><option value="">⛰ Dificultad</option>${dfs.map(x=>`<option${x===FDIF?" selected":""}>${esc(x)}</option>`).join("")}</select></div>`:""}`:"";
-  const L0=SALS.filter(s=>(FSEM==="todas"||(FSEM==="mas"?!pri.includes(wk(s)):wk(s)===+FSEM))&&(!FSD||s.sd===FSD)&&(!FDIF||s.dif===FDIF));
-  const fila=s=>{const d=fe(s);return `<div class="salr" data-sopen="${s.id}"><div class="fd"><small>${isNaN(d)?"":DS[d.getDay()].slice(0,3)}</small><b>${isNaN(d)?"?":d.getDate()}</b><small>${isNaN(d)?"":MS[d.getMonth()].slice(0,3)}</small></div>
-    <div class="t"><b>${esc(s.ti)}</b><small><span class="cl">${esc(s.cn)}</span>${s.sd?" · "+esc(s.sd):""}${s.prueba?" · prueba":""}</small><small>${[isNaN(d)?"":String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+" h",s.km?kmF(s.km):"",s.up?"+"+Math.round(s.up).toLocaleString("es-ES")+" m":"",s.dif||""].filter(Boolean).join(" · ")}</small></div></div>`};
+  const L0=SALS.filter(s=>(!SOLOFAV||esFav(s.club))&&(FSEM==="todas"||(FSEM==="mas"?!pri.includes(wk(s)):wk(s)===+FSEM))&&(!FSD||s.sd===FSD)&&(!FDIF||s.dif===FDIF));
+  const fila=s=>{const d=fe(s),dw=isNaN(d)?-1:d.getDay();return `<div class="salr" data-sopen="${s.id}"><div class="fd ${dw===6?"sab":dw===0?"dom":"lab"}"><small>${isNaN(d)?"":DS[d.getDay()].slice(0,3)}</small><b>${isNaN(d)?"?":d.getDate()}</b><small>${isNaN(d)?"":MS[d.getMonth()].slice(0,3)}</small></div>
+    <div class="t"><b>${esc(s.ti)}</b><small>${esFav(s.club)?`<span class="fav">★ </span>`:""}<span class="cl">${esc(s.cn)}</span>${s.sd?" · "+esc(s.sd):""}${s.prueba?" · prueba":""}</small><small>${[isNaN(d)?"":String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+" h",s.km?kmF(s.km):"",s.up?"+"+Math.round(s.up).toLocaleString("es-ES")+" m":"",s.dif||""].filter(Boolean).join(" · ")}</small></div></div>`};
   let H="",g=null;for(const s of L0){const k=wk(s);if(k!==g){g=k;H+=`<div class="salg">${esc(semEt(k))}</div>`}H+=fila(s)}
   $("sal-lista").innerHTML=L0.length?H:SALS.length?`<p class="note">No hay salidas con esos filtros.</p>`:`<p class="note">No hay salidas anunciadas todavía.</p>`;
   if(AVC&&Date.now()-AVC.t<120000)$("sal-lista").insertAdjacentHTML("afterbegin",AVC.h);else AVC=null}
 
 let AVC=null;
+/* 10 nov 2026 · ★ clubes favoritos: se guardan en este móvil. Sus salidas salen marcadas con ★ y hay un botón «★ Mis clubes». */
+const FK="ldc-salfav";let FAVS=(()=>{try{return JSON.parse(localStorage.getItem(FK)||"[]")}catch(e){return[]}})(),SOLOFAV=false;
+const esFav=id=>FAVS.includes(id);
+function togFav(id,n){FAVS=esFav(id)?FAVS.filter(x=>x!==id):[...FAVS,id];try{localStorage.setItem(FK,JSON.stringify(FAVS))}catch(e){}
+  toast(esFav(id)?`★ ${n} en tus clubes favoritos`:`${n} quitado de tus favoritos`);if(!FAVS.length)SOLOFAV=false}
 /* 10 nov 2026 · el alta de clubes NO es pública: solo puede pedirla quien abre el enlace personal que manda Jonathan
    (https://losdelasclaras.github.io/rutas/#altaclub, queda recordado en ese móvil). El resto ve el correo de contacto. */
 const CORREO="losdelasclaras@gmail.com",ALTA="https://losdelasclaras.github.io/rutas/#altaclub";
@@ -124,6 +137,11 @@ function deAlta(){if((location.hash||"")!=="#altaclub")return;ALTAV=true;try{loc
     if(window.cuentaOk&&!cuentaOk(()=>{showView("salidas");carga(true).then(()=>{if(!MIO)formClub(false)})},"club"))return;formClub(false)})}
 addEventListener("hashchange",deAlta);setTimeout(deAlta,0);   // aviso «este club no tiene salidas próximas» (al entrar con su enlace fijo), se queda 2 minutos
 sec.addEventListener("change",e=>{const el=e.target;if(el.matches("[data-ssd]")){FSD=el.value;pinta()}else if(el.matches("[data-sdif]")){FDIF=el.value;pinta()}});
+// 10 nov 2026 · el club ve sus salidas con lo que tiene cada una (para no confundir cuál es la buena)
+function misSal(cid){const L=SALS.filter(s=>s.club===cid);if(!L.length)return`<p class="note" style="margin:10px 0 0">Todavía no tenéis ninguna salida publicada.</p>`;
+  const it=(ok,l)=>`<span class="${ok?"ok":"no"}">${ok?"✓":"✗"} ${l}</span>`;
+  return`<div class="salmine"><p style="margin:0 0 6px"><b>Vuestras salidas (${L.length} de ${MAXS})</b></p>${L.map(s=>`<div class="salr" data-sopen="${s.id}"><div class="t"><b>${esc(s.ti)}</b><small>${esc(fFecha(s.fecha))}</small>
+    <small>${it(s.km,"Track")} · ${it(s.pdf||s.pdfu,"Hoja de ruta")} · ${it(s.mide||s.mideu,"MIDE")}</small></div></div>`).join("")}<p class="note" style="margin:4px 0 0">Toca una para verla, editarla o borrarla.</p></div>`}
 /* --- 🔗 enlace fijo de un club (10 nov 2026): …/rutas/#club=<id> abre siempre su próxima salida publicada --- */
 const URLF=id=>"https://losdelasclaras.github.io/rutas/#club="+encodeURIComponent(id);
 const BOTON=id=>`<a href="${URLF(id)}" target="_blank" rel="noopener" style="display:inline-block;padding:12px 18px;background:#1e8e3e;color:#fff;border-radius:10px;font-family:sans-serif;font-weight:bold;text-decoration:none">📅 Próxima salida · Ver en la app</a>`;
@@ -160,14 +178,16 @@ function formSalida(ed){const adm=esAdm(),cl=adm?CLUBS:[MIO];GPX=null;SED=ed||nu
   <label>Teléfono o WhatsApp para apuntarse (opcional)</label><input id="ss-a" maxlength="60" placeholder="Por ejemplo: 600 123 456">
   <label>Otras indicaciones para apuntarse (opcional)</label><input id="ss-o" maxlength="200" placeholder="Plazas, precio del autobús, fecha límite…">
   <label>Descripción (opcional)</label><textarea id="ss-x" maxlength="1500"></textarea>
-  <label>Hoja de ruta en PDF (opcional)</label><input id="ss-pdf" type="file" accept="application/pdf,.pdf"><p class="note" style="margin:4px 0 0">Hasta 4 MB. También vale un enlace:</p><input id="ss-pdfu" type="url" maxlength="400" placeholder="https://… (Google Drive, web del club…)" style="margin-top:6px">
+  <label>Hoja de ruta en PDF (opcional)</label><input id="ss-pdf" type="file" accept="application/pdf,.pdf"><p class="note" style="margin:4px 0 0">Hasta 8 MB. También vale un enlace:</p><input id="ss-pdfu" type="url" maxlength="400" placeholder="https://… (Google Drive, web del club…)" style="margin-top:6px">
   ${ed&&ed.pdf?`<label style="font-weight:600"><input type="checkbox" id="ss-pdfx" style="width:auto"> Quitar la hoja de ruta que hay (${esc(ed.pdf.nm||"PDF")})</label>`:""}
+  <label>Ficha MIDE (opcional)</label><input id="ss-mide" type="file" accept="application/pdf,.pdf,image/*"><p class="note" style="margin:4px 0 0">PDF hasta 8 MB, o una foto o captura (se reduce sola). También vale un enlace:</p><input id="ss-mideu" type="url" maxlength="400" placeholder="https://… (web del club…)" style="margin-top:6px">
+  ${ed&&ed.mide?`<label style="font-weight:600"><input type="checkbox" id="ss-midex" style="width:auto"> Quitar la ficha MIDE que hay (${esc(ed.mide.nm||"MIDE")})</label>`:""}
   <label>Track (GPX o KML) · opcional${ed?" — solo si quieres cambiarlo":""}</label><input id="ss-g" type="file" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml">
   <p class="note" id="ss-gi" style="margin:4px 0 0">${ed?(ed.km?`Ahora: ${kmF(ed.km)} · +${Math.round(ed.up||0).toLocaleString("es-ES")} m. Si no subes otro, se queda ese.`:"Ahora no tiene track."):"Del track salen solos los km, el desnivel y el mapa."}</p>
   <div class="salbtns"><button class="btn ghost" data-sfx>Cancelar</button><button class="btn primary" data-sssave>${ed?"Guardar cambios":"Publicar"}</button></div></div>`;
   if(ed){const v=(i,x)=>{const el=$(i);if(el&&x!=null)el.value=x};
     v("ss-c",ed.club);v("ss-t",ed.ti);v("ss-d",(ed.fecha||"").slice(0,10));v("ss-h",(ed.fecha||"").slice(11,16)||"08:00");v("ss-e",ed.enc);v("ss-f",ed.dif);
-    v("ss-u",ed.apu||(/^https?:\/\//i.test(ed.ap||"")?ed.ap:""));v("ss-a",/^https?:\/\//i.test(ed.ap||"")?"":ed.ap);v("ss-o",ed.apo);v("ss-x",ed.txt);v("ss-pdfu",ed.pdfu);v("ss-sd",ed.sd);
+    v("ss-u",ed.apu||(/^https?:\/\//i.test(ed.ap||"")?ed.ap:""));v("ss-a",/^https?:\/\//i.test(ed.ap||"")?"":ed.ap);v("ss-o",ed.apo);v("ss-x",ed.txt);v("ss-pdfu",ed.pdfu);v("ss-sd",ed.sd);v("ss-mideu",ed.mideu);
     if($("ss-c"))$("ss-c").disabled=true}
   if(!ed){const ult=()=>{const c=$("ss-c")?$("ss-c").value:MIO.id;const p=SALS.find(x=>x.club===c&&x.sd)||{};$("ss-sd").value=p.sd||(CLUBS.find(x=>x.id===c)||MIO||{}).sd||""};ult();if($("ss-c"))$("ss-c").addEventListener("change",ult)}
   $("ss-g").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;const t=await f.text();GPX=leeTrack(t);
@@ -210,26 +230,50 @@ async function guardaSalida(){const adm=esAdm(),cid=adm?$("ss-c").value:MIO.id,c
   if(club.prueba)s.prueba=true;
   if(s.apu&&!/^https?:\/\//i.test(s.apu)){toast("El enlace para apuntarse tiene que empezar por https://");return}
   if(s.pdfu&&!/^https?:\/\//i.test(s.pdfu)){toast("El enlace de la hoja de ruta tiene que empezar por https://");return}
-  // la hoja de ruta (PDF) se guarda en trozos en la base de datos (sin servicio de archivos aparte: así sigue siendo gratis)
-  const pf=$("ss-pdf").files[0];let trozos=null;
-  if(pf){if(pf.size>4*1024*1024){toast("El PDF ocupa más de 4 MB: pon mejor un enlace");return}
-    const b64=await new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(",")[1]);r.onerror=ko;r.readAsDataURL(pf)});
-    trozos=[];for(let i=0;i<b64.length;i+=700000)trozos.push(b64.slice(i,i+700000));
-    s.pdf={n:trozos.length,nm:pf.name.slice(0,80)}}
-  try{await base();const F=fs();let id;
-    if(SED){id=SED.id;
-      // la hoja de ruta anterior: se borra si se sube otra o se marca «quitar»
-      const quita=trozos||($("ss-pdfx")&&$("ss-pdfx").checked);
-      if(quita&&SED.pdf)for(let i=0;i<SED.pdf.n;i++)await F.deleteDoc(F.doc(db(),"salidasf",id+"_"+i)).catch(()=>{});
-      if(!trozos&&!quita&&SED.pdf)s.pdf=SED.pdf;if(!trozos&&quita)s.pdf=null;
-      await F.updateDoc(F.doc(db(),"salidas",id),s)}
-    else{const r=await F.addDoc(F.collection(db(),"salidas"),s);id=r.id}
+  s.mideu=$("ss-mideu").value.trim();if(s.mideu&&!/^https?:\/\//i.test(s.mideu)){toast("El enlace de la MIDE tiene que empezar por https://");return}
+  // 10 nov 2026 · los documentos (hoja de ruta y MIDE) se comprueban, se guardan en trozos en la base de datos
+  // (sin servicio de archivos aparte: así sigue siendo gratis) y se suben ANTES que la salida, con nombre nuevo cada vez:
+  // así una salida nunca apunta a un documento a medio subir. Los anteriores se borran al final.
+  let docs;try{docs=[await leeDoc($("ss-pdf").files[0],"Hoja de ruta",false),await leeDoc($("ss-mide").files[0],"MIDE",true)]}catch(er){toast(String(er.message||er),6000);return}
+  const [dp,dm]=docs;
+  try{await base();const F=fs();const ref=SED?F.doc(db(),"salidas",SED.id):F.doc(F.collection(db(),"salidas")),id=ref.id,v=Date.now().toString(36);
+    const sube=async(d,tag,msg)=>{if(!d)return null;toast(msg,20000);const k=id+"_"+tag+v;for(let i=0;i<d.tr.length;i++)await F.setDoc(F.doc(db(),"salidasf",k+"_"+i),{club:cid,d:d.tr[i]});return{n:d.tr.length,nm:d.nm,ty:d.ty,k}};
+    const np=await sube(dp,"p","Subiendo la hoja de ruta…"),nm=await sube(dm,"m","Subiendo la ficha MIDE…");
+    const quitaP=np||($("ss-pdfx")&&$("ss-pdfx").checked),quitaM=nm||($("ss-midex")&&$("ss-midex").checked);
+    s.pdf=np||(SED&&!quitaP?SED.pdf||null:null);s.mide=nm||(SED&&!quitaM?SED.mide||null:null);
+    if(SED)await F.updateDoc(ref,s);else await F.setDoc(ref,s);
     if(GPX)await F.setDoc(F.doc(db(),"salidasp",id),{club:cid,p:JSON.stringify(GPX.pts)});
-    if(trozos){toast("Subiendo la hoja de ruta…");for(let i=0;i<trozos.length;i++)await F.setDoc(F.doc(db(),"salidasf",id+"_"+i),{club:cid,d:trozos[i]})}
-    toast(SED?"Salida actualizada":"Salida publicada");$("sal-form").innerHTML="";GPX=null;SED=null;carga(true)}catch(e){console.warn(e);toast(/permission/i.test(String(e))?"Faltan los permisos en la base de datos":"No se ha podido publicar")}}
+    if(SED){if(quitaP&&SED.pdf)await borraDoc(SED.id,SED.pdf);if(quitaM&&SED.mide)await borraDoc(SED.id,SED.mide)}
+    toast(SED?"Salida actualizada":"Salida publicada");$("sal-form").innerHTML="";GPX=null;SED=null;carga(true)}catch(e){console.warn(e);toast(/permission/i.test(String(e))?"Faltan los permisos en la base de datos":/size|exceed|large/i.test(String(e))?"El archivo es demasiado grande: pon mejor un enlace":"No se ha podido publicar. Mira la cobertura y prueba otra vez")}}
+// lee un documento: PDF (comprobando que de verdad es un PDF y que no pasa de 8 MB) o imagen (se reduce a JPEG)
+async function leeDoc(f,que,img){if(!f)return null;const MB=8;
+  const esImg=img&&/^image\//.test(f.type||"");
+  if(esImg){const url=URL.createObjectURL(f);try{const im=await new Promise((ok,ko)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>ko(new Error(`La imagen de la ${que} no se puede abrir`));i.src=url});
+      const sc=Math.min(1,2000/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);
+      const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+      const b64=c.toDataURL("image/jpeg",.85).split(",")[1];return{tr:trocea(b64),nm:(f.name.replace(/\.[^.]+$/,"")||"mide").slice(0,70)+".jpg",ty:"image/jpeg"}}finally{URL.revokeObjectURL(url)}}
+  if(f.size>MB*1024*1024)throw new Error(`La ${que} ocupa ${(f.size/1048576).toLocaleString("es-ES",{maximumFractionDigits:1})} MB y el máximo son ${MB} MB: pon mejor un enlace`);
+  const b64=await new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(",")[1]||"");r.onerror=()=>ko(new Error(`No se ha podido leer la ${que}`));r.readAsDataURL(f)});
+  if(!b64.startsWith("JVBER"))throw new Error(`El archivo de la ${que} no es un PDF válido (puede estar dañado). Prueba a guardarlo otra vez como PDF${img?" o sube una foto de la ficha":""}.`);
+  return{tr:trocea(b64),nm:f.name.slice(0,80),ty:"application/pdf"}}
+const trocea=b=>{const r=[];for(let i=0;i<b.length;i+=700000)r.push(b.slice(i,i+700000));return r};
+const trozoId=(sid,d,i)=>d.k?d.k+"_"+i:sid+"_"+i;   // las hojas de ruta de antes del 10 nov no llevan «k»
+async function borraDoc(sid,d){const F=fs();for(let i=0;i<d.n;i++)await F.deleteDoc(F.doc(db(),"salidasf",trozoId(sid,d,i))).catch(()=>{})}
+// bajar un documento: siempre se DESCARGA (a Descargas), en el móvil y en el ordenador
+async function bajaDoc(s,d,que){toast(`Bajando la ${que}…`,20000);
+  try{await base();const F=fs();let b="";for(let i=0;i<d.n;i++){const x=await F.getDoc(F.doc(db(),"salidasf",trozoId(s.id,d,i)));if(!x.exists())throw new Error("falta");b+=x.data().d}
+    const bin=atob(b),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+    descarga(new Blob([u8],{type:d.ty||"application/pdf"}),d.nm||(que==="MIDE"?"mide.pdf":"hoja-de-ruta.pdf"))}
+  catch(er){toast(er&&er.message==="falta"?`La ${que} no se subió entera: el club tiene que volver a subirla`:`No se ha podido bajar la ${que}. Mira la cobertura`,6000)}}
+function descarga(blob,nm){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nm;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},8000);setTimeout(()=>toast("Guardado en Descargas: "+nm,5000),900)}
 
 /* --- la ficha de una salida (en el mapa, con su track) --- */
 let LAY=null;
+const xe=x=>String(x).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const gpxDe=(n,pts)=>`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${xe(n)}</name></metadata>\n<trk><name>${xe(n)}</name><trkseg>\n`+
+  pts.map(p=>`<trkpt lat="${(+p[0]).toFixed(6)}" lon="${(+p[1]).toFixed(6)}">${p[2]!=null?`<ele>${Math.round(p[2])}</ele>`:""}</trkpt>`).join("\n")+`\n</trkseg></trk>\n</gpx>\n`;
+const nomGpx=n=>(String(n).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^\w\s-]/g,"").trim().replace(/\s+/g,"-").slice(0,60)||"track")+".gpx";
 async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
   showView("mapa");if(window.showTrack)showTrack(null);
   let pts=null;try{await base();const d=await fs().getDoc(fs().doc(db(),"salidasp",id));if(d.exists())pts=JSON.parse(d.data().p)}catch(e){}
@@ -250,10 +294,15 @@ async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
   ${s.txt?`<p class="desc">${esc(s.txt).replace(/\n/g,"<br>")}</p>`:""}
   ${apu||tel||s.apo?`<div class="salbox" style="margin-top:10px"><b>✍️ Cómo apuntarse</b>${tel?`<p style="margin:6px 0 0">📞 ${esc(tel)}</p>`:""}${s.apo?`<p style="margin:6px 0 0">${esc(s.apo)}</p>`:""}
    <div class="salbtns">${apu?`<a class="btn primary" href="${esc(apu)}" target="_blank" rel="noopener" style="grid-column:1/-1">✍️ Apuntarse</a>`:""}${telH?`<a class="btn ghost" href="${esc(telH)}">📞 Llamar</a><a class="btn ghost" href="${esc(waH)}" target="_blank" rel="noopener">💬 WhatsApp</a>`:""}</div></div>`:""}
-  ${s.pdf||s.pdfu?`<div class="salbtns" style="grid-template-columns:1fr">${s.pdf?`<button class="btn ghost" data-salpdf>📄 Hoja de ruta (PDF)</button>`:`<a class="btn ghost" href="${esc(s.pdfu)}" target="_blank" rel="noopener">📄 Hoja de ruta (PDF)</a>`}</div>`:""}
+  ${(()=>{const b=[];   // 10 nov 2026 · hoja de ruta y MIDE, cada una con su botón (archivo subido o enlace)
+    if(s.pdf)b.push(`<button class="btn ghost" data-saldoc="pdf">📄 Hoja de ruta</button>`);else if(s.pdfu)b.push(`<a class="btn ghost" href="${esc(s.pdfu)}" target="_blank" rel="noopener">📄 Hoja de ruta</a>`);
+    if(s.mide)b.push(`<button class="btn ghost" data-saldoc="mide">📊 Ficha MIDE</button>`);else if(s.mideu)b.push(`<a class="btn ghost" href="${esc(s.mideu)}" target="_blank" rel="noopener">📊 Ficha MIDE</a>`);
+    if(s.pdf&&s.pdfu)b.push(`<a class="btn ghost" href="${esc(s.pdfu)}" target="_blank" rel="noopener">🔗 Hoja de ruta (web)</a>`);
+    return b.length?`<div class="salbtns" style="grid-template-columns:${b.length>1?"1fr 1fr":"1fr"}">${b.join("")}</div>`:""})()}
+  ${pts&&pts.length>1?`<div class="saltrk"><button class="btn primary" data-saltrk style="width:100%">🧭 Track de la ruta ▾</button><div class="opts" hidden>
+    <button class="btn ghost" data-salfol>▶ Seguir</button><button class="btn ghost" data-salgpx>⬇ Descargar GPX</button><button class="btn ghost" data-salsave>💾 Guardar en mis tracks</button></div></div>`:""}
   <div class="acts2"><div class="agrid">
-   ${pts&&pts.length>1?`<button class="btn ghost" data-salfol>▶ Seguir</button><button class="btn ghost" data-salgpx>⬇ Descargar GPX</button>`:""}
-   <button class="btn ghost" data-salshare>📤 Compartir</button>
+   <button class="btn ghost" data-salshare>📤 Compartir</button><button class="btn ghost" data-salfav>${esFav(s.club)?"★ Club favorito":"☆ Club favorito"}</button>
    ${s.cw?`<a class="btn ghost" href="${esc(s.cw)}" target="_blank" rel="noopener">🏔 Web del club</a>`:""}
    ${puede?`<button class="btn ghost" data-saledit>✏️ Editar salida</button><button class="btn ghost" style="color:#b3261e" data-saldel>🗑 Borrar salida</button>`:""}</div></div>
   <p class="salaviso">Organiza <b>${esc(s.cn)}</b>${s.cc?" ("+esc(s.cc)+")":""}. La inscripción, el seguro y las condiciones son cosa del club: Los de las Claras solo la anuncia.</p>`;
@@ -262,20 +311,21 @@ sheet.addEventListener("click",async e=>{const k=sheet._sal;if(!k)return;
   if(e.target.closest("[data-salx]")){return}   // el track se queda en el mapa hasta abrir otra cosa
   const {s,pts}=k;const sinT=()=>{if(!pts||pts.length<2){toast("Esta salida no tiene track");return true}return false};
   if(e.target.closest("[data-salfol]")){if(sinT())return;if(LAY){LAY.remove();LAY=null}if(window.SEGUIR)SEGUIR.start({u:"tmp",ti:s.ti,gx:{ln:pts,km:s.km}},false);return}
-  if(e.target.closest("[data-salgpx]")||e.target.closest("[data-salreloj]")){if(sinT())return;if(window.enviaGpx)enviaGpx(s.ti,pts);
-    if(e.target.closest("[data-salreloj]"))setTimeout(()=>toast("Elige la app de tu reloj (Suunto, COROS…). Garmin y Polar: importa el GPX en su web.",7000),900);return}
+  if(e.target.closest("[data-saltrk]")){const o=sheet.querySelector(".saltrk .opts");if(o)o.hidden=!o.hidden;return}
+  // ⬇ Descargar GPX: siempre a Descargas (antes en el móvil abría el menú de compartir)
+  if(e.target.closest("[data-salgpx]")){if(sinT())return;descarga(new Blob([gpxDe(s.ti,pts)],{type:"application/gpx+xml"}),nomGpx(s.ti));return}
+  if(e.target.closest("[data-salsave]")){if(sinT())return;if(!MPI){toast("No se ha podido guardar");return}
+    const go=()=>{const ya=MPI.tracks().find(x=>x.sal===s.id);if(ya){toast("Ya la tienes en Mis cosas › Mis tracks");if(window.MISTRACKS)MISTRACKS.open(ya.id,false);return}
+      const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6),o={id,n:s.ti,km:s.km,pts:pts.map(p=>p.slice(0,3)),src:"gpx",sal:s.id,f:new Date().toISOString()};
+      MPI.desn(o);MPI.saveTracks([...MPI.tracks(),o]);if(pts.some(p=>p[2]==null))MPI.demAlt(id);toast("Guardado en Mis cosas › Mis tracks")};
+    if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go();return}
+  if(e.target.closest("[data-salfav]")){togFav(s.club,s.cn);const b=e.target.closest("[data-salfav]");b.textContent=esFav(s.club)?"★ Club favorito":"☆ Club favorito";pinta();return}
+  const dc=e.target.closest("[data-saldoc]");if(dc){const d=dc.dataset.saldoc==="mide"?s.mide:s.pdf;if(d)bajaDoc(s,d,dc.dataset.saldoc==="mide"?"MIDE":"hoja de ruta");return}
   if(e.target.closest("[data-salshare]")){const url=APPURL+"#sal="+s.id,text=`📅 ${s.ti}\n${fFecha(s.fecha)} · ${s.cn}${s.enc?"\n📍 "+s.enc:""}\nMira la salida en la app de Los de las Claras:`;
     try{if(navigator.share){await navigator.share({title:s.ti,text,url});return}}catch(er){if(er&&er.name==="AbortError")return}
     try{await navigator.clipboard.writeText(text+"\n"+url);toast("Enlace copiado")}catch(er){window.open("https://wa.me/?text="+encodeURIComponent(text+"\n"+url),"_blank","noopener")}return}
   if(e.target.closest("[data-saledit]")){sheet.hidden=true;showView("salidas");setTimeout(()=>formSalida(s),150);return}
-  if(e.target.closest("[data-salpdf]")){if(!s.pdf)return;toast("Bajando la hoja de ruta…");
-    try{await base();const F=fs();let b="";for(let i=0;i<s.pdf.n;i++){const d=await F.getDoc(F.doc(db(),"salidasf",s.id+"_"+i));if(!d.exists())throw 0;b+=d.data().d}
-      const bin=atob(b),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
-      const f=new File([u8],s.pdf.nm||"hoja-de-ruta.pdf",{type:"application/pdf"});
-      try{if(navigator.canShare&&navigator.canShare({files:[f]})&&matchMedia("(pointer:coarse)").matches){await navigator.share({files:[f],title:s.ti});return}}catch(er){if(er&&er.name==="AbortError")return}
-      const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}
-    catch(er){toast("No se ha podido bajar la hoja de ruta")}return}
-  if(e.target.closest("[data-saldel]")){if(!confirm("¿Borrar esta salida?"))return;try{await base();const F=fs();if(s.pdf)for(let i=0;i<s.pdf.n;i++)await F.deleteDoc(F.doc(db(),"salidasf",s.id+"_"+i)).catch(()=>{});await F.deleteDoc(F.doc(db(),"salidasp",s.id)).catch(()=>{});await F.deleteDoc(F.doc(db(),"salidas",s.id));
+  if(e.target.closest("[data-saldel]")){if(!confirm("¿Borrar esta salida?"))return;try{await base();const F=fs();if(s.pdf)await borraDoc(s.id,s.pdf);if(s.mide)await borraDoc(s.id,s.mide);await F.deleteDoc(F.doc(db(),"salidasp",s.id)).catch(()=>{});await F.deleteDoc(F.doc(db(),"salidas",s.id));
     sheet.hidden=true;if(LAY){LAY.remove();LAY=null}toast("Salida borrada");carga(true)}catch(er){toast("No se ha podido borrar")}}});
 // al abrir otra cosa en el mapa, se quita el track de la salida
 {const st=window.showTrack;if(st)window.showTrack=function(){if(LAY&&!(sheet._sal&&!sheet.hidden)){LAY.remove();LAY=null}return st.apply(this,arguments)}}
@@ -286,6 +336,7 @@ sec.addEventListener("click",async e=>{const t=e.target;
   const o=t.closest("[data-sopen]");if(o){abre(o.dataset.sopen);return}
   const fl=t.closest("[data-sfil]");if(fl){FIL=fl.dataset.sfil;pinta();return}
   const sm=t.closest("[data-ssem]");if(sm){FSEM=sm.dataset.ssem;pinta();return}
+  if(t.closest("[data-ssolofav]")){SOLOFAV=!SOLOFAV;pinta();return}
   if(t.closest("[data-sfx]")){$("sal-form").innerHTML="";SED=null;return}
   if(t.closest("[data-sclub]")&&!altaOk()&&!esAdm()){toast("Escribe a "+CORREO+" para dar de alta tu club");return}
   if(t.closest("[data-sclub]")){if(window.cuentaOk&&!cuentaOk(()=>{showView("salidas");carga(true).then(()=>formClub(false))},"club"))return;formClub(false);return}
