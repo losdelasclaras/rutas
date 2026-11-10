@@ -47,7 +47,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .salr .fd.sab{background:#1e8e3e}.salr .fd.dom{background:#1e6fd9}.salr .fd.lab{background:#6b7280}
 .salr .fav{color:#e6a700;font-weight:900}
 .salfav{border:none;background:none;font-size:22px;line-height:1;padding:4px 6px;cursor:pointer;color:#e6a700}
-.saltrk{margin:8px 0 0}.saltrk .opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+.saltrk{margin:8px 0 0}.saltrk .opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}.saltrk .opts[hidden]{display:none}
 .saltrk .opts .btn{padding:10px 4px;font-size:14.5px;white-space:normal;line-height:1.2}
 .salmine{margin:10px 0 0}.salmine .salr{cursor:pointer}.salmine .ok{color:#1e8e3e;font-weight:800}.salmine .no{color:var(--muted)}
 .salpie{font-size:13px;color:var(--muted);margin:18px 2px 8px;line-height:1.4}
