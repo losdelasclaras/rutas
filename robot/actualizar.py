@@ -134,6 +134,9 @@ def blog():
             log(f'🔎 «{(e.findtext("a:title", "", ns) or "").strip()}»: sin {"distancia" if not F.get("km") else ""}{" ni " if not F.get("km") and not F.get("dif") else ""}{"dificultad" if not F.get("dif") else ""}. Texto del cuadro: «{T[max(0, i - 250):i + 350]}»')
         if k in idx:
             q = B[idx[k]]
+            # 10 nov 2026: si su foto no llegó a publicarse (p. ej. se cortó aquella pasada), se vuelve a bajar
+            if F.get('img') and not os.path.exists(APP + f'fotos/{idx[k]}.jpg') and foto(F['img'], idx[k]):
+                log(f'📷 «{q.get("t")}»: foto recuperada'); CAMBIOS.append('foto recuperada')
             for a in ('km', 'dif'):
                 if F.get(a) and not q.get(a): q[a] = F[a]; log(f'✏️ «{q.get("t")}»: completado {a} = {F[a]}')
         if k not in idx:
