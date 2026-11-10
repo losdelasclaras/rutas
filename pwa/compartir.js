@@ -24,12 +24,16 @@ const EK="ldc-enlaces";
 const r5=v=>Math.round(v*1e5)/1e5;
 async function corto(t){const u=window.LDCFB&&LDCFB.user();if(!u||!navigator.onLine)return null;
   let mem={};try{mem=JSON.parse(localStorage.getItem(EK)||"{}")}catch(e){}
-  const huella=t.n+"|"+t.pts.length+"|"+t.pts[0][0]+"|"+t.pts[t.pts.length-1][1];
+  const huella=t.n+"|"+t.pts.length+"|"+t.pts[0][0]+"|"+t.pts[t.pts.length-1][1]+"|w"+(t.w||[]).length;   // 10 nov: con los puntos
   if(mem[t.id]&&mem[t.id].h===huella)return base()+"#c="+mem[t.id].c;
   try{const a=await LDCFB.load(),fs=a.fs;
     const st=Math.max(1,Math.ceil(t.pts.length/3000)),pts=t.pts.filter((_,i)=>i%st===0||i===t.pts.length-1).map(p=>p[2]!=null?[r5(p[0]),r5(p[1]),Math.round(p[2])]:[r5(p[0]),r5(p[1])]);
     const A="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";let c="";const rnd=crypto.getRandomValues(new Uint8Array(8));for(const b of rnd)c+=A[b%A.length];
-    await Promise.race([fs.setDoc(fs.doc(a.db,"enlaces",c),{uid:u.uid,n:String(t.n).slice(0,100),km:t.km||null,up:t.up!=null?t.up:null,t:Date.now(),d:JSON.stringify(pts)}),new Promise((_,no)=>setTimeout(()=>no(new Error("tarda")),8000))]);
+    // 10 nov 2026: los puntos del track (nombre, sitio, altura, icono) van también en el enlace (w); si la nube no deja guardarlos, sin ellos
+    const doc={uid:u.uid,n:String(t.n).slice(0,100),km:t.km||null,up:t.up!=null?t.up:null,t:Date.now(),d:JSON.stringify(pts)};
+    const W=(t.w||[]).filter(w=>w&&isFinite(w.lat)&&isFinite(w.lon)).slice(0,60).map(w=>[String(w.n||"").slice(0,60),r5(w.lat),r5(w.lon),w.a!=null?Math.round(w.a):null,w.ic||""]);
+    const pon=d=>Promise.race([fs.setDoc(fs.doc(a.db,"enlaces",c),d),new Promise((_,no)=>setTimeout(()=>no(new Error("tarda")),8000))]);
+    if(W.length){try{await pon(Object.assign({w:JSON.stringify(W)},doc))}catch(e){await pon(doc)}}else await pon(doc);
     mem[t.id]={c,h:huella};try{localStorage.setItem(EK,JSON.stringify(mem))}catch(e){}
     return base()+"#c="+c}catch(e){console.warn("enlace corto",e);return null}}
 async function abrirCorto(c){if(typeof toast==="function")toast("Abriendo lo que te han compartido…");
@@ -37,7 +41,8 @@ async function abrirCorto(c){if(typeof toast==="function")toast("Abriendo lo que
     if(!d.exists()){toast("Ese enlace ya no existe");return}
     const x=d.data();if(x.tipo==="puntos"){MPI.verCompartidos({n:x.n,ps:JSON.parse(x.d)});return}
     const pts=JSON.parse(x.d);let km=x.km;if(!km){km=0;for(let i=1;i<pts.length;i++)km+=map.distance(pts[i-1],pts[i]);km=Math.round(km/100)/10}
-    mostrar({n:x.n||"Track compartido",pts,km,up:x.up!=null?x.up:undefined},"enlace")}
+    let w;try{w=x.w?JSON.parse(x.w).map((q,i)=>({id:"w"+i,n:q[0],lat:q[1],lon:q[2],a:q[3],ic:q[4]||"📍"})):undefined}catch(e){}
+    mostrar({n:x.n||"Track compartido",pts,km,up:x.up!=null?x.up:undefined,w},"enlace")}
   catch(e){toast(navigator.onLine?"No he podido abrir ese track":"Sin conexión: abre el enlace cuando tengas cobertura")}}
 function cache(t){try{const m=JSON.parse(localStorage.getItem(EK)||"{}")[t.id],h=t.n+"|"+t.pts.length+"|"+t.pts[0][0]+"|"+t.pts[t.pts.length-1][1];return m&&m.h===h?base()+"#c="+m.c:null}catch(e){return null}}
 /* 📤 Compartir un track: primero se elige cómo. Archivo GPX (lo que él prefiere: vale para WhatsApp, Wikiloc, OruxMaps…) o enlace a la app */

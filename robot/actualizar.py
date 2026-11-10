@@ -171,6 +171,8 @@ def blog():
 def km(a, b):
     return 6371 * 2 * math.asin(math.sqrt(math.sin(math.radians(b[0] - a[0]) / 2) ** 2 + math.cos(math.radians(a[0])) * math.cos(math.radians(b[0])) * math.sin(math.radians(b[1] - a[1]) / 2) ** 2))
 
+FB_KEY = 'AIzaSyBzYlxsZhJVPJpCk0_EgxaplD7zWMOOg1I'   # clave pública de Firebase de la app (la misma que lleva la web)
+
 def mapa():
     k = get(f'https://www.google.com/maps/d/kml?mid={CFG["mapa_mid"]}&forcekml=1')
     n = k.count('<Placemark')
@@ -201,6 +203,52 @@ def mapa():
     log(f'🗺️ Mapa: {len(new)} puntos ({len(nn)} nuevos o movidos, {max(0, gone)} quitados).')
     for p in nn[:30]: log(f'   + {p["n"]}' + ('' if p.get('u') else '  ⚠ sin enlace a una entrada del blog'))
     CAMBIOS.append(f'mapa: {len(nn)} puntos nuevos o cambiados')
+
+# ------------------------------------------------------------------ 2b. TRACKS enlazados desde My Maps con un enlace de la app
+def enlaces_app():
+    """10 nov 2026: si en la descripción de un punto de tu My Maps, además del enlace a la entrada del blog, pones el enlace
+    de un track compartido desde la app (…/rutas/#c=XXXX), el robot baja ese track de la nube (con sus alturas y sus puntos)
+    y lo deja como track de esa entrada (gpx/raw/enlace__XXXX.gpx; manda sobre el de Drive). Si quitas el enlace, se quita."""
+    pf = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'probar_enlace')   # prueba puntual: ¿se lee la nube sin cuenta?
+    if os.path.exists(pf):
+        c = open(pf).read().strip(); os.remove(pf)
+        try:
+            j = json.loads(get(f'https://firestore.googleapis.com/v1/projects/losdelasclaras-rutas/databases/(default)/documents/enlaces/{c}?key={FB_KEY}'))
+            f = j.get('fields', {}); log(f'🧪 Enlace #c={c}: se lee bien sin cuenta · «{f.get("n", {}).get("stringValue")}» · {len(json.loads(f["d"]["stringValue"]))} puntos de recorrido · {"con" if "w" in f else "sin"} puntos marcados')
+        except Exception as e: log(f'🧪 Enlace #c={c}: NO se puede leer sin cuenta ({e})')
+    if not os.path.exists(APP + 'mapa.kml'): return
+    k = open(APP + 'mapa.kml').read()
+    pares = {}
+    for pm in re.findall(r'<Placemark>(.*?)</Placemark>', k, re.S):
+        d = html.unescape(pm)
+        cs = re.findall(r'/rutas/?(?:index\.html)?#c=([A-Za-z0-9]{4,20})', d)
+        bl = re.findall(r'https?://losdelasclaras\.blogspot\.com/\d{4}/\d{2}/[^\s"<>\']+?\.html', d)
+        if cs and bl: pares[cs[0]] = bl[0].replace('http://', 'https://')
+    reg_f = APP + 'gpx/enlaces.json'
+    reg = json.load(open(reg_f)) if os.path.exists(reg_f) else {}
+    for fn in [f for f in reg if f[len('enlace__'):-4] not in pares]:   # enlaces quitados de My Maps
+        if os.path.exists(APP + 'gpx/raw/' + fn): os.remove(APP + 'gpx/raw/' + fn)
+        log(f'🗑 Track por enlace quitado de My Maps: {fn}'); del reg[fn]; CAMBIOS.append('enlace de track quitado')
+    nuevos = 0
+    for c, u in pares.items():
+        fn = f'enlace__{c}.gpx'
+        if fn in reg and os.path.exists(APP + 'gpx/raw/' + fn):
+            if reg[fn] != u: reg[fn] = u; CAMBIOS.append('enlace de track movido')
+            continue
+        try:
+            j = json.loads(get(f'https://firestore.googleapis.com/v1/projects/losdelasclaras-rutas/databases/(default)/documents/enlaces/{c}?key={FB_KEY}'))
+            f = j.get('fields', {}); pts = json.loads(f['d']['stringValue']); ws = json.loads(f['w']['stringValue']) if 'w' in f else []
+            n = f.get('n', {}).get('stringValue', c)
+        except Exception as e:
+            log(f'⚠ No he podido leer el track del enlace #c={c} (para {u.split("/")[-1]}): {e}'); continue
+        if len(pts) < 2: log(f'⚠ El enlace #c={c} no tiene recorrido.'); continue
+        g = ('<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras (enlace de la app)">\n' +
+             ''.join(f'<wpt lat="{w[1]}" lon="{w[2]}">' + (f'<ele>{w[3]}</ele>' if len(w) > 3 and w[3] is not None else '') + f'<name>{html.escape(str(w[0]))}</name></wpt>\n' for w in ws) +
+             f'<trk><name>{html.escape(n)}</name><trkseg>\n' + '\n'.join(f'<trkpt lat="{p[0]}" lon="{p[1]}">' + (f'<ele>{p[2]}</ele>' if len(p) > 2 and p[2] is not None else '') + '</trkpt>' for p in pts) + '\n</trkseg></trk></gpx>\n')
+        open(APP + 'gpx/raw/' + fn, 'w').write(g); reg[fn] = u; nuevos += 1
+        log(f'🔗 Track por enlace de la app: «{n}» ({len(pts)} puntos de recorrido, {len(ws)} puntos marcados) → {u.split("/")[-1]}')
+    json.dump(reg, open(reg_f, 'w'), ensure_ascii=False, indent=1)
+    if nuevos: CAMBIOS.append(f'enlaces: {nuevos} tracks nuevos')
 
 # ------------------------------------------------------------------ 3. TRACKS en Google Drive
 def kml2gpx(t, nombre):
@@ -775,7 +823,7 @@ def regenerar():
 if __name__ == '__main__':
     hoy = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=1))).strftime('%d/%m/%Y %H:%M')
     err = None
-    for paso in (blog, mapa, drive, colaboradores):
+    for paso in (blog, mapa, enlaces_app, drive, colaboradores):
         try: paso()
         except Exception as e:
             log(f'⚠ Error en {paso.__name__}: {e}'); err = e

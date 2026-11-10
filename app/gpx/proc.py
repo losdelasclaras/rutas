@@ -54,6 +54,7 @@ def ym(s):
     try: y,m=int(s[:4]),int(s[5:7]);return y*12+m
     except: return None
 MAN=json.load(open('asignar.json')) if os.path.exists('asignar.json') else {}   # archivo -> url de la entrada (o null para descartar)
+ENL=json.load(open('enlaces.json')) if os.path.exists('enlaces.json') else {}   # 10 nov 2026: enlace__XXXX.gpx -> url de la entrada (enlace de la app puesto en My Maps)
 FILES=[];CAND={}
 for f in sorted(glob.glob('raw/*.gpx')):
     fb=os.path.basename(f)
@@ -63,6 +64,11 @@ for f in sorted(glob.glob('raw/*.gpx')):
     if fb in MAN:
         mu=MAN[fb] if isinstance(MAN[fb],list) else ([MAN[fb]] if MAN[fb] else [])
         CAND[fb]=[(1000,mu[0],'asignado a mano')] if mu else [];continue
+    if fb in ENL:   # track por enlace de la app: manda sobre Drive, pero solo si pasa cerca de los puntos de esa ruta
+        x=next((x for x in D if x.get('u')==ENL[fb]),None);S=P[::max(1,len(P)//400)]
+        if x and x.get('p') and min(min(dist((PT[i]['lat'],PT[i]['lon']),q) for q in S) for i in x['p'])<2000:CAND[fb]=[(800,ENL[fb],'enlace de la app en My Maps')]
+        else:CAND[fb]=[];print(f"ENLACE LEJOS {fb}: el track no pasa a menos de 2 km de los puntos de su ruta (o la entrada no está en el mapa); no lo coloco")
+        continue
     cs=[]
     link=re.search(r'<link href="([^"]+)"',t);link=link.group(1) if link else ''
     wid=re.search(r'-(\d+)$',link)
