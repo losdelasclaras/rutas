@@ -84,12 +84,24 @@ function drawMT(){MTL.clearLayers();let falta=false;
   for(const t of MT){const p=ptsOf(t);if(!p){falta=true;continue}const ll=p.map(x=>[x[0],x[1]]);
     MTL.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.8,interactive:false}));
     MTL.addLayer(L.polyline(ll,{color:"#e8711a",weight:3.5,opacity:.95}).bindTooltip(esc(t.n),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);if(window.MISTRACKS)MISTRACKS.open(t.id)}));
-    // 8 nov 2026: los puntos de la grabación, encima de su track (se ven y se apagan con él)
-    for(const w of t.w||[]){const m=L.marker([w.lat,w.lon],{icon:L.divIcon({className:"mpk wpk",html:`<span>${EMO(w.ic)}</span>`,iconSize:[0,0]}),title:w.n,zIndexOffset:950,riseOnHover:true});
-      m.on("click",e=>{L.DomEvent.stopPropagation(e);if(window.MISTRACKS)MISTRACKS.punto(t.id,w.id)});
-      m.bindTooltip(esc(w.n),{permanent:true,direction:"right",offset:[12,0],className:"lbl mpl",interactive:false});MTL.addLayer(m)}}
+    // 10 nov 2026: los puntos de la grabación ya no van en la capa (con muchos tracks llenaban el mapa): solo salen al abrir ese track (foco)
+    }
   if(falta&&!MTLOAD&&!MTTRY&&window.loadTracks){MTLOAD=true;MTTRY=true;loadTracks().then(ok=>{MTLOAD=false;if(ok)drawMT();else MTTRY=false})}   // solo un intento: si aun así falta alguno, no se repite en bucle
   syncMP()}
+// 10 nov 2026: al abrir un track desde Mis cosas se ve SOLO ese track (con sus puntos), sin encender la capa «Mis tracks»;
+// se quita al cerrar su ficha
+const FOCO=L.layerGroup();let FOCOID=null;
+function foco(t){FOCO.clearLayers();FOCOID=null;if(!t){FOCO.remove();return}const p=ptsOf(t);if(!p||p.length<2){FOCO.remove();return}
+  const ll=p.map(x=>[x[0],x[1]]);FOCOID=t.id;
+  FOCO.addLayer(L.polyline(ll,{color:"#fff",weight:8,opacity:.9,interactive:false}));
+  FOCO.addLayer(L.polyline(ll,{color:"#e8711a",weight:5,opacity:1}).bindTooltip(esc(t.n),{sticky:true}).on("click",e=>{L.DomEvent.stopPropagation(e);if(window.MISTRACKS)MISTRACKS.open(t.id)}));
+  for(const w of t.w||[]){const m=L.marker([w.lat,w.lon],{icon:L.divIcon({className:"mpk wpk",html:`<span>${EMO(w.ic)}</span>`,iconSize:[0,0]}),title:w.n,zIndexOffset:950,riseOnHover:true});
+    m.on("click",e=>{L.DomEvent.stopPropagation(e);if(window.MISTRACKS)MISTRACKS.punto(t.id,w.id)});
+    m.bindTooltip(esc(w.n),{permanent:true,direction:"right",offset:[12,0],className:"lbl mpl",interactive:false});FOCO.addLayer(m)}
+  if(!map.hasLayer(FOCO))FOCO.addTo(map)}
+// fuera el foco cuando se cierra la ficha (o se abre otra cosa que no sea ese track ni uno de sus puntos)
+{const sh=document.getElementById("sheet");if(sh)new MutationObserver(()=>{if(FOCOID==null)return;
+  if(sh.hidden||(String(sh._mt)!==String(FOCOID)&&!sh.querySelector("[data-mtfol],[data-mtdat],.tdat,.tmas,[data-mtpt],[data-wpid]")))foco(null)}).observe(sh,{attributes:true,attributeFilter:["hidden"],childList:true})}
 function syncMP(){const a=LAY.mp&&MP.length&&!window.FOLONLY,b=LAY.mt&&MT.length&&!window.FOLONLY;
   if(a&&!map.hasLayer(MPL))MPL.addTo(map);else if(!a&&map.hasLayer(MPL))MPL.remove();
   if(b&&!map.hasLayer(MTL))MTL.addTo(map);else if(!b&&map.hasLayer(MTL))MTL.remove();
@@ -424,7 +436,7 @@ window.MISPUNTOS={get:()=>MP,accion:carpetaAccion,nueva:nuevaCarpeta,cruz:()=>cr
   ver:id=>{const p=MP.find(x=>x.id===id);if(!p)return;showView("mapa");if(!LAY.mp){LAY.mp=true;saveLay();syncMP()}map.flyTo([p.lat,p.lon],Math.max(map.getZoom(),15));openMP(id)},
   exportar:k=>k==="kml"?dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml"):dl("mis-puntos.gpx",toGPX(),"application/gpx+xml"),
   guarda:()=>{saveMP();drawMP();renderBox()},verCompartidos,carpetaTrack,guardarCarpeta,fotoGet,fotoPut,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
-  addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),ptsOf,kmW,fotoDel,desn,suben,sube:sg,demAlt,dl,
+  addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),foco,ptsOf,kmW,fotoDel,desn,suben,sube:sg,demAlt,dl,
   saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
   importText(txt,n,prev){try{imp(String(txt),n||"track.gpx",prev)}catch(e){toast("No he podido leer ese archivo (solo GPX o KML)")}},
   importar(){if(window.cuentaOk&&!cuentaOk(()=>toast("Ya has entrado. Pulsa otra vez «Cargar GPX/KML» para elegir el archivo"),"tracks"))return;fin.value="";fin.click()},

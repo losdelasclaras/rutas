@@ -99,7 +99,7 @@ function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t
   if(t.src==="co"&&window.COLX&&!vista){const x=COLX.todo().find(x=>x.rr!=null&&x.co.id===t.co&&x.co.r[x.rr][0]===t.n);if(x){if(typeof showView==="function")showView("mapa");COLX.abrirRuta(x.ci);return}}
   if(t.src!=="blog"&&t.pts&&t.pts.length>1&&!(t.dv>=2)&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
   if(typeof showView==="function")showView("mapa");
-  if(!LAY.mt){LAY.mt=true;saveLay();const b=document.querySelector('[data-lay="mt"]');if(b)b.setAttribute("aria-pressed",true);MPI.sync()}
+  if(MPI.foco)MPI.foco(t);   // 10 nov 2026: solo este track (con sus puntos); la capa «Mis tracks» se queda como esté
   const r=routeOf(t),d=datos(t),p=MPI.ptsOf(t)||(r&&r.gx&&r.gx.st?[r.gx.st]:null),ie=esc(t.id),off=window.OFFLINE&&OFFLINE.has(r?r.u:"mt:"+t.id);
   const cab=`${r?tipoHTML("ruta","Guardada · Los de las Claras"):tipoHTML("track",t.src==="grab"?"Tuyo · grabado":"Tuyo")}<div class="sheet-head"><h2>${esc(t.n)}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>`,volver=`<button class="btn ghost tvol" data-mtback="${ie}">← Volver</button>`;
   let h;
