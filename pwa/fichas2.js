@@ -57,6 +57,7 @@ sheet.addEventListener("click",e=>{if(e.target.closest(".fpt-rutas .rows>.row"))
 sheet.addEventListener("click",e=>{const f=e.target.closest(".fpt-rutas [data-fbl]");if(f){e.stopPropagation();fichaBlog(+f.dataset.fbl);return}
   const c=e.target.closest("[data-fblc]");if(c){e.stopPropagation();const ci=c.dataset.fblc;if(ci!==""&&window.COLX)COLX.open(+ci);else if(sheet._fblBack)pinta(sheet._fblBack)}});
 function pinta(o){
+  try{if(window.RESALTA&&o&&o.lat!=null)RESALTA.pon(o.lat,o.lon,o.n,o.cum)}catch(e){}
   // 9 nov 2026: la ficha de cumbre o lugar es solo para elegir ruta: foto, nombre, altitud, ✓ ★ y las rutas de todos los blogs
   // (cada una abre su ficha, que es donde están Seguir, Compartir, Cómo llegar…). Sin «Más opciones», sin Google Maps ni el tiempo.
   // Si un blog tiene la cumbre pero sin ruta con track, sale el enlace a su entrada.
