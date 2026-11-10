@@ -48,6 +48,10 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .frcum .frc .n em{font-style:normal;font-weight:600;color:var(--muted);white-space:nowrap}
 .frcum .frc .mk{display:flex;gap:8px;margin-top:8px}.frcum .frc .mk button{flex:1;min-height:44px;font-size:15px}
 .fru .frtrk[hidden]{display:none!important}
+.frwp .frwr{display:flex;align-items:center;gap:10px;width:100%;min-height:46px;padding:6px 8px;border:0;border-top:1px solid var(--edge,#e4e4e4);background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.frwp .frwr:first-of-type{border-top:0}.frwp .frwr>b{flex:none;width:26px;height:26px;border-radius:999px;background:#e8711a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
+.frwp .frwr span{display:flex;flex-direction:column;font-weight:600}.frwp .frwr small{font-weight:400;color:var(--muted);font-size:13px}
+.frwk{background:#e8711a;color:#fff;border:2px solid #fff;border-radius:999px;width:22px;height:22px;margin:-11px 0 0 -11px;display:flex;align-items:center;justify-content:center;font:700 12px/1 system-ui;box-shadow:0 1px 4px rgba(0,0,0,.35)}
 html.pc .fru .frseg{display:none!important}
 /* en el ordenador (sin Seguir): el segundo botón grande es «Guardar track», y sale de «Otras opciones» */
 .fracts .frgtpc{display:none!important}
@@ -84,7 +88,15 @@ function pinta(d){
   ${d.cumbres&&d.cumbres.length?`<div class="sec frcum"><h3>${d.cumbres.length>1?"Cumbres de la ruta":"Cumbre de la ruta"}</h3>${d.cumbres.map(c=>`<div class="frc"><div class="n"><span>${esc(c.n)}</span>${c.a?`<em>${Number(c.a).toLocaleString("es-ES")} m</em>`:""}</div>${c.k?mk2(c.k,["Subida","Quiero subir"]):""}</div>`).join("")}</div>`:""}
   <div class="frotr">${d.otras?`<div class="sec"><h3>Otras rutas por la zona</h3>${d.otras}</div>`:""}</div>
   </div>`}
-const perfilHTML=(g,suyo)=>g&&g.pf&&g.pf.length?`<div class="sec"><h3>Perfil</h3>${profSVG(g)}<p class="note" style="margin:4px 0 8px">Según ${suyo?"su":"el"} track: ${fmtKm(g.km)} · +${Number(g.up).toLocaleString("es-ES")} m de subida${g.mx?" · punto más alto "+Number(g.mx).toLocaleString("es-ES")+" m":""}.</p></div>`:"";
+// 10 nov 2026: puntos del GPX de la ruta (g.w = [nombre, lat, lon, km, altura]): numerados en el perfil y en una lista; en el mapa mientras se mira la ficha
+function conPuntos(g){let sv=profSVG(g);const w=g.w||[];if(!w.length)return sv;
+  const W=600,H=190,pl=70,pb=34,pt=12,pr=8,pf=g.pf,X=pf[pf.length-1][0]||1,lo=Math.floor((g.mn-30)/50)*50,hi=Math.ceil((g.mx+30)/50)*50;
+  const x=d=>pl+(W-pl-pr)*Math.min(d,X)/X,y=e=>pt+(H-pt-pb)*(1-(e-lo)/(hi-lo));
+  const alt=k=>{let b=pf[0];for(const q of pf)if(Math.abs(q[0]-k)<Math.abs(b[0]-k))b=q;return b[1]};
+  const c=w.map((q,i)=>{const cx=x(q[3]),cy=y(alt(q[3]));return`<g><circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="9" fill="#e8711a" stroke="#fff" stroke-width="2"/><text x="${cx.toFixed(1)}" y="${(cy+4).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${i+1}</text></g>`}).join("");
+  const k=sv.lastIndexOf("</svg>");return sv.slice(0,k)+c+sv.slice(k)}
+const puntosG=(g,id)=>g&&g.w&&g.w.length?`<div class="sec frwp" data-frw="${id}"><h3>Puntos del track (${g.w.length})</h3>${g.w.map((q,i)=>`<button class="frwr" data-frwi="${i}"><b>${i+1}</b><span>${esc(q[0])}<small>km ${String(q[3]).replace(".",",")}${q[4]!=null?" · "+Number(q[4]).toLocaleString("es-ES")+" m":""}</small></span></button>`).join("")}</div>`:"";
+const perfilHTML=(g,suyo)=>g&&g.pf&&g.pf.length?`<div class="sec"><h3>Perfil</h3>${conPuntos(g)}<p class="note" style="margin:4px 0 8px">Según ${suyo?"su":"el"} track: ${fmtKm(g.km)} · +${Number(g.up).toLocaleString("es-ES")} m de subida${g.mx?" · punto más alto "+Number(g.mx).toLocaleString("es-ES")+" m":""}.</p></div>`:"";
 // otras rutas por la zona: del grupo y de los colaboradores, a menos de 25 km de la salida
 function otras(lat,lon,sinR,sinCo){const dk=(a,b,c,e)=>Math.hypot((a-c)*111.2,(b-e)*111.2*Math.cos(a*Math.PI/180));
   const ng=(typeof nearestRoutes==="function"?sortNear(nearestRoutes(lat,lon,3,sinR==null?-1:sinR)):[]).filter(x=>x.d<25);
@@ -105,7 +117,7 @@ routeBody=function(r){
     mk:window.rMk?rMk(r):"",de:r.de?"+"+r.de.toLocaleString("es-ES")+" m":"",km:r.km?fmtKm(r.km):"",dif:r.dl?DIFN[r.dl]:(r.dif||""),
     blog:r.u||"",seguir:r.gx?`data-follow="${r.id}"`:"",trk:!!r.gx,
     gRuta:r.u?`data-frgr="${r.id}"`:"",gRutaOn:!!(window.MTRUTA&&MTRUTA.es(r)),gTrack:r.gx?`data-frgt="${r.id}"`:"",share:r.u?`data-share="${r.id}"`:"",
-    llegar:r.gx&&r.gx.st?r.gx.st:null,perfil:r.gx?perfilHTML(r.gx):"",
+    llegar:r.gx&&r.gx.st?r.gx.st:null,perfil:r.gx?perfilHTML(r.gx)+puntosG(r.gx,r.id):"",
     cumbres:pts.filter(p=>p.a&&!p.x).sort((a,b)=>b.a-a.a).map(p=>({n:p.c,a:p.a,k:mkKey(p)})),
     otras:(otras.yo=routeTitle(r),otras(st[0],st[1],r.id,null))})};
 
@@ -124,6 +136,15 @@ function menu(f,abre){
   if(abre){if(!f)return;menu(null,false);const b=f.querySelector(".frmas"),v=f.querySelector(".frvel"),t=f.querySelector("[data-frmas]");if(!b||!v)return;
     v.hidden=false;b.hidden=false;if(t)t.setAttribute("aria-expanded",true);MENU={f,b,v,t};return}
   if(!MENU)return;const{b,v,t}=MENU;MENU=null;b.hidden=true;v.hidden=true;if(t)t.setAttribute("aria-expanded",false)}
+const WPL=L.layerGroup();let WPID=null;
+function wpMapa(){const s=document.getElementById("sheet"),b=s&&!s.hidden&&s.querySelector(".fru [data-frw]"),id=b?b.dataset.frw:null;
+  if(id===WPID)return;WPID=id;WPL.clearLayers();if(id==null){WPL.remove();return}
+  const g=(R[+id]||{}).gx;if(!g||!g.w)return;
+  g.w.forEach((q,i)=>WPL.addLayer(L.marker([q[1],q[2]],{zIndexOffset:900,icon:L.divIcon({className:"",html:`<div class="frwk">${i+1}</div>`,iconSize:[0,0]})}).bindTooltip(esc(q[0]),{permanent:true,direction:"right",offset:[12,0],className:"lbl mpl",interactive:false})));
+  if(!map.hasLayer(WPL))WPL.addTo(map)}
+{const s=document.getElementById("sheet");if(s)new MutationObserver(wpMapa).observe(s,{attributes:true,attributeFilter:["hidden"],childList:true})}
+document.addEventListener("click",e=>{const b=e.target.closest(".frwp [data-frwi]");if(!b)return;const id=b.closest("[data-frw]").dataset.frw,q=((R[+id]||{}).gx||{}).w[+b.dataset.frwi];
+  if(q){map.setView([q[1],q[2]],Math.max(map.getZoom(),15));const s=document.getElementById("sheet");if(s&&s.classList.contains("full"))s.classList.remove("full")}});
 /* ---- botones ---- */
 document.addEventListener("click",e=>{
   const m=e.target.closest("[data-frmas]");if(m){menu(m.closest(".fru"),true);return}
@@ -140,6 +161,7 @@ document.addEventListener("click",e=>{
     const go=()=>(window.loadTracks?loadTracks():Promise.resolve(true)).then(()=>{const ln=r.gx&&r.gx.ln;if(!ln||ln.length<2){toast("No tengo el track de esta ruta");return}
       const n=routeTitle(r);if(MPI.tracks().some(t=>t.n===n&&t.src==="gpx")){toast("Ese track ya lo tenías en Mis cosas");return}
       const o={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),n,km:r.gx.km,up:r.gx.up,dn:r.gx.dn,pts:ln.map(q=>q.slice()),src:"gpx",f:new Date().toISOString()};
+      if(r.gx.w&&r.gx.w.length)o.w=r.gx.w.map((q,i)=>({id:"w"+i,n:q[0],lat:q[1],lon:q[2],a:q[4],ic:"📍"}));
       MPI.saveTracks([...MPI.tracks(),o]);toast("Track guardado en Mis cosas")});
     if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go();return}
   // ☆ Guardar ruta (colaborador): en Mis cosas como RUTA, con su recorrido dentro

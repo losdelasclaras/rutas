@@ -128,6 +128,23 @@ for f,t,P,cut in FILES:
     line=[[round(p[0],5),round(p[1],5)]+([round(p[2])] if p[2] is not None else []) for p in dp(P,6)]
     res[r['u']]={'km':round(cum[-1]/1000,1),'up':round(up/10)*10,'dn':round(dn/10)*10,'mx':round(max(E)) if has else None,'mn':round(min(E)) if has else None,
       'st':[round(P[0][0],5),round(P[0][1],5)],'pf':prof,'ln':line,'nm':(r.get('ti') or r.get('t'))}
+    # 10 nov 2026: los puntos (wpt) del GPX van con su track: nombre, sitio, km y altura. Fuera los que estén a más de 300 m
+    # del recorrido, los que ya son un punto vuestro de My Maps de esta ruta (a menos de 100 m), los de nombre solo numérico
+    # y los repetidos (mismo nombre a menos de 50 m). Como mucho 40.
+    W=[]
+    for m in re.finditer(r'<wpt\b([^>]*)>(.*?)</wpt>',t,re.S):
+        a,b=m.group(1),m.group(2);la=re.search(r'lat\s*=\s*["\']([\d.+-]+)',a);lo=re.search(r'lon\s*=\s*["\']([\d.+-]+)',a)
+        nm=re.search(r'<name>\s*(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?\s*</name>',b,re.S);nm=re.sub(r'\s+',' ',nm.group(1)).strip() if nm else ''
+        if not(la and lo) or not nm or re.fullmatch(r'[\d\s.-]+',nm):continue
+        q=(float(la.group(1)),float(lo.group(1)))
+        i=min(range(len(P)),key=lambda j:dist(P[j],q))
+        if dist(P[i],q)>300:continue
+        if any(dist((PT[k]['lat'],PT[k]['lon']),q)<100 for k in r.get('p',[])):continue
+        if any(w[0].lower()==nm.lower() and dist((w[1],w[2]),q)<50 for w in W):continue
+        e=re.search(r'<ele>\s*([\d.+-]+)\s*</ele>',b);ev=float(e.group(1)) if e else (P[i][2] if P[i][2] is not None else None)
+        W.append([nm[:60],round(q[0],5),round(q[1],5),round(cum[i]/1000,2),round(ev) if ev is not None else None])
+    W.sort(key=lambda w:w[3])
+    if W:res[r['u']]['w']=W[:40]
     log.append(f"{os.path.basename(f)} -> {r.get('ti') or r.get('t')} | {how} | {res[r['u']]['km']} km +{res[r['u']]['up']} m (blog {r.get('km')} km +{r.get('de')}) | coche {cut} pts | {len(line)} pts")
 for fb,v in MAN.items():  # un mismo track para varias entradas (p. ej. reportaje partido en dos)
     if isinstance(v,list) and v and v[0] in res:
