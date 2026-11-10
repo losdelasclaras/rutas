@@ -35,7 +35,7 @@ function datosFicha(c){
 function pon(c){const d=datosFicha(c);if(!d)return;c._pt=d;
   // 🔎 más rutas por aquí en Wikiloc: su mapa centrado en este punto (unos 3 km alrededor). No se saca nada de Wikiloc: solo se enlaza
   const wk=wkUrl(d.lat,d.lon);
-  const b=`<button class="btn ghost" data-ptshare>📤 Compartir</button><a class="btn ghost" href="${wk}" target="_blank" rel="noopener">🔎 Más rutas por aquí (Wikiloc)</a>`;
+  const b=`<button class="btn ghost" data-ptshare>📤 Compartir</button>`;
   const acts=c.querySelector(".actions");if(acts)acts.insertAdjacentHTML("beforeend",b);
   else c.querySelector(".mkblock").insertAdjacentHTML("afterend",`<div class="actions" style="margin-top:8px">${b}</div>`)}
 for(const id of ["sheet","ov"]){const el=document.getElementById(id);if(!el)continue;
@@ -117,7 +117,7 @@ function ordena(c){if(!c||c.hidden)return;
     if(pr.matches("[data-follow]")){const r=R[+pr.dataset.follow];if(r)ll=[r.lat,r.lon]}
     else if(pr.matches("[data-cofol]")&&c.id==="sheet"&&sheet._cor){ll=sheet._cor.c.r[sheet._cor.i][8]}
     else if(pr.matches("[data-mtfol]")&&MPI){const t=MPI.tracks().find(x=>String(x.id)===pr.dataset.mtfol),q=t&&MPI.ptsOf(t);if(q&&q.length)ll=q[0]}
-    if(ll)pr.insertAdjacentHTML("afterend",`<a class="btn ghost" data-wkz href="${wkUrl(ll[0],ll[1])}" target="_blank" rel="noopener">🔎 Más rutas por aquí (Wikiloc)</a>`)}
+    /* 10 nov 2026: quitado «Más rutas por aquí (Wikiloc)» */}
   let box=c.querySelector(".acts2");
   if(!box){const anc=pr||[...c.querySelectorAll(".actions,.topacts")].find(x=>!x.closest(FUERA));if(!anc)return;
     const ta=anc.closest(".topacts")||(anc.matches(".actions,.topacts")?anc:anc.parentNode);
