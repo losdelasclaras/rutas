@@ -115,6 +115,15 @@ def blog():
         c = e.findtext('a:content', '', ns) or ''
         F = ficha(c)
         pub = (e.findtext('a:published', '', ns) or '')[:10]; upd = (e.findtext('a:updated', '', ns) or '')[:10]
+        # 10 nov 2026: si a una entrada le falta distancia o dificultad, se apunta en el informe qué etiquetas trae su cuadro
+        # de datos (para enseñar al robot a leerlas) y, si ya estaba en la lista sin esos datos, se completan cuando aparezcan
+        if (not F.get('km') or not F.get('dif')) and F.get('des'):
+            T = txt(c); i = T.lower().find('desnivel')
+            log(f'🔎 «{(e.findtext("a:title", "", ns) or "").strip()}»: sin {"distancia" if not F.get("km") else ""}{" ni " if not F.get("km") and not F.get("dif") else ""}{"dificultad" if not F.get("dif") else ""}. Texto del cuadro: «{T[max(0, i - 250):i + 350]}»')
+        if k in idx:
+            q = B[idx[k]]
+            for a in ('km', 'dif'):
+                if F.get(a) and not q.get(a): q[a] = F[a]; log(f'✏️ «{q.get("t")}»: completado {a} = {F[a]}')
         if k not in idx:
             n = len(B)
             rec = dict(u=k, t=(e.findtext('a:title', '', ns) or '').strip(), d=pub, l=[x.get('term') for x in e.findall('a:category', ns)],
