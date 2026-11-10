@@ -3346,7 +3346,6 @@ function pinta(){
   if(esAdm())$("sal-yo").innerHTML="";
   else if(MIO&&MIO.estado==="ok")$("sal-yo").innerHTML=`<div class="salbox"><h2>🏔 ${esc(MIO.n)}</h2><p class="note" style="margin:0 0 8px">Tu club está dado de alta: lo que publiques sale al momento.</p><div class="salbtns"><button class="btn ghost" data-scedit="${MIO.id}">✏️ Datos del club</button><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>${fijo(MIO)}`;
   else if(MIO&&MIO.estado==="pend")$("sal-yo").innerHTML=`<div class="salbox"><h2>⏳ Solicitud enviada</h2><p class="note" style="margin:0">«${esc(MIO.n)}» está pendiente de que Los de las Claras lo apruebe. Cuando esté, aquí te saldrá «Nueva salida».</p></div>`;
-  else if(altaOk())$("sal-yo").innerHTML=`<div class="salbtns" style="grid-template-columns:1fr;margin:0 0 12px"><button class="btn primary" data-sclub>🏔 Dar de alta nuestro club</button></div>`;
   else $("sal-yo").innerHTML="";
   $("sal-pie").innerHTML=esAdm()||MIO?"":`<p class="salpie">¿Eres de un club o grupo de montaña y queréis anunciar aquí vuestras salidas? Escribe a <a href="mailto:${CORREO}?subject=${encodeURIComponent("Salidas de nuestro club en la app")}">${CORREO}</a></p>`;
   // 10 nov 2026 · semanas (por su fin de semana), «Sale desde» y dificultad; lista compacta agrupada por semanas
@@ -3370,9 +3369,12 @@ let AVC=null;
 /* 10 nov 2026 · el alta de clubes NO es pública: solo puede pedirla quien abre el enlace personal que manda Jonathan
    (https://losdelasclaras.github.io/rutas/#altaclub, queda recordado en ese móvil). El resto ve el correo de contacto. */
 const CORREO="losdelasclaras@gmail.com",ALTA="https://losdelasclaras.github.io/rutas/#altaclub";
-const altaOk=()=>{try{return localStorage.getItem("ldc-altaclub")==="1"}catch(e){return false}};
-function deAlta(){if((location.hash||"")!=="#altaclub")return;try{localStorage.setItem("ldc-altaclub","1");localStorage.setItem("ldc-salinv","1")}catch(e){}
-  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}visTab();showView("salidas");carga(true)}
+// (10 nov tarde) ya no queda un botón fijo: el enlace abre el formulario de alta en ese momento y nada más
+let ALTAV=false;const altaOk=()=>ALTAV;try{localStorage.removeItem("ldc-altaclub")}catch(e){}
+function deAlta(){if((location.hash||"")!=="#altaclub")return;ALTAV=true;try{localStorage.setItem("ldc-salinv","1")}catch(e){}
+  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}visTab();showView("salidas");
+  carga(true).then(()=>{if(esAdm()||MIO)return;   // el club abre el enlace: va directo a entrar con Google y al formulario
+    if(window.cuentaOk&&!cuentaOk(()=>{showView("salidas");carga(true).then(()=>{if(!MIO)formClub(false)})},"club"))return;formClub(false)})}
 addEventListener("hashchange",deAlta);setTimeout(deAlta,0);   // aviso «este club no tiene salidas próximas» (al entrar con su enlace fijo), se queda 2 minutos
 sec.addEventListener("change",e=>{const el=e.target;if(el.matches("[data-ssd]")){FSD=el.value;pinta()}else if(el.matches("[data-sdif]")){FDIF=el.value;pinta()}});
 /* --- 🔗 enlace fijo de un club (10 nov 2026): …/rutas/#club=<id> abre siempre su próxima salida publicada --- */
@@ -5416,5 +5418,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="f37a7be468";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="3c2feabe5c";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
