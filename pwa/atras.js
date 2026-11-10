@@ -54,20 +54,50 @@ function barra(){if(BAR)BAR.remove();clearTimeout(btm);BAR=document.createElemen
   btm=setTimeout(()=>{if(BAR){BAR.remove();BAR=null}},5000)}   // 5 s (9 nov: 4 s era poco; 10 nov: 8 s, mucho)
 })();
 
-/* 10 nov 2026: cerrar una ficha deslizándola hacia abajo (además de la × y del «atrás» de cada móvil).
-   Va fuera del bloque de arriba: vale también en el navegador del móvil, no solo en la app.
-   Solo cuando la ficha está arriba del todo (si no, el dedo sirve para subir por ella); la ficha baja con el dedo
-   y, si se suelta lejos (más de 90 px o rápido), se cierra; si no, vuelve a su sitio. */
-{const sh=document.getElementById("sheet");if(sh){let y0=null,x0=0,t0=0,dy=0,tira=false;
+/* 10 nov 2026: fichas que se mueven con el dedo, como en Instagram o Google Maps (idea de Dani, Rutinas Varias):
+   · la rayita de arriba es más visible y se queda fija arriba aunque bajes leyendo; arrastrándola, la ficha baja en cualquier momento;
+     desde el resto de la ficha, solo cuando está arriba del todo (si no, el dedo sirve para subir por ella);
+   · si la sueltas a media bajada, se queda MINIMIZADA: una barra abajo con su título y se ve el mapa entero (con su track);
+     tocando la barra o subiéndola, vuelve; bajándola otra vez o con su ×, se cierra;
+   · si la bajas casi del todo (o rápido desde minimizada), se cierra. La × de arriba y el «atrás» del móvil siguen igual.
+   Va fuera del bloque de arriba: vale también en el navegador del móvil, no solo en la app. */
+{const sh=document.getElementById("sheet");if(sh){
+  document.head.insertAdjacentHTML("beforeend",`<style>
+  #sheet>.grab{position:sticky;top:-6px;z-index:5;width:auto;height:26px;margin:-6px 0 0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:grab;touch-action:none}
+  #sheet>.grab::before{content:"";width:56px;height:6px;border-radius:9px;background:#9aa39c;box-shadow:0 0 0 2px rgba(255,255,255,.65)}
+  @media (prefers-color-scheme:dark){#sheet>.grab::before{background:#d6dbd5;box-shadow:0 0 0 2px rgba(0,0,0,.45)}}
+  #sheet.fmin{transform:translateY(110%)!important;pointer-events:none}
+  .fminbar{position:absolute;left:8px;right:8px;bottom:8px;z-index:30;display:flex;align-items:center;gap:8px;min-height:58px;padding:4px 6px 4px 14px;border-radius:16px;background:var(--card);color:var(--ink);border:1px solid var(--edge);box-shadow:0 -4px 18px rgba(0,0,0,.25);touch-action:none}
+  .fminbar .t{flex:1;min-width:0;font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+  .fminbar .t small{display:block;font-weight:600;font-size:12.5px;color:var(--muted)}
+  .fminbar button{flex:none;width:46px;height:46px;border-radius:12px;border:0;background:transparent;color:var(--ink);font-size:22px;cursor:pointer}
+  .fminbar .fx{background:var(--mark,#c3262e);color:#fff;font-size:24px}
+  </style>`);
+  let BAR=null;
+  const quitaBar=()=>{if(BAR){BAR.remove();BAR=null}};
+  const cierra=()=>{if(sh.classList.contains("fmin"))sh.classList.remove("fmin");quitaBar();const x=sh.querySelector(".sheet-head [data-close],[data-close]");if(x)x.click();else sh.hidden=true;sh.style.transition="none";sh.style.transform=""};
+  const restaura=()=>{quitaBar();sh.style.transition="transform .22s ease";if(sh.classList.contains("fmin"))sh.classList.remove("fmin");sh.style.transform="";setTimeout(()=>{sh.style.transition=""},240)};
+  function minimiza(){sh.style.transition="transform .2s ease";sh.style.transform="";sh.classList.add("fmin");quitaBar();
+    const h=(sh.querySelector("h2")||{}).textContent||"Ficha";BAR=document.createElement("div");BAR.className="fminbar";
+    BAR.innerHTML=`<button aria-label="Volver a abrir la ficha" data-fmup>▲</button><div class="t" data-fmup>${h.replace(/</g,"&lt;")}<small>Toca o desliza hacia arriba para verla</small></div><button class="fx" aria-label="Cerrar" data-fmx>×</button>`;
+    sh.parentNode.appendChild(BAR);if(window.DIAG)DIAG.apunta("ficha","minimizada")
+    // la barra: tocar = abrir; subirla = abrir; bajarla = cerrar
+    let by=null;BAR.addEventListener("touchstart",e=>{by=e.touches[0].clientY},{passive:true});
+    BAR.addEventListener("touchend",e=>{if(by==null)return;const d=e.changedTouches[0].clientY-by;by=null;if(d<-25)restaura();else if(d>25)cierra()},{passive:true});
+    BAR.addEventListener("click",e=>{if(e.target.closest("[data-fmx]")){cierra();return}if(e.target.closest("[data-fmup]"))restaura()})}
+  // si la ficha cambia o se cierra estando minimizada, fuera la barra
+  new MutationObserver(()=>{if(sh.hidden){if(sh.classList.contains("fmin"))sh.classList.remove("fmin");quitaBar()}else if(BAR&&!sh.classList.contains("fmin"))quitaBar()}).observe(sh,{attributes:true,attributeFilter:["hidden","class"]});   // ojo: classList.remove sin comprobar vuelve a avisar al observador (bucle)
+  new MutationObserver(()=>{if(sh.classList.contains("fmin")){sh.classList.remove("fmin");quitaBar()}}).observe(sh,{childList:true});
+  let y0=null,x0=0,t0=0,dy=0,tira=false,asa=false;
   const fuera=e=>e.target.closest("input,textarea,select,.frmas,.frvel,.leaflet-container,svg,.perf,.pf,[data-noswipe]");
-  sh.addEventListener("touchstart",e=>{if(e.touches.length!==1||sh.scrollTop>2||fuera(e)){y0=null;return}
+  sh.addEventListener("touchstart",e=>{if(e.touches.length!==1){y0=null;return}asa=!!e.target.closest("#sheet>.grab");
+    if(!asa&&(sh.scrollTop>2||fuera(e))){y0=null;return}
     y0=e.touches[0].clientY;x0=e.touches[0].clientX;t0=Date.now();dy=0;tira=false},{passive:true});
   sh.addEventListener("touchmove",e=>{if(y0==null)return;const t=e.touches[0],d=t.clientY-y0,dx=Math.abs(t.clientX-x0);
-    if(!tira){if(d<8)return;if(dx>d||sh.scrollTop>2){y0=null;return}tira=true;sh.style.transition="none"}
+    if(!tira){if(d<8)return;if(dx>d||(!asa&&sh.scrollTop>2)){y0=null;return}tira=true;sh.style.transition="none"}
     dy=Math.max(0,d);sh.style.transform=`translateY(${dy}px)`;if(e.cancelable)e.preventDefault()},{passive:false});
-  const suelta=()=>{if(y0==null)return;y0=null;if(!tira)return;tira=false;const v=dy/Math.max(1,Date.now()-t0);
-    sh.style.transition="transform .2s ease";
-    if(dy>90||(dy>30&&v>.6)){sh.style.transform="translateY(100%)";setTimeout(()=>{const x=sh.querySelector(".sheet-head [data-close],[data-close]");if(x)x.click();else sh.hidden=true;
-        sh.style.transition="none";sh.style.transform="";if(window.DIAG)DIAG.apunta("ficha","cerrada deslizando hacia abajo")},180)}
-    else{sh.style.transform="";setTimeout(()=>{sh.style.transition=""},220)}};
+  const suelta=()=>{if(y0==null)return;y0=null;if(!tira)return;tira=false;const v=dy/Math.max(1,Date.now()-t0),H=sh.getBoundingClientRect().height+dy;
+    if(dy>H*.7||(dy>H*.4&&v>1.2)){sh.style.transition="transform .18s ease";sh.style.transform="translateY(100%)";setTimeout(cierra,170)}
+    else if(dy>90||(dy>30&&v>.6))minimiza();
+    else{sh.style.transition="transform .2s ease";sh.style.transform="";setTimeout(()=>{sh.style.transition=""},220)}};
   sh.addEventListener("touchend",suelta,{passive:true});sh.addEventListener("touchcancel",suelta,{passive:true})}}
