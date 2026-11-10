@@ -110,6 +110,11 @@ function junta(o,ms){const by={},alias=new Set(),keys=[];let foto=o.rs&&o.rs.fin
   if(o.cum&&COLX.pasan){const ks=[];if(o.gi!=null)ks.push("g"+o.gi);for(const{c,p}of ms){const j=c.p.indexOf(p);if(j>=0)ks.push(c.id+":"+j)}
     for(const k of ks)for(const{c,i}of COLX.pasan(k)){const b=by[c.id]||(by[c.id]={n:c.n,c:c.c,cnt:0,y:0,rows:[],its:[],vis:new Set()});if(b.vis.has(i))continue;b.vis.add(i);
       const it=COLX.rutaItem(c,i);if(!it)continue;b.rows.push(COLX.rrow(it));b.its.push({c,i});b.cnt++;b.y=Math.max(b.y,it.y||0);if(!foto&&c.r&&c.r[i]&&c.r[i][9])foto=c.r[i][9]}}
+  // y las rutas del grupo (con track) que pasan por ella, aunque la cumbre no esté en su punto de My Maps
+  if(o.cum&&typeof DATA!=="undefined"&&DATA.pz){const ks=[];if(o.gi!=null)ks.push("g"+o.gi);for(const{c,p}of ms){const j=c.p.indexOf(p);if(j>=0)ks.push(c.id+":"+j)}
+    for(const k of ks)for(const ri of (DATA.pz[k]||[])){const r=R[ri];if(!r||!r.u)continue;
+      let g=o.src.find(x=>x.grp);if(!g){g={n:GRP.n,c:GRP.c,grp:true,cnt:0,y:0,rows:[],its:[]};o.src.unshift(g)}
+      if(g.its.some(x=>x.g===r))continue;g.rows.push(rowHTML(r));g.its.push({g:r});g.cnt++;g.y=Math.max(g.y||0,r.y||0);if(!foto&&r.f!=null)foto=`fotos/${r.f}.jpg`}}
   o.src=o.src.concat(Object.values(by));o.alias=[...alias];o.keys=keys.filter(k=>k!==o.main);o.foto=foto;
   const g=o.rs||[];o.solo=g.length===1&&o.src.every(x=>x.grp||!x.cnt)?g[0]:null;
   return o}

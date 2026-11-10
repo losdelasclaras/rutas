@@ -75,26 +75,44 @@ for _old in _gl.glob(O+'colab-*.json'):os.remove(_old)
 # 10 nov 2026: rutas de los colaboradores que pasan por cada cumbre (a menos de 250 m de su track), aunque ese colaborador
 # no tenga la cumbre en su mapa (p. ej. Rutinas Varias sube al Tiatordos pero no tiene ese punto). Claves: "g<índice>" (cumbres del grupo)
 # y "<colaborador>:<índice>" (cumbres de los colaboradores). Cada colaborador lleva 'pz': {clave: [sus rutas]}.
-import math as _m
-def _pasan(lim=0.25):
-    cums=[('g%d'%i,q['lat'],q['lon']) for i,q in enumerate(json.load(open(A+'final_data.json'))['pts']) if q.get('t')=='cumbre']
+import math as _m,unicodedata as _ud
+_GPZ={}
+def _pasan(lim=0.25,lim_n=0.5):
+    # 250 m en general; hasta 500 m si el nombre de la ruta nombra esa cumbre (p. ej. «Miravalles desde Puerto de Ancares»: el track
+    # simplificado o el punto de la cumbre pueden quedar algo desviados)
+    _fd=json.load(open(A+'final_data.json'))
+    cums=[('g%d'%i,q['lat'],q['lon'],q['c']) for i,q in enumerate(_fd['pts']) if q.get('t')=='cumbre']
     for _c in _CO:
         for i,q in enumerate(_c['p']):
-            if len(q)>7 and (q[7]=='CUMBRES' or (len(q)>6 and q[6]=='1634')):cums.append(('%s:%d'%(_c['id'],i),q[1],q[2]))
+            if len(q)>7 and (q[7]=='CUMBRES' or (len(q)>6 and q[6]=='1634')):cums.append(('%s:%d'%(_c['id'],i),q[1],q[2],q[0]))
+    nk=lambda x:re.sub(r'[^a-z0-9 ]',' ',_ud.normalize('NFD',x or '').encode('ascii','ignore').decode().lower())
+    GEN=set('pico pena picu cueto torre alto sierra de del la el los las monte cima techo collado mayor pequena grande'.split())
+    cl={k:[w for w in nk(n).split() if len(w)>3 and w not in GEN] for k,_,_,n in cums}
+    def nombra(rn,k):
+        ks=cl[k];rn=nk(rn.split('|')[-1])   # «Zona | Nombre»: solo el nombre
+        return bool(ks) and all(re.search(r'\b'+w+r'\b',rn) for w in ks)
     def dseg(la,lo,a,b):
         k=_m.cos(_m.radians(la));ax,ay=(a[1]-lo)*111.2*k,(a[0]-la)*111.2;bx,by=(b[1]-lo)*111.2*k,(b[0]-la)*111.2
         dx,dy=bx-ax,by-ay;L2=dx*dx+dy*dy;t=0 if L2==0 else max(0,min(1,-(ax*dx+ay*dy)/L2));return _m.hypot(ax+t*dx,ay+t*dy)
+    def junto(t,rn):
+        if not isinstance(t,list) or len(t)<2 or not isinstance(t[0],(list,tuple)):return []
+        la0=min(x[0] for x in t)-.005;la1=max(x[0] for x in t)+.005;lo0=min(x[1] for x in t)-.007;lo1=max(x[1] for x in t)+.007;out=[]
+        for k,la,lo,_ in cums:
+            if not(la0<=la<=la1 and lo0<=lo<=lo1):continue
+            d=min(dseg(la,lo,t[j],t[j+1]) for j in range(len(t)-1))
+            if d<=lim or (d<=lim_n and nombra(rn,k)):out.append(k)
+        return out
     tot=0
     for _c in _CO:
         pz={}
         for ri,t in enumerate(_c['_rl']):
-            if not isinstance(t,list) or len(t)<2 or not isinstance(t[0],(list,tuple)):continue
-            la0=min(x[0] for x in t)-.003;la1=max(x[0] for x in t)+.003;lo0=min(x[1] for x in t)-.004;lo1=max(x[1] for x in t)+.004
-            for k,la,lo in cums:
-                if not(la0<=la<=la1 and lo0<=lo<=lo1):continue
-                if min(dseg(la,lo,t[j],t[j+1]) for j in range(len(t)-1))<=lim:pz.setdefault(k,[]).append(ri);tot+=1
+            for k in junto(t,_c['r'][ri][0]):pz.setdefault(k,[]).append(ri);tot+=1
         _c['pz']=pz
-    print('rutas de colaboradores que pasan por cumbres:',tot)
+    # 10 nov 2026: y las rutas del grupo con track (las del blog): salen en la cumbre aunque no tengan el punto en My Maps
+    for ri,r in enumerate(_fd['routes']):
+        g=r.get('gx') or {}
+        for k in junto(g.get('ln'),r.get('ti') or r.get('t') or ''):_GPZ.setdefault(k,[]).append(ri);tot+=1
+    print('rutas que pasan por cumbres:',tot)
 if _CO:_pasan()
 if _CO:
     # los tracks de sus rutas, en otro archivo que solo se pide al ver sus tracks o abrir una de sus rutas
@@ -268,6 +286,7 @@ for _old in _g.glob(O+'tracks-*.json'):os.remove(_old)
 open(O+f'tracks-{_th}.json','w').write(_tj)
 t=t.replace('__TRACKS__',f'tracks-{_th}.json')
 PL=[[p['n'].split(' / ')[0],p['t'],p['lat'],p['lon']] for p in json.load(open(A+'places.json'))]; o={'c':0,'t':1,'v':2}; PL.sort(key=lambda p:o[p[1]])
+d['pz']=_GPZ   # rutas del grupo que pasan por cada cumbre (ver _pasan)
 t=t.replace('__DATA__',json.dumps(d,ensure_ascii=False,separators=(',',':'))).replace('__GEO__',open(A+'geo.json').read()).replace('__TOWNS__',open(A+'towns.json').read()).replace('__PLACES__',json.dumps(PL,ensure_ascii=False,separators=(',',':')))
 # aviso de versión nueva: QUITADO a petición suya (26 oct). version.txt se deja vacío para que las copias antiguas de la app dejen de avisar
 open(O+'version.txt','w').write("")
