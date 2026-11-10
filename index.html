@@ -3315,6 +3315,7 @@ function pinta(){
   if(esAdm()){$("sal-adm").innerHTML=`<div class="salbox adm"><h2>🛡 Clubes (solo lo ves tú)</h2>
     ${PEND.length?`<p style="margin:0 0 4px"><b>Solicitudes pendientes</b></p>`+PEND.map(c=>`<div class="salrow"><span><b>${esc(c.n)}</b><br><small>${esc(c.web||"")} ${esc(c.contacto||"")}${c.msg?"<br>"+esc(c.msg):""}<br>${esc(c.email||"")}</small></span><button class="btn primary" data-scok="${c.id}">✓ Aprobar</button><button class="btn ghost" data-scno="${c.id}">✕</button></div>`).join(""):`<p class="note" style="margin:0 0 6px">No hay solicitudes pendientes.</p>`}
     <p style="margin:10px 0 4px"><b>Clubes aprobados (${CLUBS.length})</b></p>${CLUBS.map(c=>`<div class="salrow"><span>${esc(c.n)}${c.prueba?" <small>(prueba)</small>":""}</span><button class="btn ghost" data-sfijo="${c.id}" title="Enlace fijo">🔗</button><button class="btn ghost" data-scedit="${c.id}">✏️</button><button class="btn ghost" data-scdel="${c.id}">Quitar</button></div>`).join("")||`<p class="note">Ninguno todavía.</p>`}
+    <p style="margin:10px 0 4px"><b>Enlace para dar de alta un club</b></p><p class="note" style="margin:0 0 6px">Mándaselo solo al club que te lo pida. Al abrirlo le sale «Dar de alta nuestro club»; luego lo apruebas aquí.</p><div class="salbtns" style="grid-template-columns:1fr;margin-top:0"><button class="btn ghost" data-scalta>📋 Copiar el enlace de alta</button></div>
     <div class="salbtns"><button class="btn ghost" data-scnew>＋ Crear un club</button><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>`}
   else $("sal-adm").innerHTML="";
   // tú: club aprobado, pendiente, o pedir
@@ -3322,17 +3323,25 @@ function pinta(){
   if(esAdm())$("sal-yo").innerHTML="";
   else if(MIO&&MIO.estado==="ok")$("sal-yo").innerHTML=`<div class="salbox"><h2>🏔 ${esc(MIO.n)}</h2><p class="note" style="margin:0 0 8px">Tu club está dado de alta: lo que publiques sale al momento.</p><div class="salbtns"><button class="btn ghost" data-scedit="${MIO.id}">✏️ Datos del club</button><button class="btn primary" data-snew>＋ Nueva salida</button></div></div>${fijo(MIO)}`;
   else if(MIO&&MIO.estado==="pend")$("sal-yo").innerHTML=`<div class="salbox"><h2>⏳ Solicitud enviada</h2><p class="note" style="margin:0">«${esc(MIO.n)}» está pendiente de que Los de las Claras lo apruebe. Cuando esté, aquí te saldrá «Nueva salida».</p></div>`;
-  else $("sal-yo").innerHTML=`<div class="salbtns" style="grid-template-columns:1fr;margin:0 0 12px"><button class="btn ghost" data-sclub>🏔 Soy un club: quiero publicar salidas</button></div>`;
+  else if(altaOk())$("sal-yo").innerHTML=`<div class="salbtns" style="grid-template-columns:1fr;margin:0 0 12px"><button class="btn primary" data-sclub>🏔 Dar de alta nuestro club</button></div>`;
+  else $("sal-yo").innerHTML=`<div class="salbox"><p class="note" style="margin:0">¿Sois un club o grupo de montaña y queréis anunciar aquí vuestras salidas? Escribid al creador de la app: <a href="mailto:${CORREO}?subject=${encodeURIComponent("Salidas de nuestro club en la app")}"><b>${CORREO}</b></a></p></div>`;
   // filtro por club
   const cs=[...new Set(SALS.map(s=>s.cn))];
   $("sal-chips").innerHTML=cs.length>1?`<div class="salchips"><button class="chip" data-sfil="todos" aria-pressed="${FIL==="todos"}">Todos</button>${cs.map(c=>`<button class="chip" data-sfil="${esc(c)}" aria-pressed="${FIL===c}">${esc(c)}</button>`).join("")}</div>`:"";
   const L0=SALS.filter(s=>FIL==="todos"||s.cn===FIL);
   $("sal-lista").innerHTML=L0.length?L0.map(s=>{const d=new Date(s.fecha);return `<div class="salc" data-sopen="${s.id}"><div class="fd"><small>${isNaN(d)?"":DS[d.getDay()].slice(0,3)}</small><b>${isNaN(d)?"?":d.getDate()}</b><small>${isNaN(d)?"":MS[d.getMonth()].slice(0,3)}</small></div>
     <div class="t"><b>${esc(s.ti)}</b><small><span class="cl">${esc(s.cn)}</span> · ${esc(fFecha(s.fecha))}</small><small>${[s.km?kmF(s.km):"",s.up?"+"+Math.round(s.up).toLocaleString("es-ES")+" m":"",s.dif||""].filter(Boolean).join(" · ")}${s.enc?" · 📍 "+esc(s.enc):""}</small></div></div>`}).join("")
-    :`<p class="note">No hay salidas anunciadas todavía.${esAdm()||(MIO&&MIO.estado==="ok")?"":" Si eres de un club, pulsa «Soy un club» para publicar las vuestras."}</p>`;
+    :`<p class="note">No hay salidas anunciadas todavía.</p>`;
   if(AVC&&Date.now()-AVC.t<120000)$("sal-lista").insertAdjacentHTML("afterbegin",AVC.h);else AVC=null}
 
-let AVC=null;   // aviso «este club no tiene salidas próximas» (al entrar con su enlace fijo), se queda 2 minutos
+let AVC=null;
+/* 10 nov 2026 · el alta de clubes NO es pública: solo puede pedirla quien abre el enlace personal que manda Jonathan
+   (https://losdelasclaras.github.io/rutas/#altaclub, queda recordado en ese móvil). El resto ve el correo de contacto. */
+const CORREO="losdelasclaras@gmail.com",ALTA="https://losdelasclaras.github.io/rutas/#altaclub";
+const altaOk=()=>{try{return localStorage.getItem("ldc-altaclub")==="1"}catch(e){return false}};
+function deAlta(){if((location.hash||"")!=="#altaclub")return;try{localStorage.setItem("ldc-altaclub","1");localStorage.setItem("ldc-salinv","1")}catch(e){}
+  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}visTab();showView("salidas");carga(true)}
+addEventListener("hashchange",deAlta);setTimeout(deAlta,0);   // aviso «este club no tiene salidas próximas» (al entrar con su enlace fijo), se queda 2 minutos
 /* --- 🔗 enlace fijo de un club (10 nov 2026): …/rutas/#club=<id> abre siempre su próxima salida publicada --- */
 const URLF=id=>"https://losdelasclaras.github.io/rutas/#club="+encodeURIComponent(id);
 const BOTON=id=>`<a href="${URLF(id)}" target="_blank" rel="noopener" style="display:inline-block;padding:12px 18px;background:#1e8e3e;color:#fff;border-radius:10px;font-family:sans-serif;font-weight:bold;text-decoration:none">📅 Próxima salida · Ver en la app</a>`;
@@ -3370,8 +3379,8 @@ function formSalida(ed){const adm=esAdm(),cl=adm?CLUBS:[MIO];GPX=null;SED=ed||nu
   <label>Descripción (opcional)</label><textarea id="ss-x" maxlength="1500"></textarea>
   <label>Hoja de ruta en PDF (opcional)</label><input id="ss-pdf" type="file" accept="application/pdf,.pdf"><p class="note" style="margin:4px 0 0">Hasta 4 MB. También vale un enlace:</p><input id="ss-pdfu" type="url" maxlength="400" placeholder="https://… (Google Drive, web del club…)" style="margin-top:6px">
   ${ed&&ed.pdf?`<label style="font-weight:600"><input type="checkbox" id="ss-pdfx" style="width:auto"> Quitar la hoja de ruta que hay (${esc(ed.pdf.nm||"PDF")})</label>`:""}
-  <label>Track (GPX o KML)${ed?" — solo si quieres cambiarlo":""}</label><input id="ss-g" type="file" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml">
-  <p class="note" id="ss-gi" style="margin:4px 0 0">${ed?`Ahora: ${kmF(ed.km)} · +${Math.round(ed.up||0).toLocaleString("es-ES")} m. Si no subes otro, se queda ese.`:"Del track salen solos los km, el desnivel y el mapa."}</p>
+  <label>Track (GPX o KML) · opcional${ed?" — solo si quieres cambiarlo":""}</label><input id="ss-g" type="file" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml">
+  <p class="note" id="ss-gi" style="margin:4px 0 0">${ed?(ed.km?`Ahora: ${kmF(ed.km)} · +${Math.round(ed.up||0).toLocaleString("es-ES")} m. Si no subes otro, se queda ese.`:"Ahora no tiene track."):"Del track salen solos los km, el desnivel y el mapa."}</p>
   <div class="salbtns"><button class="btn ghost" data-sfx>Cancelar</button><button class="btn primary" data-sssave>${ed?"Guardar cambios":"Publicar"}</button></div></div>`;
   if(ed){const v=(i,x)=>{const el=$(i);if(el&&x!=null)el.value=x};
     v("ss-c",ed.club);v("ss-t",ed.ti);v("ss-d",(ed.fecha||"").slice(0,10));v("ss-h",(ed.fecha||"").slice(11,16)||"08:00");v("ss-e",ed.enc);v("ss-f",ed.dif);
@@ -3408,7 +3417,7 @@ async function guardaClub(adm){const n=$("sc-n").value.trim();if(n.length<3){toa
     $("sal-form").innerHTML="";carga(true)}catch(e){console.warn(e);toast(/permission/i.test(String(e))?"Faltan los permisos en la base de datos":"No se ha podido guardar")}}
 async function guardaSalida(){const adm=esAdm(),cid=adm?$("ss-c").value:MIO.id,club=(adm?CLUBS.find(c=>c.id===cid):MIO);
   const ti=$("ss-t").value.trim(),dia=$("ss-d").value,h=$("ss-h").value||"08:00";
-  if(ti.length<4){toast("Pon un título");return}if(!dia){toast("Pon el día");return}if(dia<hoy()){toast("El día ya ha pasado");return}if(!GPX&&!SED){toast("Falta el track (GPX o KML)");return}
+  if(ti.length<4){toast("Pon un título");return}if(!dia){toast("Pon el día");return}if(dia<hoy()){toast("El día ya ha pasado");return}
   const s={club:cid,cn:club.n,cc:club.contacto||"",cw:club.web||"",ti,fecha:dia+"T"+h,enc:$("ss-e").value.trim(),dif:$("ss-f").value,ap:$("ss-a").value.trim(),apu:$("ss-u").value.trim(),apo:$("ss-o").value.trim(),pdfu:$("ss-pdfu").value.trim(),txt:$("ss-x").value.trim(),t:Date.now()};
   if(GPX)Object.assign(s,{km:GPX.km,up:GPX.up,mx:GPX.mx,lat:GPX.pts[0][0],lon:GPX.pts[0][1]});
   if(!SED)s.uid=usr().uid;
@@ -3457,9 +3466,8 @@ async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
    <div class="salbtns">${apu?`<a class="btn primary" href="${esc(apu)}" target="_blank" rel="noopener" style="grid-column:1/-1">✍️ Apuntarse</a>`:""}${telH?`<a class="btn ghost" href="${esc(telH)}">📞 Llamar</a><a class="btn ghost" href="${esc(waH)}" target="_blank" rel="noopener">💬 WhatsApp</a>`:""}</div></div>`:""}
   ${s.pdf||s.pdfu?`<div class="salbtns" style="grid-template-columns:1fr">${s.pdf?`<button class="btn ghost" data-salpdf>📄 Hoja de ruta (PDF)</button>`:`<a class="btn ghost" href="${esc(s.pdfu)}" target="_blank" rel="noopener">📄 Hoja de ruta (PDF)</a>`}</div>`:""}
   <div class="acts2"><div class="agrid">
-   <button class="btn ghost" data-salfol>▶ Seguir</button><button class="btn ghost" data-salgpx>⬇ Descargar GPX</button>
-   <button class="btn ghost" data-salreloj>⌚ Enviar al reloj</button><button class="btn ghost" data-salshare>📤 Compartir</button>
-   <a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lon}" target="_blank" rel="noopener">🚗 Cómo llegar a la salida</a>
+   ${pts&&pts.length>1?`<button class="btn ghost" data-salfol>▶ Seguir</button><button class="btn ghost" data-salgpx>⬇ Descargar GPX</button>`:""}
+   <button class="btn ghost" data-salshare>📤 Compartir</button>
    ${s.cw?`<a class="btn ghost" href="${esc(s.cw)}" target="_blank" rel="noopener">🏔 Web del club</a>`:""}
    ${puede?`<button class="btn ghost" data-saledit>✏️ Editar salida</button><button class="btn ghost" style="color:#b3261e" data-saldel>🗑 Borrar salida</button>`:""}</div></div>
   <p class="salaviso">Organiza <b>${esc(s.cn)}</b>${s.cc?" ("+esc(s.cc)+")":""}. La inscripción, el seguro y las condiciones son cosa del club: Los de las Claras solo la anuncia.</p>`;
@@ -3492,12 +3500,14 @@ sec.addEventListener("click",async e=>{const t=e.target;
   const o=t.closest("[data-sopen]");if(o){abre(o.dataset.sopen);return}
   const fl=t.closest("[data-sfil]");if(fl){FIL=fl.dataset.sfil;pinta();return}
   if(t.closest("[data-sfx]")){$("sal-form").innerHTML="";SED=null;return}
+  if(t.closest("[data-sclub]")&&!altaOk()&&!esAdm()){toast("Escribe a "+CORREO+" para dar de alta tu club");return}
   if(t.closest("[data-sclub]")){if(window.cuentaOk&&!cuentaOk(()=>{showView("salidas");carga(true).then(()=>formClub(false))},"club"))return;formClub(false);return}
   if(t.closest("[data-scnew]")){formClub(true);return}
   const ce=t.closest("[data-scedit]");if(ce){const c=CLUBS.find(x=>x.id===ce.dataset.scedit)||(MIO&&MIO.id===ce.dataset.scedit?MIO:null);if(c)formClub(esAdm(),c);return}
   const sv=t.closest("[data-scsave]");if(sv){guardaClub(sv.dataset.scsave==="1");return}
   if(t.closest("[data-snew]")){formSalida();return}
   const fj=t.closest("[data-sfijo]");if(fj){const c=CLUBS.find(x=>x.id===fj.dataset.sfijo);if(!c)return;const v=$("sf-"+c.id);if(v){v.remove();return}fj.closest(".salrow").insertAdjacentHTML("afterend",fijo(c,true));return}
+  if(t.closest("[data-scalta]")){copia(ALTA,"Enlace de alta copiado: mándaselo al club");return}
   const cp=t.closest("[data-scopia]");if(cp){copia(URLF(cp.dataset.scopia),"Enlace copiado");return}
   const cb=t.closest("[data-scopib]");if(cb){copia(BOTON(cb.dataset.scopib),"Botón copiado: pégalo en tu web en modo HTML");return}
   if(t.closest("[data-sssave]")){guardaSalida();return}
@@ -5326,5 +5336,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="b8069c7de7";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="3d1ed6dc25";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
