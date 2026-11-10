@@ -16,6 +16,10 @@ self.addEventListener("fetch",e=>{
         const c=await caches.open("ldc-share");await c.put("recibido",new Response(JSON.stringify(out),{headers:{"content-type":"application/json"}}))}catch(err){}
       return Response.redirect(new URL("./?recibido=1",self.registration.scope).href,303)})());return}
   if(e.request.method!=="GET")return;
+  // 10 nov 2026: las letras (Google Fonts) se guardan en el móvil: sin ellas el arranque podía quedarse esperando con mala conexión
+  if(u.hostname==="fonts.googleapis.com"||u.hostname==="fonts.gstatic.com"){
+    e.respondWith(caches.open(V).then(async c=>{const hit=await c.match(e.request);if(hit)return hit;
+      try{const r=await fetch(e.request);if(r.ok||r.type==="opaque")c.put(e.request,r.clone());return r}catch(err){return new Response("",{status:200,headers:{"content-type":u.hostname==="fonts.googleapis.com"?"text/css":"font/woff2"}})}}));return}
   if(u.hostname.endsWith("opentopomap.org")||u.hostname.endsWith("ign.es")||u.hostname==="tile.waymarkedtrails.org"){
     e.respondWith(caches.open(TILES).then(async c=>{let hit=await (await caches.open(OFF)).match(e.request.url)||await c.match(e.request);if(hit&&hit.type==="opaque"&&e.request.mode==="cors")hit=null;
       const net=fetch(e.request).then(r=>{if(r.ok){c.put(e.request,r.clone());trimTiles()}return r}).catch(()=>hit||Response.error());
