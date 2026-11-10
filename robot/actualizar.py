@@ -68,6 +68,18 @@ def ficha(c):
         if t.startswith('📍') and 'sal' not in o: o['sal'] = t[1:].strip()
         if t.startswith('🗺') and 'zona' not in o: o['zona'] = t.lstrip('🗺️').strip()
     T = txt(c)
+    # 10 nov 2026: formato nuevo del cuadro de datos: «📏 12,4 km Circular» (la etiqueta es el tipo de ruta, no «Distancia»)
+    # y «⚡ Alta Terreno expuesto…» (la dificultad va junto al rayo, sin la palabra «Dificultad»)
+    if 'km' not in o:
+        for v, l in pares:
+            m = re.fullmatch(r'\s*(\d+(?:[.,]\d+)?)\s*km\s*', v, re.I)
+            if m: o['km'] = m.group(1).replace('.', ','); break
+    if 'km' not in o:
+        m = re.search(r'📏\s*(\d+(?:[.,]\d+)?)\s*km', T)
+        if m: o['km'] = m.group(1).replace('.', ',')
+    if 'dif' not in o:
+        m = re.search(r'⚡\uFE0F?\s*(muy\s+alta|media[- ]alta|media[- ]baja|muy\s+f[aá]cil|alta|media|baja|f[aá]cil|dif[ií]cil|moderada|exigente)\b', T, re.I)
+        if m: o['dif'] = m.group(1)[0].upper() + m.group(1)[1:].lower()
     if 'km' not in o:
         m = re.search(r'Distancia[^0-9]{0,25}(\d+(?:[.,]\d+)?)\s*km', T, re.I)
         if m: o['km'] = m.group(1)
