@@ -1,0 +1,37 @@
+<!doctype html>
+<!-- 11 nov 2026 · Enlace para poner al día la app a quien lleva tiempo sin actualizar:
+     https://losdelasclaras.github.io/rutas/actualizar.html
+     Esta página no la guarda el sw.js (va siempre a la red): borra la copia vieja de la app guardada en el móvil,
+     baja la nueva, la guarda y abre la app. Vale en el navegador y en la APK. -->
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Actualizar la app · Los de las Claras</title>
+<link rel="icon" href="icons/icon-192.png">
+<style>
+:root{--ink:#1f2a24;--paper:#f4f6f2;--card:#fff;--muted:#5d6b62;--ok:#1e8e3e}
+@media (prefers-color-scheme:dark){:root{--ink:#eef2ee;--paper:#151b17;--card:#1f2a24;--muted:#a9b6ad}}
+body{margin:0;background:var(--paper);color:var(--ink);font:19px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:520px;margin:0 auto;padding:60px 20px;text-align:center}
+.r{font-size:56px;line-height:1;animation:g 1.2s linear infinite;display:inline-block}@keyframes g{to{transform:rotate(360deg)}}
+p{color:var(--muted)}a.b{display:inline-block;margin-top:18px;padding:14px 22px;border-radius:14px;background:var(--ok);color:#fff;font-weight:800;text-decoration:none}
+</style></head><body><main>
+<div class="r" id="i">🔄</div>
+<h1 id="t">Actualizando la app…</h1>
+<p id="m">Un momento: se baja la versión nueva.</p>
+<a class="b" id="b" href="./" hidden>Abrir la app</a>
+</main>
+<script>
+(async()=>{const fin=(ok)=>{document.getElementById("i").textContent=ok?"✅":"⚠️";document.getElementById("i").style.animation="none";
+    document.getElementById("t").textContent=ok?"¡App actualizada!":"No se ha podido actualizar";
+    document.getElementById("m").textContent=ok?"Abriendo…":"Mira que tengas cobertura y vuelve a abrir este enlace.";document.getElementById("b").hidden=ok};
+  try{
+    // 1) la página nueva, sin caché (ojo: «index.html?…» lo contestaría el sw.js con la copia vieja; «./?…» va a la red)
+    const r=await fetch("./?v="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;
+    // 2) se guarda en el almacén de la app en lugar de la vieja (si no hay almacén todavía, no pasa nada)
+    if(window.caches){const ks=(await caches.keys()).filter(k=>/^ldc-v\d/.test(k));for(const k of ks){const c=await caches.open(k);await c.put("index.html",r.clone());await c.delete("./")}}
+    // 3) el «guardián» de la app (sw.js) también al día
+    if(navigator.serviceWorker){const g=await navigator.serviceWorker.getRegistration("./");if(g)await g.update().catch(()=>{})}
+    fin(true);setTimeout(()=>location.replace("./"),900)
+  }catch(e){fin(false)}
+})();
+</script>
+</body></html>
