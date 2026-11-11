@@ -6,8 +6,17 @@ for pm in t.iter('{http://www.opengis.net/kml/2.2}Placemark'):
     name=(pm.findtext('k:name',default='',namespaces=ns) or '').strip()
     desc=(pm.findtext('k:description',default='',namespaces=ns) or '').strip()
     c=pm.find('.//k:coordinates',ns).text.strip().split(',')
+    # 11 nov 2026: la foto puesta en el propio punto de My Maps (si la tiene). No cuenta como enlace.
+    fo=None
+    for dd in pm.iter('{http://www.opengis.net/kml/2.2}Data'):
+        if dd.get('name')=='gx_media_links':
+            v=(dd.findtext('k:value',default='',namespaces=ns) or '').split()
+            if v: fo=v[0]; break
+    imgs=re.findall(r'<img[^>]+src="([^"]+)"',desc)
+    if not fo and imgs: fo=imgs[0]
     us=[]
     for x in re.findall(r'h?ttps?://[^\s<>"]+',desc):
+        if x in imgs or x==fo or 'googleusercontent.com' in x: continue
         x=x.split('#')[0].rstrip('.,;)')
         if x.startswith('ttp'):x='h'+x
         if x not in us: us.append(x)
@@ -24,6 +33,7 @@ for pm in t.iter('{http://www.opengis.net/kml/2.2}Placemark'):
     st=(pm.findtext('k:styleUrl',default='',namespaces=ns) or '')
     mi=re.search(r'icon-(\d+)',st)
     pts.append(dict(ic=mi.group(1) if mi else None,n=re.sub(r'\s+',' ',name),lat=round(float(c[1]),6),lon=round(float(c[0]),6),u=url,us=us,a=alt,y=year))
+    if fo: pts[-1]['fo']=fo
 json.dump(pts,open('points.json','w'),ensure_ascii=False)
 urls={p['u'] for p in pts if p['u']}
 print(len(pts),'puntos',len(urls),'entradas', sum(1 for p in pts if not p['u']),'sin enlace', sum(1 for u in urls if '/search/label/' in u),'etiquetas')

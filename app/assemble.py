@@ -68,6 +68,13 @@ for r in d['routes']:
     r.pop('gx',None)
     if r.get('u') in GX: r['gx']=GX[r['u']]
 print('rutas con GPX',sum(1 for r in d['routes'] if r.get('gx')))
+# 11 nov 2026: foto propia del punto en tu My Maps (la baja el robot, robot/actualizar.py › fotos_mapa) -> p['fo']
+FM=json.load(open('fotos_mapa.json')) if os.path.exists('fotos_mapa.json') else {}
+for _p in d['pts']:
+    _p.pop('fo',None)
+    _v=FM.get(f"{_p['n']}|{round(_p['lat'],5)}|{round(_p['lon'],5)}")
+    if _v: _p['fo']='fp/'+_v[0]
+print('puntos con foto propia',sum(1 for _p in d['pts'] if _p.get('fo')))
 json.dump(d,open('final_data.json','w'),ensure_ascii=False,separators=(',',':'))
 t=open('template.html').read()
 pl=json.load(open('places.json'))

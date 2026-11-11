@@ -207,6 +207,49 @@ def mapa():
     for p in nn[:30]: log(f'   + {p["n"]}' + ('' if p.get('u') else '  ⚠ sin enlace a una entrada del blog'))
     CAMBIOS.append(f'mapa: {len(nn)} puntos nuevos o cambiados')
 
+# ------------------------------------------------------------------ 2a. FOTOS PROPIAS de los puntos de tu My Maps
+def fotos_mapa():
+    """11 nov 2026: si un punto de tu My Maps tiene una foto puesta (editar el punto › cámara), su ficha (cumbre o lugar)
+    sale con esa foto en vez de la de la entrada del blog. Se bajan cada noche (Google cambia la dirección de la foto en cada
+    lectura, así que se compara la propia foto), se reducen a 800 px y se publican en la app (fp/). Si una no se puede bajar,
+    se queda la que ya había. Quitas la foto del punto -> vuelve la de la entrada del blog."""
+    import hashlib
+    from PIL import Image
+    d = APP + 'fotos_mapa/'; os.makedirs(d, exist_ok=True)
+    rf = APP + 'fotos_mapa.json'
+    reg = json.load(open(rf)) if os.path.exists(rf) else {}   # «nombre|lat|lon» -> [archivo, huella de la foto original]
+    pts = json.load(open(APP + 'points.json'))
+    nuevo = {}; nuevas = cambiadas = mal = 0; err = None
+    for p in pts:
+        u = p.get('fo')
+        if not u: continue
+        k = f"{p['n']}|{round(p['lat'], 5)}|{round(p['lon'], 5)}"
+        b = None
+        for v in (u, u.replace('/*/', '/%2A/'), u + ('&' if '?' in u else '?') + 'fife=s1024'):
+            try: b = get(v, True, tries=2); Image.open(io.BytesIO(b)).verify(); break
+            except Exception as e: err = e; b = None
+        if b is None:
+            mal += 1
+            if k in reg and os.path.exists(d + reg[k][0]): nuevo[k] = reg[k]
+            continue
+        h = hashlib.md5(b).hexdigest()
+        if k in reg and reg[k][1] == h and os.path.exists(d + reg[k][0]): nuevo[k] = reg[k]; continue
+        im = Image.open(io.BytesIO(b)).convert('RGB'); im.thumbnail((800, 800), Image.LANCZOS)
+        fn = f'g-{h[:12]}.jpg'
+        im.save(d + fn, 'JPEG', quality=72, optimize=True, progressive=True)
+        if k in reg: cambiadas += 1; log(f'📷 Foto cambiada en tu mapa: «{p["n"]}»')
+        else: nuevas += 1; log(f'📷 Foto nueva en tu mapa: «{p["n"]}»')
+        nuevo[k] = [fn, h]
+    quitadas = [k for k in reg if k not in nuevo]
+    for k in quitadas: log(f'🗑 Foto quitada de tu mapa: «{k.split("|")[0]}» (vuelve la de la entrada del blog)')
+    usadas = {v[0] for v in nuevo.values()}
+    for f in os.listdir(d):
+        if f not in usadas: os.remove(d + f)
+    json.dump(nuevo, open(rf, 'w'), ensure_ascii=False, indent=0)
+    if mal: log(f'⚠ {mal} fotos de tu mapa no se han podido bajar ({err}); se quedan las de antes')
+    if nuevas or cambiadas or quitadas: CAMBIOS.append(f'fotos del mapa: {nuevas} nuevas, {cambiadas} cambiadas, {len(quitadas)} quitadas')
+    elif nuevo: log(f'Fotos de tu mapa: {len(nuevo)}, sin cambios.')
+
 # ------------------------------------------------------------------ 2b. TRACKS enlazados desde My Maps con un enlace de la app
 def enlaces_app():
     """10 nov 2026: si en la descripción de un punto de tu My Maps, además del enlace a la entrada del blog, pones el enlace
@@ -826,7 +869,7 @@ def regenerar():
 if __name__ == '__main__':
     hoy = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=1))).strftime('%d/%m/%Y %H:%M')
     err = None
-    for paso in (blog, mapa, enlaces_app, drive, colaboradores):
+    for paso in (blog, mapa, fotos_mapa, enlaces_app, drive, colaboradores):
         try: paso()
         except Exception as e:
             log(f'⚠ Error en {paso.__name__}: {e}'); err = e

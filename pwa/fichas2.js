@@ -98,8 +98,8 @@ function deGrupo(gi){const p=P[gi];const cum=p.t==="cumbre";
   const rs=(p.rs||[]).filter(ri=>R[ri]&&R[ri].u).map(ri=>R[ri]).sort(byDate);
   const src=[{n:GRP.n,c:GRP.c,grp:true,cnt:rs.length,y:Math.max(0,...rs.map(r=>r.y||0)),rows:rs.map(r=>rowHTML(r)),its:rs.map(r=>({g:r}))}];
   const ms=cum&&window.COLX&&COLX.cumDe?COLX.cumDe(gi):[];
-  return junta({n:p.c,a:p.a,lat:p.lat,lon:p.lon,cum,gi,mk:mkBtns(p)||"",main:mkKey(p),src,rs},ms)}
-function junta(o,ms){const by={},alias=new Set(),keys=[];let foto=o.rs&&o.rs.find(r=>r.f!=null);foto=foto?`fotos/${foto.f}.jpg`:null;
+  return junta({n:p.c,a:p.a,lat:p.lat,lon:p.lon,fo:p.fo,cum,gi,mk:mkBtns(p)||"",main:mkKey(p),src,rs},ms)}
+function junta(o,ms){const by={},alias=new Set(),keys=[];let foto=o.rs&&o.rs.find(r=>r.f!=null);foto=o.fo||(foto?`fotos/${foto.f}.jpg`:null);   // 11 nov 2026: primero la foto propia del punto en My Maps
   o.blogs=o.blogs||[];
   for(const{c,p}of ms){if(nk(p[0])!==nk(o.n))alias.add(p[0]);
     if(p[4]&&/^https?:/.test(p[4])&&!(p[9]||[]).length&&!o.blogs.some(b=>b.u===p[4]))o.blogs.push({n:c.n,c:c.c,u:p[4],co:c,p});

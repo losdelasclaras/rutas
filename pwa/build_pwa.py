@@ -307,4 +307,11 @@ os.makedirs(O+'vendor',exist_ok=True); [shutil.copy('/home/claude/pwa/vendor/'+f
 os.makedirs(O+'fotos',exist_ok=True)
 used={r['f'] for r in d['routes'] if r.get('f') is not None}
 for f in used: shutil.copy(A+f'fotos/{f}.jpg',O+f'fotos/{f}.jpg')
+# 11 nov 2026: fotos propias de los puntos de tu My Maps (fp/)
+os.makedirs(O+'fp',exist_ok=True)
+_fp={p['fo'][3:] for p in d['pts'] if p.get('fo')}
+for _f in os.listdir(O+'fp'):
+    if _f not in _fp: os.remove(O+'fp/'+_f)
+for _f in _fp:
+    if os.path.exists(A+'fotos_mapa/'+_f) and not os.path.exists(O+'fp/'+_f): shutil.copy(A+'fotos_mapa/'+_f,O+'fp/'+_f)
 print('fotos',len(used),'html',len(t)//1024,'KB')
