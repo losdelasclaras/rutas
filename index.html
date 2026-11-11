@@ -3303,7 +3303,12 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .salfav{border:none;background:none;font-size:22px;line-height:1;padding:4px 6px;cursor:pointer;color:#e6a700}
 .saltrk{margin:8px 0 0}.saltrk .opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}.saltrk .opts[hidden]{display:none}
 .saltrk .opts .btn{padding:10px 4px;font-size:14.5px;white-space:normal;line-height:1.2}
-.salmine{margin:10px 0 0}.salmine .salr{cursor:pointer}.salmine .ok{color:#1e8e3e;font-weight:800}.salmine .no{color:var(--muted)}
+.salmine{margin:10px 0 0}.salmine .salr .t small{white-space:normal}.salmine .salr{cursor:pointer}.salmine .ok{color:#1e8e3e;font-weight:800}.salmine .no{color:var(--muted)}
+.salcart{margin:10px 0 4px;border-radius:12px;overflow:hidden;border:1px solid var(--edge);background:var(--paper);min-height:60px;display:flex;align-items:center;justify-content:center}
+.salcart span{color:var(--muted);font-size:14px;padding:18px}.salcart img{display:block;width:100%;height:auto;max-height:70vh;object-fit:contain;cursor:zoom-in}
+.salcartfull{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center}
+.salcartfull img{max-width:100%;max-height:100%;object-fit:contain}.salcartfull button{position:absolute;top:14px;right:14px;width:46px;height:46px;border-radius:50%;border:none;background:#fff;color:#111;font-size:28px;line-height:1}
+.salred .btn{padding:9px 4px;font-size:14px}
 .salpie{font-size:13px;color:var(--muted);margin:18px 2px 8px;line-height:1.4}
 </style>`);
 
@@ -3395,7 +3400,7 @@ sec.addEventListener("change",e=>{const el=e.target;if(el.matches("[data-ssd]"))
 function misSal(cid){const L=SALS.filter(s=>s.club===cid);if(!L.length)return`<p class="note" style="margin:10px 0 0">Todavía no tenéis ninguna salida publicada.</p>`;
   const it=(ok,l)=>`<span class="${ok?"ok":"no"}">${ok?"✓":"✗"} ${l}</span>`;
   return`<div class="salmine"><p style="margin:0 0 6px"><b>Vuestras salidas (${L.length} de ${MAXS})</b></p>${L.map(s=>`<div class="salr" data-sopen="${s.id}"><div class="t"><b>${esc(s.ti)}</b><small>${esc(fFecha(s.fecha))}</small>
-    <small>${it(s.km,"Track")} · ${it(s.pdf||s.pdfu,"Hoja de ruta")} · ${it(s.mide||s.mideu,"MIDE")}</small></div></div>`).join("")}<p class="note" style="margin:4px 0 0">Toca una para verla, editarla o borrarla.</p></div>`}
+    <small>${it(s.km,"Track")} · ${it(s.cart,"Cartel")} · ${it(s.pdf||s.pdfu,"Hoja de ruta")} · ${it(s.mide||s.mideu,"MIDE")}</small></div></div>`).join("")}<p class="note" style="margin:4px 0 0">Toca una para verla, editarla o borrarla.</p></div>`}
 /* --- 🔗 enlace fijo de un club (10 nov 2026): …/rutas/#club=<id> abre siempre su próxima salida publicada --- */
 const URLF=id=>"https://losdelasclaras.github.io/rutas/#club="+encodeURIComponent(id);
 const BOTON=id=>`<a href="${URLF(id)}" target="_blank" rel="noopener" style="display:inline-block;padding:12px 18px;background:#1e8e3e;color:#fff;border-radius:10px;font-family:sans-serif;font-weight:bold;text-decoration:none">📅 Próxima salida · Ver en la app</a>`;
@@ -3411,11 +3416,13 @@ let EDIT=null;
 function formClub(adm,ed){EDIT=ed||null;$("sal-form").innerHTML=`<div class="salbox salform"><h2>${ed?"✏️ Datos del club":adm?"＋ Crear un club":"🏔 Soy un club"}</h2>
   ${adm||ed?"":`<p class="note" style="margin:0">Solo para clubes y grupos de montaña sin ánimo de lucro (no empresas de turismo activo ni guías de pago). Los de las Claras lo aprueba una vez y luego publicáis solos.</p>`}
   <label>Nombre del club</label><input id="sc-n" maxlength="80">
-  <label>Web, Facebook o Instagram</label><input id="sc-w" maxlength="200" placeholder="https://…">
+  <label>Web del club (opcional)</label><input id="sc-w" maxlength="200" placeholder="https://…">
+  <label>Instagram (opcional)</label><input id="sc-ig" maxlength="200" placeholder="@vuestroclub o https://instagram.com/…">
+  <label>Facebook (opcional)</label><input id="sc-fb" maxlength="200" placeholder="https://facebook.com/…">
   <label>Contacto (lo que verá la gente)</label><input id="sc-c" maxlength="120" placeholder="Teléfono, correo o WhatsApp del club">
   ${ed?`<p class="note" style="margin:6px 0 0">Los cambios salen también en las salidas que ya tenéis publicadas.</p>`:adm?`<label><input type="checkbox" id="sc-p" style="width:auto"> Es un club de prueba</label>`:`<label>Algo más (opcional)</label><textarea id="sc-m" maxlength="400"></textarea>`}
   <div class="salbtns"><button class="btn ghost" data-sfx>Cancelar</button><button class="btn primary" data-scsave="${adm?1:0}">${ed?"Guardar cambios":adm?"Crear":"Enviar solicitud"}</button></div></div>`;
-  if(ed){$("sc-n").value=ed.n||"";$("sc-w").value=ed.web||"";$("sc-c").value=ed.contacto||""}
+  if(ed){$("sc-n").value=ed.n||"";$("sc-w").value=ed.web||"";$("sc-c").value=ed.contacto||"";$("sc-ig").value=ed.ig||"";$("sc-fb").value=ed.fb||""}
   $("sal-form").scrollIntoView({block:"start",behavior:"smooth"})}
 let GPX=null;
 let SED=null;   // la salida que se está editando
@@ -3435,6 +3442,8 @@ function formSalida(ed){const adm=esAdm(),cl=adm?CLUBS:[MIO];GPX=null;SED=ed||nu
   <label>Descripción (opcional)</label><textarea id="ss-x" maxlength="1500"></textarea>
   <label>Hoja de ruta en PDF (opcional)</label><input id="ss-pdf" type="file" accept="application/pdf,.pdf"><p class="note" style="margin:4px 0 0">Hasta 8 MB. También vale un enlace:</p><input id="ss-pdfu" type="url" maxlength="400" placeholder="https://… (Google Drive, web del club…)" style="margin-top:6px">
   ${ed&&ed.pdf?`<label style="font-weight:600"><input type="checkbox" id="ss-pdfx" style="width:auto"> Quitar la hoja de ruta que hay (${esc(ed.pdf.nm||"PDF")})</label>`:""}
+  <label>Cartel (opcional · imagen)</label><input id="ss-cart" type="file" accept="image/*"><p class="note" style="margin:4px 0 0">Una foto o captura del cartel: sale grande en la ficha, sin descargar nada. Si solo lo tenéis en PDF, haced una captura de pantalla.</p>
+  ${ed&&ed.cart?`<label style="font-weight:600"><input type="checkbox" id="ss-cartx" style="width:auto"> Quitar el cartel que hay</label>`:""}
   <label>Ficha MIDE (opcional)</label><input id="ss-mide" type="file" accept="application/pdf,.pdf,image/*"><p class="note" style="margin:4px 0 0">PDF hasta 8 MB, o una foto o captura (se reduce sola). También vale un enlace:</p><input id="ss-mideu" type="url" maxlength="400" placeholder="https://… (web del club…)" style="margin-top:6px">
   ${ed&&ed.mide?`<label style="font-weight:600"><input type="checkbox" id="ss-midex" style="width:auto"> Quitar la ficha MIDE que hay (${esc(ed.mide.nm||"MIDE")})</label>`:""}
   <label>Track (GPX o KML) · opcional${ed?" — solo si quieres cambiarlo":""}</label><input id="ss-g" type="file" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml">
@@ -3465,11 +3474,12 @@ function leeTrack(t){try{const x=new DOMParser().parseFromString(t,"application/
 
 /* --- guardar --- */
 async function guardaClub(adm){const n=$("sc-n").value.trim();if(n.length<3){toast("Pon el nombre del club");return}
-  const d={n,web:$("sc-w").value.trim(),contacto:$("sc-c").value.trim(),t:Date.now()};
+  const d={n,web:urlRed($("sc-w").value),ig:urlRed($("sc-ig").value,"instagram.com"),fb:urlRed($("sc-fb").value,"facebook.com"),contacto:$("sc-c").value.trim(),t:Date.now()};
+  for(const[k,l]of[["web","La web"],["ig","El Instagram"],["fb","El Facebook"]])if(d[k]&&!/^https?:\/\/[^\s.]+\.[^\s]+$/i.test(d[k])){toast(l+" no parece un enlace válido");return}
   try{await base();const F=fs(),u=usr();
     if(EDIT){await F.updateDoc(F.doc(db(),"clubes",EDIT.id),d);
       // sus salidas ya publicadas llevan el nombre, la web y el contacto del club: se ponen al día
-      for(const x of SALS.filter(x=>x.club===EDIT.id))await F.updateDoc(F.doc(db(),"salidas",x.id),{cn:d.n,cc:d.contacto,cw:d.web}).catch(()=>{});
+      for(const x of SALS.filter(x=>x.club===EDIT.id))await F.updateDoc(F.doc(db(),"salidas",x.id),{cn:d.n,cc:d.contacto,cw:d.web,cig:d.ig,cfb:d.fb}).catch(()=>{});
       toast("Datos del club guardados");EDIT=null}
     else if(adm){d.estado="ok";d.prueba=!!($("sc-p")&&$("sc-p").checked);d.por=u.uid;await F.addDoc(F.collection(db(),"clubes"),d);toast("Club creado")}
     else{d.estado="pend";d.msg=($("sc-m")||{}).value||"";d.email=u.email||"";await F.setDoc(F.doc(db(),"clubes",u.uid),d);toast("Solicitud enviada")}
@@ -3479,7 +3489,7 @@ async function guardaSalida(){const adm=esAdm(),cid=adm?$("ss-c").value:MIO.id,c
   if(ti.length<4){toast("Pon un título");return}if(!dia){toast("Pon el día");return}if(dia<hoy()){toast("El día ya ha pasado");return}
   const sd=$("ss-sd").value;if(!sd){toast("Elige desde dónde sale");return}
   if(!SED&&SALS.filter(x=>x.club===cid).length>=MAXS){toast(`Ya tenéis ${MAXS} salidas anunciadas: podréis publicar la siguiente cuando pase la primera`);return}
-  const s={sd,hr:$("ss-hr").value.trim(),club:cid,cn:club.n,cc:club.contacto||"",cw:club.web||"",ti,fecha:dia+"T"+h,enc:$("ss-e").value.trim(),dif:$("ss-f").value,ap:$("ss-a").value.trim(),apu:$("ss-u").value.trim(),apo:$("ss-o").value.trim(),pdfu:$("ss-pdfu").value.trim(),txt:$("ss-x").value.trim(),t:Date.now()};
+  const s={sd,hr:$("ss-hr").value.trim(),club:cid,cn:club.n,cc:club.contacto||"",cw:club.web||"",cig:club.ig||"",cfb:club.fb||"",ti,fecha:dia+"T"+h,enc:$("ss-e").value.trim(),dif:$("ss-f").value,ap:$("ss-a").value.trim(),apu:$("ss-u").value.trim(),apo:$("ss-o").value.trim(),pdfu:$("ss-pdfu").value.trim(),txt:$("ss-x").value.trim(),t:Date.now()};
   if(GPX)Object.assign(s,{km:GPX.km,up:GPX.up,mx:GPX.mx,lat:GPX.pts[0][0],lon:GPX.pts[0][1]});
   if(!SED)s.uid=usr().uid;
   if(club.prueba)s.prueba=true;
@@ -3489,22 +3499,23 @@ async function guardaSalida(){const adm=esAdm(),cid=adm?$("ss-c").value:MIO.id,c
   // 10 nov 2026 · los documentos (hoja de ruta y MIDE) se comprueban, se guardan en trozos en la base de datos
   // (sin servicio de archivos aparte: así sigue siendo gratis) y se suben ANTES que la salida, con nombre nuevo cada vez:
   // así una salida nunca apunta a un documento a medio subir. Los anteriores se borran al final.
-  let docs;try{docs=[await leeDoc($("ss-pdf").files[0],"Hoja de ruta",false),await leeDoc($("ss-mide").files[0],"MIDE",true)]}catch(er){toast(String(er.message||er),6000);return}
-  const [dp,dm]=docs;
+  let docs;try{const fc=$("ss-cart").files[0];if(fc&&!/^image\//.test(fc.type||""))throw new Error("El cartel tiene que ser una imagen (foto o captura). Si es un PDF, haced una captura de pantalla.");
+    docs=[await leeDoc($("ss-pdf").files[0],"Hoja de ruta",false),await leeDoc($("ss-mide").files[0],"MIDE",true),await leeDoc(fc,"imagen del cartel",true,1400)]}catch(er){toast(String(er.message||er),6000);return}
+  const [dp,dm,dc]=docs;
   try{await base();const F=fs();const ref=SED?F.doc(db(),"salidas",SED.id):F.doc(F.collection(db(),"salidas")),id=ref.id,v=Date.now().toString(36);
     const sube=async(d,tag,msg)=>{if(!d)return null;toast(msg,20000);const k=id+"_"+tag+v;for(let i=0;i<d.tr.length;i++)await F.setDoc(F.doc(db(),"salidasf",k+"_"+i),{club:cid,d:d.tr[i]});return{n:d.tr.length,nm:d.nm,ty:d.ty,k}};
-    const np=await sube(dp,"p","Subiendo la hoja de ruta…"),nm=await sube(dm,"m","Subiendo la ficha MIDE…");
-    const quitaP=np||($("ss-pdfx")&&$("ss-pdfx").checked),quitaM=nm||($("ss-midex")&&$("ss-midex").checked);
-    s.pdf=np||(SED&&!quitaP?SED.pdf||null:null);s.mide=nm||(SED&&!quitaM?SED.mide||null:null);
+    const nc=await sube(dc,"c","Subiendo el cartel…"),np=await sube(dp,"p","Subiendo la hoja de ruta…"),nm=await sube(dm,"m","Subiendo la ficha MIDE…");
+    const quitaP=np||($("ss-pdfx")&&$("ss-pdfx").checked),quitaM=nm||($("ss-midex")&&$("ss-midex").checked),quitaC=nc||($("ss-cartx")&&$("ss-cartx").checked);
+    s.pdf=np||(SED&&!quitaP?SED.pdf||null:null);s.mide=nm||(SED&&!quitaM?SED.mide||null:null);s.cart=nc||(SED&&!quitaC?SED.cart||null:null);
     if(SED)await F.updateDoc(ref,s);else await F.setDoc(ref,s);
     if(GPX)await F.setDoc(F.doc(db(),"salidasp",id),{club:cid,p:JSON.stringify(GPX.pts)});
-    if(SED){if(quitaP&&SED.pdf)await borraDoc(SED.id,SED.pdf);if(quitaM&&SED.mide)await borraDoc(SED.id,SED.mide)}
+    if(SED){if(quitaP&&SED.pdf)await borraDoc(SED.id,SED.pdf);if(quitaM&&SED.mide)await borraDoc(SED.id,SED.mide);if(quitaC&&SED.cart)await borraDoc(SED.id,SED.cart)}
     toast(SED?"Salida actualizada":"Salida publicada");$("sal-form").innerHTML="";GPX=null;SED=null;carga(true)}catch(e){console.warn(e);toast(/permission/i.test(String(e))?"Faltan los permisos en la base de datos":/size|exceed|large/i.test(String(e))?"El archivo es demasiado grande: pon mejor un enlace":"No se ha podido publicar. Mira la cobertura y prueba otra vez")}}
 // lee un documento: PDF (comprobando que de verdad es un PDF y que no pasa de 8 MB) o imagen (se reduce a JPEG)
-async function leeDoc(f,que,img){if(!f)return null;const MB=8;
+async function leeDoc(f,que,img,px){if(!f)return null;const MB=8;
   const esImg=img&&/^image\//.test(f.type||"");
   if(esImg){const url=URL.createObjectURL(f);try{const im=await new Promise((ok,ko)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>ko(new Error(`La imagen de la ${que} no se puede abrir`));i.src=url});
-      const sc=Math.min(1,2000/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);
+      const sc=Math.min(1,(px||2000)/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);
       const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
       const b64=c.toDataURL("image/jpeg",.85).split(",")[1];return{tr:trocea(b64),nm:(f.name.replace(/\.[^.]+$/,"")||"mide").slice(0,70)+".jpg",ty:"image/jpeg"}}finally{URL.revokeObjectURL(url)}}
   if(f.size>MB*1024*1024)throw new Error(`La ${que} ocupa ${(f.size/1048576).toLocaleString("es-ES",{maximumFractionDigits:1})} MB y el máximo son ${MB} MB: pon mejor un enlace`);
@@ -3514,6 +3525,15 @@ async function leeDoc(f,que,img){if(!f)return null;const MB=8;
 const trocea=b=>{const r=[];for(let i=0;i<b.length;i+=700000)r.push(b.slice(i,i+700000));return r};
 const trozoId=(sid,d,i)=>d.k?d.k+"_"+i:sid+"_"+i;   // las hojas de ruta de antes del 10 nov no llevan «k»
 async function borraDoc(sid,d){const F=fs();for(let i=0;i<d.n;i++)await F.deleteDoc(F.doc(db(),"salidasf",trozoId(sid,d,i))).catch(()=>{})}
+// 11 nov 2026 · el cartel se trae de la base de datos y se enseña como imagen (se guarda un rato para no bajarlo dos veces)
+const CART={};
+async function verCartel(s){const box=sheet.querySelector("[data-salcart]");if(!box)return;
+  try{let u=CART[s.cart.k];if(!u){await base();const F=fs();let b="";for(let i=0;i<s.cart.n;i++){const x=await F.getDoc(F.doc(db(),"salidasf",trozoId(s.id,s.cart,i)));if(!x.exists())throw 0;b+=x.data().d}
+      u=CART[s.cart.k]="data:"+(s.cart.ty||"image/jpeg")+";base64,"+b}
+    const bx=sheet.querySelector("[data-salcart]");if(bx)bx.innerHTML=`<img src="${u}" alt="Cartel de la salida">`}
+  catch(e){const bx=sheet.querySelector("[data-salcart]");if(bx)bx.remove()}}
+function cartelGrande(src){const o=document.createElement("div");o.className="salcartfull";o.innerHTML=`<img src="${src}" alt="Cartel"><button aria-label="Cerrar">×</button>`;
+  o.addEventListener("click",()=>o.remove());document.body.appendChild(o)}
 // bajar un documento: siempre se DESCARGA (a Descargas), en el móvil y en el ordenador
 async function bajaDoc(s,d,que){toast(`Bajando la ${que}…`,20000);
   try{await base();const F=fs();let b="";for(let i=0;i<d.n;i++){const x=await F.getDoc(F.doc(db(),"salidasf",trozoId(s.id,d,i)));if(!x.exists())throw new Error("falta");b+=x.data().d}
@@ -3525,6 +3545,9 @@ function descarga(blob,nm){const a=document.createElement("a");a.href=URL.create
 
 /* --- la ficha de una salida (en el mapa, con su track) --- */
 let LAY=null;
+// 11 nov 2026 · enlaces del club: «@club» o «instagram.com/club» → https://instagram.com/club
+function urlRed(v,dom){v=String(v||"").trim();if(!v)return"";if(/^https?:\/\//i.test(v))return v;
+  if(dom&&/^@?[\w.]+$/.test(v)&&!v.includes(".")||dom&&/^@[\w.]+$/.test(v))return"https://"+dom+"/"+v.replace(/^@/,"");return"https://"+v.replace(/^\/+/,"")}
 // 10 nov 2026 · un enlace a un PDF de la web del club se abre en el visor de Google (se ve en pantalla, no se descarga:
 // en el móvil Chrome descarga los PDF y algunas webs de clubes lo entregan mal → «archivo dañado»). Las páginas normales y Drive, tal cual.
 const verUrl=u=>/\.pdf(\?|#|$)/i.test(String(u||""))&&!/(^|\.)google\.com\//i.test(u)?"https://docs.google.com/viewer?url="+encodeURIComponent(u):u;
@@ -3545,8 +3568,10 @@ async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
   const apH=apu||telH;
   const puede=esAdm()||(MIO&&MIO.estado==="ok"&&MIO.id===s.club);
   sheet.classList.remove("full");
+  if(s.cart)setTimeout(()=>verCartel(s),0);
   sheet.innerHTML=`<div class="grab"></div>${tipoHTML("salida",s.cn||"")}<div class="sheet-head"><h2>${esc(s.ti)}</h2><button class="x" aria-label="Cerrar" data-close data-salx>×</button></div>
   <div class="meta"><span class="tag" style="background:#1e8e3e;color:#fff;border-color:#1e8e3e">📅 ${esc(fFecha(s.fecha))}</span><span class="tag">${esc(s.cn)}</span>${s.prueba?`<span class="tag">Prueba</span>`:""}</div>
+  ${s.cart?`<div class="salcart" data-salcart><span>Cargando el cartel…</span></div>`:""}
   <div class="ficha"${[s.km,s.up,s.hr,s.dif].filter(Boolean).length===4?' style="grid-template-columns:1fr 1fr"':""}>${s.km?`<div><b>${kmF(s.km)}</b><span>Distancia</span></div>`:""}${s.up?`<div><b>+${Math.round(s.up).toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${s.hr?`<div><b>${esc(s.hr)}</b><span>Horario</span></div>`:""}${s.dif?`<div><b>${esc(s.dif)}</b><span>Dificultad</span></div>`:""}</div>
   ${s.enc?`<p class="salida">📍 Punto de encuentro: <b>${esc(s.enc)}</b></p>`:""}
   ${s.txt?`<p class="desc">${esc(s.txt).replace(/\n/g,"<br>")}</p>`:""}
@@ -3561,14 +3586,17 @@ async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
     <button class="btn ghost" data-salfol>▶ Seguir</button><button class="btn ghost" data-salgpx>⬇ Descargar GPX</button><button class="btn ghost" data-salsave>💾 Guardar en mis tracks</button></div></div>`:""}
   <div class="acts2"><div class="agrid">
    <button class="btn ghost" data-salshare>📤 Compartir</button><button class="btn ghost" data-salfav>${esFav(s.club)?"★ Club favorito":"☆ Club favorito"}</button>
-   ${s.cw?`<a class="btn ghost" href="${esc(s.cw)}" target="_blank" rel="noopener">🏔 Web del club</a>`:""}
+   
    ${puede?`<button class="btn ghost" data-saledit>✏️ Editar salida</button><button class="btn ghost" style="color:#b3261e" data-saldel>🗑 Borrar salida</button>`:""}</div></div>
+  ${(()=>{const r=[s.cw?`<a class="btn ghost" href="${esc(s.cw)}" target="_blank" rel="noopener">🌐 Web</a>`:"",s.cig?`<a class="btn ghost" href="${esc(s.cig)}" target="_blank" rel="noopener">📷 Instagram</a>`:"",s.cfb?`<a class="btn ghost" href="${esc(s.cfb)}" target="_blank" rel="noopener">👍 Facebook</a>`:""].filter(Boolean);
+    return r.length?`<div class="salbtns salred" style="grid-template-columns:repeat(${r.length},1fr)">${r.join("")}</div>`:""})()}
   <p class="salaviso">Organiza <b>${esc(s.cn)}</b>${s.cc?" ("+esc(s.cc)+")":""}. La inscripción, el seguro y las condiciones son cosa del club: Los de las Claras solo la anuncia.</p>`;
   sheet._sal={s,pts};sheet.hidden=false;sheet.scrollTop=0}
 sheet.addEventListener("click",async e=>{const k=sheet._sal;if(!k)return;
   if(e.target.closest("[data-salx]")){return}   // el track se queda en el mapa hasta abrir otra cosa
   const {s,pts}=k;const sinT=()=>{if(!pts||pts.length<2){toast("Esta salida no tiene track");return true}return false};
   if(e.target.closest("[data-salfol]")){if(sinT())return;if(LAY){LAY.remove();LAY=null}if(window.SEGUIR)SEGUIR.start({u:"tmp",ti:s.ti,gx:{ln:pts,km:s.km}},false);return}
+  const ci=e.target.closest("[data-salcart] img");if(ci){cartelGrande(ci.src);return}
   if(e.target.closest("[data-saltrk]")){const o=sheet.querySelector(".saltrk .opts");if(o)o.hidden=!o.hidden;return}
   // ⬇ Descargar GPX: siempre a Descargas (antes en el móvil abría el menú de compartir)
   if(e.target.closest("[data-salgpx]")){if(sinT())return;descarga(new Blob([gpxDe(s.ti,pts)],{type:"application/gpx+xml"}),nomGpx(s.ti));return}
@@ -3583,7 +3611,7 @@ sheet.addEventListener("click",async e=>{const k=sheet._sal;if(!k)return;
     try{if(navigator.share){await navigator.share({title:s.ti,text,url});return}}catch(er){if(er&&er.name==="AbortError")return}
     try{await navigator.clipboard.writeText(text+"\n"+url);toast("Enlace copiado")}catch(er){window.open("https://wa.me/?text="+encodeURIComponent(text+"\n"+url),"_blank","noopener")}return}
   if(e.target.closest("[data-saledit]")){sheet.hidden=true;showView("salidas");setTimeout(()=>formSalida(s),150);return}
-  if(e.target.closest("[data-saldel]")){if(!confirm("¿Borrar esta salida?"))return;try{await base();const F=fs();if(s.pdf)await borraDoc(s.id,s.pdf);if(s.mide)await borraDoc(s.id,s.mide);await F.deleteDoc(F.doc(db(),"salidasp",s.id)).catch(()=>{});await F.deleteDoc(F.doc(db(),"salidas",s.id));
+  if(e.target.closest("[data-saldel]")){if(!confirm("¿Borrar esta salida?"))return;try{await base();const F=fs();if(s.pdf)await borraDoc(s.id,s.pdf);if(s.mide)await borraDoc(s.id,s.mide);if(s.cart)await borraDoc(s.id,s.cart);await F.deleteDoc(F.doc(db(),"salidasp",s.id)).catch(()=>{});await F.deleteDoc(F.doc(db(),"salidas",s.id));
     sheet.hidden=true;if(LAY){LAY.remove();LAY=null}toast("Salida borrada");carga(true)}catch(er){toast("No se ha podido borrar")}}});
 // al abrir otra cosa en el mapa, se quita el track de la salida
 {const st=window.showTrack;if(st)window.showTrack=function(){if(LAY&&!(sheet._sal&&!sheet.hidden)){LAY.remove();LAY=null}return st.apply(this,arguments)}}
@@ -5543,5 +5571,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>(function(){const B="f4a697fe78";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>(function(){const B="1164b77e73";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim();if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
