@@ -55,7 +55,7 @@ addEventListener("unhandledrejection",e=>apunta("ERROR",`promesa: ${(e.reason&&(
 try{new PerformanceObserver(l=>{for(const x of l.getEntries())if(x.duration>500)apunta("ATASCO",`${Math.round(x.duration)} ms sin responder (${document.visibilityState}) · ${estado()}`)}).observe({type:"longtask",buffered:true})}catch(e){}
 setTimeout(()=>{for(const x of window.__ERRS||[])apunta("MÓDULO",x)},5000);   // módulos que fallaron al cargar
 // informe para copiar, en «Tu cuenta»
-function informe(){return["Informe LdC Rutas · "+hh(Date.now()),...lee().map(([t,k,x])=>`${hh(t)} ${k}${x?" · "+x:""}`)].join("\n")}
+function informe(){return["Informe LdC Rutas · "+hh(Date.now())+" · versión "+(window.LDC_VER||"?"),...lee().map(([t,k,x])=>`${hh(t)} ${k}${x?" · "+x:""}`)].join("\n")}
 async function copiar(b){const txt=informe();let ok=false;try{await navigator.clipboard.writeText(txt);ok=true}catch(e){}
   if(!ok){const ta=document.createElement("textarea");ta.value=txt;ta.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(ta);ta.select();try{ok=document.execCommand("copy")}catch(e){}ta.remove()}
   if(ok){b.textContent="✓ Copiado: pégalo en el chat con Claude";if(typeof toast==="function")toast("Informe copiado")}
@@ -63,7 +63,7 @@ async function copiar(b){const txt=informe();let ok=false;try{await navigator.cl
 // el panel de la cuenta (sync.js) es un cuadro aparte (.accdlg) que se crea al arrancar: se espera a que exista
 function engancha(){const sh=document.querySelector(".accdlg");if(!sh){setTimeout(engancha,1000);return}
 new MutationObserver(()=>{if(sh.querySelector("[data-diag]")||!sh.querySelector(".sheet-head"))return;
-  sh.insertAdjacentHTML("beforeend",`<p class="note" style="margin-top:14px"><button class="mpb" data-diag>📋 Copiar informe para Claude</button><br><small>Para encontrar fallos: lo que ha pasado en la app (sin datos personales).</small> <button class="mpb" data-diagx style="font-size:12px">Vaciar</button></p>`)}).observe(sh,{childList:true})}
+  sh.insertAdjacentHTML("beforeend",`<p class="note" style="margin-top:14px"><button class="mpb" data-diag>📋 Copiar informe para Claude</button><br><small>Para encontrar fallos: lo que ha pasado en la app (sin datos personales).</small><br><small>Versión de la app: <b>${window.LDC_VER||"?"}</b></small> <button class="mpb" data-diagx style="font-size:12px">Vaciar</button></p>`)}).observe(sh,{childList:true})}
 engancha();
 document.addEventListener("click",e=>{const b=e.target.closest("[data-diag]");if(b){copiar(b);return}
   const x=e.target.closest("[data-diagx]");if(x){try{localStorage.removeItem(K)}catch(er){}apunta("vaciado","");x.textContent="✓ Vaciado"}});

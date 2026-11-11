@@ -69,6 +69,7 @@ function barra(){if(BAR)BAR.remove();clearTimeout(btm);BAR=document.createElemen
   #sheet>.grab::before{content:"";width:56px;height:6px;border-radius:9px;background:#9aa39c;box-shadow:0 0 0 2px rgba(255,255,255,.65)}
   @media (prefers-color-scheme:dark){#sheet>.grab::before{background:#d6dbd5;box-shadow:0 0 0 2px rgba(0,0,0,.45)}}
   #sheet.fmin{transform:translateY(110%)!important;pointer-events:none}
+  #sheet{overscroll-behavior-y:contain}
   .fminbar{position:absolute;left:8px;right:8px;bottom:8px;z-index:30;display:flex;align-items:center;gap:8px;min-height:58px;padding:4px 6px 4px 14px;border-radius:16px;background:var(--card);color:var(--ink);border:1px solid var(--edge);box-shadow:0 -4px 18px rgba(0,0,0,.25);touch-action:none}
   .fminbar .t{flex:1;min-width:0;font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
   .fminbar .t small{display:block;font-weight:600;font-size:12.5px;color:var(--muted)}
@@ -91,15 +92,15 @@ function barra(){if(BAR)BAR.remove();clearTimeout(btm);BAR=document.createElemen
   // si la ficha cambia o se cierra estando minimizada, fuera la barra
   new MutationObserver(()=>{if(sh.hidden){if(sh.classList.contains("fmin"))sh.classList.remove("fmin");quitaBar()}else if(BAR&&!sh.classList.contains("fmin"))quitaBar()}).observe(sh,{attributes:true,attributeFilter:["hidden","class"]});   // ojo: classList.remove sin comprobar vuelve a avisar al observador (bucle)
   new MutationObserver(()=>{if(sh.classList.contains("fmin")){sh.classList.remove("fmin");quitaBar()}}).observe(sh,{childList:true});
-  let y0=null,x0=0,t0=0,dy=0,tira=false,asa=false;
+  let y0=null,x0=0,t0=0,dy=0,tira=false,asa=false,canc=0;
   const fuera=e=>e.target.closest("input,textarea,select,.frmas,.frvel,.leaflet-container,svg,.perf,.pf,[data-noswipe]");
   sh.addEventListener("touchstart",e=>{if(e.touches.length!==1){y0=null;return}asa=!!e.target.closest("#sheet>.grab");
     if(!asa&&(sh.scrollTop>2||fuera(e))){y0=null;return}
-    y0=e.touches[0].clientY;x0=e.touches[0].clientX;t0=Date.now();dy=0;tira=false},{passive:true});
+    y0=e.touches[0].clientY;x0=e.touches[0].clientX;t0=Date.now();dy=0;tira=false;canc=0},{passive:true});
   sh.addEventListener("touchmove",e=>{if(y0==null)return;const t=e.touches[0],d=t.clientY-y0,dx=Math.abs(t.clientX-x0);
-    if(!tira){if(d<8)return;if(dx>d||(!asa&&sh.scrollTop>2)){y0=null;return}tira=true;sh.style.transition="none"}
-    dy=Math.max(0,d);sh.style.transform=`translateY(${dy}px)`;if(e.cancelable)e.preventDefault()},{passive:false});
-  const suelta=()=>{if(y0==null)return;y0=null;if(!tira)return;tira=false;const v=dy/Math.max(1,Date.now()-t0),H=sh.getBoundingClientRect().height+dy;
+    if(!tira){if(d>0&&d<8&&Math.abs(t.clientX-x0)<d&&e.cancelable&&(asa||sh.scrollTop<=0))e.preventDefault();if(d<8)return;if(dx>d||(!asa&&sh.scrollTop>2)){y0=null;return}tira=true;sh.style.transition="none"}
+    dy=Math.max(0,d);sh.style.transform=`translateY(${dy}px)`;if(e.cancelable)e.preventDefault();else canc++},{passive:false});
+  const suelta=ev=>{if(y0==null)return;y0=null;if(window.DIAG&&(tira||ev&&ev.type==="touchcancel"))DIAG.apunta("deslizar",`${ev&&ev.type} bajó ${Math.round(dy)} px${asa?" (rayita)":""}${canc?" · "+canc+" no frenables":""}`);if(!tira)return;tira=false;const v=dy/Math.max(1,Date.now()-t0),H=sh.getBoundingClientRect().height+dy;
     if(dy>H*.7||(dy>H*.4&&v>1.2)){sh.style.transition="transform .18s ease";sh.style.transform="translateY(100%)";setTimeout(cierra,170)}
     else if(dy>90||(dy>30&&v>.6))minimiza();
     else{sh.style.transition="transform .2s ease";sh.style.transform="";setTimeout(()=>{sh.style.transition=""},220)}};
