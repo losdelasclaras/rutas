@@ -62,7 +62,11 @@ async function copiar(b){const txt=informe();let ok=false;try{await navigator.cl
   else{b.insertAdjacentHTML("afterend",`<textarea readonly style="width:100%;height:160px;font-size:11px;margin-top:6px">${txt.replace(/</g,"&lt;")}</textarea>`);b.textContent="Mantén pulsado el texto y cópialo"}}
 // el panel de la cuenta (sync.js) es un cuadro aparte (.accdlg) que se crea al arrancar: se espera a que exista
 function engancha(){const sh=document.querySelector(".accdlg");if(!sh){setTimeout(engancha,1000);return}
-new MutationObserver(()=>{if(sh.querySelector("[data-diag]")||!sh.querySelector(".sheet-head"))return;
+// 11 nov 2026: solo lo ven las cuentas de administrador (el registro se sigue guardando en todos los móviles)
+const ADMD=["losdelasclaras@gmail.com","jcrespopazos@gmail.com"];
+const admD=()=>{const u=window.LDCFB&&LDCFB.user&&LDCFB.user();return!!(u&&u.email&&ADMD.includes(u.email.toLowerCase()))};
+new MutationObserver(()=>{const ya=sh.querySelector("[data-diag]");if(ya&&!admD()){const p=ya.closest("p");if(p)p.remove();return}
+  if(ya||!admD()||!sh.querySelector(".sheet-head"))return;
   sh.insertAdjacentHTML("beforeend",`<p class="note" style="margin-top:14px"><button class="mpb" data-diag>📋 Copiar informe para Claude</button><br><small>Para encontrar fallos: lo que ha pasado en la app (sin datos personales).</small><br><small>Versión de la app: <b>${window.LDC_VER||"?"}</b></small> <button class="mpb" data-diagx style="font-size:12px">Vaciar</button></p>`)}).observe(sh,{childList:true})}
 engancha();
 document.addEventListener("click",e=>{const b=e.target.closest("[data-diag]");if(b){copiar(b);return}
