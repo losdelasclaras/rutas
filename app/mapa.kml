@@ -2650,18 +2650,8 @@
         </Point>
       </Placemark>
       <Placemark>
-        <name>Cascada/Tabayon del Chorrón</name>
-        <description>https://losdelasclaras.blogspot.com/2016/10/senda-del-chorron-y-cerrul-tombu.html#more</description>
-        <styleUrl>#icon-1899-DB4436</styleUrl>
-        <Point>
-          <coordinates>
-            -5.2986224,43.3391264,0
-          </coordinates>
-        </Point>
-      </Placemark>
-      <Placemark>
         <name><![CDATA[Cerru l' Tombu (657 m.)]]></name>
-        <description>https://losdelasclaras.blogspot.com/2016/10/senda-del-chorron-y-cerrul-tombu.html#more</description>
+        <description>https://losdelasclaras.blogspot.com/2016/10/senda-del-chorron-y-cerrul-tombu.html</description>
         <styleUrl>#icon-1899-DB4436</styleUrl>
         <Point>
           <coordinates>
@@ -5866,6 +5856,16 @@
         <Point>
           <coordinates>
             -5.5119895,43.120531,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Cascada del Chorrón</name>
+        <description>https://losdelasclaras.blogspot.com/2016/10/senda-del-chorron-y-cerrul-tombu.html</description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <Point>
+          <coordinates>
+            -5.2986224,43.3391264,0
           </coordinates>
         </Point>
       </Placemark>
