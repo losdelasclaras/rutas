@@ -1460,7 +1460,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-92a6d6bf.json", "ln": "colab-ln-258f8368.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-555d6aa2.json", "ln": "colab-ln-258f8368.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -5552,6 +5552,80 @@ function barra(){if(BAR)BAR.remove();clearTimeout(btm);BAR=document.createElemen
 
 }catch(e){console.error("módulo atras",e);(window.__ERRS=window.__ERRS||[]).push("atras: "+(e&&e.message))}
 try{
+/* 11 nov 2026 · Contador anónimo de uso.
+   Cada móvil o navegador apunta, como mucho una vez al día, que ha abierto la app y de qué forma (APK, instalada,
+   navegador; iPhone aparte). No guarda nada de la persona: solo suma 1 en el día, la semana y el mes (colección «uso»).
+   Para saber si es la primera vez del día/semana/mes, el móvil guarda las fechas en localStorage («ldc-uso»).
+   Usa la API REST de Firestore (sin cargar Firebase al arrancar). Las cuentas de administrador no cuentan.
+   El resumen lo ve solo el administrador, en «Tu cuenta» › «📊 Uso de la app». */
+(()=>{
+const ADM=["losdelasclaras@gmail.com","jcrespopazos@gmail.com"];
+const K="ldc-uso",PID="losdelasclaras-rutas",KEY="AIzaSyBzYlxsZhJVPJpCk0_EgxaplD7zWMOOg1I";
+const lee=()=>{try{return JSON.parse(localStorage.getItem(K)||"{}")}catch(e){return{}}};
+const pon=o=>{try{localStorage.setItem(K,JSON.stringify(o))}catch(e){}};
+// fecha de España (sin depender de la hora del móvil fuera de España)
+const hoyES=()=>new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Madrid"}).format(new Date());
+function semana(ds){const d=new Date(ds+"T12:00:00Z");const w=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-w);
+  const y=d.getUTCFullYear();return y+"-S"+String(Math.ceil(((d-Date.UTC(y,0,1))/864e5+1)/7)).padStart(2,"0")}
+function tipo(){let apk=false;try{apk=document.referrer.startsWith("android-app://es.losdelasclaras.rutas")||sessionStorage.getItem("ldc-apk")==="1"}catch(e){}
+  if(apk)return"a";const inst=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;return inst?"i":"w"}
+const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+
+function cuenta(){
+  if(location.hostname!=="losdelasclaras.github.io")return;   // pruebas en otro sitio: no cuentan
+  if(/HeadlessChrome|bot|crawl|spider|Lighthouse/i.test(navigator.userAgent))return;
+  const o=lee();if(o.yo)return;   // el administrador
+  const d=hoyES();if(o.d===d)return;
+  const s=semana(d),m=d.slice(0,7),t=tipo();
+  const docs=[["d-"+d,["n",t].concat(ios?["ip"]:[]).concat(o.d?[]:["nv"])]];
+  if(o.s!==s)docs.push(["s-"+s,["n",t].concat(ios?["ip"]:[])]);
+  if(o.m!==m)docs.push(["m-"+m,["n",t].concat(ios?["ip"]:[])]);
+  const base=`projects/${PID}/databases/(default)/documents/uso/`;
+  const writes=docs.map(([id,cs])=>({update:{name:base+id,fields:{}},updateMask:{fieldPaths:[]},
+    updateTransforms:cs.map(c=>({fieldPath:c,increment:{integerValue:"1"}}))}));
+  fetch(`https://firestore.googleapis.com/v1/projects/${PID}/databases/(default)/documents:commit?key=${KEY}`,
+    {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({writes}),keepalive:true})
+    .then(r=>{if(r.ok){o.d=d;o.s=s;o.m=m;pon(o)}else console.warn("uso",r.status)}).catch(()=>{});
+}
+setTimeout(cuenta,4000);
+
+// --- administrador: no cuenta y ve el resumen
+const esAdm=()=>{const u=window.LDCFB&&LDCFB.user&&LDCFB.user();return!!(u&&u.email&&ADM.includes(u.email.toLowerCase()))};
+setInterval(()=>{if(esAdm()){const o=lee();if(!o.yo){o.yo=1;pon(o)}}},5000);
+
+function engancha(){const sh=document.querySelector(".accdlg");if(!sh){setTimeout(engancha,1000);return}
+  new MutationObserver(()=>{if(!esAdm()||sh.querySelector("[data-uso]")||!sh.querySelector(".sheet-head"))return;
+    sh.insertAdjacentHTML("beforeend",`<p class="note" style="margin-top:14px"><button class="mpb" data-uso>📊 Uso de la app</button><br><small>Solo lo ves tú. Personas = móviles o navegadores distintos (aproximado).</small></p><div data-usoc></div>`)}).observe(sh,{childList:true,subtree:true})}
+engancha();
+
+const INI="2026-11-11";   // desde cuándo se cuenta
+const NOM={a:"APK",i:"Instalada",w:"Navegador",ip:"iPhone"};
+const MES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+function fila(et,x,max){const n=x.n||0,w=max?Math.round(n/max*100):0;
+  const det=["a","i","w","ip"].map(k=>x[k]?NOM[k]+" "+x[k]:"").filter(Boolean).concat(x.nv?["nuevas "+x.nv]:[]).join(" · ");
+  return`<div style="padding:5px 0;border-bottom:1px solid var(--line,rgba(127,127,127,.2))"><div style="display:flex;align-items:center;gap:8px"><span style="width:86px;flex:none">${et}</span><span style="flex:1;min-width:0"><span style="display:block;background:#2e7d32;height:12px;border-radius:3px;width:${Math.max(w,n?3:0)}%"></span></span><b style="width:34px;text-align:right;flex:none">${n}</b></div>${det?`<div style="font-size:12px;opacity:.75;margin-left:94px">${det}</div>`:""}</div>`}
+function tabla(tit,rows){const max=Math.max(1,...rows.map(r=>r[1].n||0));
+  return`<h4 style="margin:14px 0 4px">${tit}</h4>${rows.map(r=>fila(r[0],r[1],max)).join("")||`<p class="note">Sin datos todavía</p>`}`}
+async function resumen(box){box.innerHTML=`<p class="note">Cargando…</p>`;
+  try{const A=await LDCFB.load(),F=A.fs;const q=await F.getDocs(F.collection(A.db,"uso"));const D={};
+    q.forEach(d=>{D[d.id]=d.data()});
+    const hoy=hoyES(),dias=[];for(let i=13;i>=0;i--){const t=new Date(hoy+"T12:00:00Z");t.setUTCDate(t.getUTCDate()-i);const k=t.toISOString().slice(0,10);if(k>=INI)dias.push(k)}
+    const sem=[];for(let i=7;i>=0;i--){const t=new Date(hoy+"T12:00:00Z");t.setUTCDate(t.getUTCDate()-7*i);const k=semana(t.toISOString().slice(0,10));if(k>=semana(INI))sem.push(k)}
+    const mes=Object.keys(D).filter(k=>k.startsWith("m-")).map(k=>k.slice(2)).sort().slice(-6);
+    const tot=Object.keys(D).filter(k=>k.startsWith("d-")).reduce((a,k)=>a+(D[k].nv||0),0);
+    const dd=s=>{const[y,m,d]=s.split("-");return`${+d} ${MES[m-1]}`};
+    box.innerHTML=`<p style="margin:10px 0 0;font-size:15px">👥 <b>${tot}</b> móviles o navegadores distintos desde que se cuenta (11 nov 2026)</p>`+
+      tabla("Últimos 14 días",dias.reverse().map(k=>[dd(k),D["d-"+k]||{}]))+
+      tabla("Por semanas",sem.reverse().map((k,i)=>[i===0?"Esta semana":i===1?"La pasada":"Sem. "+k.split("-S")[1],D["s-"+k]||{}]))+
+      tabla("Por meses",mes.reverse().map(k=>[MES[+k.slice(5)-1]+" "+k.slice(0,4),D["m-"+k]||{}]))+
+      `<p class="note" style="font-size:12px;margin-top:10px">Cada persona cuenta una vez al día, una vez a la semana y una vez al mes, abra la app las veces que la abra. Tus cuentas de administrador no cuentan.</p>`}
+  catch(e){box.innerHTML=`<p class="note">No se ha podido leer (${(e&&e.code)||e}). ¿Están puestas las reglas de «uso» en Firebase?</p>`}}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-uso]");if(!b)return;const box=document.querySelector("[data-usoc]");if(!box)return;
+  if(box.innerHTML){box.innerHTML="";return}resumen(box)});
+})();
+
+}catch(e){console.error("módulo uso",e);(window.__ERRS=window.__ERRS||[]).push("uso: "+(e&&e.message))}
+try{
 /* ---------- 🆕 Aviso de versión nueva (11 nov 2026) ----------
    Al abrir la app (a los pocos segundos) y cada vez que vuelves a ella, se mira build.txt (la huella de la versión publicada).
    Solo cuenta la huella del CÓDIGO (11 nov, tarde): los datos nuevos de cada noche no avisan. Si el código no coincide con el de esta página, sale arriba una barra pequeña: «🆕 Hay una versión nueva · Actualizar».
@@ -5611,5 +5685,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="11/11 20:14 · 7b8d49";window.LDC_BUILD="7b8d49240f";window.LDC_FUNC="1b95de7283";(function(){const B="7b8d49240f";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="11/11 20:54 · 60e4e4";window.LDC_BUILD="60e4e44eae";window.LDC_FUNC="ab7f0b476c";(function(){const B="60e4e44eae";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
