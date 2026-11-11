@@ -1,6 +1,6 @@
-# Informe del robot · 11/11/2026 05:20
+# Informe del robot · 11/11/2026 10:57
 
-**Cambios:** foto recuperada; foto recuperada
+**Cambios:** foto recuperada; foto recuperada; regeneración forzada
 
 - 🔎 «PEÑA CRESPA O LOS TORNOS DESDE ORLÉ»: sin dificultad. Texto del cuadro: «ismo camino desde Orlé (Caso) a la Peña Crespa o Los Tornos (1.558 m), siguiendo el valle del Ríu Mediu , cruzando la preciosa majada de Piedrafita y subiendo desde el Collado Boqueriza por una canal y una corta trepada. 📏 12 km Ida y vuelta 📈 900 m Desnivel acumulado 🏔️ 1.558 m Peña Crespa / Los Tornos 📲 Descargar el track en Wikiloc --> Empezamos en Orlé siguiendo las marcas blancas y amarillas del PR AS-126, que se adentra en el valle del Ríu Mediu. Tras las cabañas de la Felguera dejamos el camino ancho y subimos por prados y senda hasta el Collado Piedrafita, desde donde se alcanza la cum»
 - 🔎 «Los Fontanes norte y sur desde Tuiza»: sin dificultad. Texto del cuadro: « Arriba (Lena) por la vega de Brañalluenga y el refugio del Meicín hasta la Forqueta del Portillín (2.065 m) y, por el Canalón del Buey, al Fontán Sur (2.408 m) y al Fontán Norte (2.417 m), techo del concejo de Quirós. 📏 12 km Ida y vuelta 📈 1.200 m Desnivel acumulado 🏔️ 2.417 m Fontán Norte ⛰️ 2 cimas Fontán Sur y Fontán Norte ⚡ Pedrera Canalón del Buey, casi 300 m 🔄 Ida y vuelta Desde Tuiza de Arriba · 1.230 m 📍 Tuiza de Arriba (Lena, Asturias) ↗ 🗺️ Macizo de Ubiña · Los Fontanes 📅 Agosto de 2010 📲 Descargar el track en Wikiloc --> Salimos de Tuiza de Arriba por la vega de Brañalluenga hasta»
@@ -18,17 +18,17 @@
 - Mapa: sin cambios.
 - Drive: sin tracks nuevos.
 - ⛰ Rutinas Varias: 89 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: <urlopen error [Errno 101] Network is unreachable>; overpass-api.de: <urlopen error [Errno 101] Network is unreachable>; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Rutinas Varias con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Rutinas Varias con lo guardado de otras noches.
 - ⛰ Cumbres de Rutinas Varias: 78 de 97 colocadas en el pico de OpenStreetMap; 19 siguen en el punto más alto de su track (lista en robot/cumbres_c2.txt).
 - 📝 Blog de Rutinas Varias: 11 rutas emparejadas con su entrada (146 de 403 con enlace al blog; índice con 315 entradas).
 - 📷 Fotos de rutas de Rutinas Varias (de su blog): 0 nuevas, 139 en total, 7 sin foto
 - 📅 Fechas de rutas de Rutinas Varias: 0 nuevas (146 de 403 con fecha); Wikiloc no responde (8 fallos).
 - Colaborador «Rutinas Varias»: sin cambios.
 - Colaborador «Camudando'l camín»: sin cambios.
--    (39 peticiones a su web en 1.2 min)
+-    (39 peticiones a su web en 1.1 min)
 - 🐾 Gata con botas: 205 entradas en sus zonas, 191 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: <urlopen error [Errno 101] Network is unreachable>; overpass.private.coffee: The read operation timed out; overpass-api.de: <urlopen error [Errno 101] Network is unreachable>; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 18 colocadas en el pico de OpenStreetMap; 1 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 188 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
