@@ -388,7 +388,7 @@ sec.addEventListener("click",async e=>{const t=e.target;
     toast(ok?"Club aprobado":"Hecho");carga(true)}catch(er){console.warn(er);toast("No se ha podido")}}});
 /* EN PRUEBAS (3 nov): la pestaña Salidas solo la ven los administradores hasta que él decida abrirla a todos.
    Para abrirla a todos: PUBLICO=true. */
-const PUBLICO=false;
+const PUBLICO=true;   // 11 nov 2026: Salidas visible para todos
 // mientras está en pruebas, los clubes invitados la ven entrando una vez con el enlace …/rutas/#salidas (se queda recordado en ese móvil)
 const invitado=()=>{try{return localStorage.getItem("ldc-salinv")==="1"}catch(e){return false}};
 const visTab=()=>{const t=document.querySelector('nav.tabs [data-v="salidas"]');if(t)t.hidden=!(PUBLICO||esAdm()||invitado())};
