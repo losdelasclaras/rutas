@@ -1,6 +1,6 @@
 /* ---------- 🆕 Aviso de versión nueva (11 nov 2026) ----------
    Al abrir la app (a los pocos segundos) y cada vez que vuelves a ella, se mira build.txt (la huella de la versión publicada).
-   Si no coincide con la de esta página, sale arriba una barra pequeña: «🆕 Hay una versión nueva · Actualizar».
+   Solo cuenta la huella del CÓDIGO (11 nov, tarde): los datos nuevos de cada noche no avisan. Si el código no coincide con el de esta página, sale arriba una barra pequeña: «🆕 Hay una versión nueva · Actualizar».
    Al tocar «Actualizar» se baja la página nueva, se guarda en el almacén de la app (para que no vuelva a salir la vieja) y se recarga.
    No sale mientras sigues una ruta o grabas (recargar las cortaría); se puede cerrar con ×.
    Sigue además la actualización silenciosa de antes (si vuelves tras 30 min, o si al abrir ya estaba bajada).
@@ -25,7 +25,9 @@ async function actualiza(){const b=BAR&&BAR.querySelector(".up");if(b){b.textCon
     if(r.ok&&window.caches){const ks=(await caches.keys()).filter(k=>/^ldc-v\d/.test(k));for(const k of ks)await (await caches.open(k)).put("index.html",r.clone())}}catch(e){}
   if(window.DIAG)DIAG.apunta("versión","actualizar");location.reload()}
 async function mira(){if(!window.LDC_BUILD||!navigator.onLine||Date.now()-ult<60000)return;ult=Date.now();
-  try{const r=await fetch("build.txt?"+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();if(v&&v!==LDC_BUILD)muestra(v)}catch(e){}}
+  // build.txt: «huella_total huella_código». Solo avisa si cambia el CÓDIGO; si solo cambian los datos, nada (se actualiza solo)
+  try{const r=await fetch("build.txt?"+Date.now(),{cache:"no-store"});if(!r.ok)return;const[,f]=(await r.text()).trim().split(/\s+/);
+    if(f&&window.LDC_FUNC&&f!==LDC_FUNC)muestra(f)}catch(e){}}
 setTimeout(mira,6000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")setTimeout(mira,1500)});
 // si el almacén de la app avisa de que ya bajó la página nueva (y no se recargó sola), también se ofrece
