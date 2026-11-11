@@ -21,7 +21,7 @@ function muestra(v){if(BAR||cerrada===v||ocupado())return;
   BAR.querySelector(".x").onclick=()=>{cerrada=v;BAR.remove();BAR=null};
   BAR.querySelector(".up").onclick=actualiza;document.body.appendChild(BAR);if(window.DIAG)DIAG.apunta("versión","nueva disponible "+v)}
 async function actualiza(){const b=BAR&&BAR.querySelector(".up");if(b){b.textContent="Bajando…";b.disabled=true}
-  try{const r=await fetch("index.html?v="+Date.now(),{cache:"no-store"});
+  try{const r=await fetch("./?v="+Date.now(),{cache:"no-store"});   // «index.html?…» lo contestaría el sw.js con la copia vieja
     if(r.ok&&window.caches){const ks=(await caches.keys()).filter(k=>/^ldc-v\d/.test(k));for(const k of ks)await (await caches.open(k)).put("index.html",r.clone())}}catch(e){}
   if(window.DIAG)DIAG.apunta("versión","actualizar");location.reload()}
 async function mira(){if(!window.LDC_BUILD||!navigator.onLine||Date.now()-ult<60000)return;ult=Date.now();
