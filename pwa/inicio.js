@@ -7,6 +7,7 @@
 if(typeof map==="undefined")return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #mapbar [data-zone="alp"]{display:none!important}
+#mapbar,.mapbar{display:none!important}   /* 12 nov 2026: quitados Norte · Pirineos (solo centraban el mapa) */
 #map .leaflet-tooltip.lbl.lbl-tapa{visibility:hidden!important}
 </style>`);
 // quien tenía guardada la zona Alpes vuelve al Norte

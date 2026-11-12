@@ -44,6 +44,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .gdpmk button[aria-pressed=true]{background:var(--ink);color:var(--card);border-color:var(--ink)}
 /* fuera de las fichas de punto y track: los mapas sin cobertura y «Proponer al grupo» (Seguidores escondido) */
 #sheet [data-offt],#sheet .offhint,#sheet [data-offr],#ov [data-offr]{display:none!important}
+.gdexp{text-align:center;margin:14px 0 4px}.gdexp button{background:none;border:1px solid var(--edge);color:inherit;border-radius:10px;padding:8px 14px;font-size:14px;opacity:.85}
 body:not(.segvis) [data-segprop],body:not(.segvis) [data-mpfa="prop"]{display:none!important}
 </style>`);
 const box=document.createElement("div");box.className="mpbox gdl";box.id="gdbox";box.hidden=true;document.body.appendChild(box);
@@ -74,9 +75,9 @@ function render(){if(box.hidden)return;const all=items(),nh=all.filter(x=>x.e===
       return`<button class="gdf" data-gdf="${esc(n)}" aria-expanded="${op}"><span class="e">📁</span><span><b>${esc(n)}</b><small>${[nt?nt+(nt===1?" track":" tracks"):"",npt?npt+(npt===1?" punto":" puntos"):""].filter(Boolean).join(" · ")}</small></span><svg class="chev" width="14" viewBox="0 0 10 10"><path d="M3 1.5 7 5 3 8.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>`+
         (op?`<div class="gdfin" data-fn="${esc(n)}"><button class="gdfop" data-gdfop>⚙ Opciones de carpeta</button>${xs.map(x=>conX(Object.assign({inF:1},x))).join("")}</div>`:"")}).join("")+
       (sueltos.length?(names.length?`<p class="gdsep">Sin carpeta</p>`:"")+sueltos.map(x=>conX(x)).join(""):"")}
-  box.innerHTML=`<div class="gdtop"><button class="pri" data-gdadd>⬆️ Abrir GPX o KML</button><button data-gdmas>··· Más</button></div>
+  box.innerHTML=`<div class="gdtop"><button class="pri" data-gdadd>⬆️ Abrir GPX o KML</button><button data-gdnf>📁 Crear carpeta</button></div>
   ${all.length?`<div class="gdfil">${[["todos","Todo",all.length],["pend","★ Pendientes",np],["hecho","✓ Hechos",nh]].map(([k,t,c])=>`<button data-gdfil="${k}" aria-pressed="${FIL===k}">${t} <small>${c}</small></button>`).join("")}</div>
-  <input class="gdq" id="gdq" type="search" placeholder="Buscar en lo guardado…" autocomplete="off" value="${esc(Q)}">`:""}<div id="gdlist">${body}</div>`;
+  <input class="gdq" id="gdq" type="search" placeholder="Buscar en lo guardado…" autocomplete="off" value="${esc(Q)}">`:""}<div id="gdlist">${body}</div>${MPI.get().length?`<p class="gdexp"><button data-gdexp>⬇️ Exportar mis puntos</button></p>`:""}`;
   const q=box.querySelector("#gdq");if(q)q.addEventListener("input",()=>{Q=nk(q.value.trim());const p=q.selectionStart;render();const q2=box.querySelector("#gdq");if(q2){q2.focus();try{q2.setSelectionRange(p,p)}catch(e){}}})}
 function elige(tit,ops){const d=document.createElement("div");d.className="cdq";
   d.innerHTML=`<div role="dialog" aria-label="${esc(tit)}"><h3>${tit}</h3>${ops.map((o,i)=>`<button data-q="${i}"><span>${o[0]}</span>${o[1]}</button>`).join("")}<button class="x" data-q="no">Cancelar</button></div>`;
@@ -105,6 +106,9 @@ box.addEventListener("click",e=>{
     elige("📁 "+esc(n),[["✏️","Cambiar nombre",ac("ren")],["📂","Deshacer carpeta (no borra nada)",ac("undo")],["🗑","Borrar la carpeta y lo que tiene",()=>{if(!confirm(`¿Borrar la carpeta «${n}» y todo lo que tiene dentro?`))return;
       borrar(items().filter(x=>x.c===n).map(x=>({k:x.k,id:String(x.o.id)})),"carpeta "+n);OPEN.delete(n)}]]);return}
   if(e.target.closest("[data-gdadd]")){MPI.importar();return}   // 8 nov 2026: ya no se añaden puntos sueltos
+  // 12 nov 2026: «Crear carpeta» directo arriba; exportar puntos, botón pequeño al final de la lista
+  if(e.target.closest("[data-gdnf]")){MPI.nueva();return}
+  if(e.target.closest("[data-gdexp]")){elige("Exportar mis puntos",[["⬇️","GPX",()=>MPI.exportar("gpx")],["⬇️","KML (Google Earth)",()=>MPI.exportar("kml")]]);return}
   if(e.target.closest("[data-gdmas]")){const hay=MPI.get().length;elige("Más opciones",[["📁","Crear una carpeta",()=>MPI.nueva()],...(hay?[["⬇️","Exportar mis puntos (GPX)",()=>MPI.exportar("gpx")],["⬇️","Exportar mis puntos (KML, Google Earth)",()=>MPI.exportar("kml")]]:[])]);return}
   const fb=e.target.closest("[data-gdfil]");if(fb){FIL=fb.dataset.gdfil;render();return}
   const f=e.target.closest("[data-gdf]");if(f){const n=f.dataset.gdf;if(OPEN.has(n))OPEN.delete(n);else OPEN.add(n);render();return}
