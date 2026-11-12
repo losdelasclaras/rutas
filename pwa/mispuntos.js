@@ -334,7 +334,7 @@ window.ldcBkp=bkpButtons;if(typeof renderCols==="function")renderCols();
 /* "ver solo los míos" también deja ver mis puntos (van en su propia capa) */
 drawMP();drawMT();renderBox();
 /* ---------- carpetas de puntos ---------- */
-function nuevaCarpeta(){const libres=[...MP.filter(p=>!p.c),...MT.filter(t=>!t.c)];if(!libres.length){toast("Todos tus puntos y tracks ya están en carpetas");return}
+function nuevaCarpeta(){const libres=[...MP.filter(p=>!p.c),...MT.filter(t=>!t.c)];if(!libres.length){toast(MP.length||MT.length?"Todos tus puntos y tracks ya están en carpetas":"Aún no tienes nada guardado para meter en una carpeta");return}
   const dias={};for(const p of libres){const d=(p.fh||p.f||"").slice(0,10)||"—";(dias[d]=dias[d]||[]).push(p)}
   const ex=nombresCarpetas();
   const ds=Object.keys(dias).sort().reverse(),d0=ds[0];showView("mapa");

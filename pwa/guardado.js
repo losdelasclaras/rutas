@@ -44,6 +44,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .gdpmk button[aria-pressed=true]{background:var(--ink);color:var(--card);border-color:var(--ink)}
 /* fuera de las fichas de punto y track: los mapas sin cobertura y «Proponer al grupo» (Seguidores escondido) */
 #sheet [data-offt],#sheet .offhint,#sheet [data-offr],#ov [data-offr]{display:none!important}
+.cdq .gdcq{margin:0 0 10px;font-size:15px}.cdq .gdcnew{display:flex;gap:6px;margin:8px 0}.cdq .gdcnew input{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px;border:1px solid var(--edge);border-radius:10px;background:var(--card);color:var(--ink)}.cdq .gdcnew button{flex:none;width:auto;margin:0}
 .gdexp{text-align:center;margin:14px 0 4px}.gdexp button{background:none;border:1px solid var(--edge);color:inherit;border-radius:10px;padding:8px 14px;font-size:14px;opacity:.85}
 body:not(.segvis) [data-segprop],body:not(.segvis) [data-mpfa="prop"]{display:none!important}
 </style>`);
@@ -62,7 +63,7 @@ function fila(x){const o=x.o;
     return`<button class="gdr" data-gdt="${esc(o.id)}"><span class="e">${o.src==="blog"||o.src==="co"?"📘":o.src==="grab"?"⏺️":"〰️"}</span><span><b>${esc(o.n)}</b><small>${esc(sub)}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small>${listo(o)?"<br>"+OFFB:""}</span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
   const ic=MPI.ico?MPI.ico(o.ic):null,tipo=ic?ic[2]:"Punto";
   return`<button class="gdr" data-gdp="${esc(o.id)}"><span class="e">${MPI.emo?MPI.emo(o.ic):"📍"}</span><span><b>${esc(o.n)}</b><small>${esc([tipo,o.a!=null?Math.round(o.a).toLocaleString("es-ES")+" m":"",o.f?fmtF(o.f):""].filter(Boolean).join(" · "))}${!x.inF&&o.c&&FIL!=="todos"?" · 📁 "+esc(o.c):""}</small></span>${x.e?`<span class="st ${x.e}">${x.e==="h"?"✓":"★"}</span>`:""}</button>`}
-const conX=x=>`<div class="gdw">${fila(x)}<button class="gdx" data-gdx="${x.k}:${esc(x.o.id)}" data-n="${esc(x.n)}" aria-label="Borrar">🗑</button></div>`;
+const conX=x=>`<div class="gdw">${fila(x)}<button class="gdx gdc" data-gdc="${esc(x.o.id)}" aria-label="Meter en una carpeta">📁</button><button class="gdx" data-gdx="${x.k}:${esc(x.o.id)}" data-n="${esc(x.n)}" aria-label="Borrar">🗑</button></div>`;
 function render(){if(box.hidden)return;const all=items(),nh=all.filter(x=>x.e==="h").length,np=all.filter(x=>x.e==="p").length;
   const ok=x=>(FIL==="todos"||(FIL==="hecho"?x.e==="h":x.e==="p"))&&(!Q||nk(x.n).includes(Q)||nk(x.c).includes(Q));
   const L=all.filter(ok);let body="";
@@ -108,6 +109,7 @@ box.addEventListener("click",e=>{
   if(e.target.closest("[data-gdadd]")){MPI.importar();return}   // 8 nov 2026: ya no se añaden puntos sueltos
   // 12 nov 2026: «Crear carpeta» directo arriba; exportar puntos, botón pequeño al final de la lista
   if(e.target.closest("[data-gdnf]")){MPI.nueva();return}
+  {const c=e.target.closest("[data-gdc]");if(c){aCarpeta(c.dataset.gdc);return}}   // 12 nov 2026: 📁 junto a la papelera
   if(e.target.closest("[data-gdexp]")){elige("Exportar mis puntos",[["⬇️","GPX",()=>MPI.exportar("gpx")],["⬇️","KML (Google Earth)",()=>MPI.exportar("kml")]]);return}
   if(e.target.closest("[data-gdmas]")){const hay=MPI.get().length;elige("Más opciones",[["📁","Crear una carpeta",()=>MPI.nueva()],...(hay?[["⬇️","Exportar mis puntos (GPX)",()=>MPI.exportar("gpx")],["⬇️","Exportar mis puntos (KML, Google Earth)",()=>MPI.exportar("kml")]]:[])]);return}
   const fb=e.target.closest("[data-gdfil]");if(fb){FIL=fb.dataset.gdfil;render();return}
@@ -127,6 +129,21 @@ if(ml)new MutationObserver(()=>setTimeout(enMarcadas,0)).observe(ml,{childList:t
 // se pone al día cuando cambian los puntos o los tracks
 for(const id of ["mpbox","mtbox"]){const el=document.getElementById(id);if(el)new MutationObserver(()=>setTimeout(render,0)).observe(el,{childList:true,subtree:true})}
 new MutationObserver(()=>{if(!box.hidden)render()}).observe(box,{attributes:true,attributeFilter:["hidden"]});
+// 12 nov 2026: 📁 de cada fila: meter en una carpeta que ya tienes, en una nueva, o sacar. Sin salir de la lista.
+function aCarpeta(id){const ts=MPI.tracks(),ps=MPI.get(),t=ts.find(x=>String(x.id)===String(id))||ps.find(x=>String(x.id)===String(id));if(!t)return;
+  const esP=t.lat!=null,ex=[...new Set([...ps,...ts].map(x=>x.c).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"es"));
+  const d=document.createElement("div");d.className="cdq";
+  d.innerHTML=`<div role="dialog" aria-label="Meter en una carpeta"><h3>📁 Meter en una carpeta</h3><p class="gdcq">${esP?"Punto":"Track"} <b>${esc(t.n)}</b>${t.c?` · ahora en <b>📁 ${esc(t.c)}</b>`:""}</p>
+  ${ex.filter(n=>n!==t.c).map(n=>`<button data-cn="${esc(n)}"><span>📁</span>${esc(n)}</button>`).join("")}
+  <div class="gdcnew"><input maxlength="60" placeholder="Carpeta nueva: nombre"><button data-cnew>Crear y meter</button></div>
+  ${t.c?`<button data-cout><span>📂</span>Sacar de la carpeta</button>`:""}<button class="x" data-cx>Cancelar</button></div>`;
+  const fin=n=>{const go=()=>{if(n==null)delete t.c;else t.c=n;if(esP)MPI.guarda();else MPI.saveTracks(ts.slice());if(n!=null)OPEN.add(n);render();if(typeof toast==="function")toast(n==null?"Sacado de la carpeta":`Metido en 📁 «${n}»`)};
+    if(window.cuentaOk&&!cuentaOk(go,esP?"puntos":"tracks"))return;go()};
+  d.addEventListener("click",e=>{if(e.target===d||e.target.closest("[data-cx]")){d.remove();return}
+    const b=e.target.closest("[data-cn]");if(b){d.remove();fin(b.dataset.cn);return}
+    if(e.target.closest("[data-cout]")){d.remove();fin(null);return}
+    if(e.target.closest("[data-cnew]")){const n=(d.querySelector("input").value||"").trim().slice(0,60);if(!n){d.querySelector("input").focus();if(typeof toast==="function")toast("Escribe el nombre de la carpeta");return}d.remove();fin(n)}});
+  document.body.appendChild(d)}
 window.GUARDADO={render,n:()=>MPI.get().length+MPI.tracks().length};
 
 /* ---- fichas de punto y track ---- */
