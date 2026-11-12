@@ -3773,6 +3773,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .gdpmk button[aria-pressed=true]{background:var(--ink);color:var(--card);border-color:var(--ink)}
 /* fuera de las fichas de punto y track: los mapas sin cobertura y «Proponer al grupo» (Seguidores escondido) */
 #sheet [data-offt],#sheet .offhint,#sheet [data-offr],#ov [data-offr]{display:none!important}
+.gdexp{text-align:center;margin:14px 0 4px}.gdexp button{background:none;border:1px solid var(--edge);color:inherit;border-radius:10px;padding:8px 14px;font-size:14px;opacity:.85}
 body:not(.segvis) [data-segprop],body:not(.segvis) [data-mpfa="prop"]{display:none!important}
 </style>`);
 const box=document.createElement("div");box.className="mpbox gdl";box.id="gdbox";box.hidden=true;document.body.appendChild(box);
@@ -3803,9 +3804,9 @@ function render(){if(box.hidden)return;const all=items(),nh=all.filter(x=>x.e===
       return`<button class="gdf" data-gdf="${esc(n)}" aria-expanded="${op}"><span class="e">📁</span><span><b>${esc(n)}</b><small>${[nt?nt+(nt===1?" track":" tracks"):"",npt?npt+(npt===1?" punto":" puntos"):""].filter(Boolean).join(" · ")}</small></span><svg class="chev" width="14" viewBox="0 0 10 10"><path d="M3 1.5 7 5 3 8.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>`+
         (op?`<div class="gdfin" data-fn="${esc(n)}"><button class="gdfop" data-gdfop>⚙ Opciones de carpeta</button>${xs.map(x=>conX(Object.assign({inF:1},x))).join("")}</div>`:"")}).join("")+
       (sueltos.length?(names.length?`<p class="gdsep">Sin carpeta</p>`:"")+sueltos.map(x=>conX(x)).join(""):"")}
-  box.innerHTML=`<div class="gdtop"><button class="pri" data-gdadd>⬆️ Abrir GPX o KML</button><button data-gdmas>··· Más</button></div>
+  box.innerHTML=`<div class="gdtop"><button class="pri" data-gdadd>⬆️ Abrir GPX o KML</button><button data-gdnf>📁 Crear carpeta</button></div>
   ${all.length?`<div class="gdfil">${[["todos","Todo",all.length],["pend","★ Pendientes",np],["hecho","✓ Hechos",nh]].map(([k,t,c])=>`<button data-gdfil="${k}" aria-pressed="${FIL===k}">${t} <small>${c}</small></button>`).join("")}</div>
-  <input class="gdq" id="gdq" type="search" placeholder="Buscar en lo guardado…" autocomplete="off" value="${esc(Q)}">`:""}<div id="gdlist">${body}</div>`;
+  <input class="gdq" id="gdq" type="search" placeholder="Buscar en lo guardado…" autocomplete="off" value="${esc(Q)}">`:""}<div id="gdlist">${body}</div>${MPI.get().length?`<p class="gdexp"><button data-gdexp>⬇️ Exportar mis puntos</button></p>`:""}`;
   const q=box.querySelector("#gdq");if(q)q.addEventListener("input",()=>{Q=nk(q.value.trim());const p=q.selectionStart;render();const q2=box.querySelector("#gdq");if(q2){q2.focus();try{q2.setSelectionRange(p,p)}catch(e){}}})}
 function elige(tit,ops){const d=document.createElement("div");d.className="cdq";
   d.innerHTML=`<div role="dialog" aria-label="${esc(tit)}"><h3>${tit}</h3>${ops.map((o,i)=>`<button data-q="${i}"><span>${o[0]}</span>${o[1]}</button>`).join("")}<button class="x" data-q="no">Cancelar</button></div>`;
@@ -3834,6 +3835,9 @@ box.addEventListener("click",e=>{
     elige("📁 "+esc(n),[["✏️","Cambiar nombre",ac("ren")],["📂","Deshacer carpeta (no borra nada)",ac("undo")],["🗑","Borrar la carpeta y lo que tiene",()=>{if(!confirm(`¿Borrar la carpeta «${n}» y todo lo que tiene dentro?`))return;
       borrar(items().filter(x=>x.c===n).map(x=>({k:x.k,id:String(x.o.id)})),"carpeta "+n);OPEN.delete(n)}]]);return}
   if(e.target.closest("[data-gdadd]")){MPI.importar();return}   // 8 nov 2026: ya no se añaden puntos sueltos
+  // 12 nov 2026: «Crear carpeta» directo arriba; exportar puntos, botón pequeño al final de la lista
+  if(e.target.closest("[data-gdnf]")){MPI.nueva();return}
+  if(e.target.closest("[data-gdexp]")){elige("Exportar mis puntos",[["⬇️","GPX",()=>MPI.exportar("gpx")],["⬇️","KML (Google Earth)",()=>MPI.exportar("kml")]]);return}
   if(e.target.closest("[data-gdmas]")){const hay=MPI.get().length;elige("Más opciones",[["📁","Crear una carpeta",()=>MPI.nueva()],...(hay?[["⬇️","Exportar mis puntos (GPX)",()=>MPI.exportar("gpx")],["⬇️","Exportar mis puntos (KML, Google Earth)",()=>MPI.exportar("kml")]]:[])]);return}
   const fb=e.target.closest("[data-gdfil]");if(fb){FIL=fb.dataset.gdfil;render();return}
   const f=e.target.closest("[data-gdf]");if(f){const n=f.dataset.gdf;if(OPEN.has(n))OPEN.delete(n);else OPEN.add(n);render();return}
@@ -4795,6 +4799,7 @@ try{
 if(typeof map==="undefined")return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #mapbar [data-zone="alp"]{display:none!important}
+#mapbar,.mapbar{display:none!important}   /* 12 nov 2026: quitados Norte · Pirineos (solo centraban el mapa) */
 #map .leaflet-tooltip.lbl.lbl-tapa{visibility:hidden!important}
 </style>`);
 // quien tenía guardada la zona Alpes vuelve al Norte
@@ -5744,5 +5749,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="12/11 10:06 · caf2e5";window.LDC_BUILD="caf2e53c19";window.LDC_FUNC="5a860d75f4";(function(){const B="caf2e53c19";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="12/11 10:27 · ee6521";window.LDC_BUILD="ee6521149d";window.LDC_FUNC="8cf8e77dd9";(function(){const B="ee6521149d";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
