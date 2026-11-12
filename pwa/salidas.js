@@ -62,7 +62,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 const main=document.querySelector("main");
 const sec=document.createElement("section");sec.className="view pad";sec.id="v-salidas";sec.hidden=true;
 sec.innerHTML=`<div class="inner"><h1 class="vt salhd">📅 Salidas de clubes de montaña</h1>
-<div id="sal-adm"></div><div id="sal-yo"></div><div id="sal-form"></div><div id="sal-chips"></div><div id="sal-lista"><p class="note">Cargando…</p></div><div id="sal-pie"></div></div>`;
+<div id="sal-nov"></div><div id="sal-adm"></div><div id="sal-yo"></div><div id="sal-form"></div><div id="sal-chips"></div><div id="sal-lista"><p class="note">Cargando…</p></div><div id="sal-pie"></div></div>`;
 main.appendChild(sec);
 const $=id=>document.getElementById(id);
 
@@ -123,7 +123,7 @@ function pinta(){
     <div class="t"><b>${esc(s.ti)}</b><small>${esFav(s.club)?`<span class="fav">★ </span>`:""}<span class="cl">${esc(s.cn)}</span>${s.sd?" · "+esc(s.sd):""}${s.prueba?" · prueba":""}</small><small>${[isNaN(d)?"":String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+" h",s.km?kmF(s.km):"",s.up?"+"+Math.round(s.up).toLocaleString("es-ES")+" m":"",s.hr?"⏱ "+s.hr:"",s.dif||""].filter(Boolean).join(" · ")}</small></div></div>`};
   let H="",g=null;for(const s of L0){const k=wk(s);if(k!==g){g=k;H+=`<div class="salg">${esc(semEt(k))}</div>`}H+=fila(s)}
   $("sal-lista").innerHTML=L0.length?H:SALS.length?`<p class="note">No hay salidas con esos filtros.</p>`:`<p class="note">No hay salidas anunciadas todavía.</p>`;
-  if(AVC&&Date.now()-AVC.t<120000)$("sal-lista").insertAdjacentHTML("afterbegin",AVC.h);else AVC=null}
+  if(AVC&&Date.now()-AVC.t<120000)$("sal-lista").insertAdjacentHTML("afterbegin",AVC.h);else AVC=null;pintaNov()}
 
 let AVC=null;
 /* 10 nov 2026 · ★ clubes favoritos: se guardan en este móvil. Sus salidas salen marcadas con ★ y hay un botón «★ Mis clubes». */
@@ -254,7 +254,7 @@ async function guardaSalida(){const adm=esAdm(),cid=adm?$("ss-c").value:MIO.id,c
     const quitaP=np||($("ss-pdfx")&&$("ss-pdfx").checked),quitaM=nm||($("ss-midex")&&$("ss-midex").checked),quitaC=nc||($("ss-cartx")&&$("ss-cartx").checked);
     s.pdf=np||(SED&&!quitaP?SED.pdf||null:null);s.mide=nm||(SED&&!quitaM?SED.mide||null:null);s.cart=nc||(SED&&!quitaC?SED.cart||null:null);
     if(SED)await F.updateDoc(ref,s);else await F.setDoc(ref,s);
-    if(GPX)await F.setDoc(F.doc(db(),"salidasp",id),{club:cid,p:JSON.stringify(GPX.pts)});
+    YO.add(id);if(GPX)await F.setDoc(F.doc(db(),"salidasp",id),{club:cid,p:JSON.stringify(GPX.pts)});
     if(SED){if(quitaP&&SED.pdf)await borraDoc(SED.id,SED.pdf);if(quitaM&&SED.mide)await borraDoc(SED.id,SED.mide);if(quitaC&&SED.cart)await borraDoc(SED.id,SED.cart)}
     toast(SED?"Salida actualizada":"Salida publicada");$("sal-form").innerHTML="";GPX=null;SED=null;carga(true)}catch(e){console.warn(e);toast(/permission/i.test(String(e))?"Faltan los permisos en la base de datos":/size|exceed|large/i.test(String(e))?"El archivo es demasiado grande: pon mejor un enlace":"No se ha podido publicar. Mira la cobertura y prueba otra vez")}}
 // lee un documento: PDF (comprobando que de verdad es un PDF y que no pasa de 8 MB) o imagen (se reduce a JPEG)
@@ -357,7 +357,7 @@ sheet.addEventListener("click",async e=>{const k=sheet._sal;if(!k)return;
     try{if(navigator.share){await navigator.share({title:s.ti,text,url});return}}catch(er){if(er&&er.name==="AbortError")return}
     try{await navigator.clipboard.writeText(text+"\n"+url);toast("Enlace copiado")}catch(er){window.open("https://wa.me/?text="+encodeURIComponent(text+"\n"+url),"_blank","noopener")}return}
   if(e.target.closest("[data-saledit]")){sheet.hidden=true;showView("salidas");setTimeout(()=>formSalida(s),150);return}
-  if(e.target.closest("[data-saldel]")){if(!confirm("¿Borrar esta salida?"))return;try{await base();const F=fs();if(s.pdf)await borraDoc(s.id,s.pdf);if(s.mide)await borraDoc(s.id,s.mide);if(s.cart)await borraDoc(s.id,s.cart);await F.deleteDoc(F.doc(db(),"salidasp",s.id)).catch(()=>{});await F.deleteDoc(F.doc(db(),"salidas",s.id));
+  if(e.target.closest("[data-saldel]")){if(!confirm("¿Borrar esta salida?"))return;try{await base();const F=fs();if(s.pdf)await borraDoc(s.id,s.pdf);if(s.mide)await borraDoc(s.id,s.mide);if(s.cart)await borraDoc(s.id,s.cart);await F.deleteDoc(F.doc(db(),"salidasp",s.id)).catch(()=>{});YO.add(s.id);await F.deleteDoc(F.doc(db(),"salidas",s.id));
     sheet.hidden=true;if(LAY){LAY.remove();LAY=null}toast("Salida borrada");carga(true)}catch(er){toast("No se ha podido borrar")}}});
 // al abrir otra cosa en el mapa, se quita el track de la salida
 {const st=window.showTrack;if(st)window.showTrack=function(){if(LAY&&!(sheet._sal&&!sheet.hidden)){LAY.remove();LAY=null}return st.apply(this,arguments)}}
@@ -386,6 +386,61 @@ sec.addEventListener("click",async e=>{const t=e.target;
     if(ok)await F.updateDoc(F.doc(db(),"clubes",id),{estado:"ok"});
     else{if(dl&&!confirm("¿Quitar este club? Sus salidas dejarán de verse cuando pasen o si las borras."))return;await F.deleteDoc(F.doc(db(),"clubes",id))}
     toast(ok?"Club aprobado":"Hecho");carga(true)}catch(er){console.warn(er);toast("No se ha podido")}}});
+/* 12 nov 2026 · 🔔 Novedades de clubes (solo administrador)
+   · Globo rojo en la pestaña Salidas con lo nuevo desde la última vez que la abriste: clubes que piden el alta y
+     salidas nuevas, cambiadas o borradas por los clubes. Lo que haces tú no cuenta.
+   · Recuadro «🔔 Novedades de clubes» arriba de Salidas; al abrir la pestaña se da por visto (el globo se va) y el
+     recuadro se queda hasta salir de la pestaña.
+   · Se compara con una foto guardada en este móvil (localStorage ldc-salnov): no hace falta nada en Firestore.
+   · Con la app abierta en otra pestaña, mira en segundo plano al entrar y al volver a la app (como mucho cada 5 min).
+   · Para quitarlo: borrar este bloque, «pintaNov()» al final de pinta() y los dos «YO.add(…)». */
+const NK="ldc-salnov",YO=new Set();
+let VISTO=(()=>{try{return JSON.parse(localStorage.getItem(NK)||"null")}catch(e){return null}})(),NOVS=[];
+const foto=()=>{const m={};SALS.forEach(s=>m[s.id]={t:s.t||0,ti:s.ti,cn:s.cn,f:s.fecha});return{m,p:PEND.map(c=>c.id)}};
+const guardaVisto=()=>{VISTO=foto();try{localStorage.setItem(NK,JSON.stringify(VISTO))}catch(e){}};
+function difs(){const m=(VISTO&&VISTO.m)||{},L=[];
+  for(const s of SALS){if(YO.has(s.id))continue;const v=m[s.id];
+    if(!v)L.push({k:"nueva",id:s.id,ti:s.ti,cn:s.cn,f:s.fecha,t:s.t});else if((s.t||0)!==(v.t||0))L.push({k:"cambiada",id:s.id,ti:s.ti,cn:s.cn,f:s.fecha,t:s.t})}
+  const ids=new Set(SALS.map(s=>s.id)),h=hoy();
+  for(const id in m){const v=m[id];if(!ids.has(id)&&!YO.has(id)&&String(v.f||"").slice(0,10)>=h)L.push({k:"borrada",id,ti:v.ti,cn:v.cn,f:v.f})}
+  return L}
+const pendNuevos=()=>{const vp=new Set((VISTO&&VISTO.p)||[]);return PEND.filter(c=>!vp.has(c.id))};
+function globo(n){const tb=document.querySelector('nav.tabs [data-v="salidas"]');if(!tb)return;let b=tb.querySelector(".salnb");
+  if(!n){if(b)b.remove();return}if(!b){b=document.createElement("span");b.className="salnb";tb.appendChild(b)}b.textContent=n>9?"9+":n}
+const cuando=t=>{if(!t)return"";const d=new Date(t),a=new Date(),hh=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+  const dd=Math.round((new Date(a.getFullYear(),a.getMonth(),a.getDate())-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
+  return dd<=0?"hoy "+hh:dd===1?"ayer "+hh:d.getDate()+" "+MS[d.getMonth()].slice(0,3)};
+const fCorta=f=>{const d=new Date(f);return isNaN(d)?"":DS[d.getDay()].slice(0,3)+" "+d.getDate()+" "+MS[d.getMonth()].slice(0,3)};
+function pintaNov(){const box=$("sal-nov");if(!box)return;
+  if(!esAdm()){box.innerHTML="";globo(0);NOVS=[];return}
+  if(!VISTO){guardaVisto();box.innerHTML="";globo(0);return}   // primera vez en este móvil: lo que ya hay no es novedad
+  if(sec.hidden){box.innerHTML="";NOVS=[];globo(difs().length+pendNuevos().length);return}
+  // pestaña abierta: se junta con lo que ya se estaba enseñando y se da por visto
+  const d=difs(),ya=new Set(NOVS.map(x=>x.k+x.id));NOVS=d.filter(x=>!ya.has(x.k+x.id)).concat(NOVS);NOVS=NOVS.filter(x=>!YO.has(x.id));
+  guardaVisto();globo(0);
+  if(!NOVS.length&&!PEND.length){box.innerHTML="";return}
+  const et={nueva:["🆕","Nueva","#1e8e3e"],cambiada:["✏️","Cambiada","#b26a00"],borrada:["🗑","Borrada","#c3262e"]};
+  box.innerHTML=`<div class="salbox salnov"><h2>🔔 Novedades de clubes</h2>
+    ${PEND.map(c=>`<div class="salrow"><span><b>⏳ ${esc(c.n)}</b><br><small>Pide el alta${c.email?" · "+esc(c.email):""}</small></span><button class="btn primary" data-scok="${c.id}">✓ Aprobar</button></div>`).join("")}
+    ${NOVS.map(x=>{const e=et[x.k];return`<div class="salnv${x.k==="borrada"?" bo":""}"${x.k!=="borrada"?` data-sopen="${esc(x.id)}"`:""}><i style="background:${e[2]}">${e[0]} ${e[1]}</i><span><b>${esc(x.ti||"")}</b><small>${esc(x.cn||"")}${x.f?" · "+fCorta(x.f):""}${x.t?" · "+cuando(x.t):""}</small></span></div>`}).join("")}
+    ${NOVS.length?`<p class="note" style="margin:6px 0 0;font-size:12.5px">Desde la última vez que abriste Salidas en este móvil.</p>`:""}</div>`}
+document.head.insertAdjacentHTML("beforeend",`<style>
+nav.tabs button{position:relative}
+nav.tabs .salnb{position:absolute;top:4px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#c3262e;color:#fff;font:800 11.5px/18px system-ui;letter-spacing:0;box-shadow:0 0 0 2px var(--paper);box-sizing:border-box;text-align:center}
+.salnov{border:2px solid #c3262e}
+.salnv{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--edge);cursor:pointer}
+.salnv i{flex:none;min-width:98px;box-sizing:border-box;text-align:center;font-style:normal;color:#fff;border-radius:7px;padding:2px 7px;font-size:12px;font-weight:800;white-space:nowrap}
+.salnv span{min-width:0}.salnv b{display:block;font-size:15px;line-height:1.25}.salnv small{display:block;color:var(--muted);font-size:13px}
+.salnv.bo{cursor:default}.salnv.bo b{text-decoration:line-through;color:var(--muted)}
+</style>`);
+// en segundo plano (solo administrador): al entrar con la cuenta y al volver a la app
+let FONDO=0;
+function fondo(){if(!esAdm()||!sec.hidden||!navigator.onLine||Date.now()-FONDO<300000)return;FONDO=Date.now();carga(true)}
+addEventListener("ldc-user",()=>setTimeout(fondo,3000));
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")fondo()});
+setTimeout(fondo,8000);
+// al salir de la pestaña, el recuadro se vacía (lo ya visto no vuelve a salir)
+new MutationObserver(()=>{if(sec.hidden){NOVS=[];const b=$("sal-nov");if(b)b.innerHTML=""}}).observe(sec,{attributes:true,attributeFilter:["hidden"]});
 /* EN PRUEBAS (3 nov): la pestaña Salidas solo la ven los administradores hasta que él decida abrirla a todos.
    Para abrirla a todos: PUBLICO=true. */
 const PUBLICO=true;   // 11 nov 2026: Salidas visible para todos
