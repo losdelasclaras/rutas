@@ -1,4 +1,4 @@
-# Cumbres de Rutinas Varias NO encontradas en OpenStreetMap (siguen en el punto más alto de su track): 19 de 97
+# Cumbres de Rutinas Varias NO encontradas en OpenStreetMap (siguen en el punto más alto de su track): 20 de 98
 Alto de los Forgos
 Alto de los Navallos
 Alto del Beigardón
@@ -16,5 +16,6 @@ Peña Roguera
 Peña Valdiglesia
 Peñas Albas
 Peñas de Trespando
+Pico Peñalga
 Picos Albos
 Torre de Babia
