@@ -15,7 +15,7 @@ function ligero(t){if(!t||t.lz||!t.pts||t.pts.length<3)return false;const P=t.pt
   for(let i=0;i<P.length;i++){const p=P[i];if(!p||!isFinite(p[0])||!isFinite(p[1]))continue;const n=p.slice();n[0]=c5(p[0]);n[1]=c5(p[1]);if(n.length>2&&n[2]!=null&&isFinite(n[2]))n[2]=Math.round(n[2]);
     if(u&&i<P.length-1&&d(u,n)<3)continue;q.push(n);u=n}
   if(q.length>=2)t.pts=q;t.lz=1;return true}
-const saveMP=()=>{store.set(MPK,MP);if(window.ldcSync)ldcSync("puntos")}, saveMT=()=>{for(const t of MT)ligero(t);try{localStorage.setItem(MTK,JSON.stringify(MT));if(window.ldcSync)ldcSync("tracks");return true}catch(e){toast("No queda sitio en el móvil para más tracks");return false}};
+const saveMP=()=>{store.set(MPK,MP);if(window.ldcSync)ldcSync("puntos")}, saveMT=()=>{for(const t of MT)ligero(t);let ok=true;try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){ok=false;toast("No queda sitio en el móvil para más tracks")}if(window.ldcSync)ldcSync("tracks");return ok};   // 15 nov 2026: aunque no quepa en el móvil, se sube a la cuenta (antes no)
 const nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const fmtF=f=>{try{return new Date(f).toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}catch(e){return""}};
 function alti(p){if(!navigator.onLine)return;fetch(`https://api.open-meteo.com/v1/elevation?latitude=${p.lat}&longitude=${p.lon}`).then(r=>r.json()).then(j=>{const a=j&&j.elevation&&j.elevation[0];if(a==null||!isFinite(a))return;const q=MP.find(x=>x.id===p.id);if(!q)return;q.a=Math.round(a);saveMP();drawMP();renderBox();if(MPSEL===q.id&&!sheet.hidden&&!sheet._mp)openMP(q.id)}).catch(()=>{})}
@@ -437,7 +437,7 @@ window.MISPUNTOS={get:()=>MP,accion:carpetaAccion,nueva:nuevaCarpeta,cruz:()=>cr
   exportar:k=>k==="kml"?dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml"):dl("mis-puntos.gpx",toGPX(),"application/gpx+xml"),
   guarda:()=>{saveMP();drawMP();renderBox()},verCompartidos,carpetaTrack,guardarCarpeta,fotoGet,fotoPut,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
   addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),foco,ptsOf,kmW,fotoDel,desn,suben,sube:sg,demAlt,dl,
-  saveTracks(a){MT.length=0;MT.push(...a);saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length},
+  saveTracks(a){MT.length=0;MT.push(...a);const ok=saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length;return ok},
   importText(txt,n,prev){try{imp(String(txt),n||"track.gpx",prev)}catch(e){toast("No he podido leer ese archivo (solo GPX o KML)")}},
   importar(){if(window.cuentaOk&&!cuentaOk(()=>toast("Ya has entrado. Pulsa otra vez «Cargar GPX/KML» para elegir el archivo"),"tracks"))return;fin.value="";fin.click()},
   // la sincronización cambia lo guardado sin volver a avisar a la nube

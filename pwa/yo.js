@@ -84,8 +84,10 @@ if(enApp){
 /* buzón: la grabadora del APK deja ahí lo grabado (Firestore buzon/{código}) y aquí se recoge y se guarda en Mis tracks */
 function buzon(){let b=null;try{b=localStorage.getItem("ldc-buzon")}catch(e){}
   if(!b||!/^[A-Za-z0-9]{20,40}$/.test(b)){const A="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";b="";for(const x of crypto.getRandomValues(new Uint8Array(24)))b+=A[x%A.length];try{localStorage.setItem("ldc-buzon",b)}catch(e){}}return b}
-let RECOG=false;
-async function recoger(){let b=null;try{b=localStorage.getItem("ldc-buzon")}catch(e){}if(!b||RECOG||!navigator.onLine||!window.LDCFB||!window.MISPUNTOS)return;RECOG=true;
+let RECOG=false,ESPERA=0;
+async function recoger(){let b=null;try{b=localStorage.getItem("ldc-buzon")}catch(e){}if(!b||RECOG||!navigator.onLine||!window.LDCFB||!window.MISPUNTOS)return;
+  // 15 nov 2026: si hay cuenta, se espera a que esté conectada y juntada (hasta 30 s), para que su copia no pise la grabación recién llegada
+  if(LDCFB.listo&&!LDCFB.listo()&&ESPERA<15){ESPERA++;setTimeout(recoger,2000);return}ESPERA=0;RECOG=true;
   try{const a=await LDCFB.load(),fs=a.fs,ref=fs.doc(a.db,"buzon",b),d=await fs.getDoc(ref);
     if(d.exists()){const l=JSON.parse(d.data().j||"[]"),MPI=window.MISPUNTOS,ts=MPI.tracks().slice();let ult=null,n=0,nw=0,np=0,cambio=false;
       const MP0=MPI.get(),nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6),r5=v=>Math.round(v*1e5)/1e5;
@@ -112,12 +114,14 @@ async function recoger(){let b=null;try{b=localStorage.getItem("ldc-buzon")}catc
         if(ws.length)nw+=meter(o,ws);
         if(MPI.desn)MPI.desn(o);   // desnivel ya (del GPS, filtrado); se afina al llegar las alturas del relieve
         ts.push(o);ult=o;n++;cambio=true}
-      if(cambio){MPI.saveTracks(ts);for(const o of ts.slice(-n))if(n)MPI.demAlt(o.id)}
+      let ok=true;if(cambio){ok=MPI.saveTracks(ts)!==false;for(const o of ts.slice(-n))if(n)MPI.demAlt(o.id)}
+      // 15 nov 2026: el buzón solo se vacía si quedó guardado en el móvil; si no, sigue allí y se vuelve a intentar al abrir la app
+      if(!ok){toast("⚠️ Tu grabación no cabe en el móvil. Sigue a salvo esperando: borra algún track viejo de Mis cosas o entra con Google",9000);RECOG=false;return}
       await fs.deleteDoc(ref);
       const tp=nw?` con ${nw} punto${nw>1?"s":""}`:"";
       if(np&&!ult)toast(np===1?"✅ Punto guardado en Mis cosas › Guardado":`✅ ${np} puntos guardados en Mis cosas › Guardado`);
-      if(ult){toast(n>1?`✅ ${n} grabaciones guardadas en Mis cosas › Guardado`:n?`✅ «${ult.n}» guardado${tp}`:`✅ ${nw} punto${nw>1?"s":""} añadido${nw>1?"s":""} a «${ult.n}»`);if(window.MISTRACKS)setTimeout(()=>MISTRACKS.open(ult.id,true),600)}}
+      if(ult){toast(n>1?`✅ ${n} grabaciones guardadas en Mis cosas › Guardado`:n?`✅ «${ult.n}» guardado en Mis cosas${tp}`:`✅ ${nw} punto${nw>1?"s":""} añadido${nw>1?"s":""} a «${ult.n}»`);if(window.MISTRACKS)setTimeout(()=>MISTRACKS.open(ult.id,true),600)}}
   }catch(e){console.warn("buzón",e)}RECOG=false}
-if(enApp){setTimeout(recoger,2500);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")setTimeout(recoger,800)})}
+if(enApp){setTimeout(recoger,2500);setTimeout(recoger,15000);   /* 15 nov: otra vez a los 15 s, por si la grabadora lo sube al abrir la app */document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")setTimeout(recoger,800)})}
 const bp=document.getElementById("b-pt");if(bp)bp.addEventListener("click",()=>{if(window.MISPUNTOS&&MISPUNTOS.gps)MISPUNTOS.gps()});
 })();

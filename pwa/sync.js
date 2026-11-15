@@ -190,7 +190,7 @@ async function push(k){if(!USER||!READY){return}
     else await pushTracks();
     setPend(k,0);done()}catch(e){console.warn("sync",k,e);repaint()}}
 // para otros módulos (Seguidores): Firebase y quién ha entrado
-window.LDCFB={load,user:()=>USER};
+window.LDCFB={load,user:()=>USER,listo:()=>store.get(SK,"0")!=="1"||READY};   // 15 nov 2026: listo = sin cuenta, o la cuenta ya conectada y juntada
 // lo llaman saveMarks, saveMP y saveMT cada vez que cambias algo
 window.ldcSync=k=>{if(store.get(SK,"0")!=="1")return;setPend(k,1);paintBtn();clearTimeout(T[k]);T[k]=setTimeout(()=>push(k),800)};
 
