@@ -43,6 +43,7 @@ class WebActivity : LauncherActivity() {
 
     override fun onCreate(b: Bundle?) {
         super.onCreate(b)
+        Buzon.reintentar(this)   // 15 nov 2026: si quedó una grabación sin pasar (sin cobertura), se manda al abrir la app
         if (aGrabar) {
             startActivity(Intent(this, GrabarActivity::class.java).putExtra("desdeIcono", true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             finish(); return

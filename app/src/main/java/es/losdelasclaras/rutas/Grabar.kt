@@ -484,6 +484,17 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
             // los puntos no se tiran: pasan a la app igualmente
             val w = Puntos.leer(c); Puntos.borrar(c); if (w.length() > 0) Buzon.enviar(c, emptyList(), "Puntos", w) {}
             web.evaluateJavascript("refresca()", null) }
+        /** 15 nov 2026: «Pasar otra vez a la app» la última grabación (la app no la duplica: si ya la tiene, solo añade los puntos que falten). */
+        @JavascriptInterface fun reenviar() = runOnUiThread {
+            val p = Grab.prefs(c); val n = p.getString("nombre", "Recorrido grabado") ?: "Recorrido grabado"
+            val w = try { JSONArray(p.getString("wps", "[]")) } catch (e: Exception) { JSONArray() }
+            val pts = Grab.leer(Grab.ultima(c))
+            if (pts.size < 2) { web.evaluateJavascript("aviso('No hay ninguna grabación guardada')", null); return@runOnUiThread }
+            // sin volver a hacer el GPX de Descargas (ya está)
+            val js = "hecho(" + JSONObject.quote(n) + "," + JSONObject.quote(p.getString("donde", "") ?: "") + ",\u0001EST\u0001)"
+            val hay = getSharedPreferences("buzon", MODE_PRIVATE).getString("b", null) != null
+            web.evaluateJavascript(js.replace("\u0001EST\u0001", if (hay) "'enviando'" else "'sinbuzon'"), null)
+            Buzon.enviar(c, pts, n, w) { ok -> if (hay) runOnUiThread { web.evaluateJavascript(js.replace("\u0001EST\u0001", if (ok) "'ok'" else "'pendiente'"), null) } } }
         @JavascriptInterface fun recuperar() = runOnUiThread {
             val p = Grab.prefs(c); val n = p.getString("nombre", "Recorrido grabado") ?: "Recorrido grabado"
             val w = try { JSONArray(p.getString("wps", "[]")) } catch (e: Exception) { JSONArray() }
@@ -657,13 +668,16 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
 
     /** Guarda el GPX en Descargas y enseña el resumen (sin abrir la app: así no se queda colgada). */
     private fun hecho(pts: List<DoubleArray>, nombre: String, wps: JSONArray, enviar: Boolean = true) {
+        // 15 nov 2026: lo primero, pasarlo a la app (Mis cosas). Antes, si fallaba el GPX de Descargas, no se pasaba nada.
+        // Siempre va a la lista de pendientes: si aún no hay buzón o no hay cobertura, se manda en cuanto se pueda (al abrir la app o esta pantalla).
+        val hayBuzon = getSharedPreferences("buzon", MODE_PRIVATE).getString("b", null) != null
         val r = guardarGpx(this, pts, nombre, wps)
-        if (r == null) { web.evaluateJavascript("cierra();refresca();aviso('No he podido guardar el GPX en Descargas')", null); return }
-        Grab.prefs(this).edit().putString("uri", r.second.toString()).putString("donde", r.first).putString("nombre", nombre).apply()
-        val js = "hecho(" + JSONObject.quote(nombre) + "," + JSONObject.quote(r.first) + ",\u0001EST\u0001)"
-        if (!enviar || getSharedPreferences("buzon", MODE_PRIVATE).getString("b", null) == null) { web.evaluateJavascript(js.replace("\u0001EST\u0001", if (enviar) "'sinbuzon'" else "'ok'"), null); return }
-        web.evaluateJavascript(js.replace("\u0001EST\u0001", "'enviando'"), null)
-        Buzon.enviar(this, pts, nombre, wps) { ok -> runOnUiThread { web.evaluateJavascript(js.replace("\u0001EST\u0001", if (ok) "'ok'" else "'pendiente'"), null) } }
+        if (r != null) Grab.prefs(this).edit().putString("uri", r.second.toString()).putString("donde", r.first).putString("nombre", nombre).apply()
+        else Grab.prefs(this).edit().remove("uri").putString("donde", "").putString("nombre", nombre).apply()
+        val js = "hecho(" + JSONObject.quote(nombre) + "," + JSONObject.quote(r?.first ?: "") + ",\u0001EST\u0001)"
+        if (!enviar) { web.evaluateJavascript(js.replace("\u0001EST\u0001", "'ok'"), null); return }
+        web.evaluateJavascript(js.replace("\u0001EST\u0001", if (hayBuzon) "'enviando'" else "'sinbuzon'"), null)
+        Buzon.enviar(this, pts, nombre, wps) { ok -> if (hayBuzon) runOnUiThread { web.evaluateJavascript(js.replace("\u0001EST\u0001", if (ok) "'ok'" else "'pendiente'"), null) } }
     }
 }
 

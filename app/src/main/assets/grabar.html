@@ -400,6 +400,7 @@ function prep(antes){const m=movil();if(!m){toast("Instala la última versión d
   ${fila(false,"🏭",nm?"Ajustes de "+esc(nm):"Ajustes de batería de la app",(mc&&mc[2])||"Busca la app Los de las Claras en los ajustes de batería y quítale cualquier límite.","Abrir","Nativo.ajustesMarca()",true)}
   </ul>
   ${PREP_GRABAR?`<button class="b2 go" onclick="cierra();Nativo.empezar()">● Grabar ya</button>`:""}
+  ${!PREP_GRABAR&&S&&S.ultima&&!S.activo&&Nativo.reenviar?`<button class="b2" onclick="Nativo.reenviar()">📤 Pasar otra vez la última grabación a la app</button>`:""}
   <button class="b2" onclick="cierra()">Cerrar</button>`;
   $("sheet").hidden=false}
 // al volver de un ajuste (o de un permiso), la lista se pone al día sola
@@ -425,13 +426,13 @@ function fin(){const d=new Date(S.t0),np=+(Nativo.nPuntos()||0);
 function hecho(n,donde,est){const e=esc(n);
   const msg=est==="ok"?`<p style="font-size:17px">✅ <b>Ya está en tu app</b>, en <b>Mis cosas › Guardado</b>, con sus puntos dentro.</p>`:
     est==="enviando"?`<p style="font-size:17px">⏳ Pasándolo a tu app…</p>`:
-    est==="pendiente"?`<p style="font-size:17px">📶 <b>Sin cobertura</b>: pasará a tu app en cuanto haya conexión (vuelve a abrir esta pantalla con cobertura).</p>`:
-    `<p style="font-size:16px">Para tenerlo en la app: ve a <b>Mis cosas › Guardado › ⬆️ Abrir GPX o KML</b> y elige el archivo en <b>Descargas › Los de las Claras</b>. Los puntos van dentro.</p>`;
+    est==="pendiente"?`<p style="font-size:17px">📶 <b>Sin cobertura</b>: está a salvo en el móvil y pasará solo a <b>Mis cosas</b> en cuanto abras la app con conexión.</p>`:
+    `<p style="font-size:16px">Está a salvo en el móvil y pasará solo a <b>Mis cosas</b> la próxima vez que abras esta pantalla desde la app (botón ⏺ Grabar).</p>`;
   $("sh").innerHTML=`<h2>✓ ${e}</h2>${msg}
-  <button class="b2 go" onclick="Nativo.compartir()">📄 Enviar el archivo GPX (WhatsApp, Wikiloc…)</button>
+  ${donde?`<button class="b2 go" onclick="Nativo.compartir()">📄 Enviar el archivo GPX (WhatsApp, Wikiloc…)</button>`:""}
   <button class="b2" onclick="cierra();Nativo.volver()">🏠 Volver a la app</button>
   <button class="b2" onclick="cierra()">Cerrar</button>
-  <p style="font-size:14px;color:#5d6b62">Copia en ${esc(donde)}.</p>`;$("sheet").hidden=false;refresca()}
+  <p style="font-size:14px;color:#5d6b62">${donde?"Copia en "+esc(donde)+".":"No se pudo hacer la copia en Descargas, pero la grabación está guardada en la app."}</p>`;$("sheet").hidden=false;refresca()}
 function aviso(t){toast(t,6000)}
 function cierra(){$("sheet").hidden=true;DATOS=false}
 // al abrir: el mapa donde lo dejaste (si hace menos de 12 h) o en lo último grabado / tu última posición, cerca
