@@ -241,7 +241,8 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
   const base=fname.replace(/\.[^.]+$/,"");let np=0,nt=0;const have=new Set(MP.map(p=>p.lat.toFixed(4)+","+p.lon.toFixed(4)+"|"+p.n));
   const addP=(lat,lon,n,nota)=>{if(!isFinite(lat)||!isFinite(lon))return;const k=lat.toFixed(4)+","+lon.toFixed(4)+"|"+n;if(have.has(k))return;have.add(k);MP.push({id:nid(),n:n||"Punto importado",ic:"otro",nota:nota||"",lat:c5(lat),lon:c5(lon),f:new Date().toISOString()});np++};
   const addT=(pts,n,tms,ga)=>{if(pts.length<2)return;const t=thin(pts);let km=0;for(let i=1;i<pts.length;i++){const d=dist(pts[i-1],pts[i]);if(d<2000)km+=d}const o={id:nid(),n:n||base,km:Math.round(km/100)/10,pts:t,src:"gpx",f:new Date().toISOString()};
-    if(ga&&ga.length===pts.length&&ga.every(v=>v!=null&&isFinite(v))){o.gr=1;o.ug=sg(pts.map((q,i)=>[q[0],q[1],ga[i]]))}desn(o);
+    if(ga&&ga.length===pts.length){o.gr=1;const pa=pts.map((q,i)=>[q[0],q[1],ga[i]]);   // 15 nov 2026: altura del GPS congelada (mismo valor >1 km) o incompleta → no vale para el desnivel
+      if(ga.every(v=>v!=null&&isFinite(v))&&!congel(pa,1000))o.ug=sg(pa)}desn(o);
     // si el GPX trae la hora de cada punto: inicio, fin y tiempo en movimiento (tramos de menos de 1 min y a más de 1 km/h)
     if(tms&&tms.length===pts.length){let a=null,b=null,mov=0;for(let i=0;i<tms.length;i++){if(!tms[i])continue;if(a==null)a=tms[i];b=tms[i];
         if(i&&tms[i-1]){const dt=(tms[i]-tms[i-1])/1000;if(dt>0&&dt<=60&&dist(pts[i-1],pts[i])/dt>0.28)mov+=dt}}
@@ -251,7 +252,7 @@ function imp(txt,fname,prev){const doc=new DOMParser().parseFromString(txt,"appl
     // 8 nov 2026: en un GPX de la grabadora (un solo track) los puntos van dentro del track, no sueltos
     const WP=[...doc.getElementsByTagName("wpt")],dentro=(gpsAlt||prev)&&doc.getElementsByTagName("trk").length===1;   // y, si se enseña antes de guardar, los de cualquier GPX de un track
     if(!dentro)for(const w of WP)addP(+w.getAttribute("lat"),+w.getAttribute("lon"),tx(w,"name"),tx(w,"desc")||tx(w,"cmt"));
-    for(const t of doc.getElementsByTagName("trk")){const tp=[...t.getElementsByTagName("trkpt")],pts=tp.map(p=>{const e=gpsAlt&&!prev?"":tx(p,"ele");return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});
+    for(const t of doc.getElementsByTagName("trk")){const tp=[...t.getElementsByTagName("trkpt")],pts=tp.map(p=>{const e=gpsAlt?"":tx(p,"ele");   /* 15 nov 2026: la altura del GPS de la grabadora nunca se usa para lo que se ve (antes sí, si se abría desde WhatsApp) */return e!==""?[+p.getAttribute("lat"),+p.getAttribute("lon"),+e]:[+p.getAttribute("lat"),+p.getAttribute("lon")]});
       const tms=tp.map(p=>{const v=Date.parse(tx(p,"time"));return isFinite(v)?v:0});addT(pts,tx(t,"name"),tms.some(Boolean)?tms:null,gpsAlt?tp.map(p=>{const e=tx(p,"ele");return e===""?null:+e}):null)}
     if(dentro&&nuevos.length===1&&WP.length){const o=nuevos[0];o.w=WP.map(w=>{const la=+w.getAttribute("lat"),lo=+w.getAttribute("lon"),e=tx(w,"ele"),t=Date.parse(tx(w,"time"));if(!isFinite(la)||!isFinite(lo))return null;
         const q={id:nid(),n:tx(w,"name")||"Punto",ic:"otro",nota:tx(w,"desc")||"",lat:c5(la),lon:c5(lo)};if(e!=="")q.a=Math.round(+e);if(isFinite(t))q.t=t;return q}).filter(Boolean)}
@@ -288,18 +289,36 @@ function desn(o){const p=o.pts;if(!p.length||p.some(x=>x[2]==null)){if(o.ug){o.u
 // tracks grabados guardados antes del 8 nov: se recalculan una vez (también los que lleguen de la cuenta)
 function fixDv(l){let k=0;for(const o of l||[])if(esGrab(o)&&o.dv!==3&&o.pts&&o.pts.length>1){
     if(!o.pts.every(x=>x[2]!=null))continue;desn(o);k++}return k}   // sin alturas: se arregla cuando llegan las del relieve (demAlt)
-if(fixDv(MT))try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}
+// 15 nov 2026: altura congelada (el mismo valor durante más de 1 km): no es real (GPS que deja de actualizarla, o relleno a medias).
+// Se quitan esas alturas y se piden al mapa del terreno (una sola vez por track: «ac»).
+function congel(p,M){M=M||1000;let run=0;for(let i=1;i<p.length;i++){if(p[i][2]!=null&&p[i][2]===p[i-1][2]){run+=dist(p[i-1],p[i]);if(run>M)return true}else run=0}return false}
+const CONG=[];
+function fixCong(l){let k=0;for(const o of l||[])if(o&&!o.ac&&o.pts&&o.pts.length>2&&o.pts.every(x=>x[2]!=null)&&congel(o.pts,1500)){
+    o.pts=o.pts.map(x=>[x[0],x[1]]);delete o.ug;delete o.up;delete o.dn;delete o.mx;delete o.mn;delete o.dv;if(o.src==="grab"||o.gr||o.tm)o.gr=1;CONG.push(o.id);k++}
+  if(k)setTimeout(()=>{for(const id of CONG.splice(0))demAlt(id)},4000);return k}
+if(fixDv(MT)+fixCong(MT))try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}
 if(MT.some(t=>t&&!t.lz&&t.pts&&t.pts.length>2))setTimeout(()=>{if(MT.some(t=>ligero(t)))saveMT()},3000);
 // si el GPX no trae alturas, se sacan del modelo de relieve (hace falta conexión)
-async function demAlt(id){const o=MT.find(x=>x.id===id);if(!o||!navigator.onLine)return;const p=o.pts;
+const DEMR={};
+async function demAlt(id){const o=MT.find(x=>x.id===id);if(!o)return;const p=o.pts;
+  // 15 nov 2026: si no hay conexión o la consulta falla a medias, no se rellena nada: se reintenta (hasta 5 veces, cada vez más tarde)
+  const otra=()=>{const n=DEMR[id]=(DEMR[id]||0)+1;if(n<=5)setTimeout(()=>demAlt(id),[0,20,60,180,600,1800][n]*1000)};
+  if(!navigator.onLine){addEventListener("online",()=>demAlt(id),{once:true});return}
   const idx=[];const step=Math.max(1,Math.ceil(p.length/1000));for(let i=0;i<p.length;i+=step)idx.push(i);if(idx[idx.length-1]!==p.length-1)idx.push(p.length-1);
   const ele={};try{for(let k=0;k<idx.length;k+=100){const g=idx.slice(k,k+100);
     const j=await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${g.map(i=>p[i][0]).join(",")}&longitude=${g.map(i=>p[i][1]).join(",")}`).then(r=>r.json());
-    g.forEach((i,n)=>{const v=j.elevation&&j.elevation[n];if(v!=null&&isFinite(v))ele[i]=v})}}catch(e){return}
-  const known=idx.filter(i=>ele[i]!=null);if(known.length<2)return;
+    g.forEach((i,n)=>{const v=j.elevation&&j.elevation[n];if(v!=null&&isFinite(v))ele[i]=v})}}catch(e){otra();return}
+  const known=idx.filter(i=>ele[i]!=null);if(known.length<idx.length){otra();return}   // antes: con lo que hubiera, y el resto repetía la última altura
   const q=MT.find(x=>x.id===id);if(!q)return;let a=0;
   q.pts=q.pts.map((x,i)=>{while(a<known.length-2&&known[a+1]<i)a++;const i0=known[a],i1=known[a+1];const t=i1>i0?Math.min(1,Math.max(0,(i-i0)/(i1-i0))):0;return[x[0],x[1],Math.round(ele[i0]+(ele[i1]-ele[i0])*t)]});
-  desn(q);saveMT();if(window.MISTRACKS)MISTRACKS.refresh(id)}
+  q.ac=1;desn(q);saveMT();if(window.MISTRACKS)MISTRACKS.refresh(id)}
+// 15 nov 2026: alturas del terreno para unos puntos sueltos (vista previa de un archivo o enlace); null si falla
+async function demPts(p){if(!navigator.onLine||!p||p.length<2)return null;const idx=[];const step=Math.max(1,Math.ceil(p.length/1000));for(let i=0;i<p.length;i+=step)idx.push(i);if(idx[idx.length-1]!==p.length-1)idx.push(p.length-1);
+  const ele={};try{for(let k=0;k<idx.length;k+=100){const g=idx.slice(k,k+100);
+    const j=await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${g.map(i=>p[i][0]).join(",")}&longitude=${g.map(i=>p[i][1]).join(",")}`).then(r=>r.json());
+    g.forEach((i,n)=>{const v=j.elevation&&j.elevation[n];if(v!=null&&isFinite(v))ele[i]=v})}}catch(e){return null}
+  if(idx.some(i=>ele[i]==null))return null;let a=0;
+  return p.map((x,i)=>{while(a<idx.length-2&&idx[a+1]<i)a++;const i0=idx[a],i1=idx[a+1];const t=i1>i0?Math.min(1,Math.max(0,(i-i0)/(i1-i0))):0;return[x[0],x[1],Math.round(ele[i0]+(ele[i1]-ele[i0])*t)]})}
 
 
 /* ---------- copia de seguridad en archivo: marcas, mis puntos y mis tracks ---------- */
@@ -436,11 +455,11 @@ window.MISPUNTOS={get:()=>MP,accion:carpetaAccion,nueva:nuevaCarpeta,cruz:()=>cr
   ver:id=>{const p=MP.find(x=>x.id===id);if(!p)return;showView("mapa");if(!LAY.mp){LAY.mp=true;saveLay();syncMP()}map.flyTo([p.lat,p.lon],Math.max(map.getZoom(),15));openMP(id)},
   exportar:k=>k==="kml"?dl("mis-puntos.kml",toKML(),"application/vnd.google-earth.kml+xml"):dl("mis-puntos.gpx",toGPX(),"application/gpx+xml"),
   guarda:()=>{saveMP();drawMP();renderBox()},verCompartidos,carpetaTrack,guardarCarpeta,fotoGet,fotoPut,tracks:()=>MT,show,gps:()=>gps(),emo:EMO,ico:ICO,
-  addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),foco,ptsOf,kmW,fotoDel,desn,suben,sube:sg,demAlt,dl,
+  addPoint(p){MP.push(p);saveMP();drawMP();renderBox()},sync:()=>syncMP(),foco,ptsOf,kmW,fotoDel,desn,suben,sube:sg,demAlt,dl,congel,demPts,
   saveTracks(a){MT.length=0;MT.push(...a);const ok=saveMT();drawMT();if(window.MISTRACKS)MISTRACKS.render();const b=document.querySelector('[data-lay="mt"]');if(b)b.hidden=!MT.length;return ok},
   importText(txt,n,prev){try{imp(String(txt),n||"track.gpx",prev)}catch(e){toast("No he podido leer ese archivo (solo GPX o KML)")}},
   importar(){if(window.cuentaOk&&!cuentaOk(()=>toast("Ya has entrado. Pulsa otra vez «Cargar GPX/KML» para elegir el archivo"),"tracks"))return;fin.value="";fin.click()},
   // la sincronización cambia lo guardado sin volver a avisar a la nube
-  set(mp,mt){if(mp){MP.length=0;MP.push(...mp);store.set(MPK,MP)}if(mt){fixDv(mt);MT.length=0;MT.push(...mt);try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}}
+  set(mp,mt){if(mp){MP.length=0;MP.push(...mp);store.set(MPK,MP)}if(mt){fixDv(mt);fixCong(mt);MT.length=0;MT.push(...mt);try{localStorage.setItem(MTK,JSON.stringify(MT))}catch(e){}}
     drawMP();drawMT();renderBox();if(window.MISTRACKS)MISTRACKS.render();if(MPSEL&&!MP.some(p=>p.id===MPSEL)){MPSEL=null}}};
 })();

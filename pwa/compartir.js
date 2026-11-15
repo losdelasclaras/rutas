@@ -24,7 +24,7 @@ const EK="ldc-enlaces";
 const r5=v=>Math.round(v*1e5)/1e5;
 async function corto(t){const u=window.LDCFB&&LDCFB.user();if(!u||!navigator.onLine)return null;
   let mem={};try{mem=JSON.parse(localStorage.getItem(EK)||"{}")}catch(e){}
-  const huella=t.n+"|"+t.pts.length+"|"+t.pts[0][0]+"|"+t.pts[t.pts.length-1][1]+"|w"+(t.w||[]).length;   // 10 nov: con los puntos
+  const huella=t.n+"|"+t.pts.length+"|"+t.pts[0][0]+"|"+t.pts[t.pts.length-1][1]+"|w"+(t.w||[]).length+"|u"+t.up;   // 15 nov: si cambia el desnivel, enlace nuevo   // 10 nov: con los puntos
   if(mem[t.id]&&mem[t.id].h===huella)return base()+"#c="+mem[t.id].c;
   try{const a=await LDCFB.load(),fs=a.fs;
     const st=Math.max(1,Math.ceil(t.pts.length/3000)),pts=t.pts.filter((_,i)=>i%st===0||i===t.pts.length-1).map(p=>p[2]!=null?[r5(p[0]),r5(p[1]),Math.round(p[2])]:[r5(p[0]),r5(p[1])]);
@@ -40,9 +40,11 @@ async function abrirCorto(c){if(typeof toast==="function")toast("Abriendo lo que
   try{const a=await LDCFB.load(),fs=a.fs,d=await fs.getDoc(fs.doc(a.db,"enlaces",c));
     if(!d.exists()){toast("Ese enlace ya no existe");return}
     const x=d.data();if(x.tipo==="puntos"){MPI.verCompartidos({n:x.n,ps:JSON.parse(x.d)});return}
-    const pts=JSON.parse(x.d);let km=x.km;if(!km){km=0;for(let i=1;i<pts.length;i++)km+=map.distance(pts[i-1],pts[i]);km=Math.round(km/100)/10}
+    let pts=JSON.parse(x.d),gr;let km=x.km;
+    // 15 nov 2026: altura congelada (enlaces de tracks grabados antes del arreglo): se quita y se pide al terreno; el desnivel guardado no vale
+    if(pts.length>2&&pts.every(p=>p[2]!=null)&&MPI.congel&&MPI.congel(pts,1000)){pts=pts.map(p=>[p[0],p[1]]);x.up=null;gr=1}if(!km){km=0;for(let i=1;i<pts.length;i++)km+=map.distance(pts[i-1],pts[i]);km=Math.round(km/100)/10}
     let w;try{w=x.w?JSON.parse(x.w).map((q,i)=>({id:"w"+i,n:q[0],lat:q[1],lon:q[2],a:q[3],ic:q[4]||"📍"})):undefined}catch(e){}
-    mostrar({n:x.n||"Track compartido",pts,km,up:x.up!=null?x.up:undefined,w},"enlace")}
+    mostrar({n:x.n||"Track compartido",pts,km,up:x.up!=null?x.up:undefined,w,gr},"enlace")}
   catch(e){toast(navigator.onLine?"No he podido abrir ese track":"Sin conexión: abre el enlace cuando tengas cobertura")}}
 function cache(t){try{const m=JSON.parse(localStorage.getItem(EK)||"{}")[t.id],h=t.n+"|"+t.pts.length+"|"+t.pts[0][0]+"|"+t.pts[t.pts.length-1][1];return m&&m.h===h?base()+"#c="+m.c:null}catch(e){return null}}
 /* 📤 Compartir un track: primero se elige cómo. Archivo GPX (lo que él prefiere: vale para WhatsApp, Wikiloc, OruxMaps…) o enlace a la app */
@@ -162,7 +164,10 @@ function mostrar(t,origen){const n=t.n,pts=t.pts,km=t.km;quitaPill();
     ${perfilTmp(pts,km)}
     <p class="note">${origen==="archivo"?"Aún no se ha guardado.":"Te lo han pasado por enlace."} Puedes solo verlo en el mapa, guardarlo en Mis cosas para tenerlo siempre, o seguirlo.</p>
     <div class="topacts"><button class="btn primary" data-tmpver>👁 Solo verlo</button><button class="btn ghost" data-tmpsave>${ya?"★ Ya guardado":"☆ Guardar"}</button><button class="btn ghost" data-tmpfol>▶ Seguir</button></div>`);
-  sheet._tmp={n,pts,km,up:t.up,dn:t.dn,mx:t.mx,mn:t.mn,x:{w:t.w,gr:t.gr,ug:t.ug,tm:t.tm,fh:t.fh}};sheet._tmpo=origen}   // x: lo de un GPX de la grabadora (puntos dentro, horas)
+  sheet._tmp={n,pts,km,up:t.up,dn:t.dn,mx:t.mx,mn:t.mn,x:{w:t.w,gr:t.gr,ug:t.ug,tm:t.tm,fh:t.fh}};sheet._tmpo=origen;
+  // 15 nov 2026: sin alturas (GPX de la grabadora, o enlace con la altura congelada): se piden al terreno y se vuelve a pintar con perfil y desnivel
+  if(!t._dem&&pts.length>1&&pts.some(x=>x[2]==null)&&MPI.demPts){const yo=sheet._tmp;MPI.demPts(pts).then(q=>{if(q&&sheet._tmp===yo&&!sheet.hidden){
+    const u=(t.gr&&MPI.sube?MPI.sube:MPI.suben)(q);mostrar(Object.assign({},t,{pts:q,up:u[0],dn:u[1],ug:undefined,_dem:1}),origen)}})}}   // x: lo de un GPX de la grabadora (puntos dentro, horas)
 sheet.addEventListener("click",e=>{const d=sheet._tmp;
   if(e.target.closest("[data-tmpver]")){soloVer();return}
   if(e.target.closest("[data-tmpx]")&&TMP){TMP.remove();TMP=null}
