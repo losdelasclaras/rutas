@@ -24,9 +24,10 @@ const ICO={mapa:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>'
   grupo:'<path d="M2 20l7-12 4 6 3-4 6 10z"/><circle cx="17.5" cy="5.5" r="2"/>',
   mios:'<path d="M6 8h12l-1 12H7z"/><path d="M9 8V6a3 3 0 016 0v2"/>',
   salidas:'<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.6"/>',
+  retos:'<path d="M8 4h8v5a4 4 0 01-8 0z"/><path d="M8 6H5v1a3 3 0 003 3M16 6h3v1a3 3 0 01-3 3M12 13v4M9 20h6M10 17h4"/>',
   seg:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c3.2-.4 5.5 1.8 5.5 5.3"/>'};
 const tab=(v,t)=>`<button role="tab" data-v="${v}" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">${ICO[v]}</svg>${t}</button>`;
-nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Explorar")+tab("salidas","Salidas").replace("<button","<button hidden")+tab("mios","Mis cosas")+tab("seg","Seguidores");   /* Salidas abajo (3 nov): antes era la 4.ª pestaña de Explorar */
+nav.innerHTML=tab("mapa","Mapa")+tab("grupo","Explorar")+tab("salidas","Salidas").replace("<button","<button hidden")+tab("mios","Mis cosas")+tab("retos","Retos");   /* 15 nov 2026: Seguidores fuera; en su sitio, Retos */   /* Salidas abajo (3 nov): antes era la 4.ª pestaña de Explorar */
 
 /* «Mis cosas»: una vista nueva con mis puntos, mis tracks y los mapas descargados */
 const sec=document.createElement("section");sec.className="view pad";sec.id="v-mios";sec.hidden=true;
@@ -65,7 +66,7 @@ for(const g in GN){const v=document.querySelector("#v-"+g+" .inner");if(!v)conti
 document.addEventListener("click",e=>{const b=e.target.closest("[data-gs]");if(b)showView(b.dataset.gs)});
 
 /* showView entiende las vistas nuevas; la pestaña «Del grupo» vuelve a la última que viste */
-const VIEWS=["mapa","rutas","cumbres","lugares","salidas","mios","seg"];
+const VIEWS=["mapa","rutas","cumbres","lugares","salidas","mios","seg","retos"];
 window.showView=showView=function(v){
   if(v==="grupo")v=curG;
   if(!VIEWS.includes(v))v="mapa";

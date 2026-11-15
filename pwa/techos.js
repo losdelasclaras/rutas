@@ -51,6 +51,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-m],[data-m
 const blog=()=>{const L=carga();const c=L&&L[0]&&L[0].it.co;return{n:c?c.n:"Camudando'l camín",u:(c&&c.bw)||"https://camudandolcamin.blogspot.com"}};
 window.TECHOS={
   ok:()=>!!carga(),
+  L:carga,blog,   // 15 nov 2026: para la pestaña Retos (pwa/retos.js)
   cuenta,
   // la lista del filtro: una fila por cumbre (la del grupo si la tenéis; si no, la suya), por orden de concejo
   lista(items,C){const L=carga();if(!L)return null;iguala();const S=new Set(items),out=[];
@@ -61,12 +62,12 @@ window.TECHOS={
     return out},
   cab(){const n=cuenta();if(!n)return"";const b=blog();
     return `<div class="techcab"><div class="tt">🏔 Llevas <b>${n.h}</b> de ${n.t} concejos</div><div class="prog"><i style="width:${(n.h/n.t*100).toFixed(1)}%"></i></div>
-    <p>La cumbre más alta de cada concejo, el reto de <a href="${esc(b.u)}" target="_blank" rel="noopener">${esc(b.n)}</a>. Algunas son techo de dos concejos y cuentan por los dos.</p></div>`},
+    <p>La cumbre más alta de cada concejo, el reto de <a href="${esc(b.u)}" target="_blank" rel="noopener">${esc(b.n)}</a>. Algunas son techo de dos concejos y cuentan por los dos.</p>${window.RETOS?`<button class="techbtn" data-retotecho style="margin:10px 0 0">🏆 Medallas y participantes<small>Ver el reto ›</small></button>`:""}</div>`},
   boton(C){if(C.g==="techo")return"";const n=cuenta();if(!n)return"";
     return `<button class="techbtn" data-techos>🏔 Techos de Asturias<small>${n.h} de ${n.t}</small></button>`},
   abrir(){const C=COL.cumbres;C.g="techo";C.z="cant";C._l_g="🏔 Techos de Asturias";
     if(typeof showView==="function")showView("cumbres");renderCol("cumbres");const v=document.getElementById("v-cumbres");if(v)v.scrollTop=0}};
-document.getElementById("v-cumbres").addEventListener("click",e=>{if(!e.target.closest("[data-techos]"))return;e.stopPropagation();TECHOS.abrir()},true);
+document.getElementById("v-cumbres").addEventListener("click",e=>{if(e.target.closest("[data-retotecho]")&&window.RETOS){e.stopPropagation();RETOS.abrir("techos");return}if(!e.target.closest("[data-techos]"))return;e.stopPropagation();TECHOS.abrir()},true);
 
 /* ----- ficha de la cumbre: «🏔 Techo de Lena» ----- */
 function etiqueta(T){if(!T||sheet.hidden)return;const h=sheet.querySelector(".sheet-head");if(!h||sheet.querySelector(".techtag"))return;

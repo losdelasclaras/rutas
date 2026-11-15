@@ -64,8 +64,9 @@ estado();lg.addEventListener("click",()=>setTimeout(estado,30));setTimeout(estad
 const ADM=["losdelasclaras@gmail.com","jcrespopazos@gmail.com"];
 const adm=()=>{const u=window.LDCFB&&LDCFB.user&&LDCFB.user();return!!(u&&u.email&&ADM.includes(u.email.toLowerCase()))};
 const inv=()=>{try{return localStorage.getItem("ldc-seginv")==="1"}catch(e){return false}};
-function visSeg(){const v=adm()||inv();const t=document.querySelector('nav.tabs [data-v="seg"]');if(t)t.hidden=!v;document.body.classList.toggle("segvis",v)}
+function visSeg(){const v=false;   // 15 nov 2026: Seguidores quitado (ya no está en el build)
+ const t=document.querySelector('nav.tabs [data-v="seg"]');if(t)t.hidden=!v;document.body.classList.toggle("segvis",v)}
 function deInv(){if((location.hash||"")!=="#seguidores")return;try{localStorage.setItem("ldc-seginv","1")}catch(e){}
-  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}visSeg();if(typeof showView==="function")showView("seg")}
+  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}visSeg();if(typeof showView==="function")showView("retos")}
 addEventListener("hashchange",deInv);setTimeout(()=>{deInv();visSeg()},0);addEventListener("ldc-user",visSeg);setTimeout(visSeg,1500);
 })();
