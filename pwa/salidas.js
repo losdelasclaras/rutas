@@ -47,6 +47,12 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .salr .fd.sab{background:#1e8e3e}.salr .fd.dom{background:#1e6fd9}.salr .fd.lab{background:#6b7280}
 .salr .fav{color:#e6a700;font-weight:900}
 .salfav{border:none;background:none;font-size:22px;line-height:1;padding:4px 6px;cursor:pointer;color:#e6a700}
+.salbus,.salaltf{margin:10px 0 0;padding:10px 12px;border:1px solid var(--edge);border-radius:12px;background:var(--paper)}
+.salbus a{display:flex;gap:10px;align-items:baseline;padding:7px 0;color:var(--ink);text-decoration:none;border-top:1px solid var(--edge);font-size:16px}.salbus a:first-of-type{margin-top:6px}
+.salbus a span{font-weight:700;min-width:3.4em}.salbus a::after{content:"›";margin-left:auto;opacity:.5}
+.salaltf{border-left:5px solid #e8710a}.salaltf p{margin:6px 0 0}.salaltf .d{font-size:14.5px;opacity:.8}
+.salalt{margin:12px 0 0;border:1px solid var(--edge);border-radius:12px;padding:8px 12px}.salalt summary{font-weight:700;cursor:pointer;padding:4px 0}
+.saltrk .salsub{grid-column:1/-1;margin:4px 0 -2px;font-weight:700;font-size:14.5px}
 .saltrk{margin:8px 0 0}.saltrk .opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}.saltrk .opts[hidden]{display:none}
 .saltrk .opts .btn{padding:10px 4px;font-size:14.5px;white-space:normal;line-height:1.2}
 .salmine{margin:10px 0 0}.salmine .salr .t small{white-space:normal}.salmine .salr{cursor:pointer}.salmine .ok{color:#1e8e3e;font-weight:800}.salmine .no{color:var(--muted)}
@@ -166,13 +172,14 @@ function formClub(adm,ed){EDIT=ed||null;$("sal-form").innerHTML=`<div class="sal
   <label>Instagram (opcional)</label><input id="sc-ig" maxlength="200" placeholder="@vuestroclub o https://instagram.com/…">
   <label>Facebook (opcional)</label><input id="sc-fb" maxlength="200" placeholder="https://facebook.com/…">
   <label>Contacto (lo que verá la gente)</label><input id="sc-c" maxlength="120" placeholder="Teléfono, correo o WhatsApp del club">
+  <label>Paradas del autobús (opcional)</label><textarea id="sc-bus" maxlength="600" rows="3" placeholder="Una por línea, con la hora si es fija:&#10;7:00 Gijón, El Humedal&#10;7:30 Oviedo, calle Uría"></textarea><p class="note" style="margin:4px 0 0">Salen en todas vuestras salidas.</p>
   ${ed?`<p class="note" style="margin:6px 0 0">Los cambios salen también en las salidas que ya tenéis publicadas.</p>`:adm?`<label><input type="checkbox" id="sc-p" style="width:auto"> Es un club de prueba</label>`:`<label>Algo más (opcional)</label><textarea id="sc-m" maxlength="400"></textarea>`}
   <div class="salbtns"><button class="btn ghost" data-sfx>Cancelar</button><button class="btn primary" data-scsave="${adm?1:0}">${ed?"Guardar cambios":adm?"Crear":"Enviar solicitud"}</button></div></div>`;
-  if(ed){$("sc-n").value=ed.n||"";$("sc-w").value=ed.web||"";$("sc-c").value=ed.contacto||"";$("sc-ig").value=ed.ig||"";$("sc-fb").value=ed.fb||""}
+  if(ed){$("sc-n").value=ed.n||"";$("sc-w").value=ed.web||"";$("sc-c").value=ed.contacto||"";$("sc-ig").value=ed.ig||"";$("sc-fb").value=ed.fb||"";$("sc-bus").value=ed.bus||""}
   $("sal-form").scrollIntoView({block:"start",behavior:"smooth"})}
-let GPX=null;
+let GPX=null,GPXA=null;
 let SED=null;   // la salida que se está editando
-function formSalida(ed){const adm=esAdm(),cl=adm?CLUBS:[MIO];GPX=null;SED=ed||null;
+function formSalida(ed){const adm=esAdm(),cl=adm?CLUBS:[MIO];GPX=null;GPXA=null;SED=ed||null;
   if(!cl.length){toast("Primero crea un club");return}
   $("sal-form").innerHTML=`<div class="salbox salform"><h2>${ed?"✏️ Editar salida":"＋ Nueva salida"}</h2>
   ${adm?`<label>Club</label><select id="ss-c">${cl.map(c=>`<option value="${c.id}">${esc(c.n)}</option>`).join("")}</select>`:`<p class="note" style="margin:0">Club: <b>${esc(MIO.n)}</b></p>`}
@@ -180,7 +187,7 @@ function formSalida(ed){const adm=esAdm(),cl=adm?CLUBS:[MIO];GPX=null;SED=ed||nu
   <div class="two"><div><label>Día</label><input id="ss-d" type="date" min="${hoy()}"></div><div><label>Hora</label><input id="ss-h" type="time" value="08:00"></div></div>
   <label>Sale desde</label><select id="ss-sd"><option value="">— Elige —</option>${SDS.map(x=>`<option>${x}</option>`).join("")}</select>
   <label>Punto de encuentro</label><input id="ss-e" maxlength="120" placeholder="Por ejemplo: aparcamiento de Tuíza de Arriba">
-  <label>Horario de la ruta (opcional)</label><input id="ss-hr" maxlength="30" placeholder="Por ejemplo: 7 h  ·  5 h 30 min">
+  <label>Duración del recorrido (opcional)</label><input id="ss-hr" maxlength="30" placeholder="Por ejemplo: 7 h  ·  5 h 30 min">
   <label>Dificultad</label><select id="ss-f">${DIFS.map(d=>`<option>${d}</option>`).join("")}</select>
   <label>Enlace para apuntarse (opcional)</label><input id="ss-u" type="url" maxlength="400" placeholder="https://… (formulario de Google, web del club…)">
   <label>Teléfono o WhatsApp para apuntarse (opcional)</label><input id="ss-a" maxlength="60" placeholder="Por ejemplo: 600 123 456">
@@ -194,15 +201,24 @@ function formSalida(ed){const adm=esAdm(),cl=adm?CLUBS:[MIO];GPX=null;SED=ed||nu
   ${ed&&ed.mide?`<label style="font-weight:600"><input type="checkbox" id="ss-midex" style="width:auto"> Quitar la ficha MIDE que hay (${esc(ed.mide.nm||"MIDE")})</label>`:""}
   <label>Track (GPX o KML) · opcional${ed?" — solo si quieres cambiarlo":""}</label><input id="ss-g" type="file" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml">
   <p class="note" id="ss-gi" style="margin:4px 0 0">${ed?(ed.km?`Ahora: ${kmF(ed.km)} · +${Math.round(ed.up||0).toLocaleString("es-ES")} m. Si no subes otro, se queda ese.`:"Ahora no tiene track."):"Del track salen solos los km, el desnivel y el mapa."}</p>
+  <details class="salalt"${ed&&ed.alt?" open":""}><summary>🔀 Ruta alternativa (opcional)</summary>
+   <label>Cómo es</label><textarea id="ss-ad" maxlength="300" placeholder="Por ejemplo: sin subir a la cumbre, para quien quiera menos"></textarea>
+   <label>Duración del recorrido (opcional)</label><input id="ss-ahr" maxlength="30" placeholder="Por ejemplo: 4 h">
+   <label>Track de la alternativa (GPX o KML) · opcional</label><input id="ss-ag" type="file" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml">
+   <p class="note" id="ss-agi" style="margin:4px 0 0">${ed&&ed.alt&&ed.alt.km?`Ahora: ${kmF(ed.alt.km)} · +${Math.round(ed.alt.up||0).toLocaleString("es-ES")} m. Si no subes otro, se queda ese.`:"Del track salen solos los km y el desnivel."}</p>
+   ${ed&&ed.alt?`<label style="font-weight:600"><input type="checkbox" id="ss-ax" style="width:auto"> Quitar la ruta alternativa</label>`:""}
+  </details>
   <div class="salbtns"><button class="btn ghost" data-sfx>Cancelar</button><button class="btn primary" data-sssave>${ed?"Guardar cambios":"Publicar"}</button></div></div>`;
   if(ed){const v=(i,x)=>{const el=$(i);if(el&&x!=null)el.value=x};
     v("ss-c",ed.club);v("ss-t",ed.ti);v("ss-d",(ed.fecha||"").slice(0,10));v("ss-h",(ed.fecha||"").slice(11,16)||"08:00");v("ss-e",ed.enc);v("ss-f",ed.dif);
-    v("ss-u",ed.apu||(/^https?:\/\//i.test(ed.ap||"")?ed.ap:""));v("ss-a",/^https?:\/\//i.test(ed.ap||"")?"":ed.ap);v("ss-o",ed.apo);v("ss-x",ed.txt);v("ss-pdfu",ed.pdfu);v("ss-sd",ed.sd);v("ss-mideu",ed.mideu);v("ss-hr",ed.hr);
+    v("ss-u",ed.apu||(/^https?:\/\//i.test(ed.ap||"")?ed.ap:""));v("ss-a",/^https?:\/\//i.test(ed.ap||"")?"":ed.ap);v("ss-o",ed.apo);v("ss-x",ed.txt);v("ss-pdfu",ed.pdfu);v("ss-sd",ed.sd);v("ss-mideu",ed.mideu);v("ss-hr",ed.hr);if(ed.alt){v("ss-ad",ed.alt.d);v("ss-ahr",ed.alt.hr)}
     if($("ss-c"))$("ss-c").disabled=true}
   if(!ed){const ult=()=>{const c=$("ss-c")?$("ss-c").value:MIO.id;const p=SALS.find(x=>x.club===c&&x.sd)||{};$("ss-sd").value=p.sd||(CLUBS.find(x=>x.id===c)||MIO||{}).sd||""};ult();if($("ss-c"))$("ss-c").addEventListener("change",ult)}
   $("ss-g").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;const t=await f.text();GPX=leeTrack(t);
     $("ss-gi").textContent=GPX?`✓ ${kmF(GPX.km)} · +${Math.round(GPX.up).toLocaleString("es-ES")} m`:"No he encontrado ningún recorrido en ese archivo";
     if(GPX&&!$("ss-t").value&&GPX.n)$("ss-t").value=GPX.n});
+  $("ss-ag").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;GPXA=leeTrack(await f.text());
+    $("ss-agi").textContent=GPXA?`✓ ${kmF(GPXA.km)} · +${Math.round(GPXA.up).toLocaleString("es-ES")} m`:"No he encontrado ningún recorrido en ese archivo"});
   $("sal-form").scrollIntoView({block:"start",behavior:"smooth"})}
 
 /* --- leer el GPX/KML: puntos, km, subida, altura máxima --- */
@@ -220,23 +236,31 @@ function leeTrack(t){try{const x=new DOMParser().parseFromString(t,"application/
 
 /* --- guardar --- */
 async function guardaClub(adm){const n=$("sc-n").value.trim();if(n.length<3){toast("Pon el nombre del club");return}
-  const d={n,web:urlRed($("sc-w").value),ig:urlRed($("sc-ig").value,"instagram.com"),fb:urlRed($("sc-fb").value,"facebook.com"),contacto:$("sc-c").value.trim(),t:Date.now()};
+  const d={n,web:urlRed($("sc-w").value),ig:urlRed($("sc-ig").value,"instagram.com"),fb:urlRed($("sc-fb").value,"facebook.com"),contacto:$("sc-c").value.trim(),bus:limpiaBus($("sc-bus").value),t:Date.now()};if(!d.bus&&!(EDIT&&EDIT.bus))delete d.bus;
   for(const[k,l]of[["web","La web"],["ig","El Instagram"],["fb","El Facebook"]])if(d[k]&&!/^https?:\/\/[^\s.]+\.[^\s]+$/i.test(d[k])){toast(l+" no parece un enlace válido");return}
   try{await base();const F=fs(),u=usr();
-    if(EDIT){await F.updateDoc(F.doc(db(),"clubes",EDIT.id),d);
-      // sus salidas ya publicadas llevan el nombre, la web y el contacto del club: se ponen al día
-      for(const x of SALS.filter(x=>x.club===EDIT.id))await F.updateDoc(F.doc(db(),"salidas",x.id),{cn:d.n,cc:d.contacto,cw:d.web,cig:d.ig,cfb:d.fb}).catch(()=>{});
+    if(EDIT){// 15 nov 2026 · si la base de datos aún no admite las paradas, se guarda lo demás y se avisa
+      try{await F.updateDoc(F.doc(db(),"clubes",EDIT.id),d)}catch(er){if(!/permission/i.test(String(er)))throw er;const d2=Object.assign({},d);delete d2.bus;await F.updateDoc(F.doc(db(),"clubes",EDIT.id),d2);toast("Guardado, salvo las paradas del autobús (falta un permiso en la base de datos)",7000)}
+      // sus salidas ya publicadas llevan el nombre, la web, el contacto y las paradas del club: se ponen al día
+      for(const x of SALS.filter(x=>x.club===EDIT.id))await F.updateDoc(F.doc(db(),"salidas",x.id),{cn:d.n,cc:d.contacto,cw:d.web,cig:d.ig,cfb:d.fb,cbus:d.bus}).catch(()=>{});
       toast("Datos del club guardados");EDIT=null}
-    else if(adm){d.estado="ok";d.prueba=!!($("sc-p")&&$("sc-p").checked);d.por=u.uid;await F.addDoc(F.collection(db(),"clubes"),d);toast("Club creado")}
-    else{d.estado="pend";d.msg=($("sc-m")||{}).value||"";d.email=u.email||"";await F.setDoc(F.doc(db(),"clubes",u.uid),d);toast("Solicitud enviada")}
+    else{const sinBus=async f=>{try{await f(d)}catch(er){if(!d.bus||!/permission/i.test(String(er)))throw er;const d2=Object.assign({},d);delete d2.bus;await f(d2)}};
+      if(adm){d.estado="ok";d.prueba=!!($("sc-p")&&$("sc-p").checked);d.por=u.uid;await sinBus(x=>F.addDoc(F.collection(db(),"clubes"),x));toast("Club creado")}
+      else{d.estado="pend";d.msg=($("sc-m")||{}).value||"";d.email=u.email||"";await sinBus(x=>F.setDoc(F.doc(db(),"clubes",u.uid),x));toast("Solicitud enviada")}}
     $("sal-form").innerHTML="";carga(true)}catch(e){console.warn(e);toast(/permission/i.test(String(e))?"Faltan los permisos en la base de datos":"No se ha podido guardar")}}
 async function guardaSalida(){const adm=esAdm(),cid=adm?$("ss-c").value:MIO.id,club=(adm?CLUBS.find(c=>c.id===cid):MIO);
   const ti=$("ss-t").value.trim(),dia=$("ss-d").value,h=$("ss-h").value||"08:00";
   if(ti.length<4){toast("Pon un título");return}if(!dia){toast("Pon el día");return}if(dia<hoy()){toast("El día ya ha pasado");return}
   const sd=$("ss-sd").value;if(!sd){toast("Elige desde dónde sale");return}
   if(!SED&&SALS.filter(x=>x.club===cid).length>=MAXS){toast(`Ya tenéis ${MAXS} salidas anunciadas: podréis publicar la siguiente cuando pase la primera`);return}
-  const s={sd,hr:$("ss-hr").value.trim(),club:cid,cn:club.n,cc:club.contacto||"",cw:club.web||"",cig:club.ig||"",cfb:club.fb||"",ti,fecha:dia+"T"+h,enc:$("ss-e").value.trim(),dif:$("ss-f").value,ap:$("ss-a").value.trim(),apu:$("ss-u").value.trim(),apo:$("ss-o").value.trim(),pdfu:$("ss-pdfu").value.trim(),txt:$("ss-x").value.trim(),t:Date.now()};
+  const s={sd,hr:$("ss-hr").value.trim(),club:cid,cn:club.n,cc:club.contacto||"",cw:club.web||"",cig:club.ig||"",cfb:club.fb||"",cbus:club.bus||"",ti,fecha:dia+"T"+h,enc:$("ss-e").value.trim(),dif:$("ss-f").value,ap:$("ss-a").value.trim(),apu:$("ss-u").value.trim(),apo:$("ss-o").value.trim(),pdfu:$("ss-pdfu").value.trim(),txt:$("ss-x").value.trim(),t:Date.now()};
   if(GPX)Object.assign(s,{km:GPX.km,up:GPX.up,mx:GPX.mx,lat:GPX.pts[0][0],lon:GPX.pts[0][1]});
+  // 15 nov 2026 · ruta alternativa: descripción, duración y (si lo hay) su track, en salidasp/<id>_alt
+  const quitaA=$("ss-ax")&&$("ss-ax").checked,ad=$("ss-ad").value.trim(),ahr=$("ss-ahr").value.trim(),altPrev=SED&&SED.alt||null;
+  if(quitaA)s.alt=null;
+  else if(ad||ahr||GPXA||altPrev){if(!ad&&!GPXA&&!(altPrev&&altPrev.t)){toast("Cuenta en una línea cómo es la ruta alternativa");return}
+    s.alt={d:ad,hr:ahr};if(GPXA)Object.assign(s.alt,{km:GPXA.km,up:GPXA.up,t:1});else if(altPrev&&altPrev.t)Object.assign(s.alt,{km:altPrev.km||0,up:altPrev.up||0,t:1})}
+  else s.alt=null;
   if(!SED)s.uid=usr().uid;
   if(club.prueba)s.prueba=true;
   if(s.apu&&!/^https?:\/\//i.test(s.apu)){toast("El enlace para apuntarse tiene que empezar por https://");return}
@@ -255,8 +279,10 @@ async function guardaSalida(){const adm=esAdm(),cid=adm?$("ss-c").value:MIO.id,c
     s.pdf=np||(SED&&!quitaP?SED.pdf||null:null);s.mide=nm||(SED&&!quitaM?SED.mide||null:null);s.cart=nc||(SED&&!quitaC?SED.cart||null:null);
     if(SED)await F.updateDoc(ref,s);else await F.setDoc(ref,s);
     YO.add(id);if(GPX)await F.setDoc(F.doc(db(),"salidasp",id),{club:cid,p:JSON.stringify(GPX.pts)});
+    if(GPXA)await F.setDoc(F.doc(db(),"salidasp",id+"_alt"),{club:cid,p:JSON.stringify(GPXA.pts)}).catch(er=>{console.warn(er);toast("La salida está publicada, pero el track de la alternativa no se ha podido subir",7000)});
+    if(SED&&altPrev&&altPrev.t&&!(s.alt&&s.alt.t))await F.deleteDoc(F.doc(db(),"salidasp",id+"_alt")).catch(()=>{});
     if(SED){if(quitaP&&SED.pdf)await borraDoc(SED.id,SED.pdf);if(quitaM&&SED.mide)await borraDoc(SED.id,SED.mide);if(quitaC&&SED.cart)await borraDoc(SED.id,SED.cart)}
-    toast(SED?"Salida actualizada":"Salida publicada");$("sal-form").innerHTML="";GPX=null;SED=null;carga(true)}catch(e){console.warn(e);toast(/permission/i.test(String(e))?"Faltan los permisos en la base de datos":/size|exceed|large/i.test(String(e))?"El archivo es demasiado grande: pon mejor un enlace":"No se ha podido publicar. Mira la cobertura y prueba otra vez")}}
+    toast(SED?"Salida actualizada":"Salida publicada");$("sal-form").innerHTML="";GPX=null;GPXA=null;SED=null;carga(true)}catch(e){console.warn(e);toast(/permission/i.test(String(e))?"Faltan los permisos en la base de datos":/size|exceed|large/i.test(String(e))?"El archivo es demasiado grande: pon mejor un enlace":"No se ha podido publicar. Mira la cobertura y prueba otra vez")}}
 // lee un documento: PDF (comprobando que de verdad es un PDF y que no pasa de 8 MB) o imagen (se reduce a JPEG)
 async function leeDoc(f,que,img,px){if(!f)return null;const MB=8;
   const esImg=img&&/^image\//.test(f.type||"");
@@ -289,6 +315,9 @@ async function bajaDoc(s,d,que){toast(`Bajando la ${que}…`,20000);
 function descarga(blob,nm){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nm;document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},8000);setTimeout(()=>toast("Guardado en Descargas: "+nm,5000),900)}
 
+// 15 nov 2026 · paradas del autobús: texto, una por línea
+const limpiaBus=v=>String(v||"").split(/\n/).map(l=>l.trim()).filter(Boolean).slice(0,10).join("\n").slice(0,600);
+const busDe=s=>String(s.cbus||((CLUBS||[]).find(c=>c.id===s.club)||{}).bus||"").split(/\n/).map(l=>l.trim()).filter(Boolean);
 /* --- la ficha de una salida (en el mapa, con su track) --- */
 let LAY=null;
 // 11 nov 2026 · enlaces del club: «@club» o «instagram.com/club» → https://instagram.com/club
@@ -303,11 +332,13 @@ const gpxDe=(n,pts)=>`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1"
 const nomGpx=n=>(String(n).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^\w\s-]/g,"").trim().replace(/\s+/g,"-").slice(0,60)||"track")+".gpx";
 async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
   showView("mapa");if(window.showTrack)showTrack(null);
-  let pts=null;try{await base();const d=await fs().getDoc(fs().doc(db(),"salidasp",id));if(d.exists())pts=JSON.parse(d.data().p)}catch(e){}
+  let pts=null,apts=null;try{await base();const d=await fs().getDoc(fs().doc(db(),"salidasp",id));if(d.exists())pts=JSON.parse(d.data().p)}catch(e){}
+  if(s.alt&&s.alt.t)try{const d=await fs().getDoc(fs().doc(db(),"salidasp",id+"_alt"));if(d.exists())apts=JSON.parse(d.data().p)}catch(e){}
   if(LAY){LAY.remove();LAY=null}
   if(pts&&pts.length>1){LAY=L.layerGroup([L.polyline(pts.map(p=>[p[0],p[1]]),{color:"#fff",weight:8,opacity:.95,interactive:false}),L.polyline(pts.map(p=>[p[0],p[1]]),{color:"#1e8e3e",weight:5,interactive:false}),
     L.circleMarker([pts[0][0],pts[0][1]],{radius:7,color:"#fff",weight:2,fillColor:"#2a7a3b",fillOpacity:1,interactive:false}).bindTooltip("Salida",{direction:"top"})]).addTo(map);
-    const el=document.getElementById("map").getBoundingClientRect(),wide=el.width>=860;map.fitBounds(L.latLngBounds(pts.map(p=>[p[0],p[1]])),{paddingTopLeft:[wide?60:24,110],paddingBottomRight:[wide?640:24,wide?24:el.height*.55],maxZoom:15})}
+    if(apts&&apts.length>1){L.polyline(apts.map(p=>[p[0],p[1]]),{color:"#fff",weight:7,opacity:.9,interactive:false}).addTo(LAY);L.polyline(apts.map(p=>[p[0],p[1]]),{color:"#e8710a",weight:4,dashArray:"8 7",interactive:false}).bindTooltip("Alternativa").addTo(LAY)}
+    const el=document.getElementById("map").getBoundingClientRect(),wide=el.width>=860;map.fitBounds(L.latLngBounds(pts.concat(apts||[]).map(p=>[p[0],p[1]])),{paddingTopLeft:[wide?60:24,110],paddingBottomRight:[wide?640:24,wide?24:el.height*.55],maxZoom:15})}
   // cómo apuntarse: el enlace (formulario…) es el botón grande; el teléfono, para llamar o escribir por WhatsApp
   const ap=s.ap||"",apu=s.apu||(/^https?:\/\//i.test(ap)?ap:""),tel=apu===ap?"":ap,num=tel.replace(/[^\d+]/g,"");
   const telH=num.length>=9?"tel:"+num:"",waH=num.length>=9?"https://wa.me/"+(num.startsWith("+")?num.slice(1):num.length===9?"34"+num:num):"";
@@ -318,8 +349,12 @@ async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
   sheet.innerHTML=`<div class="grab"></div>${tipoHTML("salida",s.cn||"")}<div class="sheet-head"><h2>${esc(s.ti)}</h2><button class="x" aria-label="Cerrar" data-close data-salx>×</button></div>
   <div class="meta"><span class="tag" style="background:#1e8e3e;color:#fff;border-color:#1e8e3e">📅 ${esc(fFecha(s.fecha))}</span><span class="tag">${esc(s.cn)}</span>${s.prueba?`<span class="tag">Prueba</span>`:""}</div>
   ${s.cart?`<div class="salcart" data-salcart><span>Cargando el cartel…</span></div>`:""}
-  <div class="ficha"${[s.km,s.up,s.hr,s.dif].filter(Boolean).length===4?' style="grid-template-columns:1fr 1fr"':""}>${s.km?`<div><b>${kmF(s.km)}</b><span>Distancia</span></div>`:""}${s.up?`<div><b>+${Math.round(s.up).toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${s.hr?`<div><b>${esc(s.hr)}</b><span>Horario</span></div>`:""}${s.dif?`<div><b>${esc(s.dif)}</b><span>Dificultad</span></div>`:""}</div>
+  <div class="ficha"${[s.km,s.up,s.hr,s.dif].filter(Boolean).length===4?' style="grid-template-columns:1fr 1fr"':""}>${s.km?`<div><b>${kmF(s.km)}</b><span>Distancia</span></div>`:""}${s.up?`<div><b>+${Math.round(s.up).toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${s.hr?`<div><b>${esc(s.hr)}</b><span>Duración</span></div>`:""}${s.dif?`<div><b>${esc(s.dif)}</b><span>Dificultad</span></div>`:""}</div>
   ${s.enc?`<p class="salida">📍 Punto de encuentro: <b>${esc(s.enc)}</b></p>`:""}
+  ${(()=>{const b=busDe(s);if(!b.length)return"";   // 15 nov 2026 · paradas del autobús (datos del club); al tocar, Google Maps
+    return`<div class="salbus"><b>🚌 Paradas del autobús</b>${b.map(l=>{const m=l.match(/^(\d{1,2}[:.h]\d{2}\s*h?)\s*[-·,]?\s*(.*)$/i),h=m?m[1]:"",lu=m?m[2]:l;
+      return`<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lu)}" target="_blank" rel="noopener">${h?`<span>${esc(h)}</span>`:""}${esc(lu)}</a>`}).join("")}</div>`})()}
+  ${s.alt?`<div class="salaltf"><b>🔀 Ruta alternativa</b>${s.alt.d?`<p>${esc(s.alt.d)}</p>`:""}${[s.alt.km?kmF(s.alt.km):"",s.alt.up?"+"+Math.round(s.alt.up).toLocaleString("es-ES")+" m":"",s.alt.hr?"⏱ "+s.alt.hr:""].filter(Boolean).length?`<p class="d">${[s.alt.km?kmF(s.alt.km):"",s.alt.up?"+"+Math.round(s.alt.up).toLocaleString("es-ES")+" m":"",s.alt.hr?"⏱ "+esc(s.alt.hr):""].filter(Boolean).join(" · ")}</p>`:""}${apts&&apts.length>1?`<p class="d">En el mapa, la línea naranja discontinua.</p>`:""}</div>`:""}
   ${s.txt?`<p class="desc">${esc(s.txt).replace(/\n/g,"<br>")}</p>`:""}
   ${apu||tel||s.apo?`<div class="salbox" style="margin-top:10px"><b>✍️ Cómo apuntarse</b>${tel?`<p style="margin:6px 0 0">📞 ${esc(tel)}</p>`:""}${s.apo?`<p style="margin:6px 0 0">${esc(s.apo)}</p>`:""}
    <div class="salbtns">${apu?`<a class="btn primary" href="${esc(apu)}" target="_blank" rel="noopener" style="grid-column:1/-1">✍️ Apuntarse</a>`:""}${telH?`<a class="btn ghost" href="${esc(telH)}">📞 Llamar</a><a class="btn ghost" href="${esc(waH)}" target="_blank" rel="noopener">💬 WhatsApp</a>`:""}</div></div>`:""}
@@ -329,7 +364,8 @@ async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
     if(s.pdf&&s.pdfu)b.push(`<a class="btn ghost" href="${esc(verUrl(s.pdfu))}" target="_blank" rel="noopener">🔗 Hoja de ruta (web)</a>`);
     return b.length?`<div class="salbtns" style="grid-template-columns:${b.length>1?"1fr 1fr":"1fr"}">${b.join("")}</div>`:""})()}
   ${pts&&pts.length>1?`<div class="saltrk"><button class="btn primary" data-saltrk style="width:100%">🧭 Track de la ruta ▾</button><div class="opts" hidden>
-    <button class="btn ghost" data-salfol>▶ Seguir</button><button class="btn ghost" data-salgpx>⬇ Descargar GPX</button><button class="btn ghost" data-salsave>💾 Guardar en mis tracks</button></div></div>`:""}
+    ${apts&&apts.length>1?`<p class="salsub">Ruta principal</p>`:""}<button class="btn ghost" data-salfol>▶ Seguir</button><button class="btn ghost" data-salgpx>⬇ Descargar GPX</button><button class="btn ghost" data-salsave>💾 Guardar en mis tracks</button>
+    ${apts&&apts.length>1?`<p class="salsub">🔀 Alternativa</p><button class="btn ghost" data-salfol data-alt>▶ Seguir</button><button class="btn ghost" data-salgpx data-alt>⬇ Descargar GPX</button><button class="btn ghost" data-salsave data-alt>💾 Guardar en mis tracks</button>`:""}</div></div>`:""}
   <div class="acts2"><div class="agrid">
    <button class="btn ghost" data-salshare>📤 Compartir</button><button class="btn ghost" data-salfav>${esFav(s.club)?"★ Club favorito":"☆ Club favorito"}</button>
    
@@ -337,18 +373,18 @@ async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
   ${(()=>{const r=[s.cw?`<a class="btn ghost" href="${esc(s.cw)}" target="_blank" rel="noopener">🌐 Web</a>`:"",s.cig?`<a class="btn ghost" href="${esc(s.cig)}" target="_blank" rel="noopener">📷 Instagram</a>`:"",s.cfb?`<a class="btn ghost" href="${esc(s.cfb)}" target="_blank" rel="noopener">👍 Facebook</a>`:""].filter(Boolean);
     return r.length?`<div class="salbtns salred" style="grid-template-columns:repeat(${r.length},1fr)">${r.join("")}</div>`:""})()}
   <p class="salaviso">Organiza <b>${esc(s.cn)}</b>${s.cc?" ("+esc(s.cc)+")":""}. La inscripción, el seguro y las condiciones son cosa del club: Los de las Claras solo la anuncia.</p>`;
-  sheet._sal={s,pts};sheet.hidden=false;sheet.scrollTop=0}
+  sheet._sal={s,pts,apts};sheet.hidden=false;sheet.scrollTop=0}
 sheet.addEventListener("click",async e=>{const k=sheet._sal;if(!k)return;
   if(e.target.closest("[data-salx]")){return}   // el track se queda en el mapa hasta abrir otra cosa
-  const {s,pts}=k;const sinT=()=>{if(!pts||pts.length<2){toast("Esta salida no tiene track");return true}return false};
-  if(e.target.closest("[data-salfol]")){if(sinT())return;if(LAY){LAY.remove();LAY=null}if(window.SEGUIR)SEGUIR.start({u:"tmp",ti:s.ti,gx:{ln:pts,km:s.km}},false);return}
+  const {s}=k;const alt=!!e.target.closest("[data-alt]"),pts=alt?k.apts:k.pts,tit=alt?s.ti+" (alternativa)":s.ti,kmx=alt?(s.alt&&s.alt.km):s.km;const sinT=()=>{if(!pts||pts.length<2){toast("Esta salida no tiene track");return true}return false};
+  if(e.target.closest("[data-salfol]")){if(sinT())return;if(LAY){LAY.remove();LAY=null}if(window.SEGUIR)SEGUIR.start({u:"tmp",ti:tit,gx:{ln:pts,km:kmx}},false);return}
   const ci=e.target.closest("[data-salcart] img");if(ci){cartelGrande(ci.src);return}
   if(e.target.closest("[data-saltrk]")){const o=sheet.querySelector(".saltrk .opts");if(o)o.hidden=!o.hidden;return}
   // ⬇ Descargar GPX: siempre a Descargas (antes en el móvil abría el menú de compartir)
-  if(e.target.closest("[data-salgpx]")){if(sinT())return;descarga(new Blob([gpxDe(s.ti,pts)],{type:"application/gpx+xml"}),nomGpx(s.ti));return}
+  if(e.target.closest("[data-salgpx]")){if(sinT())return;descarga(new Blob([gpxDe(tit,pts)],{type:"application/gpx+xml"}),nomGpx(tit));return}
   if(e.target.closest("[data-salsave]")){if(sinT())return;if(!MPI){toast("No se ha podido guardar");return}
-    const go=()=>{const ya=MPI.tracks().find(x=>x.sal===s.id);if(ya){toast("Ya la tienes en Mis cosas › Mis tracks");if(window.MISTRACKS)MISTRACKS.open(ya.id,false);return}
-      const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6),o={id,n:s.ti,km:s.km,pts:pts.map(p=>p.slice(0,3)),src:"gpx",sal:s.id,f:new Date().toISOString()};
+    const go=()=>{const sid=alt?s.id+"_alt":s.id,ya=MPI.tracks().find(x=>x.sal===sid);if(ya){toast("Ya la tienes en Mis cosas › Mis tracks");if(window.MISTRACKS)MISTRACKS.open(ya.id,false);return}
+      const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6),o={id,n:tit,km:kmx,pts:pts.map(p=>p.slice(0,3)),src:"gpx",sal:sid,f:new Date().toISOString()};
       MPI.desn(o);MPI.saveTracks([...MPI.tracks(),o]);if(pts.some(p=>p[2]==null))MPI.demAlt(id);toast("Guardado en Mis cosas › Mis tracks")};
     if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go();return}
   if(e.target.closest("[data-salfav]")){togFav(s.club,s.cn);const b=e.target.closest("[data-salfav]");b.textContent=esFav(s.club)?"★ Club favorito":"☆ Club favorito";pinta();return}
@@ -357,7 +393,7 @@ sheet.addEventListener("click",async e=>{const k=sheet._sal;if(!k)return;
     try{if(navigator.share){await navigator.share({title:s.ti,text,url});return}}catch(er){if(er&&er.name==="AbortError")return}
     try{await navigator.clipboard.writeText(text+"\n"+url);toast("Enlace copiado")}catch(er){window.open("https://wa.me/?text="+encodeURIComponent(text+"\n"+url),"_blank","noopener")}return}
   if(e.target.closest("[data-saledit]")){sheet.hidden=true;showView("salidas");setTimeout(()=>formSalida(s),150);return}
-  if(e.target.closest("[data-saldel]")){if(!confirm("¿Borrar esta salida?"))return;try{await base();const F=fs();if(s.pdf)await borraDoc(s.id,s.pdf);if(s.mide)await borraDoc(s.id,s.mide);if(s.cart)await borraDoc(s.id,s.cart);await F.deleteDoc(F.doc(db(),"salidasp",s.id)).catch(()=>{});YO.add(s.id);await F.deleteDoc(F.doc(db(),"salidas",s.id));
+  if(e.target.closest("[data-saldel]")){if(!confirm("¿Borrar esta salida?"))return;try{await base();const F=fs();if(s.pdf)await borraDoc(s.id,s.pdf);if(s.mide)await borraDoc(s.id,s.mide);if(s.cart)await borraDoc(s.id,s.cart);await F.deleteDoc(F.doc(db(),"salidasp",s.id)).catch(()=>{});await F.deleteDoc(F.doc(db(),"salidasp",s.id+"_alt")).catch(()=>{});YO.add(s.id);await F.deleteDoc(F.doc(db(),"salidas",s.id));
     sheet.hidden=true;if(LAY){LAY.remove();LAY=null}toast("Salida borrada");carga(true)}catch(er){toast("No se ha podido borrar")}}});
 // al abrir otra cosa en el mapa, se quita el track de la salida
 {const st=window.showTrack;if(st)window.showTrack=function(){if(LAY&&!(sheet._sal&&!sheet.hidden)){LAY.remove();LAY=null}return st.apply(this,arguments)}}
