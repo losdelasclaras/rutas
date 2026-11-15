@@ -606,6 +606,40 @@ def enlazar_cumbres(co, new, lim=0.25):
         if ya: p[9] = sorted(ya)
     if nuevos: log(f'⛰ {co.get("nombre") or co["id"]}: {nuevos} enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de {int(lim*1000)} m).')
 
+def cumbres_mapa(co, new, old):
+    """15 nov 2026: cumbres de un colaborador sacadas de su propio My Maps de cumbres («mapa_cumbres», p. ej. «RV · Cumbres (IGN)» de Rutinas Varias),
+    en vez de sacarlas de los títulos de sus rutas. Nombre y sitio de su mapa; altitud si la pone en el nombre o en la descripción.
+    Devuelve True si las ha puesto (entonces no se recolocan con OpenStreetMap). Si falla o llegan <90 % de las de la última vez, False (se quedan las de los títulos)."""
+    try:
+        _, pts, _ = _kml_colab(get(f'https://www.google.com/maps/d/kml?mid={co["mapa_cumbres"]}&forcekml=1'))
+    except Exception as e:
+        log(f'⚠ No he podido leer el mapa de cumbres de {co.get("nombre") or co["id"]}: {e} (salen las de sus rutas)'); return False
+    pts = [q for q in pts if quedar_colab(co, q)]
+    cs, vistos = [], set()
+    for n, la, lo, d, u, _f, _ic, _fol in pts:
+        n = re.sub(r'\s+', ' ', n).strip()
+        alt = ''
+        m = re.search(r'[\s(,·-]+(\d{3,4}(?:[.,]\d)?)\s*(?:m\b|msnm|m\.)?\s*\)?\s*$', n, re.I)   # «Peña Ubiña (2417 m)», «Peña Ubiña 2417»
+        if m and 300 <= float(m.group(1).replace(',', '.')) <= 4900:
+            alt = str(round(float(m.group(1).replace(',', '.')))); n = n[:m.start()].strip(' -·,(')
+        if not alt:
+            m = re.search(r'(?:altitud|altura|cota|alt\.?)\D{0,12}(\d[\d.]{2,5})', d or '', re.I)
+            if m:
+                v = int(re.sub(r'\D', '', m.group(1)))
+                if 300 <= v <= 4900: alt = str(v)
+        if not n: continue
+        n = n[:1].upper() + n[1:] if n.isupper() is False else n.title()
+        k = (n.lower(), round(la, 3), round(lo, 3))
+        if k in vistos: continue
+        vistos.add(k)
+        cs.append([n, la, lo, f'Altitud: {int(alt):,} m'.replace(',', '.') if alt else '', u or '', '', '1634', 'CUMBRES', None, []])
+    antes = old.get('cm') or 0
+    if not cs or len(cs) < 0.9 * antes:
+        log(f'⚠ El mapa de cumbres de {co.get("nombre") or co["id"]} ha devuelto {len(cs)} cumbres (la última vez {antes}): salen las de sus rutas.'); return False
+    new['p'] = cs; new['cm'] = len(cs)
+    log(f'⛰ {co.get("nombre") or co["id"]}: {len(cs)} cumbres de su mapa de cumbres ({sum(1 for c in cs if c[3])} con altitud).')
+    return True
+
 def cumbres_osm(co, new):
     """Cumbres sacadas de sus tracks: se buscan en OpenStreetMap (picos con el mismo nombre por donde pasa su track)
     y, si están, se ponen en el sitio exacto del pico. Si no, se quedan en el punto más alto del track.
@@ -794,8 +828,9 @@ def colaboradores():
                         for r in json.load(open(xf)).get('r', []):
                             if r[0] not in ya: rutas.append(r)
                     new.update(t=co.get('nombre') or old.get('t') or co['id'], p=cps, r=rutas, l=[])
-                    enlazar_cumbres(co, new)
-                    cumbres_osm(co, new)
+                    de_mapa = bool(co.get('mapa_cumbres')) and cumbres_mapa(co, new, old)   # 15 nov 2026: sus cumbres de su mapa de cumbres
+                    enlazar_cumbres(co, new, 0.3 if de_mapa else 0.25)
+                    if not de_mapa: cumbres_osm(co, new)
             except Exception as e:
                 log(f'⚠ No he podido leer los mapas de rutas del colaborador {co["id"]}: {e} (se queda como estaba)')
         if co.get('wp_rutas'):
