@@ -671,6 +671,10 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         // 15 nov 2026: lo primero, pasarlo a la app (Mis cosas). Antes, si fallaba el GPX de Descargas, no se pasaba nada.
         // Siempre va a la lista de pendientes: si aún no hay buzón o no hay cobertura, se manda en cuanto se pueda (al abrir la app o esta pantalla).
         val hayBuzon = getSharedPreferences("buzon", MODE_PRIVATE).getString("b", null) != null
+        // 15 nov 2026: ¿Android frenó el GPS? (más de un 25 % del recorrido en saltos de más de 120 m, o de media más de 35 m entre puntos; andando suelen ser 3-5 m)
+        var tot = 0.0; var hue = 0.0
+        for (i in 1 until pts.size) { val d = FloatArray(1); android.location.Location.distanceBetween(pts[i-1][0], pts[i-1][1], pts[i][0], pts[i][1], d); tot += d[0]; if (d[0] > 120f && d[0] < 3000f) hue += d[0] }
+        web.evaluateJavascript("window.POCOS=" + (enviar && tot > 1000 && (hue / tot > 0.25 || tot / pts.size > 35)), null)
         val r = guardarGpx(this, pts, nombre, wps)
         if (r != null) Grab.prefs(this).edit().putString("uri", r.second.toString()).putString("donde", r.first).putString("nombre", nombre).apply()
         else Grab.prefs(this).edit().remove("uri").putString("donde", "").putString("nombre", nombre).apply()
