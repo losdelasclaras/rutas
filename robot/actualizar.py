@@ -407,6 +407,22 @@ def _gpx_linea3(b):
     if len(ll) > 1500: ll = ll[::len(ll) // 1500 + 1]
     return ll
 
+def _sin_saltos(ll, lim=0.8):
+    """16 nov 2026: quita puntos sueltos de un track que saltan lejos (>800 m del anterior y del siguiente, o al principio/final),
+    p. ej. un punto que grabó el GPS en otro sitio al acabar: en la app salía como una línea recta larga."""
+    def d(a, b): return math.dist((a[0], a[1] * math.cos(math.radians(a[0]))), (b[0], b[1] * math.cos(math.radians(b[0])))) * 111.2
+    for _ in range(5):
+        if len(ll) < 3: break
+        out = []
+        for i, p in enumerate(ll):
+            a = d(ll[i - 1], p) > lim if i > 0 else None
+            b = d(p, ll[i + 1]) > lim if i < len(ll) - 1 else None
+            if (a is None and b) or (b is None and a) or (a and b): continue
+            out.append(p)
+        if len(out) == len(ll): break
+        ll = out
+    return ll
+
 def rutas_drive(co, new):
     """16 nov 2026: colaborador sin mapas de rutas (p. ej. Camudando'l camín): cada track de su carpeta de Drive pasa a ser
     una RUTA suya (como las de Rutinas Varias): sale en Explorar › Rutas y como 🆕 NUEVA, con Seguir, GPX y perfil, y queda
@@ -422,7 +438,7 @@ def rutas_drive(co, new):
     def us(u): return sl(re.sub(r'\.html?$', '', u.split('?')[0].split('#')[0].rstrip('/').split('/')[-1]))
     rs = []
     for x in dd:
-        fid, nom, ll = x[0], x[1], x[2]
+        fid, nom = x[0], x[1]; ll = x[2] = _sin_saltos(x[2])
         fs = sl(nom); u = ''
         cand = [v for v in urls if us(v) and (us(v) == fs or (len(us(v)) >= 15 and fs.startswith(us(v))) or (len(fs) >= 15 and us(v).startswith(fs)))]
         if cand: u = max(cand, key=lambda v: len(us(v)))
