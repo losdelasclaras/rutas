@@ -12,7 +12,9 @@ const H=document.documentElement;
 document.head.insertAdjacentHTML("beforeend",`<style>
 html:not(.pc) .dibonly{display:none!important}
 .dibp{position:absolute;left:12px;top:64px;z-index:1200;width:330px;max-width:calc(100% - 24px);max-height:calc(100% - 140px);overflow:auto;box-sizing:border-box;background:var(--card,#fff);color:var(--ink,#222);border:1px solid var(--edge,#ccc);border-radius:14px;box-shadow:0 6px 22px rgba(0,0,0,.25);padding:12px 14px;font-size:15px}
-.dibp h3{margin:0;font-size:18px;display:flex;align-items:center;gap:8px}.dibp h3 button{margin-left:auto;border:0;background:none;font-size:22px;cursor:pointer;color:var(--muted,#666);padding:0 4px}
+.dibp h3{margin:-4px -6px 0;padding:4px 6px;font-size:18px;display:flex;align-items:center;gap:6px;cursor:grab;user-select:none;touch-action:none;border-radius:10px}.dibp h3:hover{background:var(--land-dim,#eef0ea)}.dibp.mueve h3{cursor:grabbing}
+.dibp h3 .dibgr{color:var(--muted,#888);font-size:16px;letter-spacing:-2px}.dibp h3 span.t{flex:1}.dibp h3 button{border:0;background:none;font-size:22px;cursor:pointer;color:var(--muted,#666);padding:0 6px;line-height:1}
+.dibp.plegado>*:not(h3){display:none!important}.dibp.plegado{width:auto}.dibp.plegado h3 .dibmini{font-size:14px;font-weight:700;color:var(--muted,#666)}
 .dibp .dibh{margin:6px 0 10px;color:var(--muted,#666);font-size:14px;line-height:1.35}
 .dibp .dibm{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 10px}
 .dibp .dibm button,.dibp .dibr button{min-height:42px;border:1px solid var(--edge,#ccc);border-radius:10px;background:var(--card,#fff);color:var(--ink,#222);font:inherit;font-weight:700;font-size:14px;cursor:pointer}
@@ -105,13 +107,14 @@ function pinta(){
   else sv.style.display="none";
   panel.querySelector("[data-dib=undo]").disabled=!W.length;panel.querySelector("[data-dib=vuelta]").disabled=W.length<2;panel.querySelector("[data-dib=borra]").disabled=!W.length;
   const g=panel.querySelector("[data-dib=guarda]");g.disabled=W.length<2;g.textContent=pend&&W.length>1?"⏳ Calculando el tramo…":"💾 Guardar en Mis cosas";
-  panel.querySelector(".dibw").hidden=!S.some(s=>s.rf)}
+  panel.querySelector(".dibw").hidden=!S.some(s=>s.rf);
+  panel.querySelector(".dibmini").textContent=panel.classList.contains("plegado")&&W.length>1?"· "+fmtKm(m):""}
 
 // ---- entrar y salir ----
 function abre(){if(ON)return;ON=true;if(typeof showView==="function")showView("mapa");
   const sh=document.getElementById("sheet");if(sh){sh.hidden=true;sh.classList.remove("full")}
   H.classList.add("dibon");map.getContainer().classList.add("dibujando");dcz=map.doubleClickZoom.enabled();map.doubleClickZoom.disable();
-  panel=document.createElement("div");panel.className="dibp";panel.innerHTML=`<h3>✏️ Dibujar un track<button data-dib="x" title="Salir" aria-label="Salir">✕</button></h3>
+  panel=document.createElement("div");panel.className="dibp";panel.innerHTML=`<h3 title="Arrastra para mover el panel"><span class="dibgr">⠿</span><span class="t">✏️ Dibujar un track <span class="dibmini"></span></span><button data-dib="plega" title="Plegar o desplegar el panel" aria-label="Plegar">▁</button><button data-dib="x" title="Salir" aria-label="Salir">✕</button></h3>
   <p class="dibh">Haz <b>clic en el mapa</b> para ir poniendo puntos. <b>Arrastra</b> un punto para moverlo y <b>clic derecho</b> para quitarlo.</p>
   <div class="dibm"><button data-dibm="c" aria-pressed="${MODO==="c"}" title="La línea sigue los caminos y sendas del mapa (OpenStreetMap)">🥾 Por caminos</button><button data-dibm="r" aria-pressed="${MODO==="r"}" title="Línea recta: para tramos campo a través">📏 Línea recta</button></div>
   <div class="dibs"></div><svg class="dibpf" viewBox="0 0 300 70" preserveAspectRatio="none"></svg>
@@ -119,8 +122,23 @@ function abre(){if(ON)return;ON=true;if(typeof showView==="function")showView("m
   <button class="dibg" data-dib="guarda">💾 Guardar en Mis cosas</button>
   <p class="dibw" hidden>⚠️ Algún tramo va en línea recta porque no encontré camino. Revísalo o pon más puntos.</p>`;
   map.getContainer().parentNode.appendChild(panel);
+  try{const q=JSON.parse(localStorage.getItem("ldc-dibpos")||"null");if(q)coloca(q.x,q.y)}catch(x){}
+  try{if(localStorage.getItem("ldc-dibpleg")==="1")plega(true)}catch(x){}
+  arrastre(panel.querySelector("h3"));
   L.DomEvent.disableClickPropagation(panel);L.DomEvent.disableScrollPropagation(panel);
   panel.addEventListener("click",clicPanel);map.on("click",clicMapa);document.addEventListener("keydown",tecla);pinta()}
+// ---- mover y plegar el panel (16 nov: tapaba Capas) ----
+function coloca(x,y){const P=panel.parentNode.getBoundingClientRect(),w=panel.offsetWidth,h=panel.offsetHeight;
+  x=Math.max(4,Math.min(x,P.width-w-4));y=Math.max(4,Math.min(y,P.height-Math.min(h,60)-4));panel.style.left=x+"px";panel.style.top=y+"px";return[x,y]}
+function arrastre(hd){let sx,sy,ox,oy,mv=false;
+  hd.addEventListener("pointerdown",e=>{if(e.button!==0||e.target.closest("button"))return;e.preventDefault();sx=e.clientX;sy=e.clientY;ox=panel.offsetLeft;oy=panel.offsetTop;mv=false;hd.setPointerCapture(e.pointerId);panel.classList.add("mueve")});
+  hd.addEventListener("pointermove",e=>{if(!panel.classList.contains("mueve"))return;const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)+Math.abs(dy)>3)mv=true;if(mv)coloca(ox+dx,oy+dy)});
+  const fin=e=>{if(!panel||!panel.classList.contains("mueve"))return;panel.classList.remove("mueve");if(mv){try{localStorage.setItem("ldc-dibpos",JSON.stringify({x:panel.offsetLeft,y:panel.offsetTop}))}catch(x){}}};
+  hd.addEventListener("pointerup",fin);hd.addEventListener("pointercancel",fin);
+  hd.addEventListener("dblclick",e=>{if(!e.target.closest("button"))plega()})}
+function plega(si){const on=si===undefined?!panel.classList.contains("plegado"):si;panel.classList.toggle("plegado",on);
+  const b=panel.querySelector("[data-dib=plega]");b.textContent=on?"▢":"▁";b.title=on?"Desplegar el panel":"Plegar el panel";
+  try{localStorage.setItem("ldc-dibpleg",on?"1":"0")}catch(x){}coloca(panel.offsetLeft,panel.offsetTop);pinta()}
 function cierra(forz){if(!ON)return;if(!forz&&W.length>1&&!confirm("¿Salir sin guardar el track que estás dibujando?"))return;
   ON=false;limpia();if(LN){map.removeLayer(LN);LN=null}map.off("click",clicMapa);document.removeEventListener("keydown",tecla);
   if(dcz)map.doubleClickZoom.enable();map.getContainer().classList.remove("dibujando");H.classList.remove("dibon");if(panel){panel.remove();panel=null}}
@@ -129,7 +147,7 @@ function tecla(e){if(!ON)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==
 function clicPanel(e){const m=e.target.closest("[data-dibm]");if(m){MODO=m.dataset.dibm;try{localStorage.setItem("ldc-dibmodo",MODO)}catch(x){}panel.querySelectorAll("[data-dibm]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.dibm===MODO));
     tst(MODO==="c"?"Los próximos tramos irán por caminos":"Los próximos tramos irán en línea recta");return}
   const b=e.target.closest("[data-dib]");if(!b)return;const k=b.dataset.dib;
-  if(k==="x")cierra();else if(k==="undo")quita(W.length-1);else if(k==="vuelta"){if(W.length>1)add(W[0].ll)}
+  if(k==="x")cierra();else if(k==="plega")plega();else if(k==="undo")quita(W.length-1);else if(k==="vuelta"){if(W.length>1)add(W[0].ll)}
   else if(k==="borra"){if(W.length<3||confirm("¿Borrar todo lo dibujado y empezar de nuevo?"))limpia()}
   else if(k==="guarda")guarda()}
 
