@@ -59,6 +59,8 @@ FILES=[];CAND={};DIB=set()
 for f in sorted(glob.glob('raw/*.gpx')):
     fb=os.path.basename(f)
     t=open(f,encoding='utf-8',errors='replace').read();P,cut=trim(parse(t))
+    while len(P)>2 and dist(P[-2],P[-1])>800:P=P[:-1];cut+=1   # 16 nov 2026: punto suelto lejos al final o al principio (fallo del GPS)
+    while len(P)>2 and dist(P[0],P[1])>800:P=P[1:];cut+=1
     if len(P)<5:continue
     FILES.append((f,t,P,cut))
     if fb in MAN:
