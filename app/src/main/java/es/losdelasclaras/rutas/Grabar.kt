@@ -40,6 +40,8 @@ object Grab {
             tg.startTone(android.media.ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 1600)
             Handler(Looper.getMainLooper()).postDelayed({ try { tg.release() } catch (e: Exception) {} }, 2200) } catch (e: Exception) {}
     }
+    /* 16 nov 2026: si vas en coche (más de 25 km/h seguidos 90 s y 800 m), pausa la grabación y quita ese tramo. Se puede apagar (bici). */
+    fun cocheOn(c: Context): Boolean = prefs(c).getBoolean("coche", true)
     fun archivo(c: Context) = File(c.filesDir, "grabacion.txt")
     fun ultima(c: Context) = File(c.filesDir, "ultima.txt")
     fun prefs(c: Context) = c.getSharedPreferences("grabar", Context.MODE_PRIVATE)
@@ -183,8 +185,8 @@ class GrabarService : Service(), LocationListener {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             "parar" -> { quitar(); if (Build.VERSION.SDK_INT >= 24) stopForeground(STOP_FOREGROUND_REMOVE) else @Suppress("DEPRECATION") stopForeground(true); stopSelf(); return START_NOT_STICKY }
-            "pausa" -> { quitar(); notificar("En pausa"); return START_STICKY }
-            else -> { notificar("Grabando tu recorrido"); pedir() }
+            "pausa" -> { quitar(); rapCero(); notificar("En pausa"); return START_STICKY }
+            else -> { rapCero(); ultimo = null; notificar("Grabando tu recorrido"); pedir() }
         }
         return START_STICKY
     }
@@ -210,14 +212,45 @@ class GrabarService : Service(), LocationListener {
     }
     private fun quitar() { try { lm?.removeUpdates(this) } catch (e: Exception) {} }
 
+    /* 16 nov 2026: ¿vas en coche? Tramo rápido: desde que pasas de 25 km/h; se corta si vas despacio más de 45 s seguidos
+       (un semáforo o un atasco corto no lo cortan). Si dura 90 s y 800 m: pausa y se quita del archivo desde donde empezó. */
+    private var rapIni = 0L; private var rapOff = -1L; private var rapD = 0.0; private var lentoDesde = 0L; private var rapPrev: Location? = null
+    private fun rapCero() { rapIni = 0L; rapOff = -1L; rapD = 0.0; lentoDesde = 0L; rapPrev = null }
+    private fun mirarCoche(l: Location, f: File) {
+        if (!Grab.cocheOn(this)) { rapCero(); return }
+        val pv = rapPrev
+        val v = if (l.hasSpeed() && l.speed > 0f) l.speed.toDouble()
+                else if (pv != null && l.time > pv.time) pv.distanceTo(l) / ((l.time - pv.time) / 1000.0) else 0.0
+        if (v >= 7.0 && v < 70.0) {   // de 25 a 250 km/h (más es un salto del GPS)
+            if (rapIni == 0L) { rapIni = l.time; rapD = 0.0 }   // rapOff: tamaño del archivo antes de este punto
+            else if (pv != null) rapD += pv.distanceTo(l)
+            lentoDesde = 0L
+        } else if (rapIni != 0L) {
+            if (pv != null) rapD += pv.distanceTo(l)
+            if (v < 5.0) { if (lentoDesde == 0L) lentoDesde = l.time else if (l.time - lentoDesde > 45000) rapCero() }
+        }
+        rapPrev = l
+        if (rapIni != 0L && l.time - rapIni >= 90000 && rapD >= 800) {
+            val off = rapOff; val desde = rapIni; rapCero()
+            try { java.io.RandomAccessFile(f, "rw").use { if (off >= 0 && off <= it.length()) it.setLength(off) } } catch (e: Exception) {}
+            val p = Grab.prefs(this)
+            p.edit().putLong("pz", Math.min(desde, System.currentTimeMillis())).putLong("corte", System.currentTimeMillis()).putLong("coche_ms", System.currentTimeMillis()).apply()
+            ultimo = null; quitar(); Grab.avisar(this, false)
+            notificar("🚗 Parece que vas en coche: he pausado la grabación y he quitado el tramo en coche")
+        }
+    }
+
     override fun onLocationChanged(l: Location) {
         if (l.hasAccuracy() && l.accuracy > 40f) return
+        if (Grab.prefs(this).getLong("pz", 0) != 0L) return
         val u = ultimo
         if (u != null && u.distanceTo(l) < 5f) return
         ultimo = l
         val alt = if (l.hasAltitude()) Math.round(l.altitude).toString() else ""
-        Grab.archivo(this).appendText("${"%.6f".format(java.util.Locale.US, l.latitude)},${"%.6f".format(java.util.Locale.US, l.longitude)},$alt,${l.time}\n")
+        val fa = Grab.archivo(this); val antes = fa.length()
+        fa.appendText("${"%.6f".format(java.util.Locale.US, l.latitude)},${"%.6f".format(java.util.Locale.US, l.longitude)},$alt,${l.time}\n")
         try { mirarTrack(l) } catch (e: Exception) {}
+        try { if (rapIni == 0L) rapOff = antes; mirarCoche(l, fa) } catch (e: Exception) {}
     }
     @Deprecated("") override fun onStatusChanged(p: String?, s: Int, e: Bundle?) {}
     override fun onProviderEnabled(p: String) {}
@@ -458,7 +491,8 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         private val c get() = this@GrabarActivity
         @JavascriptInterface fun estado(): String { val p = Grab.prefs(c)
             return JSONObject().put("activo", p.getBoolean("activo", false)).put("t0", p.getLong("t0", 0)).put("pau", p.getLong("pau", 0))
-                .put("pz", p.getLong("pz", 0)).put("ultima", Grab.ultima(c).exists()).toString() }
+                .put("pz", p.getLong("pz", 0)).put("ultima", Grab.ultima(c).exists())
+                .put("corte", p.getLong("corte", 0)).put("coche", Grab.cocheOn(c)).put("cocheMs", p.getLong("coche_ms", 0)).put("cocheVisto", p.getBoolean("coche_visto", false)).toString() }
         @JavascriptInterface fun puntos(desde: Int): String {
             val a = JSONArray(); val l = Grab.leer(Grab.archivo(c))
             for (i in desde until l.size) { val q = l[i]; a.put(JSONArray().put(q[0]).put(q[1]).put(if (q[2].isNaN()) JSONObject.NULL else q[2]).put(q[3])) }
@@ -592,6 +626,8 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         /** Zona elegida en el mapa de la app para guardarla sin cobertura (se lee una vez). */
         @JavascriptInterface fun zona(): String { val p = Grab.prefs(c); val z = p.getString("zona", "") ?: ""; p.edit().remove("zona").apply(); return z }
         @JavascriptInterface fun modoAviso(): String = Grab.modoAviso(c)
+        @JavascriptInterface fun ponCoche(b: Boolean) { Grab.prefs(c).edit().putBoolean("coche", b).apply() }
+        @JavascriptInterface fun cocheVisto() { Grab.prefs(c).edit().putBoolean("coche_visto", true).apply() }
         @JavascriptInterface fun ponModoAviso(m: String) { if (m in listOf("vs", "v", "no")) Grab.prefs(c).edit().putString("aviso_fuera", m).apply() }
         /** aviso desde la pantalla (cuando no se graba o en pausa: entonces no lo hace el servicio) */
         @JavascriptInterface fun avisoFuera(fuerte: Boolean) = Grab.avisar(c, fuerte)
