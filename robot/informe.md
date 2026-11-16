@@ -1,4 +1,4 @@
-# Informe del robot · 16/11/2026 18:06
+# Informe del robot · 16/11/2026 18:45
 
 **Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 0 nuevas, 2 cambiadas, 0 quitadas; colaborador Camudando'l camín
 
@@ -24,9 +24,9 @@
 - Colaborador «Rutinas Varias»: sin cambios.
 - ⛰ Camudando'l camín: 1 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ⚠ No he podido leer el índice del blog de Camudando'l camín (https://camudandolcamin.blogspot.com).
-- 📷 Fotos de Camudando'l camín (de su blog): 12 nuevas, 33 sin foto
-- 📝 Títulos de entradas de Camudando'l camín: 99 de 128 (11 no han respondido)
-- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (1 de 1 con fecha); su blog no responde (1 fallos).
+- 📷 Fotos de Camudando'l camín (de su blog): 17 nuevas, 16 sin foto
+- 📝 Títulos de entradas de Camudando'l camín: 110 de 128 (18 no han respondido)
+- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (1 de 1 con fecha).
 - 🤝 Colaborador «Camudando'l camín»: 153 puntos, 1 tracks.
 -    (40 peticiones a su web en 1.8 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 192 rutas en la app (0 nuevas).
