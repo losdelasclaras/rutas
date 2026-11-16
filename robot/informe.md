@@ -1,8 +1,7 @@
-# Informe del robot · 16/11/2026 11:18
+# Informe del robot · 16/11/2026 11:28
 
-**Cambios:** foto recuperada; foto recuperada; blog: 0 nuevas, 1 actualizadas; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 0 nuevas, 3 cambiadas, 0 quitadas; colaborador Camudando'l camín; regeneración forzada
+**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados
 
-- ♻️ Entrada actualizada: «Pico La Laguna desde Llananzanes por Piedrafita»
 - 🔎 «PEÑA CRESPA O LOS TORNOS DESDE ORLÉ»: sin dificultad. Texto del cuadro: «ismo camino desde Orlé (Caso) a la Peña Crespa o Los Tornos (1.558 m), siguiendo el valle del Ríu Mediu , cruzando la preciosa majada de Piedrafita y subiendo desde el Collado Boqueriza por una canal y una corta trepada. 📏 12 km Ida y vuelta 📈 900 m Desnivel acumulado 🏔️ 1.558 m Peña Crespa / Los Tornos 📲 Descargar el track en Wikiloc --> Empezamos en Orlé siguiendo las marcas blancas y amarillas del PR AS-126, que se adentra en el valle del Ríu Mediu. Tras las cabañas de la Felguera dejamos el camino ancho y subimos por prados y senda hasta el Collado Piedrafita, desde donde se alcanza la cum»
 - 🔎 «Los Fontanes norte y sur desde Tuiza»: sin dificultad. Texto del cuadro: « Arriba (Lena) por la vega de Brañalluenga y el refugio del Meicín hasta la Forqueta del Portillín (2.065 m) y, por el Canalón del Buey, al Fontán Sur (2.408 m) y al Fontán Norte (2.417 m), techo del concejo de Quirós. 📏 12 km Ida y vuelta 📈 1.200 m Desnivel acumulado 🏔️ 2.417 m Fontán Norte ⛰️ 2 cimas Fontán Sur y Fontán Norte ⚡ Pedrera Canalón del Buey, casi 300 m 🔄 Ida y vuelta Desde Tuiza de Arriba · 1.230 m 📍 Tuiza de Arriba (Lena, Asturias) ↗ 🗺️ Macizo de Ubiña · Los Fontanes 📅 Agosto de 2010 📲 Descargar el track en Wikiloc --> Salimos de Tuiza de Arriba por la vega de Brañalluenga hasta»
 - 📷 «La Senda de las Merinas y los Castillines (Travesía Cubilla-Tuiza)»: foto recuperada
@@ -13,10 +12,9 @@
 - 📷 «REFUGIO COLLADO JERMOSO DESDE PANDETRAVE»: foto recuperada
 - 🔎 «Canal Parda y Torre los Traviesos»: sin dificultad. Texto del cuadro: «ga la Piedra, Vegarredonda y el collado de La Fragua a tres cumbres del Cornión: el Pico los Asturianos , la Torre de la Canal Parda y la Torre de los Traviesos (2.385 m), frente a Peña Santa. Vuelta por el mismo camino. 📏 21 km Distancia 📈 +1.450 m Desnivel acumulado 🏔️ 2.385 m Torre de los Traviesos 🧗 Alta Trepadas y pasos expuestos ↩️ Ida y vuelta Desde Pan de Carmen · 1.088 m ⛰️ 3 cumbres Asturianos · Canal Parda · Traviesos 📍 Pan de Carmen (Lagos de Covadonga) ↗ 🗺️ Macizo del Cornión · Picos de Europa 📅 Julio de 2009 🚫 No recomendable para niños Una travesía larga por el corazón del Corni»
 - 🔎 «Sedos de Ozania y Pico Camperón desde Puente Restaño»: sin dificultad. Texto del cuadro: «Circular desde el Puente Restaño (Amieva) por la Fuente Prieta y los aéreos sedos de Ozania hasta el Pico Camperón (2.007 m), techo de la Sierra de Mercader, con bajada por el Collado Verde y la muda de Ozania. 📏 12 km Distancia 📈 +1.350 m Desnivel acumulado 🏔️ 2.007 m Pico Camperón 🧗 Alta Sedos aéreos y orientación 🔄 Circular Desde el Puente Restaño · 700 m 🧭 Sin sendero Gran parte del recorrido 📍 Puente Restaño (Amieva) ↗ 🗺️ Macizo del Cornión · valle del Dobra 📅 Agosto de 2011 🚫 No recomendable para niños Una ruta dura y salvaje por la cara menos conocida del Cornión , la que cae »
+- Blog: sin entradas nuevas.
 - 🗺️ Mapa: 663 puntos (0 nuevos o movidos, 0 quitados).
-- 📷 Foto cambiada en tu mapa: «La Torrezuela (2.317 m.)»
-- 📷 Foto cambiada en tu mapa: «Los Moledizos (2.297 m.)»
-- 📷 Foto cambiada en tu mapa: «Refugio de Vega Huerta»
+- Fotos de tu mapa: 127, sin cambios.
 - Drive: sin tracks nuevos.
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 432 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
@@ -24,8 +22,8 @@
 - 📷 Fotos de rutas de Rutinas Varias (de su blog): 0 nuevas, 139 en total, 7 sin foto
 - 📅 Fechas de rutas de Rutinas Varias: 0 nuevas (146 de 405 con fecha); Wikiloc no responde (8 fallos).
 - Colaborador «Rutinas Varias»: sin cambios.
-- 🤝 Colaborador «Camudando'l camín»: 75 puntos, 1 tracks.
--    (40 peticiones a su web en 1.9 min)
+- Colaborador «Camudando'l camín»: sin cambios.
+-    (40 peticiones a su web en 2.0 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 192 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
 - ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
