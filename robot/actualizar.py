@@ -624,6 +624,7 @@ def fechas_rutas(co, new):
     for r in rs:
         while len(r) < 11: r.append('')
         f = cache.get(r[6]) or cache.get(r[7]) or ''
+        if not f and len(r) > 11 and str(r[11]).startswith('drive:'): f = r[10]   # 16 nov: las de Drive traen la fecha de la dirección de su entrada
         r[10] = f; con += bool(f)
     if pedidas: log(f'📅 Fechas de rutas de {co.get("nombre") or co["id"]}: {nuevas} nuevas ({con} de {len(rs)} con fecha)'
                     + (f'; Wikiloc no responde ({mal["w"]} fallos)' if mal['w'] and not ok['w'] else '') + (f'; su blog no responde ({mal["b"]} fallos)' if mal['b'] and not ok['b'] else '') + '.')
