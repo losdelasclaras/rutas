@@ -126,6 +126,9 @@ i=t.rindex('</script>'); t=t[:i]+'</script>\n<script>if("serviceWorker" in navig
 rep('C.items=qs?ZI.filter(p=>nk(p.c).includes(qs)):ZI;const key=p=>C.pre+norm(p.c);','C.items=qs?ZI.filter(p=>nk(p.c).includes(qs)):ZI;const key=p=>C.pre+norm(p.c)+(p.co?"@"+p.co.id:"");')
 rep('...CATS.map(([k,l])=>[k,l]).filter(([k])=>C.items.some(p=>p.cat===k))','...(window.COLX?COLX.cats():CATS).map(([k,l])=>[k,l]).filter(([k])=>C.items.some(p=>p.cat===k))')
 rep('const list=C.items.filter(p=>(kind==="cumbres"?','const list=C.items.filter(p=>(!window.COLX||COLX.ok(p,C))&&(kind==="cumbres"?')
+# 12 nov 2026: los contadores «N de M subidas» sin contar dos veces la misma cumbre de varios blogs
+rep('const nd=ZI.filter(p=>st(p)==="hecha").length,nq=ZI.filter(p=>st(p)==="quiero").length;','const ZU=window.COLX&&COLX.oculto?ZI.filter(p=>!COLX.oculto(p)):ZI;const nd=ZU.filter(p=>st(p)==="hecha").length,nq=ZU.filter(p=>st(p)==="quiero").length;')
+rep('${(ZI.length?nd/ZI.length*100:0).toFixed(1)}%','${(ZU.length?nd/ZU.length*100:0).toFixed(1)}%')
 rep('<div class="chips" data-k="${kind}" data-grp="g">','${window.COLX?COLX.chips(kind,C):""}<div class="chips" data-k="${kind}" data-grp="g">')
 rep('const rsx=(P[p.i].rs||[]).filter(x=>R[x].u),ri=rsx[0];','const rsx=p.co?[]:(P[p.i].rs||[]).filter(x=>R[x].u),ri=rsx[0];')
 rep('<div class="row crow${s?" is-"+s:""}">${ICO(kind==="cumbres"?"cumbre":p.cat)}<div class="t"><b>${esc(p.c)}</b><span>','<div class="row crow${s?" is-"+s:""}${window.COLX?COLX.cls(p):""}">${p.co?COLX.ico(p,kind):ICO(kind==="cumbres"?"cumbre":p.cat)}<div class="t"><b>${esc(p.c)}</b><span>${window.COLX?COLX.src(p):""}')
@@ -276,6 +279,7 @@ rep('.fsbtn{','.topacts{display:flex;gap:6px;margin:2px 0 10px}.topacts .btn{fle
 rep('.map(r=>({r,d:km({lat,lon},r)}))','.map(r=>({r,d:km({lat,lon},r.gx&&r.gx.st?{lat:r.gx.st[0],lon:r.gx.st[1]}:r)}))')
 # marcas: copiar a otro móvil
 rep('''   <p class="note"><b>${nd}</b> de ${ZI.length}''','''      <p class="note"><b>${nd}</b> de ${ZI.length}''')
+rep('<b>${nd}</b> de ${ZI.length}','<b>${nd}</b> de ${ZU.length}')   # 12 nov 2026
 rep('''  const m=e.target.closest("[data-m]");if(m){''','''  if(e.target.closest("[data-exp]")){const code="LDC1:"+btoa(unescape(encodeURIComponent(JSON.stringify(MARKS))));(navigator.clipboard?navigator.clipboard.writeText(code):Promise.reject()).then(()=>alert("Copiado. En el otro móvil, abre la app y pulsa «Pegar marcas de otro móvil»."),()=>prompt("Copia este código:",code));return}
   if(e.target.closest("[data-imp]")){const code=prompt("Pega aquí el código de tus marcas:");if(!code)return;try{const v=JSON.parse(decodeURIComponent(escape(atob(code.trim().replace(/^LDC1:/,"")))));Object.assign(MARKS,v);saveMarks();renderCols();alert("Marcas añadidas.")}catch(err){alert("Ese código no es válido.")}return}
   const m=e.target.closest("[data-m]");if(m){''')

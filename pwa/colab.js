@@ -115,9 +115,14 @@ for(const c of CO){for(const[k]of KC(c))if(LAY[`co_${c.id}_${k}`]===undefined||n
 /* ---------- cumbres repetidas: un solo icono en el mapa (3 nov) ----------
    Si la misma cumbre la tienen el grupo y uno o varios colaboradores, en el mapa sale UN icono: el del grupo si su capa
    Cumbres está encendida; si no, el del primer colaborador encendido. Al tocarlo, la ficha dice «También en …» con los demás. */
+// 12 nov 2026: «Peña Ubiña Pequeña» no es «Peña Ubiña»: si una lleva Pequeña/Grande/Norte/Sur… y la otra no, son distintas
+const DIST=/^(pequena|pequeno|grande|norte|sur|este|oeste|oriental|occidental|mayor|menor|chica|chico|alta|alto|baja|bajo|primera|segunda|central|vieja|nueva)$/;
+const distW=n=>nk(n).split(" ").filter(w=>DIST.test(w)).sort().join(" ");
+const distintas=(a,b)=>distW(a)!==distW(b);
 const CUMM=[];for(const c of CO)for(const m of (MKG[c.id+"_c"]||[]))CUMM.push(m);
 {const pal=n=>new Set(norm(n).replace(/[^a-z0-9 ]+/g," ").split(" ").filter(w=>w.length>=4&&!/^(pico|pena|picu|monte|alto|cueto|torre|desde)$/.test(w)));
  const igual=(a,b)=>{const x=a.getLatLng(),y=b.getLatLng(),d=Math.hypot(x.lat-y.lat,(x.lng-y.lng)*.73)*111;
+   if(distintas(a.__n,b.__n))return false;
    if(d<.15)return true;if(norm(a.__n)===norm(b.__n)&&d<3)return true;if(d<.35){const pa=pal(a.__n);return[...pal(b.__n)].some(w=>pa.has(w))}return false};
  CUMM.forEach((m,i)=>{for(let j=0;j<i;j++){const n=CUMM[j];if(n.__co!==m.__co&&igual(m,n)){m.__sup=n.__sup||n;break}}})}
 const grpDe=m=>{if(m.__grp===undefined){const it=window.COLX&&COLX.byP&&COLX.byP(m.__p);if(!it)return null;m.__grp=it.par||null}return m.__grp};
@@ -270,21 +275,34 @@ for(const c of CO)for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
   const lista=cum?PEAKS:SPOTS,sw=sig(it.c);
   for(const g of lista){if(g.co)continue;const d=kmd(g,it);
     // (dos cimas a menos de 150 m son la misma aunque el nombre vaya en asturiano: Penubina = Peña Ubiña)
+    if(distintas(g.c,it.c))continue;
     if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))||(cum&&d<.15)){it.both="grupo";it.par=g;g.both=g.both||c.n;(PAR[g.i]=PAR[g.i]||[]).push(it);if(!it.a&&g.a)it.a=g.a;break}}
   ALL.push(it);lista.push(it)}
 for(const c of CO)(c.r||[]).forEach((r,i)=>{ALL.push({c:r[0],r:r[1],lat:r[8][0],lon:r[8][1],co:c,ci:ALL.length,rr:i,k:icoR(r),a:null})});
+// 12 nov 2026: en Explorar, UNA fila por cumbre o lugar aunque esté en varios blogs (la del grupo si la tenéis; si no, la del primer colaborador)
+{const cos=ALL.filter(x=>x.co&&x.pp&&!x.par);
+ for(let i=0;i<cos.length;i++){const it=cos[i],cum=it.k==="cumbre",sw=sig(it.c);
+   for(let j=0;j<i;j++){const g=cos[j];if(g.dup||g.co===it.co||(g.k==="cumbre")!==cum||distintas(g.c,it.c))continue;const d=kmd(g,it);
+     if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))||(cum&&d<.15)){it.dup=g;(g.mates=g.mates||[]).push(it);g.both=g.both||it.co.n;if(!g.a&&it.a)g.a=it.a;break}}}}
+const duenos=p=>{if(p.co){const v=[p.co];for(const m of p.mates||[])if(!v.includes(m.co))v.push(m.co);return v}
+  const v=[{n:"Los de las Claras",c:"#c3262e",id:"grupo"}];for(const m of PAR[p.i]||[])if(!v.some(x=>x.id===m.co.id))v.push(m.co);return v};
 PEAKS.sort((a,b)=>(b.a||0)-(a.a||0));SPOTS.sort((a,b)=>a.c.localeCompare(b.c,"es"));
 // los que coinciden, juntos: el del colaborador justo debajo del vuestro
 for(const L of [PEAKS,SPOTS]){const pares=L.filter(x=>x.par);for(const x of pares)L.splice(L.indexOf(x),1);for(const x of pares){const j=L.indexOf(x.par);L.splice(j<0?L.length:j+1,0,x)}}
 window.COLX={
   cats:()=>CATS.concat(EXTRA),
-  ok(p,C){const o=C.o||"todas";return o==="todas"||(o==="grupo"&&!p.co)||(o==="dos"&&!!p.both)||(p.co&&o==="co_"+p.co.id)},
+  ok(p,C){const o=C.o||"todas";
+    if(o==="grupo")return !p.co;
+    if(o.startsWith("co_")){const id=o.slice(3);if(p.co)return p.co.id===id&&!p.par;return (PAR[p.i]||[]).some(m=>m.co.id===id)}
+    if(p.par||p.dup)return false;   // ya sale en la fila de la otra
+    return o==="todas"||(o==="dos"&&duenos(p).length>1)},
+  oculto:p=>!!(p.par||p.dup),
   chips(kind,C){const o=C.o||"todas";const ops=[["todas","Todos",""],["grupo","Los de las Claras","#c3262e"],...CO.map(c=>["co_"+c.id,c.n,c.c]),["dos","En varios blogs","#7b5ea7"]];
     return `<div class="chips" data-k="${kind}" data-grp="o">${ops.map(([v,l,col])=>`<button class="chip" data-v="${v}" aria-pressed="${o===v}">${col?`<span class="dot" style="background:${col}"></span>`:""}${esc(l)}</button>`).join("")}</div>`},
   cls:p=>(p.co?` src-co${p.both?" both":""}" style="--cc:${p.co.c}`:` src-g${p.both?" both":""}`),
   ico:(p,kind)=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true" style="border-radius:50%;box-shadow:0 0 0 2.5px ${p.co.c}"><use href="#ic-${p.k}" x="-12" y="-12" width="24" height="24"/></svg>`,
   // 9 nov 2026: cada fila dice solo de quién es (sin «También en…»)
-  src:p=>p.co?`<em class="cosrc" style="color:${p.co.c}">${esc(p.co.n)}</em> · `:`<em class="cosrc" style="color:#c3262e">Los de las Claras</em> · `,
+  src:p=>duenos(p).map(c=>`<em class="cosrc" style="color:${c.c}">${esc(c.n)}</em>`).join(" · ")+" · ",   // 12 nov 2026: todos los blogs que la tienen
   open(ci){const it=ALL[ci];if(!it)return;if(it.rr!=null){if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>verR(it.co,it.rr),80);return}if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>abrirCum(it.co,it.pp,it.k),80)}};
 /* ---------- también en la pestaña Rutas: sus puntos que son rutas (capas de rutas o con «Distancia:») ---------- */
 document.head.insertAdjacentHTML("beforeend",`<style>
