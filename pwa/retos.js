@@ -83,6 +83,9 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .rtcel{text-align:center;padding:10px 0 4px}.rtcel h3{font-size:24px;margin:8px 0}.rtcel p{font-size:16px;margin:0 0 14px}
 .rtfull{position:fixed;inset:0;z-index:2700;background:rgba(0,0,0,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px}
 .rtfull img{max-width:100%;max-height:80%;border-radius:8px}.rtfull p{color:#fff;margin:0}
+.rtnv{margin:12px 0 0;padding:12px;border:2px dashed #d4a017;border-radius:14px}
+.rtpick{position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top,0px));z-index:2650;background:var(--ink);color:var(--card);border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:16px;box-shadow:0 3px 12px rgba(0,0,0,.3)}
+.rtpick[hidden]{display:none}.rtpick .rtb{flex:none}
 .rtvacio{color:var(--muted);text-align:center;padding:16px 4px}
 </style>`);
 
@@ -111,7 +114,8 @@ function deTecho(){if(!window.TECHOS||!TECHOS.L)return null;const L=TECHOS.L();i
   const tot=Math.max(78,items.reduce((s,x)=>s+x.peso,0));
   return{id:"techos",n:"Techos de Asturias",e:"🏔",tipo:"perm",fijo:true,u:"concejos",tot,items,
     d:`La cumbre más alta de cada uno de los 78 concejos de Asturias. Algunas son techo de dos concejos y cuentan por los dos.`,org:b.n,orgu:b.u}}
-function resolver(x){const it={id:x.id,n:x.n,sub:x.sub||"",peso:1,lat:x.lat,lon:x.lon,a:x.a||null,keys:[x.k],pi:-1,ci:-1};
+function resolver(x){const it={id:x.id,n:x.n,sub:x.sub||"",peso:1,lat:x.lat,lon:x.lon,a:x.a||null,keys:[x.k],pi:-1,ci:-1,nv:!!x.nv};
+  if(x.nv)return it;
   if(!x.co){it.pi=P.findIndex(p=>norm(p.c)===norm(x.n)&&Math.abs(p.lat-x.lat)<.02&&Math.abs(p.lon-x.lon)<.02);
     if(x.t==="c"&&it.pi>=0&&window.COLX&&COLX.cumDe)try{for(const m of COLX.cumDe(it.pi))it.keys.push(COLX.coKey(m.c,m.p[0]))}catch(e){}}
   return it}
@@ -243,8 +247,10 @@ function marca(R,it){const st=estado(R);if(R.tipo==="fechas"&&!st.on){toast(st.t
     L.h[it.id]=Date.now();saveLoc();if(!hechoMk(it)){for(const k of it.keys)MARKS[k]="hecha";saveMarks()}else cambio();toast("Marcado ✓");return}
   const v=hechoMk(it)?"":"hecha";for(const k of it.keys){if(v)MARKS[k]=v;else delete MARKS[k]}
   saveLoc();saveMarks();if(typeof renderCols==="function")try{renderCols()}catch(e){}if(window.refreshMarks)refreshMarks();toast(v?"Marcado ✓":"Quitada la marca")}
+let RTMK=null;
+function marcaNueva(it){try{if(RTMK)map.removeLayer(RTMK);RTMK=L.marker([it.lat,it.lon],{zIndexOffset:2000,icon:L.divIcon({className:"",iconSize:[34,34],iconAnchor:[17,17],html:`<div style="width:34px;height:34px;border-radius:50%;background:#d4a017;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font-size:17px">🏆</div>`})}).addTo(map).bindPopup(`<b>${esc(it.n)}</b>${it.a?"<br>"+esc(it.a)+" m":""}<br><a href="https://www.google.com/maps/dir/?api=1&destination=${it.lat},${it.lon}" target="_blank" rel="noopener">🚗 Cómo llegar</a>`).openPopup()}catch(e){}}
 function verMapa(it){cierraDlg();if(typeof showView==="function")showView("mapa");
-  setTimeout(()=>{try{if(it.pi>=0){pickRoute(it.pi);flyTo(it.lat,it.lon,13);return}
+  setTimeout(()=>{try{if(it.nv){flyTo(it.lat,it.lon,14);setTimeout(()=>marcaNueva(it),700);return}if(it.pi>=0){pickRoute(it.pi);flyTo(it.lat,it.lon,13);return}
     let ci=it.ci;if((ci==null||ci<0)&&window.COLX&&COLX.findPt)ci=COLX.findPt(it.n,it.lat,it.lon);
     if(ci!=null&&ci>=0&&window.COLX){COLX.open(ci);return}flyTo(it.lat,it.lon,14)}catch(e){flyTo(it.lat,it.lon,14)}},200)}
 
@@ -286,7 +292,27 @@ function pintaEd(){const r=ED,fe=!!r._fe;
   <label>Cumbres y lugares (${r.it.length})</label>
   <div>${r.it.map((x,i)=>`<div class="rtit"><span class="rtinfo"><b>${esc(x.n)}</b><small>${esc(x.s||"")}</small></span><button class="rtb sm" data-edq="${i}">✕</button></div>`).join("")||`<p style="color:var(--muted);margin:0">Busca abajo y toca para añadir.</p>`}</div>
   <input type="search" data-edbus placeholder="Buscar una cumbre o un lugar…" style="margin-top:8px"><div class="rtsel" data-edres hidden></div>
+  ${r._nv?nuevaHtml(r._nv):`<p style="margin:10px 0 0"><button class="rtb" data-ednv>＋ Cumbre o lugar nuevo (que no está en la app)</button></p>`}
   <p style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 0"><button class="rtb pri" data-edok>💾 Guardar el reto</button>${r.id?`<button class="rtb" data-edborra>🗑 Borrar el reto</button>`:""}</p>`)}
+function nuevaHtml(v){return `<div class="rtnv"><b>Cumbre o lugar nuevo</b><small style="display:block;color:var(--muted)">Solo existe dentro de este reto.</small>
+  <label>Nombre</label><input type="text" data-nv="n" value="${esc(v.n||"")}" maxlength="60" placeholder="Pico…">
+  <label>Es</label><select data-nv="t"><option value="c"${v.t!=="l"?" selected":""}>Cumbre</option><option value="l"${v.t==="l"?" selected":""}>Lugar (lago, braña, refugio…)</option></select>
+  <label>Altitud en metros (opcional)</label><input type="text" inputmode="numeric" data-nv="a" value="${esc(v.a||"")}" maxlength="5" style="width:120px">
+  <label>Dónde está</label>
+  ${v.lat!=null?`<p style="margin:0 0 6px;font-weight:700;color:#1e8e3e">✓ ${(+v.lat).toFixed(5)}, ${(+v.lon).toFixed(5)}</p>`:`<p style="margin:0 0 6px;color:var(--muted)">Todavía sin sitio.</p>`}
+  <div class="rw" style="display:flex;gap:8px;flex-wrap:wrap"><button class="rtb sm" data-nvmapa>🗺 Tocar en el mapa</button><button class="rtb sm" data-nvgps>📍 Estoy aquí</button></div>
+  <input type="text" data-nvpega placeholder="…o pega coordenadas o un enlace de Google Maps" style="margin-top:8px">
+  <p style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0"><button class="rtb pri sm" data-nvok>Añadir al reto</button><button class="rtb sm" data-nvno>Cancelar</button></p></div>`}
+function leeNv(){const v=ED&&ED._nv;if(!v)return;dlg.querySelectorAll("[data-nv]").forEach(i=>{v[i.dataset.nv]=i.value.trim()})}
+const enSitio=(la,lo)=>la>27&&la<56&&lo>-19&&lo<25;
+let PICK=false;
+const aviso=document.createElement("div");aviso.className="rtpick";aviso.hidden=true;document.body.appendChild(aviso);
+function tocarMapa(){leeEd();leeNv();PICK=true;ov.hidden=true;if(typeof showView==="function")showView("mapa");
+  aviso.innerHTML=`<span>Toca en el mapa dónde está <b>${esc(ED._nv.n||"la cumbre")}</b></span><button class="rtb sm" data-pkno>Cancelar</button>`;aviso.hidden=false;
+  const fin=ll=>{aviso.hidden=true;map.off("click",clic);PICK=false;if(ll){ED._nv.lat=ll.lat;ED._nv.lon=ll.lng}if(typeof showView==="function")showView("retos");pintaEd();
+    setTimeout(()=>{const f=dlg.querySelector(".rtnv");if(f)f.scrollIntoView({block:"center"})},80)};
+  const clic=e=>fin(e.latlng);setTimeout(()=>map.on("click",clic),50);
+  aviso.querySelector("[data-pkno]").onclick=()=>fin(null)}
 let EDRES=[];
 function buscaEd(q){const el=dlg.querySelector("[data-edres]");if(!el)return;q=norm(q.trim());if(q.length<2){el.hidden=true;return}
   EDRES=fuentes().filter(x=>norm(x.n).includes(q)&&!ED.it.some(y=>y.k===x.k)).slice(0,40);
@@ -296,7 +322,7 @@ async function guardaEd(){leeEd();const r=ED;if(!r.n){toast("Ponle un nombre");r
   if(r._fe&&(!r.ini||!r.fin)){toast("Pon las dos fechas");return}if(r.ini&&r.fin&&r.fin<r.ini){toast("La fecha de fin es anterior a la de inicio");return}
   const id=r.id||(slug(r.n).slice(0,30)+"-"+Math.random().toString(36).slice(2,6));
   const d={n:r.n,e:r.e||"🏆",d:r.d||"",org:r.org||"",prem:r.prem||"",ini:r._fe?r.ini:"",fin:r._fe?r.fin:"",activo:r.activo!==false,ord:r.ord||0,
-    it:r.it.map(x=>({id:x.id||slug((x.t||"c")+"-"+x.n),n:x.n,t:x.t,lat:+(+x.lat).toFixed(6),lon:+(+x.lon).toFixed(6),a:x.a||null,k:x.k,co:x.co||"",s:x.s||""})),t:Date.now()};
+    it:r.it.map(x=>({id:x.id||slug((x.t||"c")+"-"+x.n),n:x.n,t:x.t,lat:+(+x.lat).toFixed(6),lon:+(+x.lon).toFixed(6),a:x.a||null,k:x.k,co:x.co||"",s:x.s||"",nv:x.nv?1:0})),t:Date.now()};
   try{const a=await fb();await a.fs.setDoc(a.fs.doc(a.db,"retos",id),d);toast("✅ Reto guardado");cierraDlg();
     RETOS=RETOS.filter(x=>x.id!==id).concat([Object.assign({id},d)]);store.set(RC,RETOS);CUR=id;pinta()}
   catch(e){console.warn("guardar reto",e);toast("No se ha podido guardar (¿reglas de Firestore puestas?)")}}
@@ -334,13 +360,28 @@ dlg.addEventListener("click",e=>{const t=e.target;let b;
   if(ED){
     if(b=t.closest("[data-edadd]")){leeEd();const x=EDRES[+b.dataset.edadd];if(x){ED.it.push(Object.assign({id:slug(x.t+"-"+x.n)},x));pintaEd();const s=dlg.querySelector("[data-edbus]");if(s)s.focus()}return}
     if(b=t.closest("[data-edq]")){leeEd();ED.it.splice(+b.dataset.edq,1);pintaEd();return}
+    if(t.closest("[data-ednv]")){leeEd();ED._nv={t:"c"};pintaEd();setTimeout(()=>{const f=dlg.querySelector(".rtnv input");if(f){f.scrollIntoView({block:"center"});f.focus()}},80);return}
+    if(t.closest("[data-nvno]")){leeEd();delete ED._nv;pintaEd();return}
+    if(t.closest("[data-nvmapa]")){tocarMapa();return}
+    if(t.closest("[data-nvgps]")){leeEd();leeNv();if(!navigator.geolocation){toast("Este aparato no tiene GPS");return}toast("Buscando tu posición…");
+      navigator.geolocation.getCurrentPosition(p=>{if(!ED||!ED._nv)return;ED._nv.lat=p.coords.latitude;ED._nv.lon=p.coords.longitude;pintaEd();toast("✓ Sitio puesto ("+Math.round(p.coords.accuracy)+" m de precisión)")},
+        ()=>toast("No se ha podido saber dónde estás"),{enableHighAccuracy:true,timeout:30000,maximumAge:0});return}
+    if(t.closest("[data-nvok]")){leeEd();leeNv();const v=ED._nv,n=(v.n||"").trim();if(n.length<2){toast("Ponle un nombre");return}if(v.lat==null){toast("Falta dónde está: tócalo en el mapa o pega las coordenadas");return}
+      const a=parseInt(String(v.a||"").replace(/\D/g,""),10),t2=v.t==="l"?"l":"c",id="n-"+slug(t2+"-"+n);
+      if(ED.it.some(x=>x.id===id)){toast("Ya hay una con ese nombre en el reto");return}
+      ED.it.push({id,n,t:t2,lat:+v.lat,lon:+v.lon,a:a>0&&a<9000?a:null,k:t2+":"+norm(n)+"@r",co:"",s:(t2==="c"?"Cumbre nueva":"Lugar nuevo")+" · solo en este reto",nv:1});
+      delete ED._nv;pintaEd();toast("✓ Añadida al reto (no olvides 💾 Guardar)");return}
     if(t.closest("[data-edok]")){guardaEd();return}
     if(t.closest("[data-edborra]")){borraEd();return}}});
 dlg.addEventListener("input",e=>{if(e.target.matches("[data-edbus]"))buscaEd(e.target.value)});
+dlg.addEventListener("change",e=>{if(!e.target.matches("[data-nvpega]")||!ED||!ED._nv)return;const tx=e.target.value.trim();if(!tx)return;
+  const p=window.ENLACES&&ENLACES.punto?ENLACES.punto(tx):(m=>m?[+m[1],+m[2]]:null)(/(-?\d{1,2}\.\d+)\s*[,;]\s*(-?\d{1,3}\.\d+)/.exec(tx));
+  if(!p||!enSitio(p[0],p[1])){toast(/goo\.gl|omaps\.app|ge0\.me/.test(tx)?"No puedo leer ese enlace corto. En Google Maps, mantén pulsado el punto y copia las coordenadas (43.1234, -5.6789).":"No entiendo esas coordenadas. Ejemplo: 43.1234, -5.6789");return}
+  leeEd();leeNv();ED._nv.lat=p[0];ED._nv.lon=p[1];pintaEd();toast("✓ Sitio puesto")});
 dlg.addEventListener("change",e=>{if(e.target.matches("[data-rtfoto]")){subeFoto(e.target.files&&e.target.files[0]);return}
   if(e.target.matches("[data-edtipo]")){leeEd();ED._fe=e.target.value==="fechas";if(!ED._fe){ED.ini="";ED.fin=""}pintaEd()}});
 // el editor deja de contar como abierto al cerrar
-new MutationObserver(()=>{if(ov.hidden)ED=null}).observe(ov,{attributes:true,attributeFilter:["hidden"]});
+new MutationObserver(()=>{if(ov.hidden&&!PICK)ED=null}).observe(ov,{attributes:true,attributeFilter:["hidden"]});
 
 /* ---------- abrir ---------- */
 function abrir(id){if(typeof showView==="function")showView("retos");if(id){CUR=id;SUB="cum";FIL="todas";cargaPart(id)}pinta();cargaRetos();sec.scrollTop=0}
