@@ -61,6 +61,32 @@ for _c in (json.load(open(A+'colaboradores.json')) if os.path.exists(A+'colabora
       'r':[r[:8]+[r[8][0]]+[r[9] if len(r)>9 else '']+[r[10] if len(r)>10 else ''] for r in _d.get('r',[])],'_rl':[r[8] for r in _d.get('r',[])],
       'bt':_d.get('bt',{}),
       'k':(_c.get('capas') or ((['c','l'] if _d.get('p') else [])+(['r','t'] if _d.get('r') else [])))+(['t'] if _d.get('d') and 't' not in (_c.get('capas') or (['r','t'] if _d.get('r') else [])) else [])})   # 16 nov: los tracks de su carpeta de Drive van en su capa Tracks
+# 16 nov 2026: mapas para incrustar de las rutas de los colaboradores (mapa.html#co-<colaborador>-<ruta>)
+import unicodedata as _ud0
+os.makedirs(O+'mapa',exist_ok=True)
+def _slugco(cid,n):
+    n=_ud0.normalize('NFD',str(n).split('|')[-1].strip()); n=''.join(ch for ch in n if _ud0.category(ch)!='Mn').lower()
+    return 'co-'+cid+'-'+re.sub(r'[^a-z0-9]+','-',n).strip('-')[:70]
+def _normjs(n): return ''.join(ch for ch in _ud0.normalize('NFD',n) if not 0x300<=ord(ch)<=0x36f).lower()
+def _num(x):
+    m=re.search(r'\d[\d.,]*',str(x or ''));
+    if not m: return None
+    v=m.group(0).replace('.','').replace(',','.') if ',' in m.group(0) or re.match(r'^\d{1,3}\.\d{3}$',m.group(0)) else m.group(0)
+    try: return float(v)
+    except: return None
+for _c in _CO:
+    _vis={}
+    for _i,_r in enumerate(_c['r']):
+        _sl=_slugco(_c['id'],_r[0]); _vis[_sl]=_vis.get(_sl,0)+1
+        if _vis[_sl]>1: _sl+='-'+str(_vis[_sl])   # rutas con el mismo nombre (variantes): -2, -3… por orden (igual que en colab.js)
+        _tr=_c['_rl'][_i]
+        if not _tr or len(_tr)<2: continue
+        _n=str(_r[0]).split('|')[-1].strip()
+        _km=_num(_r[3]); _de=_num(_r[4])
+        _m={'t':_n,'ti':_n,'u':_r[7] or None,'km':round(_km,1) if _km else None,'de':int(_de) if _de else None,'dif':_r[5] or None,'quien':_c['n'],
+            'slug':_sl,'trk':_tr,'app':'https://losdelasclaras.github.io/rutas/#co='+_c['id']+'!'+__import__('urllib.parse').parse.quote(_normjs(_r[0])[:90],safe="-_.!~*'()")}
+        _j=json.dumps(_m,ensure_ascii=False,separators=(',',':')); _f=O+'mapa/'+_sl+'.json'
+        if not os.path.exists(_f) or open(_f).read()!=_j: open(_f,'w').write(_j)
 # sus fotos (bajadas por el robot) se publican en colab/
 os.makedirs(O+'colab',exist_ok=True)
 _cf={x[5][6:] for _c in _CO for x in _c['p'] if x[5].startswith('colab/')}|{r[9][6:] for _c in _CO for r in _c['r'] if len(r)>9 and str(r[9]).startswith('colab/')}

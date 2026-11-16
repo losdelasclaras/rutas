@@ -203,14 +203,20 @@ async function incrustar(t){const r=routeOf(t);let src=null,largo=false;
     if(window.COMPARTIR&&COMPARTIR.corto&&window.LDCFB&&LDCFB.user()&&navigator.onLine){toast("Preparando el mapa…");const u=await COMPARTIR.corto(t);if(u)src=MAPA+u.slice(u.indexOf("#"))}
     if(!src){let q=pts;if(q.every(x=>x[2]!=null)){if(window.COMPARTIR&&COMPARTIR.simple)q=COMPARTIR.simple(q,5);src=MAPA+"#t3="+encodeURIComponent(enc3(q))+"!"+encodeURIComponent(t.n.slice(0,80));largo=true}
       else{toast(navigator.onLine?"Para incrustar este track entra con tu cuenta de Google":"Sin conexión: inténtalo cuando tengas cobertura");return}}}
-  const code=`<iframe src="${src}" width="100%" height="460" style="border:0;max-width:100%;display:block;margin:0 auto 1em;" loading="lazy" title="Mapa de ${esc(t.n).replace(/"/g,"")}"></iframe>`;
-  MPI.show(`<div class="sheet-head"><h2>🧩 Incrustar «${esc(t.n)}»</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+  hojaEmb(src,t.n,largo,t.id)}
+function hojaEmb(src,n,largo,back){
+  const code=`<iframe src="${src}" width="100%" height="460" style="border:0;max-width:100%;display:block;margin:0 auto 1em;" loading="lazy" title="Mapa de ${esc(n).replace(/"/g,"")}"></iframe>`;
+  if(typeof showView==="function")showView("mapa");
+  MPI.show(`<div class="sheet-head"><h2>🧩 Incrustar «${esc(n)}»</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
     <p>Pega este código en tu entrada y aparecerá el mapa con el track, el perfil de alturas y los botones para seguirlo en la app y descargar el GPX.</p>
     <textarea id="embc" readonly rows="5" style="width:100%;box-sizing:border-box;font:12px/1.35 ui-monospace,monospace;border:1px solid var(--edge);border-radius:10px;padding:8px;background:var(--paper);color:var(--ink)">${esc(code)}</textarea>
     <div class="topacts"><button class="btn primary" data-embcp>📋 Copiar código</button><a class="btn ghost" href="${esc(src)}" target="_blank" rel="noopener">👁 Ver cómo queda</a></div>
     <p class="note"><b>En Blogger:</b> abre la entrada, cambia a «Vista HTML» y pega el código donde quieras el mapa. En WordPress, con un bloque «HTML personalizado».${largo?" El código sale largo porque lleva el track dentro, pero funciona igual.":""}</p>
-    <div class="mpacts"><button class="mpb" data-mtback="${esc(t.id)}">← Volver</button></div>`);
-  sheet._mt=t.id}
+    ${back!=null?`<div class="mpacts"><button class="mpb" data-mtback="${esc(back)}">← Volver</button></div>`:""}`);
+  if(back!=null)sheet._mt=back}
+// 16 nov 2026: también desde «··· Otras opciones» de las fichas de ruta (del grupo y de los colaboradores)
+window.INCRUSTA={ruta:r=>hojaEmb(MAPA+"#"+slugR(r),routeTitle(r).replace(/\s+/g," ").trim(),false,null),
+  co:(slug,n)=>hojaEmb(MAPA+"#"+slug,String(n).split("|").pop().trim(),false,null)};
 function borraFotos(k){const t=T().find(x=>String(x.id)===String(k));for(const w of (t&&t.w)||[])if(w.fo&&MPI.fotoDel)MPI.fotoDel(w.id)}
 
 /* en la ficha de una ruta del blog: «☆ Guardar en mis tracks» */

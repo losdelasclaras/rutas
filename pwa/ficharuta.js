@@ -82,6 +82,7 @@ function pinta(d){
     ${d.gRuta?`<button class="btn ghost" ${d.gRuta}>${gRL(d.gRutaOn)}</button>`:""}
     ${d.gTrack?`<button class="btn ghost frtrk frgtm" ${d.gTrack}${t}>〰️ <span>Guardar track<small>Copia en Mis cosas, para usar sin cobertura</small></span></button>`:""}
     ${d.share?`<button class="btn ghost" ${d.share}>📤 Compartir</button>`:""}
+    ${d.emb?`<button class="btn ghost frtrk" ${d.emb}${t}>🧩 <span>Incrustar en un blog o web<small>El mapa con el track, para pegarlo en una entrada</small></span></button>`:""}
     <a class="btn ghost frtrk frlleg"${d.llegar?` href="https://www.google.com/maps/dir/?api=1&destination=${d.llegar[0]},${d.llegar[1]}"`:""} target="_blank" rel="noopener"${d.llegar?"":" hidden"}>🚗 Cómo llegar al inicio</a>
   </div>
   <div class="frperf">${d.perfil||""}</div>
@@ -116,7 +117,7 @@ routeBody=function(r){
   return pinta({foto:r.f!=null?`fotos/${r.f}.jpg`:"",quien:"Los de las Claras",y:r.y,m:r.m,titulo:routeTitle(r),
     mk:window.rMk?rMk(r):"",de:r.de?"+"+r.de.toLocaleString("es-ES")+" m":"",km:r.km?fmtKm(r.km):"",dif:r.dl?DIFN[r.dl]:(r.dif||""),
     blog:r.u||"",seguir:r.gx?`data-follow="${r.id}"`:"",trk:!!r.gx,
-    gRuta:r.u?`data-frgr="${r.id}"`:"",gRutaOn:!!(window.MTRUTA&&MTRUTA.es(r)),gTrack:r.gx?`data-frgt="${r.id}"`:"",share:r.u?`data-share="${r.id}"`:"",
+    gRuta:r.u?`data-frgr="${r.id}"`:"",gRutaOn:!!(window.MTRUTA&&MTRUTA.es(r)),gTrack:r.gx?`data-frgt="${r.id}"`:"",share:r.u?`data-share="${r.id}"`:"",emb:r.gx?`data-fremb="${r.id}"`:"",
     llegar:r.gx&&r.gx.st?r.gx.st:null,perfil:r.gx?perfilHTML(r.gx)+puntosG(r.gx,r.id):"",
     cumbres:pts.filter(p=>p.a&&!p.x).sort((a,b)=>b.a-a.a).map(p=>({n:p.c,a:p.a,k:mkKey(p)})),
     otras:(otras.yo=routeTitle(r),otras(st[0],st[1],r.id,null))})};
@@ -174,6 +175,8 @@ document.addEventListener("click",e=>{const vm=e.target.closest("[data-frovmap]"
       document.getElementById("v-mapa").appendChild(btn);VOLVER={id,view,y,wy,btn}},350)},120)},true);
 /* ---- botones ---- */
 document.addEventListener("click",e=>{
+  const eb=e.target.closest("[data-fremb],[data-fremc]");if(eb&&window.INCRUSTA){menu(null,false);
+    if(eb.dataset.fremb!=null){const r=R[+eb.dataset.fremb];if(r)INCRUSTA.ruta(r)}else INCRUSTA.co(eb.dataset.fremc,eb.dataset.n);return}
   const m=e.target.closest("[data-frmas]");if(m){menu(m.closest(".fru"),true);return}
   if(e.target.closest("[data-frx]")){menu(null,false);return}
   // al elegir una opción, el menú se cierra

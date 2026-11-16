@@ -152,6 +152,9 @@ function pintaCo(c,ls,noms,extra,nofit){if(TRCO){TRCO.remove();TRCO=null}const L
   map.fitBounds(b,{paddingTopLeft:[wide?60:24,110],paddingBottomRight:[wide?640:24,pb],maxZoom:15})}
 // si se abre una ruta o cumbre del grupo, se quita el track del colaborador
 {const st=window.showTrack;if(st)window.showTrack=function(r){if(TRCO&&!showTrack._co){TRCO.remove();TRCO=null;coPill(null)}return st.apply(this,arguments)}}
+// 16 nov 2026: nombre del mapa para incrustar (mapa/co-<colaborador>-<ruta>.json, lo genera build_pwa.py con la misma regla)
+const slugBase=(c,n)=>"co-"+c.id+"-"+String(n).split("|").pop().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,70);
+function slugCo(c,i){const b=slugBase(c,c.r[i][0]);let k=0;for(let j=0;j<=i;j++)if(slugBase(c,c.r[j][0])===b)k++;return k>1?b+"-"+k:b}
 function abrirR(c,i,nofit){coPill(null);const keep=!!(nofit&&TRCO&&TRCO.__i===c.id+":"+i);const r=c.r[i],[n,z,act,km,de,dif,wl,blog,ini,fo]=r;
   const key=rKeyCo(c,n),st=MARKS[key]||"",deN=(/(\d[\d.]*)/.exec(de)||[])[1];
   sheet.classList.remove("full");
@@ -160,7 +163,7 @@ function abrirR(c,i,nofit){coPill(null);const keep=!!(nofit&&TRCO&&TRCO.__i===c.
   if(window.FRUTA){const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");
     sheet.innerHTML=FRUTA.pinta({grab:"",foto:fo,quien:c.n,y:fe?+fe[1]:null,m:fe?+fe[2]:null,titulo:String(n).split("|").pop().trim(),mk:rmkH,
       de:deN?"+"+deN+" m":"",km:km||"",dif:dif?cap1(dif):"",blog:blog||"",seguir:"data-cofol",trk:true,
-      gRuta:"data-frgrc",gRutaOn:FRUTA.coGuardada(c,n),gTrack:"data-cosave",share:"data-coshare",llegar:ini||null,
+      gRuta:"data-frgrc",gRutaOn:FRUTA.coGuardada(c,n),gTrack:"data-cosave",share:"data-coshare",emb:`data-fremc="${esc(slugCo(c,i))}" data-n="${esc(n)}"`,llegar:ini||null,
       cumbres:(c.p||[]).filter(q=>q[9]&&q[9].includes(i)&&catCo(q)==="cumbre").map(q=>({n:q[0],a:altCo(q[0],q[3]),k:coKey(c,q[0],"cumbre")})),
       otras:ini?(FRUTA.otras.yo=n,FRUTA.otras(ini[0],ini[1],null,COLX.rutaItem?COLX.rutaItem(c,i):null)):"",close:" data-trcox"})}
   else sheet.innerHTML=`<div class="grab"></div>${fo?`<div class="photo"><img src="${esc(fo)}" alt="" onerror="this.parentNode.remove()"></div>`:""}${tipoHTML("ruta",c.n)}<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
