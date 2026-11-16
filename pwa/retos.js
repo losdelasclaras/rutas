@@ -86,6 +86,15 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .rtnv{margin:12px 0 0;padding:12px;border:2px dashed #d4a017;border-radius:14px}
 .rtpick{position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top,0px));z-index:2650;background:var(--ink);color:var(--card);border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:16px;box-shadow:0 3px 12px rgba(0,0,0,.3)}
 .rtpick[hidden]{display:none}.rtpick .rtb{flex:none}
+#rtban{position:absolute;left:10px;right:10px;top:calc(68px + env(safe-area-inset-top,0px));z-index:1200;background:var(--card);color:var(--ink);border-radius:14px;padding:10px 12px;box-shadow:0 3px 12px rgba(0,0,0,.25);font-size:15px}
+#rtban[hidden]{display:none}#rtban .t{font-weight:800;display:flex;justify-content:space-between;gap:8px;align-items:center}
+#rtban .f{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}#rtban .f button,#rtban .t button{border:1px solid var(--edge);background:var(--card);color:var(--ink);border-radius:18px;padding:6px 11px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+#rtban .f button[aria-pressed=true]{background:var(--ink);color:var(--card)}#rtban .t button{background:#c3262e;border-color:#c3262e;color:#fff}
+.rtmk{width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;box-sizing:border-box}
+.rtmk.ok{background:#2e7d4f;color:#fff}.rtmk.pe{background:#fff;border-color:#c3262e;color:#c3262e;font-size:13px}
+.rtlbl{font-weight:800;font-size:12.5px;padding:1px 6px;border-radius:8px}.rtlbl.ok{color:#2e7d4f}
+.map-sinlbl .rtlbl{display:none}
+.map-sinlbl .rtmk{width:22px;height:22px;margin:-11px 0 0 -11px;border-width:2px;font-size:12px}.map-sinlbl .rtmk.pe{font-size:10px}
 .rtvacio{color:var(--muted);text-align:center;padding:16px 4px}
 </style>`);
 
@@ -167,7 +176,7 @@ function revisa(R,celebrar){const L=lo(R.id),n=prog(R),H=hitos(R.tot),g=H.filter
       ${L.pub?"":`<p style="font-size:14.5px;color:var(--muted)">Apúntate al reto para salir en la lista de participantes.</p>`}
       <button class="rtb pri" data-rtgo="${esc(R.id)}">Ver el reto</button> <button class="rtb" data-rtx>Cerrar</button></div>`)}}
 let RVT=0;
-function cambio(){clearTimeout(RVT);RVT=setTimeout(()=>{for(const R of todos()){revisa(R);publica(R)}if(!sec.hidden)pinta()},400)}
+function cambio(){clearTimeout(RVT);RVT=setTimeout(()=>{for(const R of todos()){revisa(R);publica(R)}if(!sec.hidden)pinta();if(RMAP)dibujaMapa()},400)}
 
 /* en los retos con fechas, lo que marques ✓ en cualquier sitio mientras está en marcha también cuenta (si sigues el reto) */
 let ANT=new Set(Object.keys(MARKS).filter(k=>MARKS[k]==="hecha"));
@@ -201,6 +210,7 @@ function pintaReto(R){const n=prog(R),st=estado(R),H=hitos(R.tot),L=lo(R.id),u=u
   <div class="rtpr"><div class="tt">Llevas <b>${n}</b> de ${R.tot} ${esc(R.u)}</div><div class="prog"><i style="width:${(n/R.tot*100).toFixed(1)}%"></i></div>
     <div class="rtmeds">${H.map((x,i)=>`<span class="md">${medalla(x,i,i===H.length-1,n>=x,44)}${i===H.length-1?"Completo":["Bronce","Plata","Oro","Platino"][Math.min(i,3)]}</span>`).join("")}</div>
     <p class="nx">${sig==null?"🏆 ¡Reto completado!":sig===R.tot?`Te faltan <b>${R.tot-n}</b> para completarlo`:`Te faltan <b>${sig-n}</b> para la medalla de ${sig}`}</p></div>
+  <button class="rtb pri" data-rtmapa style="width:100%;margin:0 0 12px">🗺 Ver el reto en el mapa</button>
   <div class="rtjoin">${L.pub&&u?`<p>✅ Estás apuntado como <b>${esc(LOC._nom||"")}</b>. Los demás ven tu progreso.</p><div class="rw"><button class="rtb sm" data-rtnom>✏️ Cambiar nombre</button><button class="rtb sm" data-rtsal>Dejar de salir en la lista</button></div>`
     :`<p>Apúntate para salir en la lista de participantes y poder subir una foto de cada cumbre.${u?"":" Hace falta entrar con Google."}</p><div class="rw"><button class="rtb pri" data-rtjoin>🙋 Apuntarme al reto</button></div>`}</div>
   <div class="subtabs" style="grid-template-columns:repeat(2,1fr)"><button role="tab" data-rtsub="cum" aria-selected="${SUB==="cum"}"><span class="i">⛰️</span><span>${R.u==="concejos"?"Cumbres":"Lista"}</span><small>${R.items.length}</small></button><button role="tab" data-rtsub="gente" aria-selected="${SUB==="gente"}"><span class="i">👥</span><span>Participantes</span><small>${PART[R.id]?part.length:"…"}</small></button></div>
@@ -342,6 +352,7 @@ box.addEventListener("click",e=>{const t=e.target;let b;
   if(b=t.closest("[data-rtit]")){const it=R.items.find(x=>x.id===b.dataset.rtit);if(it)ficha(R,it);return}
   if(b=t.closest("[data-rtpe]")){const ls=b.querySelector(".ls");if(ls){ls.remove();return}const p=(PART[R.id].l.slice().sort((a,c)=>(c.n||0)-(a.n||0)||(a.t||0)-(c.t||0)))[+b.dataset.rtpe];if(!p)return;
     const nm=R.items.filter(x=>p.h&&p.h[x.id]).map(x=>x.n+(p.v&&p.v[x.id]?" ✔":""));b.insertAdjacentHTML("beforeend",`<div class="ls">${nm.length?esc(nm.join(" · ")):"Todavía nada."}</div>`);b.style.flexWrap="wrap";return}
+  if(t.closest("[data-rtmapa]")){mapaReto(R.id);return}
   if(t.closest("[data-rtjoin]")){apuntar(R.id);return}
   if(t.closest("[data-rtsal]")){salir(R.id);return}
   if(t.closest("[data-rtnom]")){pideNombre(()=>{publicaTodos();pinta()});return}
@@ -385,6 +396,35 @@ new MutationObserver(()=>{if(ov.hidden&&!PICK)ED=null}).observe(ov,{attributes:t
 
 /* ---------- abrir ---------- */
 function abrir(id){if(typeof showView==="function")showView("retos");if(id){CUR=id;SUB="cum";FIL="todas";cargaPart(id)}pinta();cargaRetos();sec.scrollTop=0}
+/* ---------- 🗺 el reto en el mapa: solo sus cumbres (✓ hechas en verde, pendientes en blanco y rojo); las demás capas se apagan y vuelven al salir ---------- */
+let RMAP=null,RMSAV=null,RMLAY=null,RMFIL="todas";
+const setLay=(k,v)=>{const b=document.querySelector(`.laypanel [data-lay="${k}"]`);if(b&&(b.getAttribute("aria-pressed")==="true")!==v)b.click()};
+const NOTOCAR=["relief","towns","off","sendero"];
+function mapaReto(id){const R=reto(id);if(!R||typeof map==="undefined")return;
+  if(!RMSAV){RMSAV={};document.querySelectorAll(".laypanel [data-lay]").forEach(b=>{RMSAV[b.dataset.lay]=b.getAttribute("aria-pressed")==="true"})}
+  RMAP=id;RMFIL="todas";showView("mapa");
+  for(const k in RMSAV)if(!NOTOCAR.includes(k))setLay(k,false);
+  dibujaMapa(true)}
+function dibujaMapa(encuadra){const R=reto(RMAP);if(!R){mapaOff();return}
+  if(RMLAY)RMLAY.remove();const ok=R.items.filter(it=>hecho(R,it)),pe=R.items.filter(it=>!hecho(R,it));
+  const vis=RMFIL==="hechas"?ok:RMFIL==="pend"?pe:R.items;
+  RMLAY=L.layerGroup(vis.map(it=>{const h=hecho(R,it);
+    return L.marker([it.lat,it.lon],{zIndexOffset:h?1100:1000,icon:L.divIcon({className:"",iconSize:[0,0],html:`<div class="rtmk ${h?"ok":"pe"}">${h?"✓":"▲"}</div>`})})
+      .bindTooltip(esc(it.n),{permanent:true,direction:"bottom",offset:[0,14],className:"rtlbl"+(h?" ok":"")})
+      .on("click",ev=>{L.DomEvent.stopPropagation(ev);ficha(R,it)})})).addTo(map);
+  let ban=document.getElementById("rtban");if(!ban){ban=document.createElement("div");ban.id="rtban";document.getElementById("map").parentElement.appendChild(ban);
+    ban.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.rmoff!=null){const id=RMAP;mapaOff();abrir(id);return}if(b.dataset.rmf){RMFIL=b.dataset.rmf;dibujaMapa()}})}
+  const n=prog(R);
+  ban.innerHTML=`<div class="t"><span>${esc(R.e)} ${esc(R.n)} · ${n} de ${R.tot}</span><button data-rmoff>✕ Salir</button></div>
+    <div class="f">${[["todas","Todas · "+R.items.length],["hechas","✓ Hechas · "+ok.length],["pend","▲ Me faltan · "+pe.length]].map(([k,t])=>`<button data-rmf="${k}" aria-pressed="${RMFIL===k}">${t}</button>`).join("")}</div>`;ban.hidden=false;
+  etiquetas();
+  if(encuadra&&vis.length)setTimeout(()=>{map.invalidateSize();map.fitBounds(L.latLngBounds(vis.map(it=>[it.lat,it.lon])),{paddingTopLeft:[20,190],paddingBottomRight:[20,90],maxZoom:13})},150)}
+function etiquetas(){const c=document.getElementById("map");if(c)c.classList.toggle("map-sinlbl",map.getZoom()<11)}
+if(typeof map!=="undefined")map.on("zoomend",()=>{if(RMAP)etiquetas()});
+function mapaOff(){if(RMLAY){RMLAY.remove();RMLAY=null}if(RMSAV){for(const k in RMSAV)if(!NOTOCAR.includes(k))setLay(k,RMSAV[k]);RMSAV=null}RMAP=null;
+  const ban=document.getElementById("rtban");if(ban)ban.hidden=true;const c=document.getElementById("map");if(c)c.classList.remove("map-sinlbl");if(window.refreshMarks)refreshMarks()}
+// al irse del mapa (otra pestaña), las capas vuelven a como estaban
+setTimeout(()=>{const sv=window.showView;if(typeof sv==="function")window.showView=showView=function(v){if(v!=="mapa"&&RMAP)mapaOff();return sv.apply(this,arguments)}},0);
 window.RETOS={abrir,pinta};
 // cada vez que se enseña la pestaña, se repinta y se miran retos nuevos
 new MutationObserver(()=>{if(!sec.hidden){pinta();cargaRetos();if(CUR)cargaPart(CUR)}}).observe(sec,{attributes:true,attributeFilter:["hidden"]});
