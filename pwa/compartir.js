@@ -189,5 +189,5 @@ setTimeout(recibidos,700);
 if("launchQueue" in window)launchQueue.setConsumer(async p=>{if(!p.files||!p.files.length)return;const fs=[];for(const h of p.files){try{const f=await h.getFile();fs.push({n:f.name,t:await f.text()})}catch(e){}}
   for(const f of fs)MPI.importText(f.t,f.n,true)});
 
-window.COMPARTIR={track:compartir,enc,dec,simple,preview:t=>mostrar(t,"archivo")};
+window.COMPARTIR={track:compartir,enc,dec,simple,corto,preview:t=>mostrar(t,"archivo")};
 })();

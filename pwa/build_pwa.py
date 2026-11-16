@@ -286,6 +286,15 @@ TL={r['u']:r['gx'].pop('ln') for r in d['routes'] if r.get('gx') and r['gx'].get
 _tj=json.dumps(TL,separators=(',',':'));_th=hashlib.md5(_tj.encode()).hexdigest()[:8]
 for _old in _g.glob(O+'tracks-*.json'):os.remove(_old)
 open(O+f'tracks-{_th}.json','w').write(_tj)
+# 16 nov 2026: mapa para incrustar en blogs (mapa.html#r-<ruta>): un archivo pequeño por ruta en mapa/. No se borran los viejos (los blogs que ya los usan seguirían viendo su mapa)
+os.makedirs(O+'mapa',exist_ok=True)
+def _slugr(u): return 'r-'+re.sub(r'-+$','',re.sub(r'[^A-Za-z0-9]+','-',re.sub(r'\.html$','',re.sub(r'^https?://[^/]+/','',u)))).lower()
+for _r in d['routes']:
+    if _r['u'] not in TL: continue
+    _m={k:_r.get(k) for k in ('u','t','a','ti','km','de','dif','tm','sal')}
+    _m.update(slug=_slugr(_r['u']),trk=TL[_r['u']],up=_r['gx'].get('up'),mx=_r['gx'].get('mx'))
+    _j=json.dumps(_m,ensure_ascii=False,separators=(',',':')); _f=O+'mapa/'+_m['slug']+'.json'
+    if not os.path.exists(_f) or open(_f).read()!=_j: open(_f,'w').write(_j)
 t=t.replace('__TRACKS__',f'tracks-{_th}.json')
 PL=[[p['n'].split(' / ')[0],p['t'],p['lat'],p['lon']] for p in json.load(open(A+'places.json'))]; o={'c':0,'t':1,'v':2}; PL.sort(key=lambda p:o[p[1]])
 d['pz']=_GPZ   # rutas del grupo que pasan por cada cumbre (ver _pasan)
