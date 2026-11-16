@@ -17,6 +17,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .fru .rmk .mk{display:flex;gap:8px;width:100%}.fru .rmk .mk button{flex:1;min-height:46px;font-size:16px}
 .fru .ficha{margin:10px 0 6px}
 .frav{border-radius:12px;margin:8px 0;line-height:1.3}
+.frdib{border-radius:12px;margin:8px 0;padding:10px 12px;line-height:1.3;background:#ffe9d6;color:#6b2c00;border:2px solid #e8711a}.frdib b{font-size:15.5px}.frdib p{margin:4px 0 0;font-size:14px}
+.frdibn{color:#b34a00;font-weight:700}
 .frav summary{list-style:none;cursor:pointer;padding:10px 12px;font-weight:700;font-size:15px}.frav summary::-webkit-details-marker{display:none}
 .frav p{margin:0;padding:0 12px 10px;font-size:14px}
 .frav.y{background:#fff4c2;color:#5c4400;border:1px solid #e9cf5c}
@@ -66,7 +68,7 @@ const mk2=(k,L)=>{const s=MARKS[k]||"";return`<span class="mk" data-key="${esc(k
 function anos(y,m){if(!y)return 0;const n=new Date();return (n.getFullYear()+n.getMonth()/12)-(y+((m||6)-1)/12)}
 function aviso(y,m){const a=anos(y,m);if(a<=5)return"";const o=a>10;
   return`<details class="frav ${o?"o":"y"}"><summary>${o?`⛔ Ruta de ${y}: información antigua, comprueba el estado antes de ir.`:`⚠️ Ruta de ${y}: el camino puede haber cambiado.`}</summary><p>No garantizamos el estado actual de caminos, pasos y señales: pueden haber cambiado desde que se hizo la ruta (argayos, cierres, vegetación…). Infórmate antes de ir.</p></details>`}
-/* d = {grab, foto, quien, y, m, titulo, mk, de, km, dif, blog, seguir, trk, gRuta, gRutaOn, gTrack, share, llegar, perfil, cumbres:[{n,a,k}], otras, close} */
+/* d = {dib (track dibujado: aviso naranja), grab, foto, quien, y, m, titulo, mk, de, km, dif, blog, seguir, trk, gRuta, gRutaOn, gTrack, share, llegar, perfil, cumbres:[{n,a,k}], otras, close} */
 function pinta(d){
   const dat=[["Desnivel",d.de],["Distancia",d.km],["Dificultad",d.dif]].filter(x=>x[1]);
   const t=d.trk?"":" hidden";   // lo que depende del track (colaboradores: se enseña al llegar su track)
@@ -76,7 +78,7 @@ function pinta(d){
   <div class="sheet-head"><h2>${esc(d.titulo)}</h2><button class="x" aria-label="Cerrar" data-close${d.close||""}>×</button></div>
   ${d.mk||""}
   ${dat.length?`<div class="ficha" style="grid-template-columns:repeat(${dat.length},1fr)">${dat.map(([l,v])=>`<div><b>${esc(v)}</b><span>${l}</span></div>`).join("")}</div>`:""}
-  ${aviso(d.y,d.m)}
+  ${d.dib?`<div class="frdib" role="note"><b>✏️ Track dibujado sobre el mapa · solo orientativo</b><p>No se grabó haciendo la ruta: se trazó después sobre el mapa y puede no coincidir con el camino real. No te fíes de él al 100 %: compáralo con el terreno, las señales y la descripción del blog.</p></div>`:""}${aviso(d.y,d.m)}
   <div class="fracts">${d.blog?`<a class="btn primary" href="${esc(d.blog)}" target="_blank" rel="noopener">📖 Leer en el blog</a>`:""}${d.seguir?`<button class="btn ghost frseg frtrk" ${d.seguir}${t}>▶ Seguir</button>`:`<span class="frsin" title="Esta ruta no tiene track para seguirla">Sin track</span>`}${d.gTrack?`<button class="btn ghost frseg frgtpc frtrk" ${d.gTrack}${t}>〰️ Guardar track</button>`:""}</div><button class="btn ghost frmasb" data-frmas aria-expanded="false">··· Otras opciones</button>
   <div class="frvel" data-frx hidden></div><div class="frmas" hidden><div class="ag"></div><div class="frmh"><h3>Otras opciones</h3><button class="frmx" data-frx aria-label="Cerrar">×</button></div>
     ${d.gRuta?`<button class="btn ghost" ${d.gRuta}>${gRL(d.gRutaOn)}</button>`:""}
@@ -97,7 +99,7 @@ function conPuntos(g){let sv=profSVG(g);const w=g.w||[];if(!w.length)return sv;
   const c=w.map((q,i)=>{const cx=x(q[3]),cy=y(alt(q[3]));return`<g><circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="9" fill="#e8711a" stroke="#fff" stroke-width="2"/><text x="${cx.toFixed(1)}" y="${(cy+4).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${i+1}</text></g>`}).join("");
   const k=sv.lastIndexOf("</svg>");return sv.slice(0,k)+c+sv.slice(k)}
 const puntosG=(g,id)=>g&&g.w&&g.w.length?`<div class="sec frwp" data-frw="${id}"><h3>Puntos del track (${g.w.length})</h3>${g.w.map((q,i)=>`<button class="frwr" data-frwi="${i}"><b>${i+1}</b><span>${esc(q[0])}<small>km ${String(q[3]).replace(".",",")}${q[4]!=null?" · "+Number(q[4]).toLocaleString("es-ES")+" m":""}</small></span></button>`).join("")}</div>`:"";
-const perfilHTML=(g,suyo)=>g&&g.pf&&g.pf.length?`<div class="sec"><h3>Perfil</h3>${conPuntos(g)}<p class="note" style="margin:4px 0 8px">Según ${suyo?"su":"el"} track: ${fmtKm(g.km)} · +${Number(g.up).toLocaleString("es-ES")} m de subida${g.mx?" · punto más alto "+Number(g.mx).toLocaleString("es-ES")+" m":""}.</p></div>`:"";
+const perfilHTML=(g,suyo)=>g&&g.pf&&g.pf.length?`<div class="sec"><h3>Perfil</h3>${conPuntos(g)}<p class="note" style="margin:4px 0 8px">${g.dib?`<span class="frdibn">✏️ Track dibujado, orientativo.</span> `:""}Según ${suyo?"su":"el"} track: ${fmtKm(g.km)} · +${Number(g.up).toLocaleString("es-ES")} m de subida${g.mx?" · punto más alto "+Number(g.mx).toLocaleString("es-ES")+" m":""}.</p></div>`:"";
 // otras rutas por la zona: del grupo y de los colaboradores, a menos de 25 km de la salida
 function otras(lat,lon,sinR,sinCo){const dk=(a,b,c,e)=>Math.hypot((a-c)*111.2,(b-e)*111.2*Math.cos(a*Math.PI/180));
   const ng=(typeof nearestRoutes==="function"?sortNear(nearestRoutes(lat,lon,3,sinR==null?-1:sinR)):[]).filter(x=>x.d<25);
@@ -116,7 +118,7 @@ routeBody=function(r){
   const pts=r.p.map(i=>P[i]);const st=r.gx&&r.gx.st?r.gx.st:[r.lat,r.lon];
   return pinta({foto:r.f!=null?`fotos/${r.f}.jpg`:"",quien:"Los de las Claras",y:r.y,m:r.m,titulo:routeTitle(r),
     mk:window.rMk?rMk(r):"",de:r.de?"+"+r.de.toLocaleString("es-ES")+" m":"",km:r.km?fmtKm(r.km):"",dif:r.dl?DIFN[r.dl]:(r.dif||""),
-    blog:r.u||"",seguir:r.gx?`data-follow="${r.id}"`:"",trk:!!r.gx,
+    blog:r.u||"",seguir:r.gx?`data-follow="${r.id}"`:"",trk:!!r.gx,dib:!!(r.gx&&r.gx.dib),
     gRuta:r.u?`data-frgr="${r.id}"`:"",gRutaOn:!!(window.MTRUTA&&MTRUTA.es(r)),gTrack:r.gx?`data-frgt="${r.id}"`:"",share:r.u?`data-share="${r.id}"`:"",emb:r.gx?`data-fremb="${r.id}"`:"",
     llegar:r.gx&&r.gx.st?r.gx.st:null,perfil:r.gx?perfilHTML(r.gx)+puntosG(r.gx,r.id):"",
     cumbres:pts.filter(p=>p.a&&!p.x).sort((a,b)=>b.a-a.a).map(p=>({n:p.c,a:p.a,k:mkKey(p)})),

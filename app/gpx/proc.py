@@ -55,7 +55,7 @@ def ym(s):
     except: return None
 MAN=json.load(open('asignar.json')) if os.path.exists('asignar.json') else {}   # archivo -> url de la entrada (o null para descartar)
 ENL=json.load(open('enlaces.json')) if os.path.exists('enlaces.json') else {}   # 10 nov 2026: enlace__XXXX.gpx -> url de la entrada (enlace de la app puesto en My Maps)
-FILES=[];CAND={}
+FILES=[];CAND={};DIB=set()
 for f in sorted(glob.glob('raw/*.gpx')):
     fb=os.path.basename(f)
     t=open(f,encoding='utf-8',errors='replace').read();P,cut=trim(parse(t))
@@ -73,6 +73,10 @@ for f in sorted(glob.glob('raw/*.gpx')):
     link=re.search(r'<link href="([^"]+)"',t);link=link.group(1) if link else ''
     wid=re.search(r'-(\d+)$',link)
     stem=re.sub(r'(\s*\(\d+\)|_\d+)$','',fb[:-4].lower()).strip()
+    # 16 nov 2026: tracks DIBUJADOS sobre el mapa (no grabados): «dibujado» en el nombre del archivo o el GPX exportado
+    # de un track ✏️ Dibujado de la app (<desc> con «dibujado»). Se quita la palabra para emparejar por nombre.
+    if fb.startswith('drive__') and (re.search(r'dibujad|orientativ',fb.lower()) or re.search(r'<(desc|keywords)>[^<]*(dibujad|orientativ)',t,re.I)):
+        DIB.add(fb);stem='drive__'+re.sub(r'[\s_\-]*(dibujad[oa]s?|orientativ[oa]s?)[\s_\-]*','_',stem[7:]).strip('_- ')
     S=P[::max(1,len(P)//400)]
     fn=re.sub(r'[^a-z0-9]+',' ',stem);tw={w for w in fn.split() if len(w)>3}
     tdate=next((p[3] for p in P if p[3]),None);tm=ym(tdate) if tdate else None
@@ -99,12 +103,23 @@ for f in sorted(glob.glob('raw/*.gpx')):
 pairs=sorted(((c[0],fb,c[1],c[2],k) for fb,cs in CAND.items() for k,c in enumerate(cs)),key=lambda p:-p[0])
 ASG={};TAKEN=set();SKIP=set()
 for sc,fb,u,how,k in pairs:
+    if fb in DIB:continue   # dibujados: después, y solo en rutas que se quedan sin track grabado
     if fb in ASG or fb in SKIP or u in TAKEN or sc<1.2:continue
     cs=CAND[fb];alt=[c for c in cs if c[1]!=u and c[1] not in TAKEN]
     if k>0:how+=' · (era su 2.ª opción: la 1.ª ya tenía otro track)'
     if fb.startswith('drive__') and sc<60 and alt and alt[0][0]>=sc-0.5:SKIP.add(fb);continue   # de Drive y con dudas: mejor no colocarlo
     if sc<60 and alt and alt[0][0]>=sc-0.5:how+=' · DUDA con: '+next((x.get('ti') for x in D if x['u']==alt[0][1]),alt[0][1])
     ASG[fb]=(u,how);TAKEN.add(u)
+# dibujados: por nombre del archivo (= dirección de la entrada) o, si no, por cercanía clara a los puntos de una sola ruta sin track
+for fb in sorted(DIB):
+    if fb in MAN:
+        cs=CAND.get(fb) or []
+        if cs and cs[0][1] not in TAKEN:ASG[fb]=(cs[0][1],'asignado a mano · dibujado');TAKEN.add(cs[0][1])
+        continue
+    cs=[c for c in CAND.get(fb,[]) if c[1] not in TAKEN]
+    if not cs:continue
+    if cs[0][0]>=500 or (cs[0][0]>=1.2 and (len(cs)<2 or cs[1][0]<cs[0][0]-0.5)):
+        ASG[fb]=(cs[0][1],cs[0][2]+' · dibujado (orientativo)');TAKEN.add(cs[0][1])
 UBY={x['u']:x for x in D}
 res={};log=[]
 for f,t,P,cut in FILES:
@@ -134,6 +149,7 @@ for f,t,P,cut in FILES:
     line=[[round(p[0],5),round(p[1],5)]+([round(p[2])] if p[2] is not None else []) for p in dp(P,6)]
     res[r['u']]={'km':round(cum[-1]/1000,1),'up':round(up/10)*10,'dn':round(dn/10)*10,'mx':round(max(E)) if has else None,'mn':round(min(E)) if has else None,
       'st':[round(P[0][0],5),round(P[0][1],5)],'pf':prof,'ln':line,'nm':(r.get('ti') or r.get('t'))}
+    if fb in DIB:res[r['u']]['dib']=1   # track dibujado sobre el mapa: la app lo avisa como orientativo
     # 10 nov 2026: los puntos (wpt) del GPX van con su track: nombre, sitio, km y altura. Fuera los que estén a más de 300 m
     # del recorrido, los que ya son un punto vuestro de My Maps de esta ruta (a menos de 100 m), los de nombre solo numérico
     # y los repetidos (mismo nombre a menos de 50 m). Como mucho 40.

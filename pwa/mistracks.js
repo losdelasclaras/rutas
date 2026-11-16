@@ -149,7 +149,7 @@ function datosHTML(t,d){const c=[],x=(v,l,w)=>c.push(`<div${w?' class="w"':""}><
 function refresh(id){render();if(!sheet.hidden&&String(sheet._mt)===String(id)&&sheet.querySelector("[data-mtfol],[data-mtdat],.tdat,.tmas"))open(id,false,sheet._mv)}
 
 function gpxDe(t){const x=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  return`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${x(t.n)}</name></metadata>\n`+
+  return`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${x(t.n)}</name>${t.src==="dib"?"<desc>Track dibujado sobre el mapa (orientativo)</desc>":""}</metadata>\n`+
     (t.w||[]).map(w=>`<wpt lat="${w.lat}" lon="${w.lon}">${w.a!=null?`<ele>${Math.round(w.a)}</ele>`:""}${w.t?`<time>${new Date(w.t).toISOString()}</time>`:""}<name>${x(w.n)}</name>${w.nota?`<desc>${x(w.nota)}</desc>`:""}<type>${x(MPI.ico(w.ic)[2])}</type></wpt>\n`).join("")+
     `<trk><name>${x(t.n)}</name><trkseg>\n`+
     t.pts.map(p=>`<trkpt lat="${p[0]}" lon="${p[1]}">${p[2]!=null?`<ele>${p[2]}</ele>`:""}</trkpt>`).join("\n")+`\n</trkseg></trk>\n</gpx>\n`}
