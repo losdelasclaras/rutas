@@ -74,6 +74,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .fpanel .chips[data-grp=ep]::before{content:"Época"}
 .fpanel .chips[data-grp=iv]::before{content:"Invierno"}
 .fpanel .chips[data-grp=tk]::before{content:"Track"}
+.fpanel .chips[data-grp=df]::before{content:"Dificultad"}
 .fpfoot{display:flex;gap:12px;align-items:center;flex-wrap:wrap;position:sticky;bottom:-16px;background:inherit;padding:10px 0 4px}
 .fpfoot .btn{flex:1;font-size:1.05em;padding:13px}
 .fpills:empty{display:none}
@@ -99,13 +100,16 @@ for(const k of ["cumbres","lugares"]){const v=document.getElementById("v-"+k);if
     if(e.target.closest(".fpanel .chips [data-v]"))setTimeout(()=>{labels(k);renderCol(k)},0)},true)}
 
 /* Rutas: estado propio de los filtros sencillos */
-const RF={z:"",ep:"",iv:"",tk:""},CUT=new Date().getFullYear()-1; // nov 2026: «últimos 2 años» (antes: desde hace 5 años / antes)
-window.RFOK=r=>(!RF.z||zoneOf(r.r)===RF.z)&&(!RF.ep||(RF.ep==="new"?(r.y||0)>=CUT:(r.y||0)<CUT))&&(!RF.iv||(RF.iv==="si"?!!r.iv:!r.iv))&&(!RF.tk||!!r.gx);
+const RF={z:"",ep:"",iv:"",tk:"",df:""},CUT=new Date().getFullYear()-1; // nov 2026: «últimos 2 años» (antes: desde hace 5 años / antes)
+window.RFOK=r=>(!RF.z||zoneOf(r.r)===RF.z)&&(!RF.ep||(RF.ep==="new"?(r.y||0)>=CUT:(r.y||0)<CUT))&&(!RF.iv||(RF.iv==="si"?!!r.iv:!r.iv))&&(!RF.tk||!!r.gx)&&(!RF.df||nivelR(r)===RF.df);
+// 16 nov 2026: filtro de dificultad. Blog: la de los listados (dl); colaboradores: nv (colab.js)
+function nivelR(r){if(r.nivd!=null)return r.nivd;const d=String(r.dl||"").toLowerCase();return d==="baja"?"b":d==="moderada"?"m":(d==="alta"||d==="muy-alta")?"a":""}
 const rsrc=()=>window.COLX?COLX.rsrc:"todas";
 const RG=()=>[["z","Zona",[["","Todas"],["cant","Norte"],["pir","Pirineos"],["alp","Alpes y Dolomitas"]]],
   ...(window.COLX?[["rs","De quién",[["todas","Todas"],["grupo","Los de las Claras"],...CO_LIST()]]]:[]),
   ["ep","Época",[["","Todas"],["new","Recientes (últimos 2 años)"]]],
   ["iv","Invierno",[["","Todas"],["si","Solo invernales"],["no","Sin invernales"]]],
+  ["df","Dificultad",[["","Todas"],["b","🟢 Baja (fácil)"],["m","🟡 Moderada"],["a","🔴 Alta"]]],
   ["tk","Track",[["","Todas"],["si","Con track en el mapa"]]]];
 const CO_LIST=()=>{const s=document.querySelectorAll("#list .rsrc [data-rsrc]");return [...s].filter(b=>/^co_/.test(b.dataset.rsrc)).map(b=>[b.dataset.rsrc,b.textContent.trim()])};
 let RFO=false;
