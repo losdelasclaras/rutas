@@ -1,6 +1,6 @@
-# Informe del robot · 16/11/2026 16:21
+# Informe del robot · 16/11/2026 16:41
 
-**Cambios:** foto recuperada; foto recuperada; mapa: 11 puntos nuevos o cambiados; fotos del mapa: 9 nuevas, 0 cambiadas, 0 quitadas
+**Cambios:** foto recuperada; foto recuperada; mapa: 3 puntos nuevos o cambiados; fotos del mapa: 4 nuevas, 3 cambiadas, 0 quitadas; drive: 2 tracks nuevos
 
 - 🔎 «Bosque de Purupintu desde Orle»: sin dificultad. Texto del cuadro: « circular desde Orlé (Caso) por el corazón de Redes : la foz del ríu Secu, las majadas de Melordaña y Valloseru , los collados de la Becerrera y, como premio, el solitario hayedo de Purupintu por la senda de Los Duernos. 📏 17 km Distancia 📈 +1.150 m Desnivel aprox. ⏱️ 7 h Duración estimada 🏔️ 1.740 m Hombro sobre el Collau Cardiel ⚠️ Media Por distancia, sin pasos técnicos 🔄 Circular Desde Orlé 📍 Orlé (Caso, Asturias) 🗺️ Parque Natural de Redes 📅 Noviembre de 2024 🌲 Los tres hitos del día Foz de Melordaña Por el lecho del arroyo Bloques pulidos que obligan a usar las manos. Majada de Melordaña»
 - 🔎 «Foz de Meleros y Pico la Silla desde Geras»: sin dificultad. Texto del cuadro: «Circular desde Geras de Gordón (León): la Foz de Meleros con sus peldaños de ferrata, la cumbre del Pico la Silla (1.852 m), el refugio de Brañaredonda, el valle de Palanco y la vuelta por el hayedo de la Boyariza . 📏 15 km Distancia 📈 +900 m Desnivel ⏱️ 6 h Con paradas 🏔️ 1.852 m Pico la Silla ⚠️ Media Foz equipada 🔄 Circular Desde Geras 📍 Geras de Gordón (León) 🗺️ Reserva de la Biosfera del Alto Bernesga 📅 Junio de 2024 🏔️ Los tres hitos del día Foz de Meleros Peldaños y escaleras Un desfiladero equipado para pasar junto al arroyo. Pico la Silla 1.852 m La cumbre del día. Hayedo de la»
@@ -11,30 +11,20 @@
 - 🔎 «Peña Rueda y Peña Arpín desde Lindes por la Foix Pequeña.»: sin dificultad. Texto del cuadro: «Circular de montaña desde Lindes (Quirós) que enlaza Peña Rueda (2.155 m) y Peña Arpín a través de los Puertos de Agüeria , y regresa por la Foix Pequeña y el hayedo del Gorbizal. 📏 15,5 km Distancia 📈 1.650 m Desnivel acumulado 🏔️ 2.155 m Peña Rueda ⛰️ 2 cumbres Peña Rueda y Peña Arpín 🧭 Sin camino Descenso por la Foix Pequeña y el hayedo 🔄 Circular Desde la iglesia de Lindes · 900 m 📍 Lindes (Quirós, Asturias) ↗ 🗺️ Macizo de Ubiña · Puertos de Agüeria 🍂 Otoño 📅 Fecha de la ruta --> 📲 Descargar el track en Wikiloc --> « Llindes y Cortes de Quirós, la úl»
 - 🔎 «REFUGIO COLLADO JERMOSO DESDE PANDETRAVE»: sin dificultad. Texto del cuadro: «bida al refugio de Collado Jermoso desde Pandetrave (horcada de Valcabao), por el Sedo Remoña , la Vega de Liordes, el Sedo de la Padierna y Las Colladinas. Un clásico de la vertiente leonesa del Macizo Central de Picos. 📏 17 km Distancia 📈 +1.000 m Desnivel ⏱️ 10 h Con paradas 🏔️ 2.180 m Las Colladinas ⚠️ Alta Sedos y neveros ↔️ Ida y vuelta Desde Valcabao (1.785 m) 📍 Horcada de Valcabao · Puerto de Pandetrave (León) ↗ 🗺️ Picos de Europa · Macizo Central 📅 Julio de 2015 🚸 No recomendable para niños 📲 Descargar el track en Wikiloc --> 🏔️ Los tres hitos del día Sedo Remoña Vertical y espectacul»
 - 📷 «REFUGIO COLLADO JERMOSO DESDE PANDETRAVE»: foto recuperada
-- 🔎 «Canal Parda y Torre los Traviesos»: sin dificultad. Texto del cuadro: «ga la Piedra, Vegarredonda y el collado de La Fragua a tres cumbres del Cornión: el Pico los Asturianos , la Torre de la Canal Parda y la Torre de los Traviesos (2.385 m), frente a Peña Santa. Vuelta por el mismo camino. 📏 21 km Distancia 📈 +1.450 m Desnivel acumulado 🏔️ 2.385 m Torre de los Traviesos 🧗 Alta Trepadas y pasos expuestos ↩️ Ida y vuelta Desde Pan de Carmen · 1.088 m ⛰️ 3 cumbres Asturianos · Canal Parda · Traviesos 📍 Pan de Carmen (Lagos de Covadonga) ↗ 🗺️ Macizo del Cornión · Picos de Europa 📅 Julio de 2009 🚫 No recomendable para niños Una travesía larga por el corazón del Corni»
 - Blog: sin entradas nuevas.
-- 🗺️ Mapa: 671 puntos (11 nuevos o movidos, 3 quitados).
--    + Cabeza Quemada - Peña Main (1609 m.)
--    + Sedo del Arrudo
--    + Majada Bierru
--    + Majada Argandobin
--    + Majada Jucarrera
--    + Cabeza la Mesa - Peña Main (1596 m.)
--    + Majada de Grosea
--    + La India del Allende (sedo)
--    + Majada Sotarraña
--    + Majada Tijuerda
--    + Majada Dobro
-- 📷 Foto nueva en tu mapa: «Cabeza Quemada - Peña Main (1609 m.)»
-- 📷 Foto nueva en tu mapa: «Sedo del Arrudo»
-- 📷 Foto nueva en tu mapa: «Majada Argandobin»
-- 📷 Foto nueva en tu mapa: «Majada Jucarrera»
-- 📷 Foto nueva en tu mapa: «Cabeza la Mesa - Peña Main (1596 m.)»
-- 📷 Foto nueva en tu mapa: «Majada de Grosea»
-- 📷 Foto nueva en tu mapa: «La India del Allende (sedo)»
-- 📷 Foto nueva en tu mapa: «Majada Sotarraña»
-- 📷 Foto nueva en tu mapa: «Majada Dobro»
-- Drive: sin tracks nuevos.
+- 🗺️ Mapa: 674 puntos (3 nuevos o movidos, 0 quitados).
+-    + Majada de Arnandes
+-    + Majada las Pozas
+-    + Majada Ballota
+- 📷 Foto cambiada en tu mapa: «Ermita de San Froilán»
+- 📷 Foto cambiada en tu mapa: «La Torrezuela (2.317 m.)»
+- 📷 Foto nueva en tu mapa: «Majada Bierru»
+- 📷 Foto cambiada en tu mapa: «Los Moledizos (2.297 m.)»
+- 📷 Foto nueva en tu mapa: «Majada de Arnandes»
+- 📷 Foto nueva en tu mapa: «Majada las Pozas»
+- 📷 Foto nueva en tu mapa: «Majada Ballota»
+- 🧵 Track nuevo en Drive: «circular-a-pena-main-desde-poncebos.gpx»
+- 🧵 Track nuevo en Drive: «collada-bonita-desde-vega-de-sotres (1).gpx»
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 432 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - 📝 Blog de Rutinas Varias: 11 rutas emparejadas con su entrada (146 de 405 con enlace al blog; índice con 315 entradas).
@@ -42,14 +32,15 @@
 - 📅 Fechas de rutas de Rutinas Varias: 0 nuevas (146 de 405 con fecha); Wikiloc no responde (8 fallos).
 - Colaborador «Rutinas Varias»: sin cambios.
 - Colaborador «Camudando'l camín»: sin cambios.
--    (40 peticiones a su web en 2.0 min)
+-    (40 peticiones a su web en 1.7 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 192 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: <urlopen error [Errno 101] Network is unreachable>): cumbres de Gata con botas con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 18 colocadas en el pico de OpenStreetMap; 1 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 189 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
-- ✅ Ruta nueva en la app: «PEÑA MAIN DESDE TIELVE POR LA INDIA DE ALLENDE» · sin track todavía
+- 🧵 Track añadido a «Sierra y majadas de Maín desde Poncebos por el Seo del Arrudo» (15.8 km, +1510 m)
+- 🧵 Track añadido a «COLLADA BONITA DESDE LA VEGA DE SOTRES» (18.3 km, +1760 m)
 - ⚠ Track de Drive sin ruta: drive__cabeza-de-arco-desde-caleao-por-la-cabriterina.gpx · mejor opción:  (ya tenía track o poco segura)
 - ⚠ Track de Drive sin ruta: drive__canton-de-texeu-y-majadas-del-cornion.gpx · mejor opción: Canton de Texeu y Majadas del Cornión. (ya tenía track o poco segura)
-- App regenerada: 379 rutas, 166 con track.
+- App regenerada: 379 rutas, 168 con track.
