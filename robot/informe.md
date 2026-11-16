@@ -1,6 +1,6 @@
-# Informe del robot · 16/11/2026 06:26
+# Informe del robot · 16/11/2026 08:03
 
-**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 0 nuevas, 2 cambiadas, 0 quitadas
+**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 0 nuevas, 1 cambiadas, 0 quitadas; colaborador Gata con botas
 
 - 🔎 «PEÑA CRESPA O LOS TORNOS DESDE ORLÉ»: sin dificultad. Texto del cuadro: «ismo camino desde Orlé (Caso) a la Peña Crespa o Los Tornos (1.558 m), siguiendo el valle del Ríu Mediu , cruzando la preciosa majada de Piedrafita y subiendo desde el Collado Boqueriza por una canal y una corta trepada. 📏 12 km Ida y vuelta 📈 900 m Desnivel acumulado 🏔️ 1.558 m Peña Crespa / Los Tornos 📲 Descargar el track en Wikiloc --> Empezamos en Orlé siguiendo las marcas blancas y amarillas del PR AS-126, que se adentra en el valle del Ríu Mediu. Tras las cabañas de la Felguera dejamos el camino ancho y subimos por prados y senda hasta el Collado Piedrafita, desde donde se alcanza la cum»
 - 🔎 «Los Fontanes norte y sur desde Tuiza»: sin dificultad. Texto del cuadro: « Arriba (Lena) por la vega de Brañalluenga y el refugio del Meicín hasta la Forqueta del Portillín (2.065 m) y, por el Canalón del Buey, al Fontán Sur (2.408 m) y al Fontán Norte (2.417 m), techo del concejo de Quirós. 📏 12 km Ida y vuelta 📈 1.200 m Desnivel acumulado 🏔️ 2.417 m Fontán Norte ⛰️ 2 cimas Fontán Sur y Fontán Norte ⚡ Pedrera Canalón del Buey, casi 300 m 🔄 Ida y vuelta Desde Tuiza de Arriba · 1.230 m 📍 Tuiza de Arriba (Lena, Asturias) ↗ 🗺️ Macizo de Ubiña · Los Fontanes 📅 Agosto de 2010 📲 Descargar el track en Wikiloc --> Salimos de Tuiza de Arriba por la vega de Brañalluenga hasta»
@@ -15,8 +15,7 @@
 - 🔎 «Verdilluenga y Torre de los Cabrones desde el Lago Ercina»: sin dificultad. Texto del cuadro: «ular desde el Lago Ercina a la Verdilluenga (2.129 m), techo de Onís, la Punta Gregoriana y la Torre de los Cabrones , en pleno Cornión, con bajada por el Canalón del Conjurtao , el valle de Resecu y la vega del Bricial. 📏 20 km Distancia 📈 +1.400 m Desnivel acumulado ⏱️ 9-10 h Según ritmo y paradas 🏔️ 2.290 m Torre de los Cabrones 🧗 Alta Trepada F+ y orientación 🔄 Circular Desde el Lago Ercina · 1.108 m 📍 Lago Ercina (Lagos de Covadonga) ↗ 🗺️ Macizo del Cornión · Picos de Europa 📅 Septiembre de 2013 🚫 No recomendable para niños Una ruta larga y exigente por el corazón del Macizo del Cornión .»
 - Blog: sin entradas nuevas.
 - 🗺️ Mapa: 663 puntos (0 nuevos o movidos, 0 quitados).
-- 📷 Foto cambiada en tu mapa: «La Torrezuela (2.317 m.)»
-- 📷 Foto cambiada en tu mapa: «Refugio de Vega Huerta»
+- 📷 Foto cambiada en tu mapa: «Los Moledizos (2.297 m.)»
 - Drive: sin tracks nuevos.
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 432 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
@@ -25,13 +24,13 @@
 - 📅 Fechas de rutas de Rutinas Varias: 0 nuevas (146 de 405 con fecha); Wikiloc no responde (8 fallos).
 - Colaborador «Rutinas Varias»: sin cambios.
 - Colaborador «Camudando'l camín»: sin cambios.
--    (39 peticiones a su web en 1.7 min)
-- 🐾 Gata con botas: 205 entradas en sus zonas, 191 rutas en la app (0 nuevas).
+-    (42 peticiones a su web en 2.1 min)
+- 🐾 Gata con botas: 206 entradas en sus zonas, 192 rutas en la app (1 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
 - ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 18 colocadas en el pico de OpenStreetMap; 1 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
-- 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 188 en total, 3 sin foto
-- Colaborador «Gata con botas»: sin cambios.
+- 📷 Fotos de rutas de Gata con botas (de su blog): 1 nuevas, 189 en total, 3 sin foto
+- 🤝 Colaborador «Gata con botas»: 18 puntos, 0 tracks.
 - ⚠ Track de Drive sin ruta: drive__cabeza-de-arco-desde-caleao-por-la-cabriterina.gpx · mejor opción:  (ya tenía track o poco segura)
 - ⚠ Track de Drive sin ruta: drive__canton-de-texeu-y-majadas-del-cornion.gpx · mejor opción: Canton de Texeu y Majadas del Cornión. (ya tenía track o poco segura)
 - App regenerada: 378 rutas, 166 con track.
