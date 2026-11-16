@@ -7,6 +7,7 @@
 <style>
 /* Mapa para incrustar en blogs y webs (iframe). Direcciones que entiende:
    mapa.html#r-<ruta del blog>   → datos en mapa/<ruta>.json (los genera el robot)
+   mapa.html#co-<colaborador>-<ruta> → ruta de un colaborador, en mapa/co-….json
    mapa.html#c=<código>          → track de «Mis cosas» guardado en la nube (enlace corto de Compartir)
    mapa.html#t3=<polilínea>!<nombre> → track con todo dentro (sin cuenta) */
 :root{--ink:#1f2a24;--muted:#5f6b62;--card:#fff;--edge:#d4d8cf;--mark:#c3262e;--paper:#eef0ea}
@@ -54,9 +55,9 @@ function dec(s,dim){const out=[];let i=0;const v=new Array(dim).fill(0);const d=
 
 /* cada tipo de dirección se convierte en lo mismo: nombre, datos de cabecera, recorrido, puntos y enlace a la app */
 async function cargar(){const h=decodeURIComponent(location.hash||"");
-  if(/^#r-[a-z0-9-]+$/.test(h)){const R=await (await fetch("mapa/"+h.slice(1)+".json")).json();
+  if(/^#(r|co)-[a-z0-9-]+$/.test(h)){const R=await (await fetch("mapa/"+h.slice(1)+".json")).json();
     const n=(R.ti||R.t).replace(/\s+/g," ").trim();
-    return{n,gpxn:n,u:R.u,trk:R.trk,w:[],sal:R.sal,cima:R.a?R.t:null,up:R.de||R.up,km:R.km,tm:R.tm,dif:R.dif,app:APP+"#"+R.slug}}
+    return{n,gpxn:n,u:R.u,trk:R.trk,w:[],sal:R.sal,cima:R.a?R.t:null,up:R.de||R.up,km:R.km,tm:R.tm,dif:R.dif,quien:R.quien,app:R.app||APP+"#"+R.slug}}
   if(/^#c=[A-Za-z0-9]{4,20}$/.test(h)){const G="https://www.gstatic.com/firebasejs/10.14.1/";
     const [ap,fs]=await Promise.all([import(G+"firebase-app.js"),import(G+"firebase-firestore.js")]);
     const app=ap.initializeApp({apiKey:"AIzaSyBzYlxsZhJVPJpCk0_EgxaplD7zWMOOg1I",authDomain:"losdelasclaras-rutas.firebaseapp.com",projectId:"losdelasclaras-rutas",appId:"1:115151504481:web:9338dae56b04b4d2989620"});
@@ -78,7 +79,8 @@ if(R.up==null&&conAlt){let u=0,b=R.trk[0][2];for(const p of R.trk){if(p[2]>b+5){
 if(!R.tm&&R.km){const a=R.km/4,b=(R.up||0)/400,hh=Math.max(a,b)+Math.min(a,b)/2;R.tm="~"+(hh<1?Math.round(hh*60)+" min":Math.round(hh)+" h")}
 $("t").textContent=R.n;
 $("s").textContent=[R.km&&String(R.km).replace(".",",")+" km",R.up!=null&&"+"+nf(R.up)+" m",R.tm,R.dif].filter(Boolean).join(" · ");
-$("app").href=R.app;if(!R.u)$("app").textContent="⛰️ Abrir en la app";
+$("app").href=R.app;if(!R.u&&!R.quien)$("app").textContent="⛰️ Abrir en la app";
+if(R.quien)$("s").textContent=R.quien+" · "+$("s").textContent;
 
 $("gpx").addEventListener("click",e=>{e.preventDefault();
   const g='<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>'+xe(R.gpxn)+'</name>'+(R.u?'<link href="'+xe(R.u)+'"/>':'')+'</metadata>\n'+
