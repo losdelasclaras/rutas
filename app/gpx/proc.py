@@ -85,8 +85,13 @@ for f in sorted(glob.glob('raw/*.gpx')):
         wk=(x.get('wk') or '').rstrip('/')
         if wid and re.search(r'-'+wid.group(1)+r'(\D|$)',wk):cs.append((100,x['u'],'enlace Wikiloc'));continue
         if fb.startswith('drive__'):
-            ps=re.sub(r'\.html?$','',x['u'].rstrip('/').split('/')[-1]).lower()
-            if ps and re.sub(r'[^a-z0-9]+','-',stem[7:]).strip('-')==ps:cs.append((500,x['u'],'nombre del archivo = dirección de la entrada'));continue
+            # 16 nov 2026: fuera «?m=1» y «.html»; Blogger corta las direcciones largas, así que vale también que el nombre
+            # del archivo EMPIECE por la dirección de la entrada (si es larga, ≥30 letras; gana la más larga).
+            # El nombre del archivo manda sobre cualquier otro track de esa ruta, también sobre uno asignado a mano.
+            ps=re.sub(r'\.html?$','',x['u'].split('?')[0].split('#')[0].rstrip('/').split('/')[-1]).lower()
+            fs=re.sub(r'[^a-z0-9]+','-',stem[7:]).strip('-')
+            if ps and fs==ps:cs.append((1100,x['u'],'nombre del archivo = dirección de la entrada'));continue
+            if ps and len(ps)>=30 and fs.startswith(ps+'-'):cs.append((1050+len(ps)/1000,x['u'],'nombre del archivo = dirección de la entrada (cortada por Blogger)'));continue
         wslug=re.sub(r'-\d+$','',wk.split('/')[-1]).lower() if wk else ''
         ds=[min(dist((PT[i]['lat'],PT[i]['lon']),q) for q in S) for i in x['p']]
         if min(ds)>400:continue
