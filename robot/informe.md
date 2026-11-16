@@ -1,6 +1,6 @@
-# Informe del robot · 16/11/2026 17:52
+# Informe del robot · 16/11/2026 18:06
 
-**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 1 nuevas, 2 cambiadas, 0 quitadas; colaborador Camudando'l camín
+**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 0 nuevas, 2 cambiadas, 0 quitadas; colaborador Camudando'l camín
 
 - 🔎 «Bosque de Purupintu desde Orle»: sin dificultad. Texto del cuadro: « circular desde Orlé (Caso) por el corazón de Redes : la foz del ríu Secu, las majadas de Melordaña y Valloseru , los collados de la Becerrera y, como premio, el solitario hayedo de Purupintu por la senda de Los Duernos. 📏 17 km Distancia 📈 +1.150 m Desnivel aprox. ⏱️ 7 h Duración estimada 🏔️ 1.740 m Hombro sobre el Collau Cardiel ⚠️ Media Por distancia, sin pasos técnicos 🔄 Circular Desde Orlé 📍 Orlé (Caso, Asturias) 🗺️ Parque Natural de Redes 📅 Noviembre de 2024 🌲 Los tres hitos del día Foz de Melordaña Por el lecho del arroyo Bloques pulidos que obligan a usar las manos. Majada de Melordaña»
 - 🔎 «Foz de Meleros y Pico la Silla desde Geras»: sin dificultad. Texto del cuadro: «Circular desde Geras de Gordón (León): la Foz de Meleros con sus peldaños de ferrata, la cumbre del Pico la Silla (1.852 m), el refugio de Brañaredonda, el valle de Palanco y la vuelta por el hayedo de la Boyariza . 📏 15 km Distancia 📈 +900 m Desnivel ⏱️ 6 h Con paradas 🏔️ 1.852 m Pico la Silla ⚠️ Media Foz equipada 🔄 Circular Desde Geras 📍 Geras de Gordón (León) 🗺️ Reserva de la Biosfera del Alto Bernesga 📅 Junio de 2024 🏔️ Los tres hitos del día Foz de Meleros Peldaños y escaleras Un desfiladero equipado para pasar junto al arroyo. Pico la Silla 1.852 m La cumbre del día. Hayedo de la»
@@ -14,7 +14,6 @@
 - Blog: sin entradas nuevas.
 - 🗺️ Mapa: 681 puntos (0 nuevos o movidos, 0 quitados).
 - 📷 Foto cambiada en tu mapa: «Ermita de San Froilán»
-- 📷 Foto nueva en tu mapa: «Sedo Hierbas Altas»
 - 📷 Foto cambiada en tu mapa: «Los Moledizos (2.297 m.)»
 - Drive: sin tracks nuevos.
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
@@ -25,12 +24,11 @@
 - Colaborador «Rutinas Varias»: sin cambios.
 - ⛰ Camudando'l camín: 1 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ⚠ No he podido leer el índice del blog de Camudando'l camín (https://camudandolcamin.blogspot.com).
-- 📷 Fotos de rutas de Camudando'l camín (de su blog): 1 nuevas, 1 en total
-- 📷 Fotos de Camudando'l camín (de su blog): 33 nuevas, 45 sin foto
-- 📝 Títulos de entradas de Camudando'l camín: 70 de 128 (20 no han respondido)
-- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (0 de 1 con fecha); su blog no responde (1 fallos).
+- 📷 Fotos de Camudando'l camín (de su blog): 12 nuevas, 33 sin foto
+- 📝 Títulos de entradas de Camudando'l camín: 99 de 128 (11 no han respondido)
+- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (1 de 1 con fecha); su blog no responde (1 fallos).
 - 🤝 Colaborador «Camudando'l camín»: 153 puntos, 1 tracks.
--    (40 peticiones a su web en 1.7 min)
+-    (40 peticiones a su web en 1.8 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 192 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
 - ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
