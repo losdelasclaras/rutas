@@ -25,6 +25,7 @@ html:not(.pc) .dibonly{display:none!important}
 .dibp .dibg{display:block;width:100%;min-height:48px;border:0;border-radius:12px;background:var(--mark,#c3262e);color:#fff;font:inherit;font-size:16px;font-weight:800;cursor:pointer}
 .dibp .dibg:disabled{opacity:.45;cursor:default}
 .dibp .dibw{color:#8a4b00;font-size:13px;margin:6px 0 0}
+.dibp .dibi{margin:-4px 0 10px;padding:8px 10px;border-radius:10px;background:#fff4e0;color:#6b3d00;font-size:13.5px;line-height:1.35}.dibp .dibi button{margin-top:6px;border:1px solid #c98a2b;background:#fff;color:#6b3d00;border-radius:999px;padding:5px 10px;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
 #map.dibujando{cursor:crosshair}#map.dibujando .leaflet-grab{cursor:crosshair}
 #map.dibujando .leaflet-marker-pane>*:not(.dibpt),#map.dibujando .leaflet-tooltip-pane,#map.dibujando .leaflet-overlay-pane path:not(.dibln){pointer-events:none!important}
 .dibpt{width:14px!important;height:14px!important;margin:-7px 0 0 -7px!important;border-radius:50%;background:#fff;border:3px solid #7b1fa2;box-sizing:border-box;cursor:move!important;box-shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -109,6 +110,7 @@ function pinta(){
   panel.querySelector("[data-dib=undo]").disabled=!W.length;panel.querySelector("[data-dib=vuelta]").disabled=W.length<2;panel.querySelector("[data-dib=borra]").disabled=!W.length;
   const g=panel.querySelector("[data-dib=guarda]");g.disabled=W.length<2;g.textContent=pend&&W.length>1?"⏳ Calculando el tramo…":"💾 Guardar en Mis cosas";
   panel.querySelector(".dibw").hidden=!S.some(s=>s.rf);
+  {const b=typeof BASE!=="undefined"?BASE:"topo";panel.querySelector(".dibi").hidden=!(MODO==="c"&&b&&b!=="topo")}
   panel.querySelector(".dibmini").textContent=panel.classList.contains("plegado")&&W.length>1?"· "+fmtKm(m):""}
 
 // ---- entrar y salir ----
@@ -118,7 +120,7 @@ function abre(){if(ON)return;ON=true;if(typeof showView==="function")showView("m
   panel=document.createElement("div");panel.className="dibp";panel.innerHTML=`<h3 title="Arrastra para mover el panel"><span class="dibgr">⠿</span><span class="t">✏️ Dibujar un track <span class="dibmini"></span></span><button data-dib="plega" title="Plegar o desplegar el panel" aria-label="Plegar">▁</button><button data-dib="x" title="Salir" aria-label="Salir">✕</button></h3>
   <p class="dibh">Haz <b>clic en el mapa</b> para ir poniendo puntos. <b>Arrastra</b> un punto para moverlo y <b>clic derecho</b> para quitarlo.</p>
   <div class="dibm"><button data-dibm="c" aria-pressed="${MODO==="c"}" title="La línea sigue los caminos y sendas del mapa (OpenStreetMap)">🥾 Por caminos</button><button data-dibm="r" aria-pressed="${MODO==="r"}" title="Línea recta: para tramos campo a través">📏 Línea recta</button></div>
-  <div class="dibs"></div><svg class="dibpf" viewBox="0 0 300 70" preserveAspectRatio="none"></svg>
+  <p class="dibi" hidden>ℹ️ <b>Por caminos</b> sigue los caminos de OpenStreetMap, que son los que se ven en el mapa <b>Topográfico</b>. En este mapa puede haber caminos que la línea no siga: en esos tramos usa <b>📏 Línea recta</b>.<br><button data-dib="topo">Poner el mapa Topográfico</button></p><div class="dibs"></div><svg class="dibpf" viewBox="0 0 300 70" preserveAspectRatio="none"></svg>
   <div class="dibr"><button data-dib="undo" title="Quitar el último punto (Ctrl+Z)">↶ Deshacer</button><button data-dib="vuelta" title="Unir con el punto de salida">🔁 Volver al inicio</button><button data-dib="borra">🗑 Empezar de nuevo</button></div>
   <button class="dibg" data-dib="guarda">💾 Guardar en Mis cosas</button>
   <p class="dibw" hidden>⚠️ Algún tramo va en línea recta porque no encontré camino. Revísalo o pon más puntos.</p>`;
@@ -146,9 +148,9 @@ function cierra(forz){if(!ON)return;if(!forz&&W.length>1&&!confirm("¿Salir sin 
 function clicMapa(e){if(!ON)return;add(e.latlng)}
 function tecla(e){if(!ON)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){e.preventDefault();quita(W.length-1)}else if(e.key==="Escape"&&!document.querySelector(".cdq"))cierra()}
 function clicPanel(e){const m=e.target.closest("[data-dibm]");if(m){MODO=m.dataset.dibm;try{localStorage.setItem("ldc-dibmodo",MODO)}catch(x){}panel.querySelectorAll("[data-dibm]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.dibm===MODO));
-    tst(MODO==="c"?"Los próximos tramos irán por caminos":"Los próximos tramos irán en línea recta");return}
+    tst(MODO==="c"?"Los próximos tramos irán por caminos":"Los próximos tramos irán en línea recta");pinta();return}
   const b=e.target.closest("[data-dib]");if(!b)return;const k=b.dataset.dib;
-  if(k==="x")cierra();else if(k==="plega")plega();else if(k==="undo")quita(W.length-1);else if(k==="vuelta"){if(W.length>1)add(W[0].ll)}
+  if(k==="x")cierra();else if(k==="topo"){if(typeof setBase==="function")setBase("topo")}else if(k==="plega")plega();else if(k==="undo")quita(W.length-1);else if(k==="vuelta"){if(W.length>1)add(W[0].ll)}
   else if(k==="borra"){if(W.length<3||confirm("¿Borrar todo lo dibujado y empezar de nuevo?"))limpia()}
   else if(k==="guarda")guarda()}
 
@@ -183,5 +185,7 @@ function enGuardado(){if(!gd||gd.hidden)return;const t=gd.querySelector(".gdtop"
   t.insertAdjacentHTML("beforeend",`<button class="dibonly" data-dibuja style="grid-column:1/-1">✏️ Dibujar un track en el mapa</button>`)}
 if(gd){new MutationObserver(()=>enGuardado()).observe(gd,{childList:true,attributes:true,attributeFilter:["hidden"]});enGuardado()}
 document.addEventListener("click",e=>{if(e.target.closest("[data-dibuja]"))abre()});
+// aviso del mapa de fondo (16 nov): al cambiarlo en Capas, se pone al día
+if(typeof window.setBase==="function"){const SB=window.setBase;window.setBase=setBase=function(){const r=SB.apply(this,arguments);if(ON)pinta();return r}}
 window.DIBUJAR={abre,cierra,on:()=>ON};
 })();
