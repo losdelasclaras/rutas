@@ -5418,7 +5418,7 @@ function medalla(n,i,last,on,sz){sz=sz||44;const col=last?"#7b2cbf":MCOL[Math.mi
   return `<svg class="med ${on?"on":"off"}" viewBox="0 0 48 62" width="${sz}" height="${Math.round(sz*1.29)}" aria-hidden="true"><path d="M13 1h9l5 20h-9z" fill="${on?"#c3262e":"#bdbdbd"}"/><path d="M35 1h-9l-5 20h9z" fill="${on?"#1e6fd9":"#d0d0d0"}"/>
   <circle cx="24" cy="40" r="20" fill="${on?col:"#d6d6d6"}" stroke="#fff" stroke-width="3"/><circle cx="24" cy="40" r="15" fill="none" stroke="${on?"rgba(255,255,255,.6)":"#ececec"}" stroke-width="1.5"/>
   ${last?`<text x="24" y="47" text-anchor="middle" font-size="19">${on?"🏆":"🔒"}</text>`:`<text x="24" y="46.5" text-anchor="middle" font-size="${n>=100?13:17}" font-weight="900" fill="#fff" font-family="system-ui,sans-serif">${n}</text>`}</svg>`}
-function mejor(R,n){const H=hitos(R.tot);let b=-1;H.forEach((x,i)=>{if(n>=x)b=i});return b<0?"":medalla(H[b],b,b===H.length-1,true,30)}
+function mejor(R,n){if(!R.tot)return"";const H=hitos(R.tot);let b=-1;H.forEach((x,i)=>{if(n>=x)b=i});return b<0?"":medalla(H[b],b,b===H.length-1,true,30)}
 
 /* ---------- los retos y sus cumbres ---------- */
 function deTecho(){if(!window.TECHOS||!TECHOS.L)return null;const L=TECHOS.L();if(!L)return null;const b=TECHOS.blog?TECHOS.blog():{n:"Camudando'l camín",u:""};
@@ -5470,7 +5470,7 @@ function publica(R,ya){const L=LOC[R.id];if(!L||!L.pub||!usr())return;clearTimeo
 function publicaTodos(){for(const R of todos())publica(R)}
 
 /* ---------- celebrar medallas nuevas ---------- */
-function revisa(R,celebrar){const L=lo(R.id),n=prog(R),H=hitos(R.tot),g=H.filter(x=>n>=x);
+function revisa(R,celebrar){if(!R.items.length)return;const L=lo(R.id),n=prog(R),H=hitos(R.tot),g=H.filter(x=>n>=x);
   if(!L.med){L.med=g;saveLoc();return}
   const nuevas=g.filter(x=>!L.med.includes(x));L.med=g;saveLoc();
   if(nuevas.length&&celebrar!==false){const x=nuevas[nuevas.length-1],i=H.indexOf(x),last=i===H.length-1;
@@ -5494,11 +5494,12 @@ let ANT=new Set(Object.keys(MARKS).filter(k=>MARKS[k]==="hecha"));
 function pinta(){if(CUR){const R=reto(CUR);if(R){pintaReto(R);return}CUR=null}pintaLista()}
 function tarjeta(R){const n=prog(R),st=estado(R);
   return `<button class="rtcard${st.k==="fi"?" fin":""}" data-rt="${esc(R.id)}"><span class="rte">${esc(R.e)}</span><span class="rtt"><b>${esc(R.n)}</b>
-    <small><span class="rtst ${st.k}">${esc(st.t)}</span>${R.activo===false?`<span class="rtst">Oculto</span>`:""} Llevas ${n} de ${R.tot}</small><span class="prog"><i style="width:${(n/R.tot*100).toFixed(1)}%"></i></span></span><span class="rtm">${mejor(R,n)}</span></button>`}
+    <small><span class="rtst ${st.k}">${esc(st.t)}</span>${R.activo===false?`<span class="rtst pr">📝 Borrador</span>`:""} Llevas ${n} de ${R.tot}</small><span class="prog"><i style="width:${(R.tot?n/R.tot*100:0).toFixed(1)}%"></i></span></span><span class="rtm">${mejor(R,n)}</span></button>`}
 function pintaLista(){const v=todos();const ord=R=>{const k=estado(R).k;return R.fijo?0:k==="on"?1:k==="pe"?2:k==="pr"?3:4};v.sort((a,b)=>ord(a)-ord(b));
-  const vivos=v.filter(R=>estado(R).k!=="fi"),fin=v.filter(R=>estado(R).k==="fi");
+  const bor=v.filter(R=>R.activo===false),vivos=v.filter(R=>R.activo!==false&&estado(R).k!=="fi"),fin=v.filter(R=>R.activo!==false&&estado(R).k==="fi");
   box.innerHTML=`<div class="rthead"><h2>🏆 Retos</h2><p>Marca las cumbres que vas subiendo y gana medallas. Si te apuntas, verás quién más las ha subido y saldrás en la lista.</p></div>
   ${esAdm()?`<button class="rtnew" data-rtnew>＋ Crear un reto (administrador)</button>`:""}
+  ${bor.length?`<h3 style="margin:6px 0 8px;font-size:16px">📝 Borradores · solo los veis los administradores</h3>${bor.map(tarjeta).join("")}<h3 style="margin:14px 0 8px;font-size:16px">Publicados</h3>`:""}
   ${vivos.map(tarjeta).join("")||`<p class="rtvacio">Cargando los retos…</p>`}
   ${fin.length?`<details><summary style="font-weight:800;margin:10px 0;cursor:pointer">Retos terminados (${fin.length})</summary>${fin.map(tarjeta).join("")}</details>`:""}`}
 function pintaReto(R){const n=prog(R),st=estado(R),H=hitos(R.tot),L=lo(R.id),u=usr();
@@ -5507,13 +5508,14 @@ function pintaReto(R){const n=prog(R),st=estado(R),H=hitos(R.tot),L=lo(R.id),u=u
   const its=R.items.filter(it=>FIL==="todas"||(FIL==="hechas")===hecho(R,it));
   const fechas=R.tipo==="fechas";
   box.innerHTML=`<button class="rtback" data-rtback>‹ Retos</button>
+  ${R.activo===false?`<div class="rtjoin" style="border:2px dashed #e8a317"><p>📝 <b>Borrador:</b> solo lo veis los administradores. Cuando esté listo, publícalo.</p><div class="rw"><button class="rtb pri sm" data-rtpub>✅ Publicar el reto</button><button class="rtb sm" data-rtedit>✏️ Seguir editando</button></div></div>`:""}
   <div class="rtcab"><div class="rte">${esc(R.e)}</div><h2>${esc(R.n)}</h2><p><span class="rtst ${st.k}">${esc(st.t)}</span>${fechas&&R.ini?` ${esc(fecha(R.ini))} – ${esc(fecha(R.fin))}`:""}</p>
     ${R.d?`<p>${esc(R.d)}</p>`:""}${R.org?`<p>Reto de ${R.orgu?`<a href="${esc(R.orgu)}" target="_blank" rel="noopener">${esc(R.org)}</a>`:esc(R.org)}</p>`:""}
     ${fechas?`<p style="font-size:14px">Solo cuenta lo que marques ✓ mientras el reto está en marcha.</p>`:""}</div>
-  <div class="rtpr"><div class="tt">Llevas <b>${n}</b> de ${R.tot} ${esc(R.u)}</div><div class="prog"><i style="width:${(n/R.tot*100).toFixed(1)}%"></i></div>
+  ${!R.items.length?`<p class="rtvacio">Todavía no tiene cumbres. Toca ✏️ Editar para añadirlas.</p>`:`<div class="rtpr"><div class="tt">Llevas <b>${n}</b> de ${R.tot} ${esc(R.u)}</div><div class="prog"><i style="width:${(R.tot?n/R.tot*100:0).toFixed(1)}%"></i></div>
     <div class="rtmeds">${H.map((x,i)=>`<span class="md">${medalla(x,i,i===H.length-1,n>=x,44)}${i===H.length-1?"Completo":["Bronce","Plata","Oro","Platino"][Math.min(i,3)]}</span>`).join("")}</div>
     <p class="nx">${sig==null?"🏆 ¡Reto completado!":sig===R.tot?`Te faltan <b>${R.tot-n}</b> para completarlo`:`Te faltan <b>${sig-n}</b> para la medalla de ${sig}`}</p></div>
-  <button class="rtb pri" data-rtmapa style="width:100%;margin:0 0 12px">🗺 Ver el reto en el mapa</button>
+  <button class="rtb pri" data-rtmapa style="width:100%;margin:0 0 12px">🗺 Ver el reto en el mapa</button>`}
   <div class="rtjoin">${L.pub&&u?`<p>✅ Estás apuntado como <b>${esc(LOC._nom||"")}</b>. Los demás ven tu progreso.</p><div class="rw"><button class="rtb sm" data-rtnom>✏️ Cambiar nombre</button><button class="rtb sm" data-rtsal>Dejar de salir en la lista</button></div>`
     :`<p>Apúntate para salir en la lista de participantes y poder subir una foto de cada cumbre.${u?"":" Hace falta entrar con Google."}</p><div class="rw"><button class="rtb pri" data-rtjoin>🙋 Apuntarme al reto</button></div>`}</div>
   <div class="subtabs" style="grid-template-columns:repeat(2,1fr)"><button role="tab" data-rtsub="cum" aria-selected="${SUB==="cum"}"><span class="i">⛰️</span><span>${R.u==="concejos"?"Cumbres":"Lista"}</span><small>${R.items.length}</small></button><button role="tab" data-rtsub="gente" aria-selected="${SUB==="gente"}"><span class="i">👥</span><span>Participantes</span><small>${PART[R.id]?part.length:"…"}</small></button></div>
@@ -5591,7 +5593,7 @@ function fuentes(){const v=[];
     if(v.some(y=>!y.co&&norm(y.n)===norm(x.c)&&Math.abs(y.lat-x.lat)<.005))continue;
     v.push({n:x.c,t:x.k==="cumbre"?"c":"l",lat:x.lat,lon:x.lon,a:null,k:COLX.coKeyK?COLX.coKeyK(x.co,x.c,x.k):COLX.coKey(x.co,x.c),co:x.co.id,s:(x.k==="cumbre"?"Cumbre · ":"Lugar · ")+x.co.n})}
   return v}
-function editar(r){ED=r?JSON.parse(JSON.stringify(r)):{id:"",n:"",e:"🏆",d:"",org:"",ini:"",fin:"",prem:"",activo:true,it:[]};ED._fe=!!(ED.ini||ED.fin);pintaEd()}
+function editar(r){ED=r?JSON.parse(JSON.stringify(r)):{id:"",n:"",e:"🏆",d:"",org:"",ini:"",fin:"",prem:"",activo:false,it:[]};ED._fe=!!(ED.ini||ED.fin);pintaEd()}
 function pintaEd(){const r=ED,fe=!!r._fe;
   abreDlg(`<div class="hd"><h3>${r.id?"Editar reto":"Reto nuevo"}</h3><button class="x" data-rtx aria-label="Cerrar">×</button></div>
   <label>Nombre</label><input type="text" data-ed="n" value="${esc(r.n)}" maxlength="60" placeholder="Reto de la Federación 2027">
@@ -5601,12 +5603,12 @@ function pintaEd(){const r=ED,fe=!!r._fe;
   <label>Premio al completarlo (texto opcional)</label><input type="text" data-ed="prem" value="${esc(r.prem)}" maxlength="140">
   <label>Tipo</label><select data-edtipo><option value="perm"${fe?"":" selected"}>Permanente</option><option value="fechas"${fe?" selected":""}>Con fechas (anual, temporal…)</option></select>
   ${fe?`<label>Empieza</label><input type="date" data-ed="ini" value="${esc(r.ini)}"><label>Termina</label><input type="date" data-ed="fin" value="${esc(r.fin)}">`:""}
-  <label><input type="checkbox" data-edact${r.activo!==false?" checked":""}> Visible para todos</label>
   <label>Cumbres y lugares (${r.it.length})</label>
   <div>${r.it.map((x,i)=>`<div class="rtit"><span class="rtinfo"><b>${esc(x.n)}</b><small>${esc(x.s||"")}</small></span><button class="rtb sm" data-edq="${i}">✕</button></div>`).join("")||`<p style="color:var(--muted);margin:0">Busca abajo y toca para añadir.</p>`}</div>
   <input type="search" data-edbus placeholder="Buscar una cumbre o un lugar…" style="margin-top:8px"><div class="rtsel" data-edres hidden></div>
   ${r._nv?nuevaHtml(r._nv):`<p style="margin:10px 0 0"><button class="rtb" data-ednv>＋ Cumbre o lugar nuevo (que no está en la app)</button></p>`}
-  <p style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 0"><button class="rtb pri" data-edok>💾 Guardar el reto</button>${r.id?`<button class="rtb" data-edborra>🗑 Borrar el reto</button>`:""}</p>`)}
+  ${r.activo===false?`<p style="margin:16px 0 0;font-size:14px;color:var(--muted)">📝 Puedes guardarlo como borrador y seguir otro día: solo lo veis los administradores hasta que lo publiques.</p>`:""}
+  <p style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0">${r.activo===false?`<button class="rtb" data-edok="b">💾 Guardar borrador</button><button class="rtb pri" data-edok="p">✅ Publicar el reto</button>`:`<button class="rtb pri" data-edok="g">💾 Guardar cambios</button><button class="rtb" data-edok="b">⏸ Pasar a borrador</button>`}${r.id?`<button class="rtb" data-edborra>🗑 Borrar el reto</button>`:""}</p>`)}
 function nuevaHtml(v){return `<div class="rtnv"><b>Cumbre o lugar nuevo</b><small style="display:block;color:var(--muted)">Solo existe dentro de este reto.</small>
   <label>Nombre</label><input type="text" data-nv="n" value="${esc(v.n||"")}" maxlength="60" placeholder="Pico…">
   <label>Es</label><select data-nv="t"><option value="c"${v.t!=="l"?" selected":""}>Cumbre</option><option value="l"${v.t==="l"?" selected":""}>Lugar (lago, braña, refugio…)</option></select>
@@ -5630,13 +5632,16 @@ let EDRES=[];
 function buscaEd(q){const el=dlg.querySelector("[data-edres]");if(!el)return;q=norm(q.trim());if(q.length<2){el.hidden=true;return}
   EDRES=fuentes().filter(x=>norm(x.n).includes(q)&&!ED.it.some(y=>y.k===x.k)).slice(0,40);
   el.hidden=false;el.innerHTML=EDRES.map((x,i)=>`<button data-edadd="${i}"><b>${esc(x.n)}</b>${x.a?" · "+x.a+" m":""}<br><small>${esc(x.s)}</small></button>`).join("")||`<p style="padding:8px;margin:0;color:var(--muted)">No encuentro nada.</p>`;setTimeout(()=>el.scrollIntoView({block:"nearest"}),50)}
-function leeEd(){dlg.querySelectorAll("[data-ed]").forEach(i=>{ED[i.dataset.ed]=i.value.trim()});const a=dlg.querySelector("[data-edact]");if(a)ED.activo=a.checked}
-async function guardaEd(){leeEd();const r=ED;if(!r.n){toast("Ponle un nombre");return}if(!r.it.length){toast("Añade al menos una cumbre");return}
-  if(r._fe&&(!r.ini||!r.fin)){toast("Pon las dos fechas");return}if(r.ini&&r.fin&&r.fin<r.ini){toast("La fecha de fin es anterior a la de inicio");return}
+function leeEd(){dlg.querySelectorAll("[data-ed]").forEach(i=>{ED[i.dataset.ed]=i.value.trim()});}
+async function guardaEd(modo){leeEd();const r=ED;if(!r.n){toast("Ponle un nombre");return}
+  const pub=modo==="p"?true:modo==="b"?false:r.activo!==false;
+  if(pub&&!r.it.length){toast("Añade al menos una cumbre para publicarlo");return}
+  if(pub&&r._fe&&(!r.ini||!r.fin)){toast("Pon las dos fechas para publicarlo");return}
+  r.activo=pub;if(r.ini&&r.fin&&r.fin<r.ini){toast("La fecha de fin es anterior a la de inicio");return}
   const id=r.id||(slug(r.n).slice(0,30)+"-"+Math.random().toString(36).slice(2,6));
   const d={n:r.n,e:r.e||"🏆",d:r.d||"",org:r.org||"",prem:r.prem||"",ini:r._fe?r.ini:"",fin:r._fe?r.fin:"",activo:r.activo!==false,ord:r.ord||0,
     it:r.it.map(x=>({id:x.id||slug((x.t||"c")+"-"+x.n),n:x.n,t:x.t,lat:+(+x.lat).toFixed(6),lon:+(+x.lon).toFixed(6),a:x.a||null,k:x.k,co:x.co||"",s:x.s||"",nv:x.nv?1:0})),t:Date.now()};
-  try{const a=await fb();await a.fs.setDoc(a.fs.doc(a.db,"retos",id),d);toast("✅ Reto guardado");cierraDlg();
+  try{const a=await fb();await a.fs.setDoc(a.fs.doc(a.db,"retos",id),d);toast(modo==="p"?"✅ Reto publicado: ya lo ve todo el mundo":modo==="b"?"📝 Guardado como borrador":"✅ Reto guardado");cierraDlg();
     RETOS=RETOS.filter(x=>x.id!==id).concat([Object.assign({id},d)]);store.set(RC,RETOS);CUR=id;pinta()}
   catch(e){console.warn("guardar reto",e);toast("No se ha podido guardar (¿reglas de Firestore puestas?)")}}
 async function borraEd(){if(!ED.id||!confirmar("¿Borrar este reto? Los apuntados dejarán de verlo."))return;
@@ -5660,6 +5665,7 @@ box.addEventListener("click",e=>{const t=e.target;let b;
   if(t.closest("[data-rtsal]")){salir(R.id);return}
   if(t.closest("[data-rtnom]")){pideNombre(()=>{publicaTodos();pinta()});return}
   if(t.closest("[data-rtedit]")){editar(R.raw);return}
+  if(t.closest("[data-rtpub]")){editar(R.raw);guardaEd("p");return}
   if(t.closest("[data-rtshare]")){const url=URLAPP+"#reto="+encodeURIComponent(R.id),text=`${R.e} ${R.n}\n¿Te apuntas al reto? Marca las cumbres que subas y gana medallas:`;
     (async()=>{try{if(navigator.share){await navigator.share({title:R.n,text,url});return}}catch(er){if(er&&er.name==="AbortError")return}
       try{await navigator.clipboard.writeText(text+"\n"+url);toast("Enlace copiado. Pégalo en WhatsApp.")}catch(er){window.open("https://wa.me/?text="+encodeURIComponent(text+"\n"+url),"_blank","noopener")}})();return}});
@@ -5685,7 +5691,7 @@ dlg.addEventListener("click",e=>{const t=e.target;let b;
       if(ED.it.some(x=>x.id===id)){toast("Ya hay una con ese nombre en el reto");return}
       ED.it.push({id,n,t:t2,lat:+v.lat,lon:+v.lon,a:a>0&&a<9000?a:null,k:t2+":"+norm(n)+"@r",co:"",s:(t2==="c"?"Cumbre nueva":"Lugar nuevo")+" · solo en este reto",nv:1});
       delete ED._nv;pintaEd();toast("✓ Añadida al reto (no olvides 💾 Guardar)");return}
-    if(t.closest("[data-edok]")){guardaEd();return}
+    if(b=t.closest("[data-edok]")){guardaEd(b.dataset.edok);return}
     if(t.closest("[data-edborra]")){borraEd();return}}});
 dlg.addEventListener("input",e=>{if(e.target.matches("[data-edbus]"))buscaEd(e.target.value)});
 dlg.addEventListener("change",e=>{if(!e.target.matches("[data-nvpega]")||!ED||!ED._nv)return;const tx=e.target.value.trim();if(!tx)return;
@@ -5731,7 +5737,7 @@ setTimeout(()=>{const sv=window.showView;if(typeof sv==="function")window.showVi
 /* ---------- en Explorar › Cumbres y Lugares: etiqueta «🏆 Techos de Asturias» en las que están en algún reto (al tocar, abre el reto) ---------- */
 let TGI=null,TGS="";
 function indice(){const v=todos(),sig=v.map(R=>R.id+":"+R.items.length).join("|")+"|"+(window.COLX&&COLX.todo?COLX.todo().length:0);if(TGI&&sig===TGS)return TGI;
-  TGS=sig;TGI=new Map();for(const R of v){if(estado(R).k==="fi")continue;for(const it of R.items)for(const k of it.keys){const a=TGI.get(k)||[];if(!a.includes(R))a.push(R);TGI.set(k,a)}}return TGI}
+  TGS=sig;TGI=new Map();for(const R of v){if(estado(R).k==="fi"||R.activo===false||!R.items.length)continue;for(const it of R.items)for(const k of it.keys){const a=TGI.get(k)||[];if(!a.includes(R))a.push(R);TGI.set(k,a)}}return TGI}
 window.RETOTAG=function(p,kind){try{const k=(kind==="cumbres"?"c:":"l:")+norm(p.c)+(p.co?"@"+p.co.id:""),a=indice().get(k);if(!a||!a.length)return"";
   return a.map(R=>`<button class="rttag" data-rtag="${esc(R.id)}">🏆 ${esc(R.n)}</button>`).join("")}catch(e){return""}};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-rtag]");if(!b)return;e.stopPropagation();e.preventDefault();abrir(b.dataset.rtag)},true);
@@ -6183,5 +6189,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="16/11 08:51 · 6fd91d";window.LDC_BUILD="6fd91dd518";window.LDC_FUNC="ec7b4d3dab";(function(){const B="6fd91dd518";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="16/11 09:08 · 550696";window.LDC_BUILD="55069666ff";window.LDC_FUNC="36c6567940";(function(){const B="55069666ff";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
