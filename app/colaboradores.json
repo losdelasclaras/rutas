@@ -69,7 +69,8 @@
   "zona": "Asturias",
   "quitar_capas": [
    "Info Conceyos"
-  ]
+  ],
+  "quitar_numero": true
  },
  {
   "id": "c4",

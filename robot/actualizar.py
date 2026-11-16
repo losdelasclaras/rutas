@@ -865,6 +865,8 @@ def colaboradores():
                     # capas de su My Maps que no queremos en la app (p. ej. publicidad de empresas)
                     n0 = len(pts); pts = [q for q in pts if quedar_colab(co, q)]
                     if n0 != len(pts): log(f'   (quitados {n0 - len(pts)} puntos de publicidad: capas o nombres que no queremos)')
+                    if co.get('quitar_numero'):   # 16 nov 2026: «1- La Torre Cerredu» -> «La Torre Cerredu» (Camudando'l camín, Montes Cimeros)
+                        pts = [[re.sub(r'^\s*\d+\s*[-–.)ºª]\s*', '', q[0]) or q[0]] + list(q[1:]) for q in pts]
                     new.update(t=tit, p=pts, l=[] if co.get('sin_lineas') else lin)   # sin_lineas: p. ej. líneas de límites, no rutas
             except Exception as e:
                 log(f'⚠ No he podido leer el mapa del colaborador {co["id"]}: {e}')
