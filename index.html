@@ -2346,6 +2346,7 @@ function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t
       ${p?`<a class="mpb" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p[0][0]},${p[0][1]}">🚗 Cómo llegar al inicio</a>`:""}
       ${r?`<button class="mpb" data-mtroute="${ie}">📘 Ver la ruta del blog</button>`:""}
       ${off?`<button class="mpb" data-offt="${ie}">✓ Mapa sin cobertura</button>`:""}
+      ${p||r?`<button class="mpb" data-mtemb="${ie}">🧩 Incrustar en un blog o web</button>`:""}
       <button class="mpb" data-mtren="${ie}">✏️ Cambiar nombre</button>
       <button class="mpb dan" data-mtdel="${ie}">${trs} Quitar de mis tracks</button></div>`}
   else h=cab+`<div class="meta">${d.km?`<span class="tag">${kmTxt(d.km)}</span>`:""}${d.up!=null?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}</div>
@@ -2406,6 +2407,9 @@ sheet.addEventListener("click",e=>{
     toast(v==="hecho"?"Marcado como hecho":"Apuntado como pendiente");open(k2,false);return}
   if((k=id("[data-mtshare]"))!=null){const t=T().find(x=>String(x.id)===k);if(t&&window.COMPARTIR)COMPARTIR.track(t);return}
   if((k=id("[data-mtroute]"))!=null){const t=T().find(x=>String(x.id)===k);const r=routeOf(t);if(r)openRoute(r.id);return}
+  if((k=id("[data-mtemb]"))!=null){const t=T().find(x=>String(x.id)===k);if(t)incrustar(t);return}
+  if(e.target.closest("[data-embcp]")){const ta=document.getElementById("embc");if(!ta)return;
+    (navigator.clipboard?navigator.clipboard.writeText(ta.value):Promise.reject()).then(()=>toast("Código copiado. Pégalo en la Vista HTML de tu entrada"),()=>{ta.focus();ta.select();toast("Mantén pulsado el código y elige Copiar")});return}
   if((k=id("[data-mtren]"))!=null){renombrar(k);return}
   if((k=id("[data-mtrensave]"))!=null){const v=(document.getElementById("mtn").value||"").trim();if(!v)return;
     const ts=T().map(x=>String(x.id)===k?{...x,n:v}:x);MPI.saveTracks(ts);toast("Nombre cambiado");open(k,false);return}
@@ -2421,6 +2425,27 @@ sheet.addEventListener("click",e=>{
     cambiaW(t.id,y=>{const z=y.w.find(x=>x.id===w.id);z.n=(n.trim()||z.n).slice(0,80);if(nt!=null)z.nota=nt.trim().slice(0,1000)});punto(t.id,w.id);return}
   const wd=e.target.closest("[data-wpdel]");if(wd){if(wd.dataset.sure!=="1"){wd.dataset.sure="1";wd.textContent="¿Seguro? Toca otra vez";return}
     const id=wd.dataset.wpdel,tid=wd.dataset.t;cambiaW(tid,y=>{const z=y.w.find(x=>x.id===id);if(z&&z.fo&&MPI.fotoDel)MPI.fotoDel(id);y.w=y.w.filter(x=>x.id!==id)});toast("Punto quitado");open(tid,false);return}});
+/* 16 nov 2026: «🧩 Incrustar en un blog o web»: da el código <iframe> del mapa (mapa.html) para pegarlo en Blogger, WordPress…
+   Rutas del blog: mapa.html#r-<ruta> (los datos los genera el robot). Tracks propios: el enlace corto de la nube (#c=),
+   y si no hay cuenta o cobertura, el track va dentro de la dirección (#t3=, con alturas). */
+const MAPA="https://losdelasclaras.github.io/rutas/mapa.html";
+const slugR=r=>"r-"+r.u.replace(/^https?:\/\/[^/]+\//,"").replace(/\.html$/,"").replace(/[^A-Za-z0-9]+/g,"-").replace(/-+$/,"").toLowerCase();
+function enc3(pts){let o="";const pr=[0,0,0],e=v=>{v=v<0?~(v<<1):v<<1;let s="";while(v>=0x20){s+=String.fromCharCode((0x20|(v&0x1f))+63);v>>=5}return s+String.fromCharCode(v+63)};
+  for(const p of pts){const c=[Math.round(p[0]*1e5),Math.round(p[1]*1e5),Math.round(p[2]||0)];for(let k=0;k<3;k++){o+=e(c[k]-pr[k]);pr[k]=c[k]}}return o}
+async function incrustar(t){const r=routeOf(t);let src=null,largo=false;
+  if(r&&r.gx)src=MAPA+"#"+slugR(r);
+  else{const pts=MPI.ptsOf(t)||t.pts;if(!pts||pts.length<2){toast("Este track no tiene recorrido");return}
+    if(window.COMPARTIR&&COMPARTIR.corto&&window.LDCFB&&LDCFB.user()&&navigator.onLine){toast("Preparando el mapa…");const u=await COMPARTIR.corto(t);if(u)src=MAPA+u.slice(u.indexOf("#"))}
+    if(!src){let q=pts;if(q.every(x=>x[2]!=null)){if(window.COMPARTIR&&COMPARTIR.simple)q=COMPARTIR.simple(q,5);src=MAPA+"#t3="+encodeURIComponent(enc3(q))+"!"+encodeURIComponent(t.n.slice(0,80));largo=true}
+      else{toast(navigator.onLine?"Para incrustar este track entra con tu cuenta de Google":"Sin conexión: inténtalo cuando tengas cobertura");return}}}
+  const code=`<iframe src="${src}" width="100%" height="460" style="border:0;max-width:100%;display:block;margin:0 auto 1em;" loading="lazy" title="Mapa de ${esc(t.n).replace(/"/g,"")}"></iframe>`;
+  MPI.show(`<div class="sheet-head"><h2>🧩 Incrustar «${esc(t.n)}»</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
+    <p>Pega este código en tu entrada y aparecerá el mapa con el track, el perfil de alturas y los botones para seguirlo en la app y descargar el GPX.</p>
+    <textarea id="embc" readonly rows="5" style="width:100%;box-sizing:border-box;font:12px/1.35 ui-monospace,monospace;border:1px solid var(--edge);border-radius:10px;padding:8px;background:var(--paper);color:var(--ink)">${esc(code)}</textarea>
+    <div class="topacts"><button class="btn primary" data-embcp>📋 Copiar código</button><a class="btn ghost" href="${esc(src)}" target="_blank" rel="noopener">👁 Ver cómo queda</a></div>
+    <p class="note"><b>En Blogger:</b> abre la entrada, cambia a «Vista HTML» y pega el código donde quieras el mapa. En WordPress, con un bloque «HTML personalizado».${largo?" El código sale largo porque lleva el track dentro, pero funciona igual.":""}</p>
+    <div class="mpacts"><button class="mpb" data-mtback="${esc(t.id)}">← Volver</button></div>`);
+  sheet._mt=t.id}
 function borraFotos(k){const t=T().find(x=>String(x.id)===String(k));for(const w of (t&&t.w)||[])if(w.fo&&MPI.fotoDel)MPI.fotoDel(w.id)}
 
 /* en la ficha de una ruta del blog: «☆ Guardar en mis tracks» */
@@ -4070,7 +4095,7 @@ setTimeout(recibidos,700);
 if("launchQueue" in window)launchQueue.setConsumer(async p=>{if(!p.files||!p.files.length)return;const fs=[];for(const h of p.files){try{const f=await h.getFile();fs.push({n:f.name,t:await f.text()})}catch(e){}}
   for(const f of fs)MPI.importText(f.t,f.n,true)});
 
-window.COMPARTIR={track:compartir,enc,dec,simple,preview:t=>mostrar(t,"archivo")};
+window.COMPARTIR={track:compartir,enc,dec,simple,corto,preview:t=>mostrar(t,"archivo")};
 })();
 
 }catch(e){console.error("módulo compartir",e);(window.__ERRS=window.__ERRS||[]).push("compartir: "+(e&&e.message))}
@@ -6189,5 +6214,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="16/11 09:08 · 550696";window.LDC_BUILD="55069666ff";window.LDC_FUNC="36c6567940";(function(){const B="55069666ff";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="16/11 09:41 · bb6a29";window.LDC_BUILD="bb6a294799";window.LDC_FUNC="253f1e662d";(function(){const B="bb6a294799";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
