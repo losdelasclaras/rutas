@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mapa de la ruta · Los de las Claras</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+:root{--ink:#1f2a24;--muted:#5f6b62;--card:#fff;--edge:#d4d8cf;--mark:#c3262e;--paper:#eef0ea}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--card);color:var(--ink);font:14px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#w{display:flex;flex-direction:column;height:100%;border:1px solid var(--edge);border-radius:12px;overflow:hidden}
+header{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--edge)}
+header img{width:30px;height:30px;border-radius:7px;flex:none}
+header .tt{min-width:0;flex:1}
+header b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header span{color:var(--muted);font-size:12.5px}
+#map{flex:1;min-height:180px;background:var(--paper)}
+#pf{height:84px;border-top:1px solid var(--edge);position:relative;touch-action:none;cursor:crosshair}
+#pf svg{display:block;width:100%;height:100%}
+#pi{position:absolute;top:4px;left:8px;font-size:12px;color:var(--muted);pointer-events:none}
+footer{display:flex;gap:8px;padding:8px 10px;border-top:1px solid var(--edge);align-items:center}
+.b{flex:1;text-align:center;text-decoration:none;font-weight:700;border-radius:10px;padding:9px 6px;font-size:14px}
+.b1{background:var(--mark);color:#fff}
+.b2{border:1px solid var(--edge);color:var(--ink)}
+.leaflet-control-attribution{font-size:9px}
+.cap{position:absolute;z-index:500;inset:auto 0 8px 0;text-align:center;pointer-events:none}
+.cap span{background:rgba(31,42,36,.78);color:#fff;font-size:12px;padding:4px 10px;border-radius:20px;opacity:0;transition:opacity .25s}
+.cap span.on{opacity:1}
+</style></head><body>
+<div id="w">
+  <header><img src="icons/icon-192.png" alt="">
+    <div class="tt"><b id="t"></b><span id="s"></span></div></header>
+  <div id="map" style="position:relative"><div class="cap"><span id="cap">Usa dos dedos o Ctrl + rueda para mover el mapa</span></div></div>
+  <div id="pf"><div id="pi"></div><svg id="sv" preserveAspectRatio="none"></svg></div>
+  <footer>
+    <a class="b b1" id="app" target="_blank" rel="noopener">⛰️ Seguir en la app</a>
+    <a class="b b2" id="gpx" href="#">⬇ Descargar GPX</a>
+  </footer>
+</div>
+<script src="vendor/leaflet.js"></script>
+<script>
+(async()=>{
+const sl=decodeURIComponent((location.hash||location.search.replace(/^\?r=/,"#")).slice(1)).replace(/[^a-z0-9-]/g,"");
+let R;try{R=await (await fetch("mapa/"+sl+".json")).json()}catch(e){document.body.innerHTML='<p style="padding:20px">No encuentro esta ruta. <a href="https://losdelasclaras.github.io/rutas/" target="_blank">Abrir la app</a></p>';return}
+const APP="https://losdelasclaras.github.io/rutas/";
+const $=id=>document.getElementById(id);
+const nf=n=>n.toLocaleString("es-ES");
+$("t").textContent=R.t+(R.a?" ("+nf(R.a)+" m)":"");
+$("s").textContent=[R.km&&String(R.km).replace(".",",")+" km","+"+nf(R.up||R.de)+" m",R.tm,R.dif].filter(Boolean).join(" · ");
+$("app").href=APP+"#"+R.slug;
+const xe=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nom=(R.ti||R.t).replace(/\s+/g," ").trim();
+$("gpx").addEventListener("click",e=>{e.preventDefault();
+  const g='<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Los de las Claras" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>'+xe(nom)+'</name><link href="'+xe(R.u)+'"/></metadata>\n<trk><name>'+xe(nom)+'</name><trkseg>'+R.trk.map(q=>'<trkpt lat="'+q[0]+'" lon="'+q[1]+'"><ele>'+q[2]+'</ele></trkpt>').join("")+'</trkseg></trk>\n</gpx>\n';
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([g],{type:"application/gpx+xml"}));
+  a.download=nom.replace(/[\\/:*?"<>|]+/g," ").slice(0,80)+".gpx";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},60000)});
+
+const ll=R.trk.map(p=>[p[0],p[1]]);
+const map=L.map("map",{zoomControl:true,scrollWheelZoom:false,dragging:!L.Browser.mobile,tap:false,attributionControl:true});
+L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{subdomains:"abc",maxNativeZoom:17,maxZoom:18,
+  attribution:'© <a href="https://opentopomap.org" target="_blank">OpenTopoMap</a> · © <a href="https://www.openstreetmap.org/copyright" target="_blank">OSM</a> · <a href="'+APP+'" target="_blank">Los de las Claras</a>'}).addTo(map);
+L.polyline(ll,{color:"#fff",weight:7,opacity:.9}).addTo(map);
+const line=L.polyline(ll,{color:"#c3262e",weight:4,opacity:.95}).addTo(map);
+L.circleMarker(ll[0],{radius:7,color:"#fff",weight:2,fillColor:"#3d6b4f",fillOpacity:1}).bindTooltip("Salida: "+(R.sal||"").replace(" ↗","")).addTo(map);
+let cima=0;R.trk.forEach((p,i)=>{if(p[2]>R.trk[cima][2])cima=i});
+L.marker(ll[cima],{icon:L.divIcon({className:"",html:'<div style="font-size:20px;line-height:20px;text-shadow:0 0 3px #fff">▲</div>',iconSize:[20,20],iconAnchor:[10,14]})})
+  .bindTooltip(R.t+(R.a?" · "+nf(R.a)+" m":"")).addTo(map);
+map.fitBounds(line.getBounds(),{padding:[18,18]});
+const dot=L.circleMarker(ll[0],{radius:6,color:"#fff",weight:2,fillColor:"#1f2a24",fillOpacity:1});
+
+/* aviso de cómo mover el mapa (para no secuestrar el scroll del blog) */
+const cap=$("cap");let ct;const aviso=()=>{cap.classList.add("on");clearTimeout(ct);ct=setTimeout(()=>cap.classList.remove("on"),1400)};
+map.getContainer().addEventListener("wheel",e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();map.setZoomAround(map.mouseEventToContainerPoint(e),map.getZoom()+(e.deltaY<0?1:-1))}else aviso()},{passive:false});
+if(L.Browser.mobile){map.getContainer().addEventListener("touchstart",e=>{if(e.touches.length>1)map.dragging.enable();else{map.dragging.disable();aviso()}},{passive:true})}
+
+/* perfil */
+const rad=d=>d*Math.PI/180,hv=(a,b)=>{const x=Math.sin(rad(b[0]-a[0])/2)**2+Math.cos(rad(a[0]))*Math.cos(rad(b[0]))*Math.sin(rad(b[1]-a[1])/2)**2;return 12742*Math.asin(Math.sqrt(x))};
+const D=[0];for(let i=1;i<R.trk.length;i++)D.push(D[i-1]+hv(R.trk[i-1],R.trk[i]));
+const tot=D[D.length-1],E=R.trk.map(p=>p[2]),mn=Math.min(...E),mx=Math.max(...E);
+const W=1000,H=100,X=d=>d/tot*W,Y=e=>H-6-(e-mn)/(mx-mn||1)*(H-26);
+const path=R.trk.map((p,i)=>(i?"L":"M")+X(D[i]).toFixed(1)+","+Y(p[2]).toFixed(1)).join("");
+const sv=$("sv");sv.setAttribute("viewBox",`0 0 ${W} ${H}`);
+sv.innerHTML=`<path d="${path}L${W},${H}L0,${H}Z" fill="#c3262e" fill-opacity=".14"/><path d="${path}" fill="none" stroke="#c3262e" stroke-width="2" vector-effect="non-scaling-stroke"/><line id="cur" y1="0" y2="${H}" stroke="#1f2a24" stroke-width="1" vector-effect="non-scaling-stroke" visibility="hidden"/>`;
+const pi=$("pi"),base=nf(mn)+"–"+nf(mx)+" m · toca el perfil";pi.textContent=base;
+function en(cx){const r=sv.getBoundingClientRect(),d=Math.max(0,Math.min(1,(cx-r.left)/r.width))*tot;
+  let i=D.findIndex(v=>v>=d);if(i<0)i=D.length-1;
+  const c=$("cur");c.setAttribute("x1",X(D[i]));c.setAttribute("x2",X(D[i]));c.setAttribute("visibility","visible");
+  dot.setLatLng(ll[i]).addTo(map);pi.textContent="km "+D[i].toFixed(1).replace(".",",")+" · "+nf(E[i])+" m"}
+const pf=$("pf");
+pf.addEventListener("pointermove",e=>en(e.clientX));pf.addEventListener("pointerdown",e=>en(e.clientX));
+pf.addEventListener("pointerleave",()=>{$("cur").setAttribute("visibility","hidden");dot.remove();pi.textContent=base});
+})();
+</script>
+</body></html>
