@@ -58,13 +58,15 @@
   "drive_carpeta": "1dyxP3XSc0asM9y-EOjfPhm--ww6rTbrF",
   "capas": [
    "c",
+   "r",
    "t"
   ],
   "sin_lineas": true,
   "fotos_blog": true,
   "blog_web": "https://camudandolcamin.blogspot.com",
   "foto_sin_mapas": true,
-  "foto_desde": 3
+  "foto_desde": 3,
+  "zona": "Asturias"
  },
  {
   "id": "c4",

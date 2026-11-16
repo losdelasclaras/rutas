@@ -396,6 +396,51 @@ def _gpx_linea(b):
     if len(ll) > 1500: ll = ll[::len(ll) // 1500 + 1]
     return ll
 
+def _gpx_linea3(b):
+    # 16 nov 2026: como _gpx_linea, pero con la altura (si el GPX la trae): [lat, lon, ele]
+    ll = []
+    for m in re.finditer(r'<(?:trkpt|rtept)\b([^>]*?)(?:/>|>(.*?)</(?:trkpt|rtept)>)', b, re.S):
+        a = m.group(1); la = re.search(r'lat\s*=\s*["\']([-\d.]+)', a); lo = re.search(r'lon\s*=\s*["\']([-\d.]+)', a)
+        if not (la and lo): continue
+        e = re.search(r'<ele>\s*([-\d.]+)\s*</ele>', m.group(2) or '')
+        ll.append([round(float(la.group(1)), 5), round(float(lo.group(1)), 5)] + ([round(float(e.group(1)))] if e else []))
+    if len(ll) > 1500: ll = ll[::len(ll) // 1500 + 1]
+    return ll
+
+def rutas_drive(co, new):
+    """16 nov 2026: colaborador sin mapas de rutas (p. ej. Camudando'l camín): cada track de su carpeta de Drive pasa a ser
+    una RUTA suya (como las de Rutinas Varias): sale en Explorar › Rutas y como 🆕 NUEVA, con Seguir, GPX y perfil, y queda
+    enlazada a sus cumbres. Si el nombre del archivo es la dirección de una entrada de su blog (vale cortada por Blogger),
+    la ruta lleva el título, la fecha, la foto y el enlace de esa entrada; si no, el nombre del archivo."""
+    dd = new.get('d') or []
+    if not dd: new.pop('r', None); return
+    cf = APP + f'colab/titulos_{co["id"]}.json'
+    T = json.load(open(cf)) if os.path.exists(cf) else {}
+    T.update(new.get('bt') or {})
+    urls = set(T) | {p[4] for p in new.get('p', []) if len(p) > 4 and p[4] and re.match(r'https?://', p[4])}
+    def sl(x): x = unicodedata.normalize('NFD', x); x = ''.join(ch for ch in x if unicodedata.category(ch) != 'Mn').lower(); return re.sub(r'[^a-z0-9]+', '-', x).strip('-')
+    def us(u): return sl(re.sub(r'\.html?$', '', u.split('?')[0].split('#')[0].rstrip('/').split('/')[-1]))
+    rs = []
+    for x in dd:
+        fid, nom, ll = x[0], x[1], x[2]
+        fs = sl(nom); u = ''
+        cand = [v for v in urls if us(v) and (us(v) == fs or (len(us(v)) >= 15 and fs.startswith(us(v))) or (len(fs) >= 15 and us(v).startswith(fs)))]
+        if cand: u = max(cand, key=lambda v: len(us(v)))
+        ti = T.get(u) or re.sub(r'[-_]+', ' ', nom).strip().capitalize()
+        km = sum(math.dist((a[0], a[1] * math.cos(math.radians(a[0]))), (b[0], b[1] * math.cos(math.radians(b[0])))) * 111.2 for a, b in zip(ll, ll[1:]))
+        up = 0; E = [q[2] for q in ll if len(q) > 2]
+        if len(E) >= 0.8 * len(ll) and len(E) > 1:
+            sm = [sum(E[max(0, i - 2):i + 3]) / len(E[max(0, i - 2):i + 3]) for i in range(len(E))]; ref = sm[0]
+            for e in sm:
+                if e - ref >= 4: up += e - ref; ref = e
+                elif ref - e >= 4: ref = e
+        fo = next((p[5] for p in new.get('p', []) if len(p) > 5 and u and p[4] == u and p[5]), '')
+        fe = re.search(r'/(20\d\d)/(\d\d)/', u); fe = f'{fe.group(1)}-{fe.group(2)}' if fe else ''
+        tr = ll[::len(ll) // 600 + 1] if len(ll) > 600 else ll
+        if tr[-1] != ll[-1]: tr = tr + [ll[-1]]
+        rs.append([ti, co.get('zona', ''), '', f'{km:.1f}'.replace('.', ',') + ' km', f'{round(up / 10) * 10} m' if up else '', '', '', u, tr, fo, fe, 'drive:' + fid])
+    new['r'] = rs
+
 def alturas_colab(new, old):
     # altura de cada punto según el modelo del terreno (Open-Meteo), para ordenar sus cumbres por altura como las del grupo
     cache = {(q[1], q[2]): q[8] for q in old.get('p', []) if len(q) > 8 and q[8] is not None}
@@ -855,15 +900,27 @@ def colaboradores():
                 for fid, nombre in ent:
                     nombre = html.unescape(nombre).strip()
                     if not re.search(r'\.(gpx|kml)$', nombre, re.I): continue
-                    if fid in prev: dd.append(prev[fid]); continue
-                    b = get(f'https://drive.google.com/uc?export=download&id={fid}', True).decode('utf-8', 'replace')
+                    nom = re.sub(r'\.(gpx|kml)$', '', nombre, flags=re.I)
+                    if fid in prev and len(prev[fid]) > 3: dd.append([fid, nom] + prev[fid][2:]); continue   # 16 nov: [id, nombre, línea con altura, 1]
+                    try:
+                        b = get(f'https://drive.google.com/uc?export=download&id={fid}', True).decode('utf-8', 'replace')
+                    except Exception:
+                        if fid in prev: dd.append(prev[fid])
+                        continue
                     if nombre.lower().endswith('.kml'): b = kml2gpx(b, nombre[:-4]) or ''
-                    ll = _gpx_linea(b)
-                    if len(ll) >= 2: dd.append([fid, re.sub(r'\.(gpx|kml)$', '', nombre, flags=re.I), ll])
+                    ll = _gpx_linea3(b)
+                    if len(ll) >= 2: dd.append([fid, nom, ll, 1])
                 if ent or 'flip-list' in h or 'flip-entries' in h: new['d'] = dd
                 else: log(f'⚠ No he podido leer la carpeta de Drive del colaborador {co["id"]} (¿compartida con «Cualquier persona con el enlace»?).')
             except Exception as e:
                 log(f'⚠ Drive del colaborador {co["id"]}: {e}')
+        if co.get('drive_carpeta') and not co.get('mapas_rutas') and not co.get('wp_rutas'):
+            try:
+                rutas_drive(co, new)
+                for p in new.get('p', []):   # los enlaces cumbre → ruta se rehacen cada noche (el orden de Drive puede cambiar)
+                    if len(p) > 9: p[9] = None
+                enlazar_cumbres(co, new, 0.3)
+            except Exception as e: log(f'⚠ Rutas de Drive de {co["id"]}: {e}')
         fotos_colab(co['id'], new)
         blog_colab(co, new)
         if new.get('r'): new['r'] = json.loads(json.dumps(new['r'])); new['p'] = json.loads(json.dumps(new.get('p', [])))
