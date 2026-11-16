@@ -107,7 +107,11 @@ for(const c of CO){for(const[k]of KC(c))if(LAY[`co_${c.id}_${k}`]===undefined||n
   if(c.r&&c.r.length){G[c.id+"_r"]=L.layerGroup();G[c.id+"_t"]=L.layerGroup();
     c.r.forEach((r,i)=>{const k=icoR(r);const m=L.marker(r[8],{icon:L.divIcon({className:"cpt",html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:r[0]+" · "+c.n,riseOnHover:true,zIndexOffset:-60});
       m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(r[8][0],r[8][1]);return}abrirR(c,i)});
-      m.__n=r[0];m.__c=c.c;m.__g=c.id+"_r";m.__k=rKeyCo(c,r[0]);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+"_r"] ||= []).push(m)})}}
+      m.__n=r[0];m.__c=c.c;m.__g=c.id+"_r";m.__k=rKeyCo(c,r[0]);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+"_r"] ||= []).push(m)})}
+  // 16 nov 2026: tracks de su carpeta de Drive (p. ej. Camudando'l camín) → en su capa «Tracks»
+  if(c.dt&&c.dt.length){const gt=G[c.id+"_t"]||(G[c.id+"_t"]=L.layerGroup());if(!(c.r&&c.r.length))gt.__ok=1;
+    for(const[n,ll]of c.dt){if(!ll||ll.length<2)continue;gt.addLayer(L.polyline(ll,{color:"#fff",weight:5.5,opacity:.8,interactive:false,renderer:TRC}));
+      gt.addLayer(L.polyline(ll,{color:c.c,weight:3,opacity:.9,renderer:TRC}).bindTooltip(esc(n)+" · "+esc(c.n),{sticky:true}))}}}
 /* ---------- cumbres repetidas: un solo icono en el mapa (3 nov) ----------
    Si la misma cumbre la tienen el grupo y uno o varios colaboradores, en el mapa sale UN icono: el del grupo si su capa
    Cumbres está encendida; si no, el del primer colaborador encendido. Al tocarlo, la ficha dice «También en …» con los demás. */

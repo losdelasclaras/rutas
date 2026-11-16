@@ -57,10 +57,10 @@ for _c in (json.load(open(A+'colaboradores.json')) if os.path.exists(A+'colabora
     if _c.get('activo') is False: continue   # apartado: sus datos se guardan en la rama datos, pero no salen en la app
     if not os.path.exists(_f): continue
     _d=json.load(open(_f))
-    _CO.append({'id':_c['id'],'n':_c.get('nombre') or _d.get('t') or 'Colaborador','c':_c.get('color') or '#e8710a','p':_d.get('p',[]),'l':_d.get('l',[])+[[x[1],x[2]] for x in _d.get('d',[])],
+    _CO.append({'id':_c['id'],'n':_c.get('nombre') or _d.get('t') or 'Colaborador','c':_c.get('color') or '#e8710a','p':_d.get('p',[]),'l':_d.get('l',[]),'dt':[[x[1],x[2]] for x in _d.get('d',[])],
       'r':[r[:8]+[r[8][0]]+[r[9] if len(r)>9 else '']+[r[10] if len(r)>10 else ''] for r in _d.get('r',[])],'_rl':[r[8] for r in _d.get('r',[])],
       'bt':_d.get('bt',{}),
-      'k':_c.get('capas') or ((['c','l'] if _d.get('p') else [])+(['r','t'] if _d.get('r') else []))})
+      'k':(_c.get('capas') or ((['c','l'] if _d.get('p') else [])+(['r','t'] if _d.get('r') else [])))+(['t'] if _d.get('d') and 't' not in (_c.get('capas') or (['r','t'] if _d.get('r') else [])) else [])})   # 16 nov: los tracks de su carpeta de Drive van en su capa Tracks
 # sus fotos (bajadas por el robot) se publican en colab/
 os.makedirs(O+'colab',exist_ok=True)
 _cf={x[5][6:] for _c in _CO for x in _c['p'] if x[5].startswith('colab/')}|{r[9][6:] for _c in _CO for r in _c['r'] if len(r)>9 and str(r[9]).startswith('colab/')}

@@ -29,7 +29,7 @@
    "t"
   ],
   "blog_web": "https://www.rutinasvarias.com",
-    "mapa_cumbres": "1Ql5jJgLmaVC5DgoB-oHParKLMTTgHCI",
+  "mapa_cumbres": "1Ql5jJgLmaVC5DgoB-oHParKLMTTgHCI",
   "mapas_rutas": [
    "1dVGRXK6e7nLG0T8DTQIhZ4mRbVH13Lw",
    "1i3vyTpKRvj6LWLA5wmXFRu1XHTqoXLM",
@@ -55,9 +55,10 @@
   "nombre": "Camudando'l camín",
   "color": "#1e8e3e",
   "mapa_mid": "1TuXx7eM9r22Qq3XQBTz1ukwt2fNMoA0",
-  "drive_carpeta": "",
+  "drive_carpeta": "1dyxP3XSc0asM9y-EOjfPhm--ww6rTbrF",
   "capas": [
-   "c"
+   "c",
+   "t"
   ],
   "sin_lineas": true,
   "fotos_blog": true,
