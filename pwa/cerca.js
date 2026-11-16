@@ -48,11 +48,13 @@ window.renderList=function(){if(!NEAR)return RL.apply(this,arguments);if(window.
   const g=o!=="todas"&&o!=="grupo"?[]:R.filter(r=>r.u&&routeOk(r)&&(!s||norm((r.ti||"")+" "+r.p.map(i=>P[i].n).join(" ")+" "+r.r+" "+(r.sal||"")).includes(s))).map(r=>({r,d:km(NEAR,r)}));
   const c=o==="grupo"||!window.COLX||!COLX.near?[]:COLX.near(NEAR.lat,NEAR.lon).filter(x=>(o==="todas"||o==="co_"+x.r.co.id)&&(!s||x.r.txt.includes(s)));
   const all=g.concat(c);let L=all.filter(x=>x.d<=NEAR.rad);
-  // si salen menos de 3, se amplía solo a 30 km (y lo dice el aviso)
-  if(L.length<3&&NEAR.rad<30){const L2=all.filter(x=>x.d<=30);if(L2.length>L.length){NEAR.rad=30;NEAR.amp=1;L=L2}}
+  // 16 nov 2026: ya no se amplía sola (salían rutas a 25-30 km): si hay menos de 3, botón para ver hasta 30 km
+  const masL=(L.length<3&&NEAR.rad<30)?all.filter(x=>x.d<=30).length-L.length:0;
   L.sort((a,b)=>a.d-b.d);
-  const row=x=>{const dd=(x.d<10?x.d.toFixed(1).replace(".",","):x.d.toFixed(0))+" km";return x.r.cox?COLX.rrow(x.r,dd):rowHTML(x.r,dd)};
-  document.getElementById("list").innerHTML=banner()+(window.COLX?COLX.rchips():"")+`<p class="count">${L.length} ${L.length===1?"ruta":"rutas"}</p>`+(L.length?`<div class="rows">${L.map(row).join("")}</div>`:`<p class="empty">No hay rutas a menos de ${NEAR.rad} km con esa búsqueda y esos filtros.</p>`)+wkFin()};
+  const row=x=>{const dd="📍 a "+(x.d<10?x.d.toFixed(1).replace(".",","):x.d.toFixed(0))+" km";return x.r.cox?COLX.rrow(x.r,dd):rowHTML(x.r,dd)};
+  document.getElementById("list").innerHTML=banner()+(window.COLX?COLX.rchips():"")+`<p class="count">${L.length} ${L.length===1?"ruta":"rutas"}</p>`+(L.length?`<div class="rows">${L.map(row).join("")}</div>`:`<p class="empty">No hay rutas a menos de ${NEAR.rad} km con esa búsqueda y esos filtros.</p>`)+(masL>0?`<button class="btn ghost namp" data-namp>${L.length===0?"No hay ninguna":L.length===1?"Solo hay 1 ruta":"Solo hay "+L.length+" rutas"} a menos de ${NEAR.rad} km · <b>Ver hasta 30 km</b> (${masL} más)</button>`:"")+wkFin()};
+document.addEventListener("click",e=>{if(e.target.closest("[data-namp]")&&NEAR){NEAR.rad=30;NEAR.amp=1;renderList()}});
+document.head.insertAdjacentHTML("beforeend","<style>.namp{display:block;width:100%;margin:12px 0;white-space:normal;line-height:1.35}</style>");
 
 /* ---------- ⚙ Filtros: panel desde abajo en Rutas, Cumbres y Lugares ---------- */
 document.head.insertAdjacentHTML("beforeend",`<style>
