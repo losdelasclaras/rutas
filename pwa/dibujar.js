@@ -31,6 +31,7 @@ html:not(.pc) .dibonly{display:none!important}
 .dibpt.ini{background:#2e7d4f;border-color:#fff;width:18px!important;height:18px!important;margin:-9px 0 0 -9px!important}
 .dibpt.fin{background:#c3262e;border-color:#fff;width:18px!important;height:18px!important;margin:-9px 0 0 -9px!important}
 html.dibon #sheet{display:none!important}
+html.dibon #msearch{z-index:1300}   /* la lista del buscador, por encima del panel */
 </style>`);
 
 const R0=6371000,rad=Math.PI/180;
