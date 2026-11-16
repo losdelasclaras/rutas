@@ -95,6 +95,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .rtlbl{font-weight:800;font-size:12.5px;padding:1px 6px;border-radius:8px}.rtlbl.ok{color:#2e7d4f}
 .map-sinlbl .rtlbl{display:none}
 .map-sinlbl .rtmk{width:22px;height:22px;margin:-11px 0 0 -11px;border-width:2px;font-size:12px}.map-sinlbl .rtmk.pe{font-size:10px}
+.rttag{display:inline-block;white-space:nowrap;margin:2px 4px 0 0;border:1px solid #d4a017;background:color-mix(in srgb,#d4a017 14%,transparent);color:var(--ink);border-radius:12px;padding:0 7px;font:inherit;font-size:12px;line-height:1.6;font-weight:700;cursor:pointer;vertical-align:middle}
 .rtvacio{color:var(--muted);text-align:center;padding:16px 4px}
 </style>`);
 
@@ -146,7 +147,7 @@ function prog(R){let n=0;for(const it of R.items)if(hecho(R,it))n+=it.peso;retur
 async function cargaRetos(){if(CARGA)return;CARGA=true;
   try{const a=await fb(),fs=a.fs,s=await fs.getDocs(fs.collection(a.db,"retos"));const v=[];s.forEach(d=>v.push(Object.assign({id:d.id},d.data())));
     v.sort((x,y)=>(x.ord||0)-(y.ord||0)||String(x.n).localeCompare(String(y.n),"es"));
-    if(JSON.stringify(v)!==JSON.stringify(RETOS)){RETOS=v;store.set(RC,v);pinta()}}
+    if(JSON.stringify(v)!==JSON.stringify(RETOS)){RETOS=v;store.set(RC,v);pinta();TGI=null;try{renderCols()}catch(e){}}}
   catch(e){console.warn("retos",e)}finally{CARGA=false}}
 async function cargaPart(id,forzar){const c=PART[id];if(c&&!forzar&&Date.now()-c.t<120000)return c.l;
   try{const a=await fb(),fs=a.fs,s=await fs.getDocs(fs.query(fs.collection(a.db,"retosu"),fs.where("r","==",id)));const l=[];s.forEach(d=>l.push(d.data()));
@@ -425,6 +426,13 @@ function mapaOff(){if(RMLAY){RMLAY.remove();RMLAY=null}if(RMSAV){for(const k in 
   const ban=document.getElementById("rtban");if(ban)ban.hidden=true;const c=document.getElementById("map");if(c)c.classList.remove("map-sinlbl");if(window.refreshMarks)refreshMarks()}
 // al irse del mapa (otra pestaña), las capas vuelven a como estaban
 setTimeout(()=>{const sv=window.showView;if(typeof sv==="function")window.showView=showView=function(v){if(v!=="mapa"&&RMAP)mapaOff();return sv.apply(this,arguments)}},0);
+/* ---------- en Explorar › Cumbres y Lugares: etiqueta «🏆 Techos de Asturias» en las que están en algún reto (al tocar, abre el reto) ---------- */
+let TGI=null,TGS="";
+function indice(){const v=todos(),sig=v.map(R=>R.id+":"+R.items.length).join("|")+"|"+(window.COLX&&COLX.todo?COLX.todo().length:0);if(TGI&&sig===TGS)return TGI;
+  TGS=sig;TGI=new Map();for(const R of v){if(estado(R).k==="fi")continue;for(const it of R.items)for(const k of it.keys){const a=TGI.get(k)||[];if(!a.includes(R))a.push(R);TGI.set(k,a)}}return TGI}
+window.RETOTAG=function(p,kind){try{const k=(kind==="cumbres"?"c:":"l:")+norm(p.c)+(p.co?"@"+p.co.id:""),a=indice().get(k);if(!a||!a.length)return"";
+  return a.map(R=>`<button class="rttag" data-rtag="${esc(R.id)}">🏆 ${esc(R.n)}</button>`).join("")}catch(e){return""}};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-rtag]");if(!b)return;e.stopPropagation();e.preventDefault();abrir(b.dataset.rtag)},true);
 window.RETOS={abrir,pinta};
 // cada vez que se enseña la pestaña, se repinta y se miran retos nuevos
 new MutationObserver(()=>{if(!sec.hidden){pinta();cargaRetos();if(CUR)cargaPart(CUR)}}).observe(sec,{attributes:true,attributeFilter:["hidden"]});

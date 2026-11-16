@@ -63,7 +63,8 @@ window.TECHOS={
   cab(){const n=cuenta();if(!n)return"";const b=blog();
     return `<div class="techcab"><div class="tt">🏔 Llevas <b>${n.h}</b> de ${n.t} concejos</div><div class="prog"><i style="width:${(n.h/n.t*100).toFixed(1)}%"></i></div>
     <p>La cumbre más alta de cada concejo, el reto de <a href="${esc(b.u)}" target="_blank" rel="noopener">${esc(b.n)}</a>. Algunas son techo de dos concejos y cuentan por los dos.</p>${window.RETOS?`<button class="techbtn" data-retotecho style="margin:10px 0 0">🏆 Medallas y participantes<small>Ver el reto ›</small></button>`:""}</div>`},
-  boton(C){if(C.g==="techo")return"";const n=cuenta();if(!n)return"";
+  boton(C){return"";   // 16 nov 2026: fuera de Explorar (ahora es un reto, pestaña Retos)
+    if(C.g==="techo")return"";const n=cuenta();if(!n)return"";
     return `<button class="techbtn" data-techos>🏔 Techos de Asturias<small>${n.h} de ${n.t}</small></button>`},
   abrir(){const C=COL.cumbres;C.g="techo";C.z="cant";C._l_g="🏔 Techos de Asturias";
     if(typeof showView==="function")showView("cumbres");renderCol("cumbres");const v=document.getElementById("v-cumbres");if(v)v.scrollTop=0}};
@@ -78,12 +79,13 @@ function etiqueta(T){if(!T||sheet.hidden)return;const h=sheet.querySelector(".sh
 if(window.FICHAPT&&FICHAPT.co){const o=FICHAPT.co;FICHAPT.co=function(c,p,kd){const r=o.apply(this,arguments);
   try{const L=carga();if(L&&(!kd||kd==="cumbre")){const ms=COLX.cumCo?COLX.cumCo(p).ms.map(x=>x.p):[p];etiqueta(L.find(T=>T.it.pp===p||ms.includes(T.it.pp)))}}catch(e){}return r}}
 
+try{if(COL.cumbres.g==="techo")COL.cumbres.g="todas"}catch(e){}   // 16 nov: el filtro «Techos» ya no está en Explorar
 /* ----- Mis cosas › Marcadas: una línea con el reto ----- */
 const ml=document.getElementById("mlbox");
 function lineaMl(){if(!ml||ml.hidden||ml.querySelector(".techml"))return;const n=cuenta();if(!n)return;const bar=ml.querySelector(".mlbar");if(!bar)return;
   bar.insertAdjacentHTML("afterend",`<button class="techbtn techml" data-techml>🏔 Techos de Asturias<small>${n.h} de ${n.t} concejos ›</small></button>`)}
 if(ml){new MutationObserver(lineaMl).observe(ml,{childList:true});
-  ml.addEventListener("click",e=>{if(!e.target.closest("[data-techml]"))return;e.stopPropagation();TECHOS.abrir()},true)}
+  ml.addEventListener("click",e=>{if(!e.target.closest("[data-techml]"))return;e.stopPropagation();if(window.RETOS)RETOS.abrir("techos");else TECHOS.abrir()},true)}   // 16 nov: lleva al reto
 
 // cuando llegan los datos de los colaboradores (después de arrancar), se igualan las marcas y se repinta
 {let n=0;const t=setInterval(()=>{if(carga()){clearInterval(t);iguala();renderCol("cumbres");lineaMl()}else if(++n>120)clearInterval(t)},500)}

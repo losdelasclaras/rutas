@@ -169,10 +169,12 @@ rep('${r.ds?`<p class="desc">','${window.rMk?rMk(r):""}\n  ${r.ds?`<p class="des
 # franjas de altura: «Menos de 1.500» solo con altura conocida (las que no la tienen salen en «Todas»)
 rep('(g==="0"&&p.a<1500)','(g==="0"&&!!p.a&&p.a<1500)')
 # 9 nov 2026 · 🏔 Techos de Asturias (pwa/techos.js): la lista del filtro «techo» sale de Camudando'l camín, con botón y cabecera
-rep('["techo","Techos de concejo"]','["techo","🏔 Techos de Asturias"]')
+rep(',["techo","Techos de concejo"]]',']')   # 16 nov 2026: Techos de Asturias fuera de Explorar (ahora es un reto: pestaña Retos)
 rep('const list=C.items.filter(p=>(!window.COLX','let list=C.items.filter(p=>(!window.COLX')
 rep('const HTML=`${window.cercaBar?cercaBar(kind,C):""}','if(kind==="cumbres"&&C.g==="techo"&&window.TECHOS){const tl=TECHOS.lista(C.items,C);if(tl)list=tl}\n  const HTML=`${window.cercaBar?cercaBar(kind,C):""}${kind==="cumbres"&&window.TECHOS?TECHOS.boton(C):""}')
 rep('<div class="rows">${list.length?','<div class="rows">${kind==="cumbres"&&C.g==="techo"&&window.TECHOS?TECHOS.cab():""}${list.length?')
+# 16 nov 2026 · etiqueta «🏆 <reto>» en las cumbres y lugares que están en algún reto (pwa/retos.js)
+rep('${window.COLX?COLX.src(p):""}','${window.COLX?COLX.src(p):""}${window.RETOTAG?RETOTAG(p,kind):""}')
 # leyenda: sin relieve ni pueblos (ya vienen en el mapa topográfico)
 t=re.sub(r'\s*<button class="lay" data-lay="relief".*?</button>','',t,count=1,flags=re.S)
 t=re.sub(r'\s*<button class="lay" data-lay="towns".*?</button>','',t,count=1,flags=re.S)
