@@ -888,7 +888,7 @@ const PEAKS=uniq(P.map((p,i)=>({...p,i})).filter(p=>p.t==="cumbre").sort((a,b)=>
 const SPOTS=uniq(P.map((p,i)=>({...p,i})).filter(p=>p.t!=="cumbre"&&!p.x&&!/^(inicio|subida|p\.?r\.?\s)|\sdesde\s/i.test(p.c)),p=>norm(p.c)).map(p=>({...p,cat:catOf(p.c)})).sort((a,b)=>a.c.localeCompare(b.c,"es"));
 const COL={cumbres:{all:PEAKS,pre:"c:",done:"Subida",want:"Quiero subir",f:"todas",g:"todas",z:"cant",el:"col-cumbres"},
            lugares:{all:SPOTS,pre:"l:",done:"He estado",want:"Quiero ir",f:"todas",g:"todas",z:"cant",el:"col-lugares"}};
-const BANDS=[["todas","Todas"],["2000","+2.000 m"],["1500","1.500–2.000"],["0","Menos de 1.500"],["techo","🏔 Techos de Asturias"]];
+const BANDS=[["todas","Todas"],["2000","+2.000 m"],["1500","1.500–2.000"],["0","Menos de 1.500"]];
 function bandOk(p,g){return g==="todas"||(g==="3000"&&p.a>=3000)||(g==="2000"&&p.a>=2000)||(g==="1500"&&p.a>=1500&&p.a<2000)||(g==="0"&&!!p.a&&p.a<1500)||(g==="techo"&&p.techo)}
 function renderCol(kind){const C=COL[kind];
   const zc=Object.keys(ZONES).map(z=>[z,C.all.filter(p=>zoneOf(p.r)===z).length]);
@@ -906,7 +906,7 @@ function renderCol(kind){const C=COL[kind];
   <div class="chips" data-k="${kind}" data-grp="f">${[["todas","Todas"],["hecha",C.done],["quiero",C.want],["nada","Sin marcar"]].map(([v,l])=>`<button class="chip" data-v="${v}" aria-pressed="${C.f===v}">${l}</button>`).join("")}</div>
   ${window.COLX?COLX.chips(kind,C):""}<div class="chips" data-k="${kind}" data-grp="g">${groups.map(([v,l])=>`<button class="chip" data-v="${v}" aria-pressed="${C.g===v}">${l}</button>`).join("")}</div>${window.fpClose?fpClose(kind,C,list.length):""}
   <div class="rows">${kind==="cumbres"&&C.g==="techo"&&window.TECHOS?TECHOS.cab():""}${list.length?list.map(p=>{const s=st(p);const rsx=p.co?[]:(P[p.i].rs||[]).filter(x=>R[x].u),ri=rsx[0];
-    return `<div class="row crow${s?" is-"+s:""}${window.COLX?COLX.cls(p):""}" data-ci="${p.co?p.ci:""}" data-pi="${p.co?"":p.i}">${p.co?COLX.ico(p,kind):ICO(kind==="cumbres"?"cumbre":p.cat)}<div class="t"><b>${esc(p.c)}</b><span>${C.near?`<b class="dkm">${p._d<10?p._d.toFixed(1).replace(".",","):p._d.toFixed(0)} km</b> · `:""}${window.COLX?COLX.src(p):""}${kind==="cumbres"?esc(p.r)+(p.techo?" · Techo de "+esc(p.techo):""):esc(((window.COLX?COLX.cats():CATS).find(c=>c[0]===p.cat)||[,"Otros"])[1])+" · "+esc(p.r)}</span></div>
+    return `<div class="row crow${s?" is-"+s:""}${window.COLX?COLX.cls(p):""}" data-ci="${p.co?p.ci:""}" data-pi="${p.co?"":p.i}">${p.co?COLX.ico(p,kind):ICO(kind==="cumbres"?"cumbre":p.cat)}<div class="t"><b>${esc(p.c)}</b><span>${C.near?`<b class="dkm">${p._d<10?p._d.toFixed(1).replace(".",","):p._d.toFixed(0)} km</b> · `:""}${window.COLX?COLX.src(p):""}${window.RETOTAG?RETOTAG(p,kind):""}${kind==="cumbres"?esc(p.r)+(p.techo?" · Techo de "+esc(p.techo):""):esc(((window.COLX?COLX.cats():CATS).find(c=>c[0]===p.cat)||[,"Otros"])[1])+" · "+esc(p.r)}</span></div>
     ${p.a?`<span class="alt">${fmtA(p.a)}</span>`:""}
     <span class="mk" data-k="${kind}" data-key="${esc(key(p))}"><button data-m="hecha" aria-pressed="${s==="hecha"}" title="${C.done}">✓ <span>${C.done}</span></button><button data-m="quiero" aria-pressed="${s==="quiero"}" title="${C.want}">★ <span>${C.want}</span></button>${p.co?`<button data-cov="${p.ci}" title="Ver">${p.pp&&p.pp[9]&&p.pp[9].length?(p.pp[9].length>1?p.pp[9].length+" rutas":"Ruta"):"Ver"}</button>`:""}${ri!=null?`<button data-go="${ri}" data-pt="${p.i}" data-n="${rsx.length}" title="Ver la ruta">${rsx.length>1?rsx.length+" rutas":"Ruta"}</button>`:""}</span></div>`}).join(""):`<p class="empty">No hay ${kind} con ese filtro.</p>`}</div>`;
   const cut=HTML.indexOf('<div class="rows">');document.getElementById("colh-"+kind).innerHTML=HTML.slice(0,cut);document.getElementById(C.el).innerHTML=HTML.slice(cut)}
@@ -5270,7 +5270,8 @@ window.TECHOS={
   cab(){const n=cuenta();if(!n)return"";const b=blog();
     return `<div class="techcab"><div class="tt">🏔 Llevas <b>${n.h}</b> de ${n.t} concejos</div><div class="prog"><i style="width:${(n.h/n.t*100).toFixed(1)}%"></i></div>
     <p>La cumbre más alta de cada concejo, el reto de <a href="${esc(b.u)}" target="_blank" rel="noopener">${esc(b.n)}</a>. Algunas son techo de dos concejos y cuentan por los dos.</p>${window.RETOS?`<button class="techbtn" data-retotecho style="margin:10px 0 0">🏆 Medallas y participantes<small>Ver el reto ›</small></button>`:""}</div>`},
-  boton(C){if(C.g==="techo")return"";const n=cuenta();if(!n)return"";
+  boton(C){return"";   // 16 nov 2026: fuera de Explorar (ahora es un reto, pestaña Retos)
+    if(C.g==="techo")return"";const n=cuenta();if(!n)return"";
     return `<button class="techbtn" data-techos>🏔 Techos de Asturias<small>${n.h} de ${n.t}</small></button>`},
   abrir(){const C=COL.cumbres;C.g="techo";C.z="cant";C._l_g="🏔 Techos de Asturias";
     if(typeof showView==="function")showView("cumbres");renderCol("cumbres");const v=document.getElementById("v-cumbres");if(v)v.scrollTop=0}};
@@ -5285,12 +5286,13 @@ function etiqueta(T){if(!T||sheet.hidden)return;const h=sheet.querySelector(".sh
 if(window.FICHAPT&&FICHAPT.co){const o=FICHAPT.co;FICHAPT.co=function(c,p,kd){const r=o.apply(this,arguments);
   try{const L=carga();if(L&&(!kd||kd==="cumbre")){const ms=COLX.cumCo?COLX.cumCo(p).ms.map(x=>x.p):[p];etiqueta(L.find(T=>T.it.pp===p||ms.includes(T.it.pp)))}}catch(e){}return r}}
 
+try{if(COL.cumbres.g==="techo")COL.cumbres.g="todas"}catch(e){}   // 16 nov: el filtro «Techos» ya no está en Explorar
 /* ----- Mis cosas › Marcadas: una línea con el reto ----- */
 const ml=document.getElementById("mlbox");
 function lineaMl(){if(!ml||ml.hidden||ml.querySelector(".techml"))return;const n=cuenta();if(!n)return;const bar=ml.querySelector(".mlbar");if(!bar)return;
   bar.insertAdjacentHTML("afterend",`<button class="techbtn techml" data-techml>🏔 Techos de Asturias<small>${n.h} de ${n.t} concejos ›</small></button>`)}
 if(ml){new MutationObserver(lineaMl).observe(ml,{childList:true});
-  ml.addEventListener("click",e=>{if(!e.target.closest("[data-techml]"))return;e.stopPropagation();TECHOS.abrir()},true)}
+  ml.addEventListener("click",e=>{if(!e.target.closest("[data-techml]"))return;e.stopPropagation();if(window.RETOS)RETOS.abrir("techos");else TECHOS.abrir()},true)}   // 16 nov: lleva al reto
 
 // cuando llegan los datos de los colaboradores (después de arrancar), se igualan las marcas y se repinta
 {let n=0;const t=setInterval(()=>{if(carga()){clearInterval(t);iguala();renderCol("cumbres");lineaMl()}else if(++n>120)clearInterval(t)},500)}
@@ -5395,6 +5397,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .rtlbl{font-weight:800;font-size:12.5px;padding:1px 6px;border-radius:8px}.rtlbl.ok{color:#2e7d4f}
 .map-sinlbl .rtlbl{display:none}
 .map-sinlbl .rtmk{width:22px;height:22px;margin:-11px 0 0 -11px;border-width:2px;font-size:12px}.map-sinlbl .rtmk.pe{font-size:10px}
+.rttag{display:inline-block;white-space:nowrap;margin:2px 4px 0 0;border:1px solid #d4a017;background:color-mix(in srgb,#d4a017 14%,transparent);color:var(--ink);border-radius:12px;padding:0 7px;font:inherit;font-size:12px;line-height:1.6;font-weight:700;cursor:pointer;vertical-align:middle}
 .rtvacio{color:var(--muted);text-align:center;padding:16px 4px}
 </style>`);
 
@@ -5446,7 +5449,7 @@ function prog(R){let n=0;for(const it of R.items)if(hecho(R,it))n+=it.peso;retur
 async function cargaRetos(){if(CARGA)return;CARGA=true;
   try{const a=await fb(),fs=a.fs,s=await fs.getDocs(fs.collection(a.db,"retos"));const v=[];s.forEach(d=>v.push(Object.assign({id:d.id},d.data())));
     v.sort((x,y)=>(x.ord||0)-(y.ord||0)||String(x.n).localeCompare(String(y.n),"es"));
-    if(JSON.stringify(v)!==JSON.stringify(RETOS)){RETOS=v;store.set(RC,v);pinta()}}
+    if(JSON.stringify(v)!==JSON.stringify(RETOS)){RETOS=v;store.set(RC,v);pinta();TGI=null;try{renderCols()}catch(e){}}}
   catch(e){console.warn("retos",e)}finally{CARGA=false}}
 async function cargaPart(id,forzar){const c=PART[id];if(c&&!forzar&&Date.now()-c.t<120000)return c.l;
   try{const a=await fb(),fs=a.fs,s=await fs.getDocs(fs.query(fs.collection(a.db,"retosu"),fs.where("r","==",id)));const l=[];s.forEach(d=>l.push(d.data()));
@@ -5725,6 +5728,13 @@ function mapaOff(){if(RMLAY){RMLAY.remove();RMLAY=null}if(RMSAV){for(const k in 
   const ban=document.getElementById("rtban");if(ban)ban.hidden=true;const c=document.getElementById("map");if(c)c.classList.remove("map-sinlbl");if(window.refreshMarks)refreshMarks()}
 // al irse del mapa (otra pestaña), las capas vuelven a como estaban
 setTimeout(()=>{const sv=window.showView;if(typeof sv==="function")window.showView=showView=function(v){if(v!=="mapa"&&RMAP)mapaOff();return sv.apply(this,arguments)}},0);
+/* ---------- en Explorar › Cumbres y Lugares: etiqueta «🏆 Techos de Asturias» en las que están en algún reto (al tocar, abre el reto) ---------- */
+let TGI=null,TGS="";
+function indice(){const v=todos(),sig=v.map(R=>R.id+":"+R.items.length).join("|")+"|"+(window.COLX&&COLX.todo?COLX.todo().length:0);if(TGI&&sig===TGS)return TGI;
+  TGS=sig;TGI=new Map();for(const R of v){if(estado(R).k==="fi")continue;for(const it of R.items)for(const k of it.keys){const a=TGI.get(k)||[];if(!a.includes(R))a.push(R);TGI.set(k,a)}}return TGI}
+window.RETOTAG=function(p,kind){try{const k=(kind==="cumbres"?"c:":"l:")+norm(p.c)+(p.co?"@"+p.co.id:""),a=indice().get(k);if(!a||!a.length)return"";
+  return a.map(R=>`<button class="rttag" data-rtag="${esc(R.id)}">🏆 ${esc(R.n)}</button>`).join("")}catch(e){return""}};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-rtag]");if(!b)return;e.stopPropagation();e.preventDefault();abrir(b.dataset.rtag)},true);
 window.RETOS={abrir,pinta};
 // cada vez que se enseña la pestaña, se repinta y se miran retos nuevos
 new MutationObserver(()=>{if(!sec.hidden){pinta();cargaRetos();if(CUR)cargaPart(CUR)}}).observe(sec,{attributes:true,attributeFilter:["hidden"]});
@@ -6173,5 +6183,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="16/11 08:12 · 7439a4";window.LDC_BUILD="7439a403b7";window.LDC_FUNC="6b017d16d8";(function(){const B="7439a403b7";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="16/11 08:51 · 6fd91d";window.LDC_BUILD="6fd91dd518";window.LDC_FUNC="ec7b4d3dab";(function(){const B="6fd91dd518";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
