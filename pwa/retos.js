@@ -273,9 +273,11 @@ function marca(R,it){const st=estado(R);if(R.tipo==="fechas"&&!st.on){toast(st.t
 let RTMK=null;
 function marcaNueva(it){try{if(RTMK)map.removeLayer(RTMK);RTMK=L.marker([it.lat,it.lon],{zIndexOffset:2000,icon:L.divIcon({className:"",iconSize:[34,34],iconAnchor:[17,17],html:`<div style="width:34px;height:34px;border-radius:50%;background:#d4a017;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font-size:17px">🏆</div>`})}).addTo(map).bindPopup(`<b>${esc(it.n)}</b>${it.a?"<br>"+esc(it.a)+" m":""}<br><a href="https://www.google.com/maps/dir/?api=1&destination=${it.lat},${it.lon}" target="_blank" rel="noopener">🚗 Cómo llegar</a>`).openPopup()}catch(e){}}
 function verMapa(it){cierraDlg();if(typeof showView==="function")showView("mapa");
-  setTimeout(()=>{try{if(it.nv){flyTo(it.lat,it.lon,14);setTimeout(()=>marcaNueva(it),700);return}if(it.pi>=0){pickRoute(it.pi);flyTo(it.lat,it.lon,13);return}
+  // 17 nov 2026: siempre se acerca a la cumbre (zoom 13) y la deja parpadeando (RESALTA), con la ficha abierta
+  const zoom=()=>{setTimeout(()=>{try{flyTo(it.lat,it.lon,32);if(window.RESALTA)RESALTA.pon(it.lat,it.lon,it.n,true)}catch(e){}},450)};
+  setTimeout(()=>{try{if(it.nv){flyTo(it.lat,it.lon,32);setTimeout(()=>marcaNueva(it),700);return}if(it.pi>=0){pickRoute(it.pi);zoom();return}
     let ci=it.ci;if((ci==null||ci<0)&&window.COLX&&COLX.findPt)ci=COLX.findPt(it.n,it.lat,it.lon);
-    if(ci!=null&&ci>=0&&window.COLX){COLX.open(ci);return}flyTo(it.lat,it.lon,14)}catch(e){flyTo(it.lat,it.lon,14)}},200)}
+    if(ci!=null&&ci>=0&&window.COLX){COLX.open(ci);zoom();return}zoom()}catch(e){zoom()}},200)}
 
 /* ---------- apuntarse ---------- */
 let QUIERE=null;
