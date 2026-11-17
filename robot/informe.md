@@ -1,4 +1,4 @@
-# Informe del robot · 17/11/2026 12:09
+# Informe del robot · 17/11/2026 12:21
 
 **Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 0 nuevas, 1 cambiadas, 0 quitadas; colaborador Camudando'l camín
 
@@ -13,7 +13,7 @@
 - 📷 «REFUGIO COLLADO JERMOSO DESDE PANDETRAVE»: foto recuperada
 - Blog: sin entradas nuevas.
 - 🗺️ Mapa: 681 puntos (0 nuevos o movidos, 0 quitados).
-- 📷 Foto cambiada en tu mapa: «Ermita de San Froilán»
+- 📷 Foto cambiada en tu mapa: «Pico los Asturianos (2.274 m.)»
 - Drive: sin tracks nuevos.
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 432 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
@@ -24,13 +24,12 @@
 -    (quitados 78 puntos de publicidad: capas o nombres que no queremos)
 - ⛰ Camudando'l camín: 5 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ⚠ No he podido leer el índice del blog de Camudando'l camín (https://camudandolcamin.blogspot.com).
-- 📷 Fotos de rutas de Camudando'l camín (de su blog): 0 nuevas, 1 en total, 1 sin foto
-- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (2 de 3 con fecha).
+- 📷 Fotos de rutas de Camudando'l camín (de su blog): 1 nuevas, 2 en total
 - 🤝 Colaborador «Camudando'l camín»: 151 puntos, 3 tracks.
--    (40 peticiones a su web en 2.0 min)
+-    (40 peticiones a su web en 1.9 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 192 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: <urlopen error [Errno 101] Network is unreachable>; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 18 colocadas en el pico de OpenStreetMap; 1 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 189 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
