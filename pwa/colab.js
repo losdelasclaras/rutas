@@ -124,7 +124,9 @@ const CUMM=[];for(const c of CO)for(const m of (MKG[c.id+"_c"]||[]))CUMM.push(m)
  const igual=(a,b)=>{const x=a.getLatLng(),y=b.getLatLng(),d=Math.hypot(x.lat-y.lat,(x.lng-y.lng)*.73)*111;
    if(distintas(a.__n,b.__n))return false;
    if(d<.15)return true;if(norm(a.__n)===norm(b.__n)&&d<3)return true;if(d<.35){const pa=pal(a.__n);return[...pal(b.__n)].some(w=>pa.has(w))}return false};
- CUMM.forEach((m,i)=>{for(let j=0;j<i;j++){const n=CUMM[j];if(n.__co!==m.__co&&igual(m,n)){m.__sup=n.__sup||n;break}}})}
+ // 17 nov 2026: también la misma cumbre en dos capas del mismo blog (Camudando: Techos y Montes Cimeros) → un icono
+ const mismaCo=(a,b)=>{const x=a.getLatLng(),y=b.getLatLng();return norm(a.__n)===norm(b.__n)&&Math.hypot(x.lat-y.lat,(x.lng-y.lng)*.73)*111<.3};
+ CUMM.forEach((m,i)=>{for(let j=0;j<i;j++){const n=CUMM[j];if(n.__co!==m.__co?igual(m,n):mismaCo(m,n)){m.__sup=n.__sup||n;break}}})}
 const grpDe=m=>{if(m.__grp===undefined){const it=window.COLX&&COLX.byP&&COLX.byP(m.__p);if(!it)return null;m.__grp=it.par||null}return m.__grp};
 const tapado=m=>{if(!m.__cum)return false;const r=m.__sup;
   if(LAY.peaks&&!LAY.solo&&(grpDe(m)||(r&&grpDe(r))))return true;     // ya la enseña el grupo
@@ -283,9 +285,12 @@ for(const c of CO)for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
   ALL.push(it);lista.push(it)}
 for(const c of CO)(c.r||[]).forEach((r,i)=>{ALL.push({c:r[0],r:r[1],lat:r[8][0],lon:r[8][1],co:c,ci:ALL.length,rr:i,k:icoR(r),a:null})});
 // 12 nov 2026: en Explorar, UNA fila por cumbre o lugar aunque esté en varios blogs (la del grupo si la tenéis; si no, la del primer colaborador)
-{const cos=ALL.filter(x=>x.co&&x.pp&&!x.par);
+// 17 nov 2026: la misma cumbre o lugar en dos capas del MISMO blog (Camudando: Techos y Montes Cimeros) → una sola fila (la primera)
+{const by={};for(const x of ALL){if(!x.co||!x.pp)continue;const k=x.co.id+"|"+x.k+"|"+nk(x.c);const L=by[k]||(by[k]=[]);
+   const g=L.find(y=>kmd(y,x)<.3);if(g){x.dup=g;x.mismo=1;if(!g.a&&x.a)g.a=x.a;if(!g.par&&x.par)g.par=x.par}else L.push(x)}}
+{const cos=ALL.filter(x=>x.co&&x.pp&&!x.par&&!x.mismo);
  for(let i=0;i<cos.length;i++){const it=cos[i],cum=it.k==="cumbre",sw=sig(it.c);
-   for(let j=0;j<i;j++){const g=cos[j];if(g.dup||g.co===it.co||(g.k==="cumbre")!==cum||distintas(g.c,it.c))continue;const d=kmd(g,it);
+   for(let j=0;j<i;j++){const g=cos[j];if(g.dup||(g.k==="cumbre")!==cum||distintas(g.c,it.c))continue;const d=kmd(g,it);if(g.co===it.co)continue;
      if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))||(cum&&d<.15)){it.dup=g;(g.mates=g.mates||[]).push(it);g.both=g.both||it.co.n;if(!g.a&&it.a)g.a=it.a;break}}}}
 const duenos=p=>{if(p.co){const v=[p.co];for(const m of p.mates||[])if(!v.includes(m.co))v.push(m.co);return v}
   const v=[{n:"Los de las Claras",c:"#c3262e",id:"grupo"}];for(const m of PAR[p.i]||[])if(!v.some(x=>x.id===m.co.id))v.push(m.co);return v};
@@ -296,7 +301,7 @@ window.COLX={
   cats:()=>CATS.concat(EXTRA),
   ok(p,C){const o=C.o||"todas";
     if(o==="grupo")return !p.co;
-    if(o.startsWith("co_")){const id=o.slice(3);if(p.co)return p.co.id===id&&!p.par;return (PAR[p.i]||[]).some(m=>m.co.id===id)}
+    if(o.startsWith("co_")){const id=o.slice(3);if(p.co)return p.co.id===id&&!p.par&&!p.mismo;return (PAR[p.i]||[]).some(m=>m.co.id===id)}
     if(p.par||p.dup)return false;   // ya sale en la fila de la otra
     return o==="todas"||(o==="dos"&&duenos(p).length>1)},
   oculto:p=>!!(p.par||p.dup),
