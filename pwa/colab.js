@@ -62,7 +62,7 @@ const icoR=r=>/raqueta|nieve|invern/i.test(r[2]+" "+r[0])?"invernal":"senda";
 const coKey=(c,n,k)=>(k==="cumbre"?"c:":"l:")+norm(n)+"@"+c.id;
 const altCo=(n,d)=>{let m=/\(?\s*(\d[\d.]{2,4})\s*m(?:ts|etros)?\s*\)?/i.exec(n||"");if(m){const v=+m[1].replace(/\./g,"");if(v>=300&&v<=4900)return v}
   for(const l of limpia(d).split("\n")){if(/desnivel|distancia|dificultad|km/i.test(l))continue;
-    m=/\(\s*(\d[\d.]{2,4})\s*m(?:ts|etros)?\s*\)/i.exec(l)||/(?:altitud|altura|cota)\D{0,15}(\d[\d.]{2,4})\s*m/i.exec(l);
+    m=/\(\s*(\d[\d.]{2,4})\s*m(?:ts|etros)?\s*\)/i.exec(l)||/(?:altitud|altit[uú]|altura|altor|cota)\D{0,15}(\d[\d.]{2,4})\s*m/i.exec(l);
     if(m){const v=+m[1].replace(/\./g,"");if(v>=300&&v<=4900)return v}}return null};
 const cap1=s=>s?s[0].toUpperCase()+s.slice(1).toLowerCase():s;
 // como en las cumbres del grupo: si la cumbre está en una sola ruta, se abre directamente la ficha de esa ruta (con la marca de la cumbre)
