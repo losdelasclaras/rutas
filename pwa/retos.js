@@ -124,6 +124,16 @@ function deTecho(){if(!window.TECHOS||!TECHOS.L)return null;const L=TECHOS.L();i
   const tot=Math.max(78,items.reduce((s,x)=>s+x.peso,0));
   return{id:"techos",n:"Techos de Asturias",e:"🏔",tipo:"perm",fijo:true,u:"concejos",tot,items,
     d:`La cumbre más alta de cada uno de los 78 concejos de Asturias. Algunas son techo de dos concejos y cuentan por los dos.`,org:b.n,orgu:b.u}}
+// 17 nov 2026: reto fijo «Montes Cimeros de Asturias» = la capa «Montes Cimeros» del mapa de Camudando'l camín (se pone al día sola con el robot).
+//  En el orden de su mapa (es su lista numerada); nombres como los pone él. Marcar una aquí la marca en toda la app (y en Techos, si es la misma cumbre).
+function deCimeros(){if(!window.COLX||!COLX.todo)return null;const L=COLX.todo().filter(it=>it.pp&&it.co&&it.co.id==="c3"&&it.pp[7]==="Montes Cimeros"&&it.rr==null);if(!L.length)return null;
+  const items=L.map((it,i)=>{let g=it.par&&!it.par.co?it.par:null,ms=[];
+    if(COLX.cumCo)try{const x=COLX.cumCo(it.pp);ms=x.ms||[];if(!g&&x.gi!=null)g=PEAKS.find(p=>!p.co&&p.i===x.gi)||null}catch(e){}
+    const K=new Set(["c:"+norm(it.c)+"@c3"]);if(g)K.add("c:"+norm(g.c));for(const{c,p}of ms)if(COLX.coKey)K.add(COLX.coKey(c,p[0]));
+    return{id:slug(it.c)+"-"+(i+1),n:it.c,sub:"Nº "+(i+1)+" de la lista",peso:1,lat:it.lat,lon:it.lon,a:(COLX.alt&&COLX.alt(it.pp))||(g&&g.a)||null,keys:[...K],pi:g?g.i:-1,ci:it.ci}});
+  const c=L[0].co;
+  return{id:"cimeros",n:"Montes Cimeros de Asturias",e:"⛰",tipo:"perm",fijo:true,u:"cumbres",tot:items.length,items,
+    d:`Los ${items.length} montes cimeros de Asturias, según la lista de ${c.n}.`,org:c.n,orgu:c.bw||"https://camudandolcamin.blogspot.com"}}
 function resolver(x){const it={id:x.id,n:x.n,sub:x.sub||"",peso:1,lat:x.lat,lon:x.lon,a:x.a||null,keys:[x.k],pi:-1,ci:-1,nv:!!x.nv};
   if(x.nv)return it;
   if(!x.co){it.pi=P.findIndex(p=>norm(p.c)===norm(x.n)&&Math.abs(p.lat-x.lat)<.02&&Math.abs(p.lon-x.lon)<.02);
@@ -132,7 +142,7 @@ function resolver(x){const it={id:x.id,n:x.n,sub:x.sub||"",peso:1,lat:x.lat,lon:
 function deFire(r){const items=(r.it||[]).map(resolver);
   return{id:r.id,n:r.n||"Reto",e:r.e||"🏆",d:r.d||"",org:r.org||"",tipo:r.ini||r.fin?"fechas":"perm",ini:r.ini||"",fin:r.fin||"",prem:r.prem||"",activo:r.activo!==false,
     u:(r.it||[]).some(x=>x.t==="l")?"sitios":"cumbres",tot:items.length,items,raw:r}}
-function todos(){const v=[];const t=deTecho();if(t)v.push(t);for(const r of RETOS){if(r.activo===false&&!esAdm())continue;v.push(deFire(r))}return v}
+function todos(){const v=[];const t=deTecho();if(t)v.push(t);const mc=deCimeros();if(mc)v.push(mc);for(const r of RETOS){if(r.activo===false&&!esAdm())continue;v.push(deFire(r))}return v}
 const reto=id=>todos().find(r=>r.id===id);
 function estado(R){if(R.tipo!=="fechas")return{k:"pe",t:"Permanente",on:true};const h=new Date().toISOString().slice(0,10);
   if(R.ini&&h<R.ini)return{k:"pr",t:"Empieza el "+fecha(R.ini),on:false};
