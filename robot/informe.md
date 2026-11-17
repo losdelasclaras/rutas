@@ -1,6 +1,6 @@
-# Informe del robot · 17/11/2026 14:41
+# Informe del robot · 17/11/2026 14:59
 
-**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 0 nuevas, 1 cambiadas, 0 quitadas; colaborador Rutinas Varias
+**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín
 
 - 🔎 «Bosque de Purupintu desde Orle»: sin dificultad. Texto del cuadro: « circular desde Orlé (Caso) por el corazón de Redes : la foz del ríu Secu, las majadas de Melordaña y Valloseru , los collados de la Becerrera y, como premio, el solitario hayedo de Purupintu por la senda de Los Duernos. 📏 17 km Distancia 📈 +1.150 m Desnivel aprox. ⏱️ 7 h Duración estimada 🏔️ 1.740 m Hombro sobre el Collau Cardiel ⚠️ Media Por distancia, sin pasos técnicos 🔄 Circular Desde Orlé 📍 Orlé (Caso, Asturias) 🗺️ Parque Natural de Redes 📅 Noviembre de 2024 🌲 Los tres hitos del día Foz de Melordaña Por el lecho del arroyo Bloques pulidos que obligan a usar las manos. Majada de Melordaña»
 - 🔎 «Foz de Meleros y Pico la Silla desde Geras»: sin dificultad. Texto del cuadro: «Circular desde Geras de Gordón (León): la Foz de Meleros con sus peldaños de ferrata, la cumbre del Pico la Silla (1.852 m), el refugio de Brañaredonda, el valle de Palanco y la vuelta por el hayedo de la Boyariza . 📏 15 km Distancia 📈 +900 m Desnivel ⏱️ 6 h Con paradas 🏔️ 1.852 m Pico la Silla ⚠️ Media Foz equipada 🔄 Circular Desde Geras 📍 Geras de Gordón (León) 🗺️ Reserva de la Biosfera del Alto Bernesga 📅 Junio de 2024 🏔️ Los tres hitos del día Foz de Meleros Peldaños y escaleras Un desfiladero equipado para pasar junto al arroyo. Pico la Silla 1.852 m La cumbre del día. Hayedo de la»
@@ -13,22 +13,22 @@
 - 📷 «REFUGIO COLLADO JERMOSO DESDE PANDETRAVE»: foto recuperada
 - Blog: sin entradas nuevas.
 - 🗺️ Mapa: 681 puntos (0 nuevos o movidos, 0 quitados).
-- 📷 Foto cambiada en tu mapa: «Pico los Asturianos (2.274 m.)»
+- Fotos de tu mapa: 153, sin cambios.
 - Drive: sin tracks nuevos.
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 433 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - 📝 Blog de Rutinas Varias: 11 rutas emparejadas con su entrada (146 de 406 con enlace al blog; índice con 315 entradas).
 - 📷 Fotos de rutas de Rutinas Varias (de su blog): 0 nuevas, 139 en total, 7 sin foto
 - 📅 Fechas de rutas de Rutinas Varias: 0 nuevas (146 de 406 con fecha); Wikiloc no responde (8 fallos).
-- 🤝 Colaborador «Rutinas Varias»: 284 puntos, 0 tracks.
+- Colaborador «Rutinas Varias»: sin cambios.
 -    (quitados 78 puntos de publicidad: capas o nombres que no queremos)
 - ⛰ Camudando'l camín: 5 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ⚠ No he podido leer el índice del blog de Camudando'l camín (https://camudandolcamin.blogspot.com).
-- Colaborador «Camudando'l camín»: sin cambios.
--    (40 peticiones a su web en 1.9 min)
+- 🤝 Colaborador «Camudando'l camín»: 151 puntos, 3 tracks.
+-    (40 peticiones a su web en 2.1 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 192 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: <urlopen error [Errno 101] Network is unreachable>; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 18 colocadas en el pico de OpenStreetMap; 1 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 189 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
