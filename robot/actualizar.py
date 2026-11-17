@@ -948,6 +948,11 @@ def colaboradores():
         try: titulos_blog(co, new)
         except Exception as e: log(f'⚠ Títulos del blog de {co["id"]}: {e}')
         if not co.get('wp_rutas'): fechas_rutas(co, new)   # las de WordPress ya traen su «Fecha de realización»
+        # 17 nov 2026: sin el nombre del blog delante («Camudando'l camín: Vega Urriellu…» -> «Vega Urriellu…»), en títulos de entradas y de rutas
+        _pre = lambda s: re.sub(r"^\s*" + re.escape(co.get('nombre') or '\x00') + r"\s*[:|·–-]\s*", '', s, flags=re.I) if isinstance(s, str) else s
+        if co.get('nombre'):
+            if new.get('bt'): new['bt'] = {u: (_pre(x) or x) for u, x in new['bt'].items()}
+            for r in new.get('r') or []: r[0] = _pre(r[0]) or r[0]
         nom = co.get('nombre') or new.get('t') or co['id']
         if new != old:
             json.dump(new, open(fo, 'w'), ensure_ascii=False, separators=(',', ':'))
