@@ -6,7 +6,7 @@
 const CFG={apiKey:"AIzaSyBzYlxsZhJVPJpCk0_EgxaplD7zWMOOg1I",authDomain:"losdelasclaras-rutas.firebaseapp.com",projectId:"losdelasclaras-rutas",
   storageBucket:"losdelasclaras-rutas.firebasestorage.app",messagingSenderId:"115151504481",appId:"1:115151504481:web:9338dae56b04b4d2989620"};
 const G="https://www.gstatic.com/firebasejs/10.14.1/";
-const SK="ldc-sesion",PK="ldc-sync-pend",UK="ldc-sync-uid",TK="ldc-sync-hora";
+const SK="ldc-sesion",PK="ldc-sync-pend",UK="ldc-sync-uid",TK="ldc-sync-hora",LK="ldc-sync-loc";   // LK (18 nov): lo cambiado SIN cuenta, para juntarlo al entrar
 const MPI=window.MISPUNTOS;
 let FB=null,A=null,USER=null,READY=false,BUSY=false,ERR="",unsub=[];
 const T={};                       // esperas para no escribir en cada toque
@@ -140,7 +140,8 @@ async function onUser(u){
   const fs=A.fs,first=store.get(UK,null)!==u.uid;
   const [dm,dp,dt,dz]=await Promise.all([fs.getDoc(ref("marcas")),fs.getDoc(ref("puntos")),fs.getDocs(tcol()),fs.getDoc(ref("mapas"))]);
   // 8 nov 2026: lo pendiente se mira DESPUÉS de leer la nube: si mientras tanto llegó algo al móvil (p. ej. una grabación), no se pisa
-  const p=pend();
+  // 18 nov 2026: también lo que se cambió en el móvil sin haber entrado (p. ej. tras salir de la cuenta): se junta, no se pisa
+  const p=Object.assign({},store.get(LK,{}),pend());
   const OFF=window.OFFLINE,lw=OFF?OFF.wanted():[],cz=dz.exists()?J(dz.data().j):null;
   const cm=dm.exists()?J(dm.data().j):null,cp=dp.exists()?J(dp.data().j):null;
   const ct=[];CLOUDT=new Map();dt.forEach(d=>{ct.push(tIn(d.id,d.data()));CLOUDT.set(d.id,d.data().j)});
@@ -165,7 +166,7 @@ async function onUser(u){
   if(pn.puntos&&JSON.stringify(MPI.get())!==JSON.stringify(pts))keep.puntos=1;
   if(pn.tracks&&tKey(MPI.tracks())!==tKey(trs))keep.tracks=1;
   if(pn.mapas&&OFF&&JSON.stringify(OFF.wanted())!==JSON.stringify(zs))keep.mapas=1;
-  store.set(UK,u.uid);store.set(PK,keep);store.set(TK,new Date().toISOString());READY=true;BUSY=false;
+  store.set(UK,u.uid);store.set(PK,keep);store.set(LK,{});store.set(TK,new Date().toISOString());READY=true;BUSY=false;
   for(const k in keep)push(k);
   if(PEND){const f=PEND;PEND=null;MOT=null;setTimeout(()=>{try{f()}catch(e){}},300)}
   if(OPEN){bg.hidden=true;OPEN=false}
@@ -192,8 +193,10 @@ async function push(k){if(!USER||!READY){return}
 // para otros módulos (Seguidores): Firebase y quién ha entrado
 window.LDCFB={load,user:()=>USER,listo:()=>store.get(SK,"0")!=="1"||READY};   // 15 nov 2026: listo = sin cuenta, o la cuenta ya conectada y juntada
 // lo llaman saveMarks, saveMP y saveMT cada vez que cambias algo
-window.ldcSync=k=>{if(store.get(SK,"0")!=="1")return;setPend(k,1);paintBtn();clearTimeout(T[k]);T[k]=setTimeout(()=>push(k),800)};
+window.ldcSync=k=>{if(store.get(SK,"0")!=="1"){const l=store.get(LK,{});if(!l[k]){l[k]=1;store.set(LK,l)}return}setPend(k,1);paintBtn();clearTimeout(T[k]);T[k]=setTimeout(()=>push(k),800)};
 
+// 18 nov 2026: si en este móvil se entró alguna vez y ahora estás fuera de la cuenta, lo de aquí se junta al volver a entrar
+if(store.get(SK,"0")!=="1"&&store.get(UK,null)&&!Object.keys(store.get(LK,{})).length)store.set(LK,{marcas:1,puntos:1,tracks:1,mapas:1});
 // si ya habías entrado, se conecta solo (un poco después de abrir, para no frenar la carga)
 if(store.get(SK,"0")==="1"){btn.classList.add("on","pend");setTimeout(()=>load().catch(()=>{}),1200)}
 addEventListener("online",()=>{if(store.get(SK,"0")==="1"&&!FB)load().catch(()=>{})});
