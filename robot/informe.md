@@ -1,6 +1,6 @@
-# Informe del robot · 18/11/2026 01:17
+# Informe del robot · 18/11/2026 05:19
 
-**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 0 nuevas, 1 cambiadas, 0 quitadas; regeneración forzada
+**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados
 
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
@@ -13,7 +13,7 @@
 - 📷 «La Senda de las Merinas y los Castillines (Travesía Cubilla-Tuiza)»: foto recuperada
 - Blog: sin entradas nuevas.
 - 🗺️ Mapa: 694 puntos (0 nuevos o movidos, 0 quitados).
-- 📷 Foto cambiada en tu mapa: «Piedras Negras (1.087 m.)»
+- Fotos de tu mapa: 194, sin cambios.
 - Drive: sin tracks nuevos.
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 433 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
@@ -25,10 +25,7 @@
 - ⛰ Camudando'l camín: 23 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ⚠ No he podido leer el índice del blog de Camudando'l camín (https://camudandolcamin.blogspot.com).
 - Colaborador «Camudando'l camín»: sin cambios.
--    (40 peticiones a su web en 1.2 min)
-- 🐾 Gata con botas: 206 entradas en sus zonas, 192 rutas en la app (0 nuevas).
-- ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⛰ Cumbres de Gata con botas: 17 de 18 colocadas en el pico de OpenStreetMap; 1 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
+- ⚠ No he podido leer la web de Gata con botas (https://gataconbotas.com): se queda como estaba.
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 189 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
 - App regenerada: 383 rutas, 170 con track.
