@@ -198,7 +198,7 @@ class GrabarService : Service(), LocationListener {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         @Suppress("DEPRECATION")
         val b = if (Build.VERSION.SDK_INT >= 26) Notification.Builder(this, "grabar") else Notification.Builder(this)
-        val n = b.setContentTitle("Los de las Claras").setContentText(txt).setSmallIcon(android.R.drawable.ic_menu_mylocation)
+        val n = b.setContentTitle("Andariega").setContentText(txt).setSmallIcon(android.R.drawable.ic_menu_mylocation)
             .setOngoing(true).setContentIntent(pi).build()
         if (Build.VERSION.SDK_INT >= 29) startForeground(7, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION) else startForeground(7, n)
     }

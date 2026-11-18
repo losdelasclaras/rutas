@@ -165,7 +165,7 @@ function cambiaOri(){ORI=ORI==="norte"?"rumbo":"norte";try{localStorage.setItem(
   if(ORI==="norte"){map.setBearing(0);toast("🧭 Norte arriba")}else{if(RUMBO!=null)map.setBearing((360-RUMBO)%360);toast(RUMBO!=null?"🧭 El mapa gira: arriba, hacia donde miras":"🧭 El mapa girará en cuanto el móvil sepa hacia dónde miras");SIGUE=true;if(YO)map.panTo([YO[0],YO[1]])}
   pintaRumbo()}
 map.on("rotate",pintaRumbo);
-function sinPermiso(){toast("⛔ Sin permiso de ubicación. Ábrelo en Ajustes › Aplicaciones › Los de las Claras › Permisos › Ubicación.",8000)}
+function sinPermiso(){toast("⛔ Sin permiso de ubicación. Ábrelo en Ajustes › Aplicaciones › Andariega › Permisos › Ubicación.",8000)}
 /* ---------- seguir uno o dos tracks (principal en morado y secundario en naranja) ----------
    La app sabe por cuál vas: si te sales del principal pero vas por el secundario, no avisa; solo si te sales de los dos.
    Avisa antes de los puntos donde los dos tracks se separan. Las variables T, TN, IDX… son siempre las del track por el que vas. */
@@ -406,7 +406,7 @@ function prep(antes){const m=movil();if(!m){toast("Instala la última versión d
   ${fila(m.bateria,"🔋","Batería sin límite",m.bateria?"Sin límite":"Si no, el móvil puede parar la grabación","Quitar límite","Nativo.bateria()")}
   ${m.sdk>=29?fila(m.siempre,"📡","Ubicación «Permitir siempre»",m.siempre?"Permitida":"Solo si tu móvil corta el GPS en segundo plano. Elige «Permitir siempre»","Abrir","Nativo.pedirSiempre()",true):""}
   ${fila(!m.ahorro,"🪫","Ahorro de energía apagado",m.ahorro?"Está encendido: puede cortar el GPS. Apágalo mientras grabas":"Apagado","Ajustes","Nativo.ajustesAhorro()",true)}
-  ${fila(false,"🏭",nm?"Ajustes de "+esc(nm):"Ajustes de batería de la app",(mc&&mc[2])||"Busca la app Los de las Claras en los ajustes de batería y quítale cualquier límite.","Abrir","Nativo.ajustesMarca()",true)}
+  ${fila(false,"🏭",nm?"Ajustes de "+esc(nm):"Ajustes de batería de la app",(mc&&mc[2])||"Busca la app Andariega en los ajustes de batería y quítale cualquier límite.","Abrir","Nativo.ajustesMarca()",true)}
   </ul>
   ${filaCoche()}
   ${PREP_GRABAR?`<button class="b2 go" onclick="cierra();Nativo.empezar()">● Grabar ya</button>`:""}

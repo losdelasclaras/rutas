@@ -34,7 +34,7 @@ class UbicarActivity : Activity(), LocationListener {
         checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
     override fun onRequestPermissionsResult(rc: Int, p: Array<out String>, r: IntArray) {
         super.onRequestPermissionsResult(rc, p, r)
-        if (permiso()) buscar() else { Toast.makeText(this, "Sin permiso de ubicación: Ajustes › Aplicaciones › Los de las Claras › Permisos", Toast.LENGTH_LONG).show(); volver(null) }
+        if (permiso()) buscar() else { Toast.makeText(this, "Sin permiso de ubicación: Ajustes › Aplicaciones › Andariega › Permisos", Toast.LENGTH_LONG).show(); volver(null) }
     }
 
     @SuppressLint("MissingPermission")

@@ -55,7 +55,7 @@ class WebActivity : LauncherActivity() {
     }
     override fun onRequestPermissionsResult(code: Int, p: Array<out String>, r: IntArray) {
         super.onRequestPermissionsResult(code, p, r)
-        if (!tiene()) Toast.makeText(this, "Sin permiso de ubicación, «Yo» no podrá encontrarte. Puedes darlo en Ajustes › Aplicaciones › Los de las Claras › Permisos.", Toast.LENGTH_LONG).show()
+        if (!tiene()) Toast.makeText(this, "Sin permiso de ubicación, «Yo» no podrá encontrarte. Puedes darlo en Ajustes › Aplicaciones › Andariega › Permisos.", Toast.LENGTH_LONG).show()
         preguntando = false; tapada = false; vigilar(); launchTwa()
     }
 
