@@ -292,8 +292,15 @@ for(const c of CO)(c.r||[]).forEach((r,i)=>{ALL.push({c:r[0],r:r[1],lat:r[8][0],
  for(let i=0;i<cos.length;i++){const it=cos[i],cum=it.k==="cumbre",sw=sig(it.c);
    for(let j=0;j<i;j++){const g=cos[j];if(g.dup||(g.k==="cumbre")!==cum||distintas(g.c,it.c))continue;const d=kmd(g,it);if(g.co===it.co)continue;
      if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))||(cum&&d<.15)){it.dup=g;(g.mates=g.mates||[]).push(it);g.both=g.both||it.co.n;if(!g.a&&it.a)g.a=it.a;break}}}}
-const duenos=p=>{if(p.co){const v=[p.co];for(const m of p.mates||[])if(!v.includes(m.co))v.push(m.co);return v}
-  const v=[{n:"Los de las Claras",c:"#c3262e",id:"grupo"}];for(const m of PAR[p.i]||[])if(!v.some(x=>x.id===m.co.id))v.push(m.co);return v};
+const GRPO={n:"Los de las Claras",c:"#c3262e",id:"grupo"};
+// 18 nov 2026: en la lista salen también los blogs que no tienen el punto pero sí una ruta que sube a esa cumbre (como en su ficha)
+const pzKeys=p=>{const ks=[],ck=x=>{if(x&&x.co&&x.pp){const j=x.co.p.indexOf(x.pp);if(j>=0)ks.push(x.co.id+":"+j)}};
+  if(p.co){ck(p);for(const m of p.mates||[])ck(m)}else{ks.push("g"+p.i);for(const m of PAR[p.i]||[]){ck(m);for(const n of m.mates||[])ck(n)}}return ks};
+const conRuta=(p,v)=>{if(p.k&&p.k!=="cumbre")return v;const ks=pzKeys(p);
+  const GZ=(typeof DATA!=="undefined"&&DATA.pz)||{};if(!v.some(x=>x.id==="grupo")&&ks.some(k=>(GZ[k]||[]).length))v.push(GRPO);
+  for(const c of CO)if(!v.some(x=>x.id===c.id)&&ks.some(k=>((c.pz||{})[k]||[]).length))v.push(c);return v};
+const duenos=p=>{if(p.co){const v=[p.co];for(const m of p.mates||[])if(!v.includes(m.co))v.push(m.co);return conRuta(p,v)}
+  const v=[GRPO];for(const m of PAR[p.i]||[])if(!v.some(x=>x.id===m.co.id))v.push(m.co);return conRuta(p,v)};
 PEAKS.sort((a,b)=>(b.a||0)-(a.a||0));SPOTS.sort((a,b)=>a.c.localeCompare(b.c,"es"));
 // los que coinciden, juntos: el del colaborador justo debajo del vuestro
 for(const L of [PEAKS,SPOTS]){const pares=L.filter(x=>x.par);for(const x of pares)L.splice(L.indexOf(x),1);for(const x of pares){const j=L.indexOf(x.par);L.splice(j<0?L.length:j+1,0,x)}}

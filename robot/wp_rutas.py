@@ -73,6 +73,13 @@ def _track(b):
             pts.append([float(m.group(2)), float(m.group(1)), float(m.group(3)) if m.group(3) else None])
     return pts
 
+_PROV = {'leon': 'León', 'avila': 'Ávila', 'alava': 'Álava', 'a-coruna': 'A Coruña', 'caceres': 'Cáceres', 'guipuzcoa': 'Guipúzcoa',
+         'la-rioja': 'La Rioja', 'lleida': 'Lleida', 'girona': 'Girona', 'cataluna': 'Cataluña', 'castellon': 'Castellón'}
+def _provincia(url):
+    """Nombre de la zona a partir de la categoría de su web (…/rutas/resto-de-espana/zamora/ → Zamora)."""
+    sl = url.rstrip('/').split('/')[-1]
+    return _PROV.get(sl) or ' '.join(w.capitalize() if w not in ('de', 'del', 'la', 'el') or i == 0 else w for i, w in enumerate(sl.split('-')))
+
 def _km(a, b): return math.hypot((a[0] - b[0]) * 111.2, (a[1] - b[1]) * 111.2 * math.cos(math.radians(a[0])))
 
 def _simplifica(pts):
@@ -158,6 +165,13 @@ def leer(co, old, get, log):
         if not ok: fallo.append(cat); continue
         for u in us: vistas.setdefault(u.rstrip('/') + '/', cat)
         time.sleep(0.5)
+    todo = cf.get('todo')   # 18 nov 2026: además, todas sus rutas de España por encima del Sistema Central (aunque su provincia no esté en 'zonas')
+    if todo:
+        try: us, ok = _entradas(get, web, todo['cat'], tope=80)
+        except _Corte: us, ok = [], False
+        if ok:
+            for u in us: vistas.setdefault(u.rstrip('/') + '/', '*')
+        else: log(f'⚠ {nom}: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.')
     if fallo and len(fallo) == len(zonas):
         log(f'⚠ No he podido leer la web de {nom} ({web}): se queda como estaba.'); return None
     if fallo: log(f'⚠ {nom}: no he podido leer {len(fallo)} zona(s) de su web ({", ".join(fallo)}); esas rutas se quedan como estaban.')
@@ -178,9 +192,15 @@ def leer(co, old, get, log):
                 except Exception: pass
             if len(pts) < 2: sin_track.append(f['n'] or u); continue
             # su zona: la provincia de la entrada (si es de las que queremos) y que el track caiga en la parte que queremos
-            zc = next((c for c in zonas if any(c.rstrip('/') in x for x in f['cats'])), cat)
-            zn, la0, la1 = zonas[zc]
-            if not (la0 <= pts[0][0] <= la1): fuera += 1; saltar.add(u); continue
+            zc = next((c for c in zonas if any(c.rstrip('/') in x for x in f['cats'])), cat if cat in zonas else None)
+            zn = None
+            if zc:
+                zn, la0, la1 = zonas[zc]
+                if not (la0 <= pts[0][0] <= la1): zn = None
+            if not zn and todo:   # fuera de sus zonas: vale si es de España y está por encima del Sistema Central; zona = su provincia
+                pc = next((x for x in f['cats'] if any(('/' + p.strip('/') + '/') in x for p in todo['solo'])), None)
+                if pc and todo['lat'][0] <= pts[0][0] <= todo['lat'][1]: zn = _provincia(pc)
+            if not zn: fuera += 1; saltar.add(u); continue
             km = f['km'] or (str(round(sum(_km(a, b) for a, b in zip(pts, pts[1:])), 1)).replace('.', ',') + ' km')
             de = f['de']
             if not de and any(q[2] is not None for q in pts):
