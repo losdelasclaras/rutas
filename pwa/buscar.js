@@ -1,6 +1,6 @@
 /* ---------- 🔎 buscador del mapa: arriba, encima de Cantábrica · Pirineos · Alpes ----------
    Busca a la vez rutas, cumbres y lugares (del grupo y de los colaboradores) y pueblos.
-   Al tocar un resultado se abre su ficha en el mapa. Un pueblo: «🗺 Mapa» acerca el mapa (zoom 14, marca 1 min) y «🥾 Rutas» lleva a «Rutas cerca de…» (16 nov).
+   Al tocar un resultado se abre su ficha en el mapa. Un pueblo (18 nov): tocarlo o «🥾 Rutas» lleva a «Rutas cerca de…» (ordenadas por cercanía); «🗺 Mapa» acerca el mapa (zoom 14, marca 1 min).
    «Ver todo en Explorar ›» pasa lo escrito al buscador de Rutas (los de Explorar se quedan como están). */
 (function(){
 const vm=document.getElementById("v-mapa"),bar=document.getElementById("mapbar");if(!vm||!bar)return;
@@ -55,13 +55,13 @@ function busca(q0){const q=nk(q0);RES=[];if(q.length<2){res.hidden=true;return}
   const vis=new Set();P.forEach((p,i)=>{if(p.x)return;const k=nk(p.c);if(vis.has(k))return;const sc=tiene(p.c,q);if(sc>=9)return;vis.add(k);
     (p.t==="cumbre"?out.c:out.l).push({sc,t:p.c,s:[p.a?p.a.toLocaleString("es-ES")+" m":"",(COLX.deG?COLX.deG(i):["Los de las Claras"]).join(" · "),p.r].filter(Boolean).join(" · "),e:p.t==="cumbre"?"⛰️":"📍",go:()=>{pickRoute(i);flyTo(p.lat,p.lon,13)}})});
   // pueblos: rutas cerca
-  try{for(const s of (window.findSites?findSites(q0):[]).filter(s=>!/^(lugar del mapa|cumbre|lugar|ruta)/i.test(s.k||"")).slice(0,4))out.p.push({sc:0,pu:1,t:s.alt?s.alt.split(";")[0]:s.n,s:[s.k,s.reg].filter(Boolean).join(" · "),e:"🏘️",go:()=>verPueblo(s),rutas:()=>{quitaPin();if(window.CERCA&&CERCA.en)CERCA.en(s.lat,s.lon,s.n);else flyTo(s.lat,s.lon,13)}})}catch(e){}
+  try{for(const s of (window.findSites?findSites(q0):[]).filter(s=>!/^(lugar del mapa|cumbre|lugar|ruta)/i.test(s.k||"")).slice(0,4))out.p.push({sc:0,pu:1,t:s.alt?s.alt.split(";")[0]:s.n,s:[s.k,s.reg].filter(Boolean).join(" · "),e:"🏘️",go:()=>{quitaPin();if(window.CERCA&&CERCA.en)CERCA.en(s.lat,s.lon,s.n);else flyTo(s.lat,s.lon,13)},mapa:()=>verPueblo(s)})}catch(e){}
   const ord=a=>a.sort((x,y)=>x.sc-y.sc||x.t.localeCompare(y.t,"es"));
   // la misma cumbre o lugar puede estar en el grupo y en un colaborador: solo una vez
   const uno=a=>{const v=new Set();return a.filter(x=>{const k=nk(x.t.split("|").pop());if(v.has(k))return false;v.add(k);return true})};
   const sec=[["Rutas",ord(out.r).slice(0,5)],["Cumbres",uno(ord(out.c)).slice(0,5)],["Lugares",uno(ord(out.l)).slice(0,3)],["Pueblos",out.p]];
   let h="";for(const[n,l]of sec){if(!l.length)continue;h+=`<h4>${n}</h4>`+l.map(x=>{RES.push(x);const i=RES.length-1,b=`<button data-mr="${i}"><span class="e">${x.e}</span><span><b>${esc(x.t)}</b>${x.s?`<small>${esc(x.s)}</small>`:""}</span></button>`;
-    return x.pu?`<div class="mpu">${b}<span class="mpub"><button data-mr="${i}" title="Acercar el mapa a ${esc(x.t)}">🗺 Mapa</button><button data-mrr="${i}" title="Rutas cerca de ${esc(x.t)}">🥾 Rutas</button></span></div>`:b}).join("")}
+    return x.pu?`<div class="mpu">${b}<span class="mpub"><button data-mr="${i}" title="Rutas cerca de ${esc(x.t)}">🥾 Rutas</button><button data-mrr="${i}" title="Acercar el mapa a ${esc(x.t)}">🗺 Mapa</button></span></div>`:b}).join("")}
   res.innerHTML=(h||`<p class="nada">No encuentro nada con «${esc(q0)}».</p>`)+`<button class="todo" data-mtodo>Ver todo en Explorar ›</button>`;res.hidden=false}
 let tm=0;inp.addEventListener("input",()=>{bx.hidden=!inp.value;clearTimeout(tm);tm=setTimeout(()=>busca(inp.value),120)});
 inp.addEventListener("focus",()=>{if(inp.value)busca(inp.value)});
@@ -77,7 +77,7 @@ function verPueblo(s){quitaPin();if(typeof map==="undefined"||!window.L){flyTo(s
   PIN=L.marker([s.lat,s.lon],{interactive:false,keyboard:false,zIndexOffset:1500,icon:L.divIcon({className:"mpupin",iconSize:null,html:`<i></i><b>${esc(s.alt?s.alt.split(";")[0]:s.n)}</b>`})}).addTo(map);
   pinT=setTimeout(quitaPin,60000)}
 function elige(i){const x=RES[i];if(!x)return;cierra();inp.blur();try{x.go()}catch(e){console.warn(e)}}
-res.addEventListener("click",e=>{const rr=e.target.closest("[data-mrr]");if(rr){const x=RES[+rr.dataset.mrr];cierra();inp.blur();if(x&&x.rutas)x.rutas();return}
+res.addEventListener("click",e=>{const rr=e.target.closest("[data-mrr]");if(rr){const x=RES[+rr.dataset.mrr];cierra();inp.blur();if(x&&x.mapa)x.mapa();return}
   const b=e.target.closest("[data-mr]");if(b){elige(+b.dataset.mr);return}
   if(e.target.closest("[data-mtodo]")){const v=inp.value;cierra();inp.blur();showView("rutas");const q=document.getElementById("q");if(q){q.value=v;q.dispatchEvent(new Event("input"))}}});
 document.addEventListener("pointerdown",e=>{if(!res.hidden&&!e.target.closest("#msearch"))cierra()},true);
