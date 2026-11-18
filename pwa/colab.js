@@ -321,8 +321,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 </style>`);
 // 16 nov 2026: dificultad de los colaboradores al mismo nivel que la del blog (b baja, m moderada, a alta) para el filtro
 //  Wikiloc: Fácil / Moderado / Difícil, Muy difícil · MIDE a-b-c-d: d = esfuerzo (1-2 baja, 3 moderada, 4-5 alta)
-function nivelCo(s){s=String(s||"");const m=/MIDE\s*\d\s*-\s*\d\s*-\s*\d\s*-\s*(\d)/i.exec(s);if(m){const e=+m[1];return e<=2?"b":e===3?"m":"a"}
-  const n=norm(s);if(/muy dificil|dificil/.test(n))return"a";if(/moderad/.test(n))return"m";if(/facil/.test(n))return"b";return""}
+function nivelCo(s){s=String(s||"");const m=/MIDE\s*\d\s*-\s*\d\s*-\s*\d\s*-\s*(\d)/i.exec(s);if(m){const e=+m[1];return e<=2?"b":e===3?"m":e===4?"a":"x"}
+  const n=norm(s);if(/muy dificil|muy alta/.test(n))return"x";if(/dificil|^alta/.test(n))return"a";if(/moderad/.test(n))return"m";if(/facil|^baja/.test(n))return"b";return""}   // 18 nov: «Muy alta» aparte; también Baja/Moderada/Alta/Muy alta (correcciones a mano)
 const RUT=[];
 for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exec(r[4])||[])[1];const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:fe?+fe[1]:null,m:fe?+fe[2]:null,gx:1,iv:/raqueta|nieve|invern/i.test(r[2]+" "+r[0])?1:0,nivd:nivelCo(r[5]),km:r[3]?r[3].replace(/\s*km/i," km"):"",de:dm?"+"+dm+" m":"",txt:norm(r[0]+" "+r[1]+" "+r[2])}));continue}
   const p=it.pp;if(!(/RUTA/i.test(p[7]||"")||/distancia\s*:/i.test(limpia(p[3]))))continue;

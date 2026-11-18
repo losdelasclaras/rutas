@@ -105,13 +105,13 @@ for(const k of ["cumbres","lugares"]){const v=document.getElementById("v-"+k);if
 const RF={z:"",ep:"",iv:"",tk:"",df:""},CUT=new Date().getFullYear()-1; // nov 2026: «últimos 2 años» (antes: desde hace 5 años / antes)
 window.RFOK=r=>(!RF.z||zoneOf(r.r)===RF.z)&&(!RF.ep||(RF.ep==="new"?(r.y||0)>=CUT:(r.y||0)<CUT))&&(!RF.iv||(RF.iv==="si"?!!r.iv:!r.iv))&&(!RF.tk||!!r.gx)&&(!RF.df||nivelR(r)===RF.df);
 // 16 nov 2026: filtro de dificultad. Blog: la de los listados (dl); colaboradores: nv (colab.js)
-function nivelR(r){if(r.nivd!=null)return r.nivd;const d=String(r.dl||"").toLowerCase();return d==="baja"?"b":d==="moderada"?"m":(d==="alta"||d==="muy-alta")?"a":""}
+function nivelR(r){if(r.nivd!=null)return r.nivd;const d=String(r.dl||"").toLowerCase();return d==="baja"?"b":d==="moderada"?"m":d==="alta"?"a":d==="muy-alta"?"x":""}   // 18 nov: «Muy alta» aparte
 const rsrc=()=>window.COLX?COLX.rsrc:"todas";
 const RG=()=>[["z","Zona",[["","Todas"],["cant","Norte"],["pir","Pirineos"],["alp","Alpes y Dolomitas"]]],
   ...(window.COLX?[["rs","De quién",[["todas","Todas"],["grupo","Los de las Claras"],...CO_LIST()]]]:[]),
   ["ep","Época",[["","Todas"],["new","Recientes (últimos 2 años)"]]],
   ["iv","Invierno",[["","Todas"],["si","Solo invernales"],["no","Sin invernales"]]],
-  ["df","Dificultad",[["","Todas"],["b","🟢 Baja (fácil)"],["m","🟡 Moderada"],["a","🔴 Alta"]]],
+  ["df","Dificultad",[["","Todas"],["b","🟢 Baja (fácil)"],["m","🟡 Moderada"],["a","🔴 Alta"],["x","⚫ Muy alta"]]],
   ["tk","Track",[["","Todas"],["si","Con track en el mapa"]]]];
 const CO_LIST=()=>{const s=document.querySelectorAll("#list .rsrc [data-rsrc]");return [...s].filter(b=>/^co_/.test(b.dataset.rsrc)).map(b=>[b.dataset.rsrc,b.textContent.trim()])};
 let RFO=false;
