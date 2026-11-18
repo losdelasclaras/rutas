@@ -196,9 +196,11 @@ function cargaSeguir(){const p0=TR[0];
   if(!TR[0]){T=[];$("seg").hidden=true;preguntaNuevo();return}
   act(ACT);
   if(TR[0]!==p0){ACT=0;act(0);IDX=0;const ll=TR[0].t.map(p=>[p[0],p[1]]).concat(TR[1]?TR[1].t.map(p=>[p[0],p[1]]):[]);
-    map.fitBounds(L.latLngBounds(ll),{padding:[40,40],paddingTopLeft:[20,150],paddingBottomRight:[80,150]});SIGUE=false;clearTimeout(VUELTA);VUELTA=setTimeout(()=>{SIGUE=true;if(YO)map.panTo([YO[0],YO[1]])},20000);setTimeout(ofreceZona,700);setTimeout(()=>ofrece2(0),2500)}
+    map.fitBounds(L.latLngBounds(ll),{padding:[40,40],paddingTopLeft:[20,150],paddingBottomRight:[80,150]});SIGUE=false;clearTimeout(VUELTA);VUELTA=setTimeout(()=>{SIGUE=true;if(YO)map.panTo([YO[0],YO[1]])},20000);setTimeout(ofreceZona,700)}
   if(YO)sigueA(YO[0],YO[1]);else pintaSeg(null);
   if(TR[1]&&Nativo.anadido2&&Nativo.anadido2())toast("➕ «"+TR[1].n+"» añadido como secundario (en naranja)",4000);
+  // 18 nov: aviso del segundo track, una vez por track (también si vuelves a la pantalla con el mismo track)
+  if(TR[0]&&!TR[1]&&window.__of2n!==TR[0].n){window.__of2n=TR[0].n;setTimeout(()=>ofrece2(0),2500)}
   preguntaNuevo()}
 // llega otro track mientras ya sigues uno: ¿cambiarlo o añadirlo como secundario?
 function preguntaNuevo(){const nu=rdJ(Nativo.nuevoSeguir?Nativo.nuevoSeguir():"");if(!nu||!nu.t)return;
@@ -258,7 +260,7 @@ function sigueA(la,lo){if(!TR[0])return;const p=[la,lo];
 /* 18 nov 2026 (idea de Dani, Rutinas Varias): al cargar el primer track, un aviso pequeño que ofrece añadir un segundo,
    con «No volver a mostrar». No tapa nada: si hay una pregunta abierta (¿guardar el mapa?…) espera a que se cierre. */
 function ofrece2(n){if(TR[1]||!TR[0]||lsG("no-ofrece2")==="1"||window.__NU)return;
-  if(!$("sheet").hidden){if(n<30)setTimeout(()=>ofrece2(n+1),2000);return}
+  if(!$("sheet").hidden){if(n<300)setTimeout(()=>ofrece2(n+1),2000);return}
   let e=$("of2");if(!e){e=document.createElement("div");e.id="of2";document.body.appendChild(e)}
   e.innerHTML=`<p>➕ ¿Vas a hacer una variante? Puedes seguir <b>un segundo track</b> a la vez (sale en naranja) y la app sabe por cuál vas.</p>
    <div><button class="si" onclick="of2('si')">➕ Añadir un segundo track</button><button onclick="of2('no')">Ahora no</button></div>
