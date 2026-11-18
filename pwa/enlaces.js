@@ -212,7 +212,7 @@ function abrirTexto(t){t=String(t||"").trim();if(!t)return;
 function ayuda(ap,t,nota){if(!MPI)return;
   MPI.show(`<div class="sheet-head"><h2>🔗 ${ap?"Ruta de "+ap[1]:"Enlace"}</h2><button class="x" aria-label="Cerrar" data-close>×</button></div>
   ${nota?`<p class="note">${nota}</p>`:ap?`<p class="note">${ap[1]} no deja que otra app se lleve sus tracks, así que hay que pasar por un archivo GPX. Son dos pasos:</p>
-  <ol class="lpasos">${ap[2].map(x=>`<li>${x}</li>`).join("")}<li>Abre ese archivo con <b>LdC Rutas</b> (en el móvil: «Abrir con» o «Compartir › LdC Rutas»), o aquí en <b>Mis cosas › Tracks › ⬆️ Cargar GPX/KML</b>. Luego le das a <b>▶ Seguir</b> como en nuestras rutas.</li></ol>
+  <ol class="lpasos">${ap[2].map(x=>`<li>${x}</li>`).join("")}<li>Abre ese archivo con <b>Andariega</b> (en el móvil: «Abrir con» o «Compartir › Andariega»), o aquí en <b>Mis cosas › Tracks › ⬆️ Cargar GPX/KML</b>. Luego le das a <b>▶ Seguir</b> como en nuestras rutas.</li></ol>
   <div class="actions"><a class="btn primary" href="${esc((/https?:\/\/\S+/.exec(t)||[""])[0])}" target="_blank" rel="noopener">Abrir en ${ap[1]}</a><button class="btn ghost" data-ptgpx>⬆️ Ya tengo el GPX</button></div>`
   :`<p class="note">No reconozco ese enlace. Puedes pegar el enlace de un punto (Google Maps, Organic Maps o unas coordenadas) o el de una ruta de Wikiloc, Strava, Komoot, AllTrails o Ztrails.</p>`}`)}
 document.head.insertAdjacentHTML("beforeend",`<style>.lpasos{margin:6px 0 10px 20px;padding:0}.lpasos li{margin:6px 0;line-height:1.4}

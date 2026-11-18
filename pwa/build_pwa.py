@@ -9,14 +9,14 @@ def rep(x,y,cnt=1):
 rep('<title>Los de las Claras · Rutas</title>\n<meta name="claude:viewport-fit-sides" content="cover">','''<!doctype html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Los de las Claras · Rutas</title>
+<title>Andariega · Rutas de montaña</title>
 <meta name="description" content="Rutas de montaña del blog Los de las Claras: Cordillera Cantábrica, Pirineos, Alpes y Dolomitas.">
 <meta name="theme-color" content="#c3262e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="LdC Rutas">
+<meta name="apple-mobile-web-app-title" content="Andariega">
 <link rel="stylesheet" href="vendor/leaflet.css">''')
 rep('<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>','<script src="vendor/leaflet.js"></script>')
 rep('</style>','''html,body{height:100%;margin:0}

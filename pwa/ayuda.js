@@ -78,7 +78,7 @@ return [
   "",["Ir a Explorar","explorar"]],
 ["📎","Abre un GPX que te mandan por WhatsApp",[
   "En WhatsApp, toca el archivo GPX. Si no se abre, mantenlo pulsado y toca «Compartir».",
-  "En la lista de apps, elige «LdC Rutas».",
+  "En la lista de apps, elige «Andariega».",
   "El track se abre en el mapa. Guárdalo y lo tendrás en Mis cosas › Guardado, también sin cobertura."],
   "Si no te sale la app en esa lista (iPhone o versión web), guarda el archivo en el móvil y en Mis cosas › Guardado toca «⬆️ Abrir GPX o KML». También vale para archivos KML.",["Ir a Guardado","guardado"]],
 ["▶️","Sigue una ruta en el monte",[
