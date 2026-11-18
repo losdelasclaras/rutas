@@ -441,25 +441,29 @@ def rutas_drive(co, new):
     # (las entradas nuevas o que no enlaza ninguna cumbre no estaban en la caché).
     import difflib
     def cp(s): return s.replace('-', '')
-    def busca(nom):
+    def busca(nom, fz=True):
         fs = cp(sl(nom))
         if len(fs) < 6: return ''
         cand = [v for v in urls if us(v) and (cp(us(v)) == fs or (len(cp(us(v))) >= 14 and fs.startswith(cp(us(v)))) or (len(fs) >= 14 and cp(us(v)).startswith(fs)))]
         if cand: return max(cand, key=lambda v: len(us(v)))
+        # un nombre tipo dirección («hou-de-los-cabrones-cabrales-torre») tiene que coincidir con la dirección: nada de parecidos
+        if not fz or re.fullmatch(r'[a-z0-9]+(-[a-z0-9]+)+', nom.strip()): return ''
         sc = sorted(((max(difflib.SequenceMatcher(None, fs[:len(cp(us(v))) + 3], cp(us(v))).ratio(),
                           difflib.SequenceMatcher(None, fs, cp(sl(re.sub(r'^[^:]{3,40}:\s*', '', T.get(v) or '')))).ratio() if T.get(v) else 0), v) for v in urls if us(v)), reverse=True)
-        if sc and sc[0][0] >= 0.8 and (len(sc) < 2 or sc[0][0] - sc[1][0] >= 0.05): return sc[0][1]
+        if sc and sc[0][0] >= 0.85 and (len(sc) < 2 or sc[0][0] - sc[1][0] >= 0.08): return sc[0][1]
         return ''
-    if co.get('blog_web') and 'blogspot.' in co['blog_web'] and any(not busca(x[1]) for x in dd):
+    if co.get('blog_web') and 'blogspot.' in co['blog_web'] and any(not busca(x[1], False) for x in dd):
         try:
             n0 = len(T)
-            for ini in range(1, 3001, 150):
+            ini = 1   # 18 nov: Blogger da menos de 150 por página aunque haya más: se sigue hasta que no venga ninguna
+            while ini < 3001:
                 j = json.loads(get(f"{co['blog_web'].rstrip('/')}/feeds/posts/summary?alt=json&max-results=150&start-index={ini}"))
                 es = j.get('feed', {}).get('entry', [])
+                if not es: break
+                ini += len(es)
                 for e in es:
                     li = next((l['href'] for l in e.get('link', []) if l.get('rel') == 'alternate'), None)
                     if li: T[li.replace('http://', 'https://')] = html.unescape(e.get('title', {}).get('$t', '')).strip()
-                if len(es) < 150: break
             json.dump(T, open(cf, 'w'), ensure_ascii=False, indent=0); urls |= set(T)
             if len(T) > n0: log(f'📝 Índice del blog de {co.get("nombre") or co["id"]}: {len(T) - n0} entradas nuevas')
         except Exception as e: log(f'⚠ Índice del blog de {co.get("nombre") or co["id"]}: {e}')
@@ -558,7 +562,7 @@ def blog_colab(co, new):
         locs = re.findall(r'<loc>\s*([^<\s]+)\s*</loc>', x)
         for u in locs:
             if re.search(r'sitemap.*\.xml', u):
-                if re.search(r'(post|entrad|article)', u, re.I) or 'wp-sitemap-posts-post' in u:
+                if re.search(r'(post|entrad|article)', u, re.I) or 'wp-sitemap-posts-post' in u or re.search(r'sitemap\.xml\?page=\d', u):   # 18 nov: Blogger (sitemap.xml?page=1, 2…)
                     try: urls |= set(re.findall(r'<loc>\s*([^<\s]+)\s*</loc>', get(u)))
                     except Exception: pass
             else: urls.add(u)
@@ -858,13 +862,15 @@ def titulos_blog(co, new):
     if falta and 'blogspot.' in web:
         # Blogger: el índice de entradas (título y enlace) de 150 en 150
         try:
-            for ini in range(1, 3001, 150):
+            ini = 1   # 18 nov: Blogger da menos de 150 por página aunque haya más: se sigue hasta que no venga ninguna
+            while ini < 3001:
                 j = json.loads(get(f'{web}/feeds/posts/summary?alt=json&max-results=150&start-index={ini}'))
                 es = j.get('feed', {}).get('entry', [])
+                if not es: break
+                ini += len(es)
                 for e in es:
                     li = next((l['href'] for l in e.get('link', []) if l.get('rel') == 'alternate'), None)
                     if li: T[li.replace('http://', 'https://')] = html.unescape(e.get('title', {}).get('$t', '')).strip()
-                if len(es) < 150: break
         except Exception as e:
             log(f'⚠ Títulos del blog de {co.get("nombre") or co["id"]}: {e}')
     mal = 0
