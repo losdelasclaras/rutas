@@ -1,6 +1,6 @@
-# Informe del robot · 18/11/2026 15:23
+# Informe del robot · 18/11/2026 15:52
 
-**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; correcciones a mano; colaborador Gata con botas; regeneración forzada
+**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 0 nuevas, 1 cambiadas, 0 quitadas
 
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
@@ -13,9 +13,9 @@
 - 📷 «La Senda de las Merinas y los Castillines (Travesía Cubilla-Tuiza)»: foto recuperada
 - Blog: sin entradas nuevas.
 - 🗺️ Mapa: 694 puntos (0 nuevos o movidos, 0 quitados).
-- Fotos de tu mapa: 194, sin cambios.
+- 📷 Foto cambiada en tu mapa: «Pico Cabeza Saldaña (946 m.) Sierra Gustaselvin»
 - Drive: sin tracks nuevos.
-- ✏️ Correcciones a mano: 5 en total · 1 nuevas o cambiadas
+- Correcciones a mano: 5 (sin cambios).
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 433 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - 📝 Blog de Rutinas Varias: 11 rutas emparejadas con su entrada (146 de 406 con enlace al blog; índice con 315 entradas).
@@ -27,11 +27,11 @@
 - ⛰ Camudando'l camín: 25 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - Colaborador «Camudando'l camín»: sin cambios.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
--    (70 peticiones a su web en 2.3 min)
-- 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (14 nuevas).
+-    (42 peticiones a su web en 1.3 min)
+- 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
 - ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
-- 📷 Fotos de rutas de Gata con botas (de su blog): 14 nuevas, 203 en total, 3 sin foto
-- 🤝 Colaborador «Gata con botas»: 19 puntos, 0 tracks.
+- 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
+- Colaborador «Gata con botas»: sin cambios.
 - App regenerada: 382 rutas, 169 con track.
