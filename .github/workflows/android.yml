@@ -33,8 +33,8 @@ jobs:
         run: |
           git config --global user.name "Los de las Claras"; git config --global user.email "losdelasclaras@users.noreply.github.com"
           git clone --depth 1 -b main https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} web
-          cp LdC-Rutas.apk web/LdC-Rutas.apk
-          cd web && git add LdC-Rutas.apk && git commit -qm "App Android: APK ${{ github.run_number }} [skip ci]" && git pull -q --rebase origin main && git push -q origin HEAD:main
+          cp LdC-Rutas.apk web/LdC-Rutas.apk && echo "${{ github.run_number }}" > web/apk-version.txt
+          cd web && git add LdC-Rutas.apk apk-version.txt && git commit -qm "App Android: APK ${{ github.run_number }} [skip ci]" && git pull -q --rebase origin main && git push -q origin HEAD:main
           curl -s -X POST -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github+json" https://api.github.com/repos/${{ github.repository }}/pages/builds || true
       - name: Publicar
         uses: softprops/action-gh-release@v2

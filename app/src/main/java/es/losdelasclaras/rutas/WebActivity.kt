@@ -3,6 +3,7 @@ package es.losdelasclaras.rutas
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -37,6 +38,14 @@ class WebActivity : LauncherActivity() {
         if (System.currentTimeMillis() - v < 20000) { g.edit().remove("volver_t").apply(); return false }
         return true
     }
+    /** 18 nov 2026: la web recibe «?apk=N» (versión de este APK) para avisar si hay uno más nuevo (pwa/apkaviso.js). */
+    override fun getLaunchingUrl(): Uri {
+        val u = super.getLaunchingUrl()
+        val v = try { val pi = packageManager.getPackageInfo(packageName, 0)
+            if (Build.VERSION.SDK_INT >= 28) pi.longVersionCode else @Suppress("DEPRECATION") pi.versionCode.toLong() } catch (e: Exception) { 0L }
+        return try { u.buildUpon().appendQueryParameter("apk", v.toString()).build() } catch (e: Exception) { u }
+    }
+
     override fun shouldLaunchImmediately(): Boolean {
         if (intent?.data == null && grabando()) { aGrabar = true; return false }
         preguntando = pedir(); return !preguntando }
