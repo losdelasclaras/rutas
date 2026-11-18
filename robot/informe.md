@@ -1,6 +1,6 @@
-# Informe del robot · 18/11/2026 01:00
+# Informe del robot · 18/11/2026 01:17
 
-Sin cambios.
+**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 0 nuevas, 1 cambiadas, 0 quitadas; regeneración forzada
 
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
@@ -14,7 +14,6 @@ Sin cambios.
 - Blog: sin entradas nuevas.
 - 🗺️ Mapa: 694 puntos (0 nuevos o movidos, 0 quitados).
 - 📷 Foto cambiada en tu mapa: «Piedras Negras (1.087 m.)»
-- 📷 Foto cambiada en tu mapa: «Pico Cabeza Saldaña (946 m.) Sierra Gustaselvin»
 - Drive: sin tracks nuevos.
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 433 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
@@ -26,22 +25,10 @@ Sin cambios.
 - ⛰ Camudando'l camín: 23 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ⚠ No he podido leer el índice del blog de Camudando'l camín (https://camudandolcamin.blogspot.com).
 - Colaborador «Camudando'l camín»: sin cambios.
--    (40 peticiones a su web en 1.1 min)
+-    (40 peticiones a su web en 1.2 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 192 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
 - ⛰ Cumbres de Gata con botas: 17 de 18 colocadas en el pico de OpenStreetMap; 1 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 189 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
-- ❌ Error al regenerar la app (no se publica nada): /home/claude/pwa/build_pwa.py falló:
-rutas que pasan por cumbres: 1098
-
-/home/claude/pwa/build_pwa.py:344: SyntaxWarning: invalid escape sequence '\s'
-  t=t.replace('</body></html>','<script>window.LDC_VER="'+_ver+' · '+_bh[:6]+'";window.LDC_BUILD="'+_bh+'";window.LDC_FUNC="'+_fh+'";(function(){const B="'+_bh+'";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>\n</body></html>',1)
-Traceback (most recent call last):
-  File "/home/claude/pwa/build_pwa.py", line 291, in <module>
-    rep('.fsbtn{','.topacts .ovonly{display:none}#ov .topacts .ovonly{display:flex}#ov .topacts [data-share]{display:none}\n.fsbtn{')
-  File "/home/claude/pwa/build_pwa.py", line 7, in rep
-    assert t.count(x)==cnt,(t.count(x),x[:80]); t=t.replace(x,y)
-           ^^^^^^^^^^^^^^^
-AssertionError: (2, '.fsbtn{')
-
+- App regenerada: 383 rutas, 170 con track.
