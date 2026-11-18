@@ -5744,6 +5744,14 @@ const main=document.querySelector("main");if(!main)return;
 const ADM=["losdelasclaras@gmail.com","jcrespopazos@gmail.com"];
 const usr=()=>window.LDCFB&&LDCFB.user&&LDCFB.user();
 const esAdm=()=>{const u=usr();return!!(u&&u.email&&ADM.includes(u.email.toLowerCase()))};
+const miEm=()=>{const u=usr();return u&&u.email?u.email.toLowerCase():""};
+// 18 nov 2026: los colaboradores dados de alta como editores (Firestore › editores/<correo>, ver corregir.js) también crean retos; editan y borran solo los suyos (campo «por»)
+let EDI={em:"",co:null};
+async function miEditor(){const e=miEm();if(!e||ADM.includes(e)){EDI={em:e,co:null};return}if(EDI.em===e)return;EDI={em:e,co:null};
+  try{const a=await fb(),d=await a.fs.getDoc(a.fs.doc(a.db,"editores",e));EDI.co=d.exists()?(d.data().co||null):null}catch(_){}
+  if(!sec.hidden)pinta()}
+const puedeCrear=()=>esAdm()||(!!EDI.co&&EDI.em===miEm());
+const esMio=r=>!!r&&(esAdm()||(puedeCrear()&&r.por===miEm()));
 const fb=()=>window.LDCFB?LDCFB.load():Promise.reject(new Error("sin Firebase"));
 const URLAPP=typeof APPURL!=="undefined"?APPURL:location.origin+location.pathname;
 const LK="ldc-retos",RC="ldc-retos-lista";
@@ -5870,7 +5878,7 @@ function resolver(x){const it={id:x.id,n:x.n,sub:x.sub||"",peso:1,lat:x.lat,lon:
 function deFire(r){const items=(r.it||[]).map(resolver);
   return{id:r.id,n:r.n||"Reto",e:r.e||"🏆",d:r.d||"",org:r.org||"",tipo:r.ini||r.fin?"fechas":"perm",ini:r.ini||"",fin:r.fin||"",prem:r.prem||"",activo:r.activo!==false,
     u:(r.it||[]).some(x=>x.t==="l")?"sitios":"cumbres",tot:items.length,items,raw:r}}
-function todos(){const v=[];const t=deTecho();if(t)v.push(t);const mc=deCimeros();if(mc)v.push(mc);for(const r of RETOS){if(r.activo===false&&!esAdm())continue;v.push(deFire(r))}return v}
+function todos(){const v=[];const t=deTecho();if(t)v.push(t);const mc=deCimeros();if(mc)v.push(mc);for(const r of RETOS){if(r.activo===false&&!esMio(r))continue;v.push(deFire(r))}return v}
 const reto=id=>todos().find(r=>r.id===id);
 function estado(R){if(R.tipo!=="fechas")return{k:"pe",t:"Permanente",on:true};const h=new Date().toISOString().slice(0,10);
   if(R.ini&&h<R.ini)return{k:"pr",t:"Empieza el "+fecha(R.ini),on:false};
@@ -5934,8 +5942,8 @@ function tarjeta(R){const n=prog(R),st=estado(R);
 function pintaLista(){const v=todos();const ord=R=>{const k=estado(R).k;return R.fijo?0:k==="on"?1:k==="pe"?2:k==="pr"?3:4};v.sort((a,b)=>ord(a)-ord(b));
   const bor=v.filter(R=>R.activo===false),vivos=v.filter(R=>R.activo!==false&&estado(R).k!=="fi"),fin=v.filter(R=>R.activo!==false&&estado(R).k==="fi");
   box.innerHTML=`<div class="rthead"><h2>🏆 Retos</h2><p>Marca las cumbres que vas subiendo y gana medallas. Si te apuntas, verás quién más las ha subido y saldrás en la lista.</p></div>
-  ${esAdm()?`<button class="rtnew" data-rtnew>＋ Crear un reto (administrador)</button>`:""}
-  ${bor.length?`<h3 style="margin:6px 0 8px;font-size:16px">📝 Borradores · solo los veis los administradores</h3>${bor.map(tarjeta).join("")}<h3 style="margin:14px 0 8px;font-size:16px">Publicados</h3>`:""}
+  ${puedeCrear()?`<button class="rtnew" data-rtnew>＋ Crear un reto</button>`:""}
+  ${bor.length?`<h3 style="margin:6px 0 8px;font-size:16px">📝 Borradores · ${esAdm()?"solo los veis los administradores":"solo los ves tú (y los administradores)"}</h3>${bor.map(tarjeta).join("")}<h3 style="margin:14px 0 8px;font-size:16px">Publicados</h3>`:""}
   ${vivos.map(tarjeta).join("")||`<p class="rtvacio">Cargando los retos…</p>`}
   ${fin.length?`<details><summary style="font-weight:800;margin:10px 0;cursor:pointer">Retos terminados (${fin.length})</summary>${fin.map(tarjeta).join("")}</details>`:""}`}
 function pintaReto(R){const n=prog(R),st=estado(R),H=hitos(R.tot),L=lo(R.id),u=usr();
@@ -5944,7 +5952,7 @@ function pintaReto(R){const n=prog(R),st=estado(R),H=hitos(R.tot),L=lo(R.id),u=u
   const its=R.items.filter(it=>FIL==="todas"||(FIL==="hechas")===hecho(R,it));
   const fechas=R.tipo==="fechas";
   box.innerHTML=`<button class="rtback" data-rtback>‹ Retos</button>
-  ${R.activo===false?`<div class="rtjoin" style="border:2px dashed #e8a317"><p>📝 <b>Borrador:</b> solo lo veis los administradores. Cuando esté listo, publícalo.</p><div class="rw"><button class="rtb pri sm" data-rtpub>✅ Publicar el reto</button><button class="rtb sm" data-rtedit>✏️ Seguir editando</button></div></div>`:""}
+  ${R.activo===false?`<div class="rtjoin" style="border:2px dashed #e8a317"><p>📝 <b>Borrador:</b> ${esAdm()?"solo lo veis los administradores":"solo lo ves tú (y los administradores)"}. Cuando esté listo, publícalo.</p><div class="rw"><button class="rtb pri sm" data-rtpub>✅ Publicar el reto</button><button class="rtb sm" data-rtedit>✏️ Seguir editando</button></div></div>`:""}
   <div class="rtcab"><div class="rte">${esc(R.e)}</div><h2>${esc(R.n)}</h2><p><span class="rtst ${st.k}">${esc(st.t)}</span>${fechas&&R.ini?` ${esc(fecha(R.ini))} – ${esc(fecha(R.fin))}`:""}</p>
     ${R.d?`<p>${esc(R.d)}</p>`:""}${R.org?`<p>Reto de ${R.orgu?`<a href="${esc(R.orgu)}" target="_blank" rel="noopener">${esc(R.org)}</a>`:esc(R.org)}</p>`:""}
     ${fechas?`<p style="font-size:14px">Solo cuenta lo que marques ✓ mientras el reto está en marcha.</p>`:""}</div>
@@ -5960,7 +5968,7 @@ function pintaReto(R){const n=prog(R),st=estado(R),H=hitos(R.tot),L=lo(R.id),u=u
       <button class="rtinfo" data-rtit="${esc(it.id)}"><b>${esc(it.n)}</b><small>${[it.sub,it.a?it.a+" m":""].filter(Boolean).map(esc).join(" · ")}</small></button><span class="rtn">${cuenta[it.id]?"👥 "+cuenta[it.id]:""}</span></div>`).join("")||`<p class="rtvacio">Nada por aquí.</p>`}`
   :`${!PART[R.id]?`<p class="rtvacio">Cargando…</p>`:part.length?part.map((p,i)=>`<div class="rtpe" data-rtpe="${i}"><span class="pos">${i+1}</span>${mejor(R,p.n||0)||`<span style="width:30px"></span>`}<span class="nm"><b>${esc(p.nom||"Sin nombre")}${p.comp?" 🏆":""}</b><small>${p.n||0} de ${R.tot} ${esc(R.u)}${Object.keys(p.v||{}).length?` · ✔ ${Object.keys(p.v).length} con track`:""}</small></span></div>`).join("")
     :`<p class="rtvacio">${PART[R.id].err?"Sin conexión: no se puede ver quién participa.":"Todavía no se ha apuntado nadie. ¡Sé el primero!"}</p>`}`}
-  <p style="margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap"><button class="rtb" data-rtshare>📤 Compartir el reto</button>${esAdm()&&!R.fijo?`<button class="rtb" data-rtedit>✏️ Editar (administrador)</button>`:""}</p>`}
+  <p style="margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap"><button class="rtb" data-rtshare>📤 Compartir el reto</button>${!R.fijo&&esMio(R.raw)?`<button class="rtb" data-rtedit>✏️ Editar el reto</button>`:""}</p>`}
 
 /* ---------- ficha de una cumbre del reto ---------- */
 let ITEM=null;
@@ -6020,7 +6028,7 @@ function pideNombre(fn){const u=usr();const def=LOC._nom||((u&&u.displayName)||"
 let PIDE=null;
 async function salir(id){if(!confirmar("¿Dejar de salir en la lista de este reto? Tu progreso se queda en tu móvil."))return;const u=usr(),L=lo(id);L.pub=false;saveLoc();
   try{const a=await fb();await a.fs.deleteDoc(a.fs.doc(a.db,"retosu",id+"_"+u.uid));delete PUBJ[id];if(PART[id])PART[id].l=PART[id].l.filter(x=>x.u!==u.uid)}catch(e){toast("No se ha podido quitar ahora; prueba con cobertura")}pinta()}
-addEventListener("ldc-user",()=>{setTimeout(()=>{const u=usr();if(u&&QUIERE){const id=QUIERE;QUIERE=null;apuntar(id);return}if(u)publicaTodos();if(!sec.hidden)pinta()},800)});
+addEventListener("ldc-user",()=>{setTimeout(miEditor,300);setTimeout(()=>{const u=usr();if(u&&QUIERE){const id=QUIERE;QUIERE=null;apuntar(id);return}if(u)publicaTodos();if(!sec.hidden)pinta()},800)});
 
 /* ---------- crear y editar retos (administrador) ---------- */
 let ED=null;
@@ -6031,7 +6039,8 @@ function fuentes(){const v=[];
     if(v.some(y=>!y.co&&norm(y.n)===norm(x.c)&&Math.abs(y.lat-x.lat)<.005))continue;
     v.push({n:x.c,t:x.k==="cumbre"?"c":"l",lat:x.lat,lon:x.lon,a:null,k:COLX.coKeyK?COLX.coKeyK(x.co,x.c,x.k):COLX.coKey(x.co,x.c),co:x.co.id,s:(x.k==="cumbre"?"Cumbre · ":"Lugar · ")+x.co.n})}
   return v}
-function editar(r){ED=r?JSON.parse(JSON.stringify(r)):{id:"",n:"",e:"🏆",d:"",org:"",ini:"",fin:"",prem:"",activo:false,it:[]};ED._fe=!!(ED.ini||ED.fin);pintaEd()}
+const nomCo=()=>{try{const x=EDI.co&&window.COLX&&COLX.todo?COLX.todo().find(y=>y.co&&y.co.id===EDI.co):null;return x?x.co.n:""}catch(_){return""}};
+function editar(r){ED=r?JSON.parse(JSON.stringify(r)):{id:"",n:"",e:"🏆",d:"",org:esAdm()?"":nomCo(),ini:"",fin:"",prem:"",activo:false,it:[]};ED._fe=!!(ED.ini||ED.fin);pintaEd()}
 function pintaEd(){const r=ED,fe=!!r._fe;
   abreDlg(`<div class="hd"><h3>${r.id?"Editar reto":"Reto nuevo"}</h3><button class="x" data-rtx aria-label="Cerrar">×</button></div>
   <label>Nombre</label><input type="text" data-ed="n" value="${esc(r.n)}" maxlength="60" placeholder="Reto de la Federación 2027">
@@ -6045,7 +6054,7 @@ function pintaEd(){const r=ED,fe=!!r._fe;
   <div>${r.it.map((x,i)=>`<div class="rtit"><span class="rtinfo"><b>${esc(x.n)}</b><small>${esc(x.s||"")}</small></span><button class="rtb sm" data-edq="${i}">✕</button></div>`).join("")||`<p style="color:var(--muted);margin:0">Busca abajo y toca para añadir.</p>`}</div>
   <input type="search" data-edbus placeholder="Buscar una cumbre o un lugar…" style="margin-top:8px"><div class="rtsel" data-edres hidden></div>
   ${r._nv?nuevaHtml(r._nv):`<p style="margin:10px 0 0"><button class="rtb" data-ednv>＋ Cumbre o lugar nuevo (que no está en la app)</button></p>`}
-  ${r.activo===false?`<p style="margin:16px 0 0;font-size:14px;color:var(--muted)">📝 Puedes guardarlo como borrador y seguir otro día: solo lo veis los administradores hasta que lo publiques.</p>`:""}
+  ${r.activo===false?`<p style="margin:16px 0 0;font-size:14px;color:var(--muted)">📝 Puedes guardarlo como borrador y seguir otro día: ${esAdm()?"solo lo veis los administradores":"solo lo ves tú (y los administradores)"} hasta que lo publiques.</p>`:""}
   <p style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0">${r.activo===false?`<button class="rtb" data-edok="b">💾 Guardar borrador</button><button class="rtb pri" data-edok="p">✅ Publicar el reto</button>`:`<button class="rtb pri" data-edok="g">💾 Guardar cambios</button><button class="rtb" data-edok="b">⏸ Pasar a borrador</button>`}${r.id?`<button class="rtb" data-edborra>🗑 Borrar el reto</button>`:""}</p>`)}
 function nuevaHtml(v){return `<div class="rtnv"><b>Cumbre o lugar nuevo</b><small style="display:block;color:var(--muted)">Solo existe dentro de este reto.</small>
   <label>Nombre</label><input type="text" data-nv="n" value="${esc(v.n||"")}" maxlength="60" placeholder="Pico…">
@@ -6077,7 +6086,7 @@ async function guardaEd(modo){leeEd();const r=ED;if(!r.n){toast("Ponle un nombre
   if(pub&&r._fe&&(!r.ini||!r.fin)){toast("Pon las dos fechas para publicarlo");return}
   r.activo=pub;if(r.ini&&r.fin&&r.fin<r.ini){toast("La fecha de fin es anterior a la de inicio");return}
   const id=r.id||(slug(r.n).slice(0,30)+"-"+Math.random().toString(36).slice(2,6));
-  const d={n:r.n,e:r.e||"🏆",d:r.d||"",org:r.org||"",prem:r.prem||"",ini:r._fe?r.ini:"",fin:r._fe?r.fin:"",activo:r.activo!==false,ord:r.ord||0,
+  const d={por:r.por||miEm(),n:r.n,e:r.e||"🏆",d:r.d||"",org:r.org||"",prem:r.prem||"",ini:r._fe?r.ini:"",fin:r._fe?r.fin:"",activo:r.activo!==false,ord:r.ord||0,
     it:r.it.map(x=>({id:x.id||slug((x.t||"c")+"-"+x.n),n:x.n,t:x.t,lat:+(+x.lat).toFixed(6),lon:+(+x.lon).toFixed(6),a:x.a||null,k:x.k,co:x.co||"",s:x.s||"",nv:x.nv?1:0})),t:Date.now()};
   try{const a=await fb();await a.fs.setDoc(a.fs.doc(a.db,"retos",id),d);toast(modo==="p"?"✅ Reto publicado: ya lo ve todo el mundo":modo==="b"?"📝 Guardado como borrador":"✅ Reto guardado");cierraDlg();
     RETOS=RETOS.filter(x=>x.id!==id).concat([Object.assign({id},d)]);store.set(RC,RETOS);CUR=id;pinta()}
@@ -6181,7 +6190,7 @@ window.RETOTAG=function(p,kind){try{const k=(kind==="cumbres"?"c:":"l:")+norm(p.
 document.addEventListener("click",e=>{const b=e.target.closest("[data-rtag]");if(!b)return;e.stopPropagation();e.preventDefault();abrir(b.dataset.rtag)},true);
 window.RETOS={abrir,pinta};
 // cada vez que se enseña la pestaña, se repinta y se miran retos nuevos
-new MutationObserver(()=>{if(!sec.hidden){pinta();cargaRetos();if(CUR)cargaPart(CUR)}}).observe(sec,{attributes:true,attributeFilter:["hidden"]});
+new MutationObserver(()=>{if(!sec.hidden){miEditor();pinta();cargaRetos();if(CUR)cargaPart(CUR)}}).observe(sec,{attributes:true,attributeFilter:["hidden"]});
 function deEnlace(){const h=location.hash||"";if(h==="#retos"||h.startsWith("#reto=")){const id=h.startsWith("#reto=")?decodeURIComponent(h.slice(6)):null;
   try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}setTimeout(()=>abrir(id),300)}}
 addEventListener("hashchange",deEnlace);setTimeout(deEnlace,500);
@@ -7037,5 +7046,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="18/11 16:01 · 524b37";window.LDC_BUILD="524b3710e7";window.LDC_FUNC="2414060f5e";(function(){const B="524b3710e7";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="18/11 16:09 · 19d4d4";window.LDC_BUILD="19d4d4ee30";window.LDC_FUNC="ec7a0a6b5a";(function(){const B="19d4d4ee30";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
