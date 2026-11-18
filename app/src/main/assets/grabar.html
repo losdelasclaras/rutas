@@ -64,6 +64,9 @@ body.segab #segMas{max-height:calc(100vh - 150px);max-height:calc(100dvh - 150px
 .sh input{width:100%;font:inherit;font-size:18px;padding:12px;border:1px solid var(--edge);border-radius:12px;margin:6px 0 12px}
 .b2{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:19px;font-weight:800;margin:8px 0;background:#eceeea;color:var(--ink)}
 .b2.go{background:var(--rojo);color:#fff}
+#of2{position:fixed;left:10px;right:10px;top:calc(124px + env(safe-area-inset-top,0px));z-index:2400;background:#fff;color:#1d2a22;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.35);padding:12px 14px;font-size:16px;max-width:520px;margin:0 auto}
+#of2[hidden]{display:none}#of2 p{margin:0 0 10px;line-height:1.35}#of2 div{display:flex;gap:8px}#of2 button{flex:1;border:1px solid #c9d2cc;background:#f3f6f4;border-radius:12px;padding:11px 8px;font:inherit;font-weight:700;color:inherit}
+#of2 .si{flex:1.6;background:#e8711a;border-color:#e8711a;color:#fff}#of2 .nunca{display:block;width:100%;margin-top:8px;border:0;background:none;font-size:14px;font-weight:600;color:#5d6b62;text-decoration:underline;padding:4px}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:130px;z-index:2500;background:rgba(20,28,24,.92);color:#fff;padding:10px 16px;border-radius:14px;font-size:16px;font-weight:700;max-width:86%;text-align:center}
 #toast[hidden]{display:none}
 .me{position:relative}.me i{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.5)}
@@ -193,7 +196,7 @@ function cargaSeguir(){const p0=TR[0];
   if(!TR[0]){T=[];$("seg").hidden=true;preguntaNuevo();return}
   act(ACT);
   if(TR[0]!==p0){ACT=0;act(0);IDX=0;const ll=TR[0].t.map(p=>[p[0],p[1]]).concat(TR[1]?TR[1].t.map(p=>[p[0],p[1]]):[]);
-    map.fitBounds(L.latLngBounds(ll),{padding:[40,40],paddingTopLeft:[20,150],paddingBottomRight:[80,150]});SIGUE=false;clearTimeout(VUELTA);VUELTA=setTimeout(()=>{SIGUE=true;if(YO)map.panTo([YO[0],YO[1]])},20000);setTimeout(ofreceZona,700)}
+    map.fitBounds(L.latLngBounds(ll),{padding:[40,40],paddingTopLeft:[20,150],paddingBottomRight:[80,150]});SIGUE=false;clearTimeout(VUELTA);VUELTA=setTimeout(()=>{SIGUE=true;if(YO)map.panTo([YO[0],YO[1]])},20000);setTimeout(ofreceZona,700);setTimeout(()=>ofrece2(0),2500)}
   if(YO)sigueA(YO[0],YO[1]);else pintaSeg(null);
   if(TR[1]&&Nativo.anadido2&&Nativo.anadido2())toast("➕ «"+TR[1].n+"» añadido como secundario (en naranja)",4000);
   preguntaNuevo()}
@@ -252,6 +255,16 @@ function sigueA(la,lo){if(!TR[0])return;const p=[la,lo];
   const r=TR[on];if(TR[1]&&bd<=60&&r.sep)for(const k of r.sep){const falta=r.tc[k]-r.tc[r.idx],key=on+":"+k;if(falta>0&&falta<=150&&!SEPAV.has(key)){SEPAV.add(key);try{Nativo.vibrar()}catch(e){}
       toast(`⚠️ En ${Math.round(falta/10)*10} m se separan los dos tracks: «${TR[0].n}» (morado) y «${TR[1].n}» (naranja)`,8000)}}
   pintaSeg(bd)}
+/* 18 nov 2026 (idea de Dani, Rutinas Varias): al cargar el primer track, un aviso pequeño que ofrece añadir un segundo,
+   con «No volver a mostrar». No tapa nada: si hay una pregunta abierta (¿guardar el mapa?…) espera a que se cierre. */
+function ofrece2(n){if(TR[1]||!TR[0]||lsG("no-ofrece2")==="1"||window.__NU)return;
+  if(!$("sheet").hidden){if(n<30)setTimeout(()=>ofrece2(n+1),2000);return}
+  let e=$("of2");if(!e){e=document.createElement("div");e.id="of2";document.body.appendChild(e)}
+  e.innerHTML=`<p>➕ ¿Vas a hacer una variante? Puedes seguir <b>un segundo track</b> a la vez (sale en naranja) y la app sabe por cuál vas.</p>
+   <div><button class="si" onclick="of2('si')">➕ Añadir un segundo track</button><button onclick="of2('no')">Ahora no</button></div>
+   <button class="nunca" onclick="of2('nunca')">No volver a mostrar este aviso</button>`;
+  e.hidden=false;clearTimeout(e._t);e._t=setTimeout(()=>{e.hidden=true},25000)}
+function of2(k){const e=$("of2");if(e)e.hidden=true;if(k==="si")anadir2();else if(k==="nunca"){lsS("no-ofrece2","1");toast("Vale, no lo vuelvo a mostrar. Lo tienes en ▾ › «Añadir un segundo track»",4500)}}
 function anadir2(){Nativo.anadir2();toast("Elige la ruta o el track y toca «▶ Seguir»",3000)}
 function haceP(){const a=rdJ(Nativo.seguir()),b=rdJ(Nativo.seguir2());if(!a||!b)return;Nativo.ponSeguir("p",JSON.stringify(b));Nativo.ponSeguir("s",JSON.stringify(a));TR=[TR[1],TR[0]];ACT=ACT?0:1;cruces();pintaLineas();act(ACT);pintaSeg();toast("⇅ «"+TR[0].n+"» es ahora el principal")}
 function quita2(){Nativo.ponSeguir("s","");TR[1]=null;cruces();pintaLineas();act(0);if(YO)sigueA(YO[0],YO[1]);else pintaSeg();toast("Secundario quitado")}
