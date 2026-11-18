@@ -36,15 +36,20 @@ L.DomEvent.disableClickPropagation(document.getElementById("msearch"));L.DomEven
 let RES=[];
 // 0 = empieza por lo buscado, 1 = una palabra empieza por ello, 2 = va dentro; y antes cuanto más al principio aparezca
 const tiene=(t,q)=>{const n=nk(t),i=n.indexOf(q);if(i<0)return 9;return(n.startsWith(q)?0:(" "+n).includes(" "+q)?1:2)+Math.min(i,90)/100};
+// 18 nov 2026: la dificultad a la vista en las rutas que salen al buscar
+const DIFT={b:"🟢 Baja",m:"🟡 Moderada",a:"🔴 Alta",x:"⚫ Muy alta"};
+const nivG=r=>({baja:"b",moderada:"m",alta:"a","muy-alta":"x"})[String(r.dl||"").toLowerCase()]||"";
+function nivC(s){s=String(s||"");const m=/MIDE\s*\d\s*-\s*\d\s*-\s*\d\s*-\s*(\d)/i.exec(s);if(m){const e=+m[1];return e<=2?"b":e===3?"m":e===4?"a":"x"}
+  const n=nk(s);return/muy dificil|muy alta/.test(n)?"x":/dificil|^alta/.test(n)?"a":/moderad/.test(n)?"m":/facil|^baja/.test(n)?"b":""}
 function busca(q0){const q=nk(q0);RES=[];if(q.length<2){res.hidden=true;return}
   const out={r:[],c:[],l:[],p:[]};
   // rutas del grupo y de los colaboradores
-  for(const r of R){if(!r.u)continue;const sc=Math.min(tiene(routeTitle(r),q),tiene((r.p||[]).map(i=>P[i].c).join(" "),q)+1);if(sc<9)out.r.push({sc,t:routeTitle(r),s:["Los de las Claras",r.y,r.r,r.km?(+r.km).toLocaleString("es-ES",{maximumFractionDigits:1})+" km":""].filter(Boolean).join(" · "),e:"📗",go:()=>{openRoute(r.id);flyTo(r.lat,r.lon,12)}})}
+  for(const r of R){if(!r.u)continue;const sc=Math.min(tiene(routeTitle(r),q),tiene((r.p||[]).map(i=>P[i].c).join(" "),q)+1);if(sc<9)out.r.push({sc,t:routeTitle(r),s:[DIFT[nivG(r)],"Los de las Claras",r.y,r.r,r.km?(+r.km).toLocaleString("es-ES",{maximumFractionDigits:1})+" km":""].filter(Boolean).join(" · "),e:"📗",go:()=>{openRoute(r.id);flyTo(r.lat,r.lon,12)}})}
   const T=window.COLX&&COLX.todo?COLX.todo():[];
   for(const x of T){// sus títulos empiezan por la zona («Ubiña | …»): cuenta sobre todo lo de después
     const tt=x.c.includes("|")?x.c.split("|").pop():x.c,s1=tiene(tt,q),sc=s1<9?s1:tiene(x.c,q)+3;if(sc>=9)continue;
     if(x.rr==null&&COLX.oculto&&COLX.oculto(x))continue;   // 18 nov: la misma cumbre o lugar ya sale en la fila de otro blog
-    if(x.rr!=null)out.r.push({sc:sc+.5,t:x.c,s:x.co.n+(x.r?" · "+x.r:""),e:"📗",go:()=>COLX.open(x.ci)});
+    if(x.rr!=null){const rr=x.co.r[x.rr]||[];out.r.push({sc:sc+.5,t:x.c,s:[DIFT[nivC(rr[5])],x.co.n,x.r,rr[3]].filter(Boolean).join(" · "),e:"📗",go:()=>COLX.open(x.ci)})}
     else (x.k==="cumbre"?out.c:out.l).push({sc:sc+.5,t:x.c,s:[x.a?x.a.toLocaleString("es-ES")+" m":"",(COLX.de?COLX.de(x):[x.co.n]).join(" · "),x.r].filter(Boolean).join(" · "),e:x.k==="cumbre"?"⛰️":"📍",go:()=>COLX.open(x.ci)})}
   // cumbres y lugares del grupo (sin repetir nombre)
   const vis=new Set();P.forEach((p,i)=>{if(p.x)return;const k=nk(p.c);if(vis.has(k))return;const sc=tiene(p.c,q);if(sc>=9)return;vis.add(k);
