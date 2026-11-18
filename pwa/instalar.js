@@ -15,7 +15,7 @@ if(st.no&&Date.now()-st.no<5*864e5)return;      // «Ahora no»: no se vuelve a 
 document.head.insertAdjacentHTML("beforeend",`<style>
 .instbg{position:fixed;inset:0;z-index:6000;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
 .instdlg{background:var(--card);color:var(--ink);width:100%;max-width:480px;border-radius:22px 22px 0 0;padding:20px 20px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.3);text-align:center}
-.instdlg img{width:92px;height:92px;border-radius:20px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.instdlg img{width:150px;height:150px;border-radius:30px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
 .instdlg h2{margin:12px 0 6px;font-size:22px}.instdlg p{margin:6px 0;font-size:16px;line-height:1.4}
 .instdlg .big{display:block;width:100%;margin:16px 0 8px;border:0;border-radius:14px;padding:16px;font-size:19px;font-weight:800;background:#c3262e;color:#fff;cursor:pointer;text-decoration:none}
 .instdlg .no{border:0;background:none;color:var(--muted);font-size:15px;padding:8px;cursor:pointer}
@@ -25,7 +25,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 let bg=null,ev=null;
 function cerrar(no){if(bg){bg.remove();bg=null}if(no){st.no=Date.now();try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}}}
 function cuadro(html){if(bg)bg.remove();bg=document.createElement("div");bg.className="instbg";
-  bg.innerHTML=`<div class="instdlg"><img src="icons/icon-192.png" alt="">${html}<button class="no" data-ino>Ahora no</button></div>`;document.body.appendChild(bg);
+  bg.innerHTML=`<div class="instdlg"><img src="icons/logo-andariega.png" alt="Andariega">${html}<button class="no" data-ino>Ahora no</button></div>`;document.body.appendChild(bg);
   bg.addEventListener("click",e=>{if(e.target===bg||e.target.closest("[data-ino]"))cerrar(true)})}
 const titulo=`<h2>Instala la app en tu móvil</h2><p>Rutas, cumbres y mapas del grupo, también <b>sin cobertura</b>.</p>`;
 
