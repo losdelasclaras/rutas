@@ -47,7 +47,7 @@ rep('</style>','''html,body{height:100%;margin:0}
 </style>
 </head><body>''')
 # cada módulo va protegido: si uno falla en un móvil concreto, los demás y la app siguen funcionando
-_mods=['diag','mispuntos','colab','capas','sync','seguir','mistracks','offline','senderos','yo','sos','resumen','listas','salidas','guardado','pestanas','novedades','instalar','compartir','enlaces','perfil','cerca','buscar','agrupar','inicio','capas2','orden','explorar2','fichas2','resalta','ficharuta','techos','retos','botones','dibujar','atras','uso','actualiza','visita','ayuda','bienvenida','apkaviso','perezoso']
+_mods=['diag','mispuntos','colab','capas','sync','seguir','mistracks','offline','senderos','yo','sos','resumen','listas','salidas','guardado','pestanas','novedades','instalar','compartir','enlaces','perfil','cerca','buscar','agrupar','inicio','capas2','orden','explorar2','fichas2','resalta','ficharuta','corregir','techos','retos','botones','dibujar','atras','uso','actualiza','visita','ayuda','bienvenida','apkaviso','perezoso']
 _w=lambda n:'try{\n'+open(f'/home/claude/pwa/{n}.js').read()+'\n}catch(e){console.error("módulo '+n+'",e);(window.__ERRS=window.__ERRS||[]).push("'+n+': "+(e&&e.message))}'
 i=t.rindex('</script>'); t=t[:i]+'\n'+'\n'.join(_w(n) for n in _mods)+'\n'+t[i:]
 # colaboradores (app/colaboradores.json + app/colab/<id>.json, los rellena el robot): van dentro de la página, así se ven también sin cobertura
@@ -59,8 +59,8 @@ for _c in (json.load(open(A+'colaboradores.json')) if os.path.exists(A+'colabora
     _d=json.load(open(_f))
     _CO.append({'id':_c['id'],'n':_c.get('nombre') or _d.get('t') or 'Colaborador','c':_c.get('color') or '#e8710a','p':_d.get('p',[]),'l':_d.get('l',[]),'dt':[[x[1],x[2]] for x in _d.get('d',[]) if 'drive:'+x[0] not in {str(r[11]) for r in _d.get('r',[]) if len(r)>11}],   # 16 nov: los de Drive que ya son rutas suyas, no se repiten
       
-      'r':[r[:8]+[r[8][0]]+[r[9] if len(r)>9 else '']+[r[10] if len(r)>10 else ''] for r in _d.get('r',[])],'_rl':[r[8] for r in _d.get('r',[])],
-      'bt':_d.get('bt',{}),
+      'r':[r[:8]+[r[8][0]]+[r[9] if len(r)>9 else '']+[r[10] if len(r)>10 else '']+[r[12] if len(r)>12 and r[12] else (str(r[11]) if len(r)>11 and r[11] else (r[6] or r[7] or r[0]))] for r in _d.get('r',[])],'_rl':[r[8] for r in _d.get('r',[])],
+      'bt':_d.get('bt',{}),'bw':_c.get('blog_web',''),   # 18 nov: r[11] = id estable de la ruta (correcciones a mano)
       'k':(_c.get('capas') or ((['c','l'] if _d.get('p') else [])+(['r','t'] if _d.get('r') else [])))+(['t'] if _d.get('d') and 't' not in (_c.get('capas') or (['r','t'] if _d.get('r') else [])) else [])})   # 16 nov: los tracks de su carpeta de Drive van en su capa Tracks
 # 16 nov 2026: mapas para incrustar de las rutas de los colaboradores (mapa.html#co-<colaborador>-<ruta>)
 import unicodedata as _ud0

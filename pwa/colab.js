@@ -298,6 +298,7 @@ PEAKS.sort((a,b)=>(b.a||0)-(a.a||0));SPOTS.sort((a,b)=>a.c.localeCompare(b.c,"es
 // los que coinciden, juntos: el del colaborador justo debajo del vuestro
 for(const L of [PEAKS,SPOTS]){const pares=L.filter(x=>x.par);for(const x of pares)L.splice(L.indexOf(x),1);for(const x of pares){const j=L.indexOf(x.par);L.splice(j<0?L.length:j+1,0,x)}}
 window.COLX={
+  cos:()=>CO,   // 18 nov: lista de colaboradores (corregir.js)
   cats:()=>CATS.concat(EXTRA),
   ok(p,C){const o=C.o||"todas";
     if(o==="grupo")return !p.co;

@@ -67,6 +67,22 @@ GX=json.load(open('gpx/tracks.json')) if os.path.exists('gpx/tracks.json') else 
 for r in d['routes']:
     r.pop('gx',None)
     if r.get('u') in GX: r['gx']=GX[r['u']]
+# 18 nov 2026: correcciones a mano desde la app (robot › correcciones): track, Wikiloc, nombre y fecha de las rutas del grupo
+_CR=json.load(open('correcciones.json')) if os.path.exists('correcciones.json') else {}
+_CG=json.load(open('correcciones_gx.json')) if os.path.exists('correcciones_gx.json') else {}
+for r in d['routes']:
+    c=_CR.get('g|'+(r.get('u') or ''))
+    if not c: continue
+    if c.get('tr')=='sin': r.pop('gx',None)
+    elif r.get('u') in _CG: r['gx']=dict(_CG[r['u']],nm=r.get('ti') or r.get('t'))
+    if c.get('wk'):
+        if c['wk']=='-': r.pop('wk',None)
+        else: r['wk']=c['wk']
+    if c.get('n'): r['ti']=c['n']
+    if c.get('f') and re.match(r'^\d{4}-\d{2}',c['f']):
+        r['y'],r['m']=int(c['f'][:4]),int(c['f'][5:7])
+        if not str(r.get('d') or '').startswith(c['f']): r['d']=c['f']+'-01'
+    r['cr']=1
 print('rutas con GPX',sum(1 for r in d['routes'] if r.get('gx')))
 # 11 nov 2026: foto propia del punto en tu My Maps (la baja el robot, robot/actualizar.py › fotos_mapa) -> p['fo']
 FM=json.load(open('fotos_mapa.json')) if os.path.exists('fotos_mapa.json') else {}

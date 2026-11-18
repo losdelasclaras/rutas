@@ -982,6 +982,8 @@ def colaboradores():
                     if len(p) > 9: p[9] = None
                 enlazar_cumbres(co, new, 0.3)
             except Exception as e: log(f'⚠ Rutas de Drive de {co["id"]}: {e}')
+        try: aplicar_correcciones(co, new)   # 18 nov: antes de las fotos, para que la de una entrada corregida se baje ya
+        except Exception as e: log(f'⚠ Correcciones de {co["id"]}: {e}')
         fotos_colab(co['id'], new)
         blog_colab(co, new)
         if new.get('r'): new['r'] = json.loads(json.dumps(new['r'])); new['p'] = json.loads(json.dumps(new.get('p', [])))
@@ -995,6 +997,8 @@ def colaboradores():
         if co.get('nombre'):
             if new.get('bt'): new['bt'] = {u: (_pre(x) or x) for u, x in new['bt'].items()}
             for r in new.get('r') or []: r[0] = _pre(r[0]) or r[0]
+        try: aplicar_correcciones(co, new, calla=True)   # y otra vez al final: lo corregido a mano manda sobre todo lo demás
+        except Exception as e: log(f'⚠ Correcciones de {co["id"]}: {e}')
         nom = co.get('nombre') or new.get('t') or co['id']
         if new != old:
             json.dump(new, open(fo, 'w'), ensure_ascii=False, separators=(',', ':'))
@@ -1002,6 +1006,111 @@ def colaboradores():
             CAMBIOS.append(f'colaborador {nom}')
         else:
             log(f'Colaborador «{nom}»: sin cambios.')
+
+
+# ------------------------------------------------------------------ 3c. CORRECCIONES A MANO (18 nov 2026)
+# Desde la app, «✏️ Corregir esta ruta» (administradores, y cada colaborador en las suyas) guarda en Firestore › correcciones:
+#   {k: 'g|<entrada>' (grupo) o '<colaborador>|<id estable de la ruta>', co, u (entrada del blog), sb (no tiene entrada), n (nombre),
+#    f (fecha AAAA-MM), wk (Wikiloc; '-' = quitar), tr ('sin' = sin track; o el track subido, JSON [[lat,lon,ele],…]), oc (ocultar)}
+# El robot las lee cada noche y MANDAN sobre lo que saca él solo. -> app/correcciones.json (+ app/correcciones_gx.json: tracks del grupo)
+FS_PROY = 'losdelasclaras-rutas'
+CORR = {}
+def _fs_val(v):
+    if 'stringValue' in v: return v['stringValue']
+    if 'booleanValue' in v: return v['booleanValue']
+    if 'integerValue' in v: return int(v['integerValue'])
+    if 'doubleValue' in v: return v['doubleValue']
+    if 'nullValue' in v: return None
+    return None
+def _gx_de(ll, nombre=''):
+    # como gpx/proc.py: km, subida, bajada, máx/mín, salida, perfil (100 tramos) y línea
+    def dm(a, b): return math.dist((a[0], a[1] * math.cos(math.radians(a[0]))), (b[0], b[1] * math.cos(math.radians(b[0])))) * 111200
+    cum = [0]
+    for a, b in zip(ll, ll[1:]): cum.append(cum[-1] + dm(a, b))
+    E = [q[2] if len(q) > 2 else None for q in ll]; has = sum(e is not None for e in E) >= 0.8 * len(E) and len(E) > 1
+    up = dn = 0; prof = []
+    if has:
+        last = next(e for e in E if e is not None)
+        for i in range(len(E)):
+            if E[i] is None: E[i] = last
+            else: last = E[i]
+        sm = [sum(E[max(0, i - 2):i + 3]) / len(E[max(0, i - 2):i + 3]) for i in range(len(E))]; ref = sm[0]
+        for e in sm:
+            if e - ref >= 4: up += e - ref; ref = e
+            elif ref - e >= 4: dn += ref - e; ref = e
+        for k in range(101):
+            tg = cum[-1] * k / 100; i = min(range(len(cum)), key=lambda j: abs(cum[j] - tg)); prof.append([round(cum[i] / 1000, 2), round(E[i])])
+    ln = ll[::len(ll) // 1200 + 1] if len(ll) > 1200 else ll
+    if ln[-1] != ll[-1]: ln = ln + [ll[-1]]
+    return {'km': round(cum[-1] / 1000, 1), 'up': round(up / 10) * 10, 'dn': round(dn / 10) * 10, 'mx': round(max(E)) if has else None, 'mn': round(min(E)) if has else None,
+            'st': [round(ll[0][0], 5), round(ll[0][1], 5)], 'pf': prof, 'ln': [[round(q[0], 5), round(q[1], 5)] + ([round(q[2])] if len(q) > 2 and q[2] is not None else []) for q in ln], 'nm': nombre}
+def correcciones():
+    global CORR
+    cf = APP + 'correcciones.json'
+    if os.path.exists(cf): CORR = json.load(open(cf))   # si Firestore no responde, valen las de la última vez (nunca se pierden)
+    docs, tok = [], ''
+    for _ in range(20):
+        j = json.loads(get(f'https://firestore.googleapis.com/v1/projects/{FS_PROY}/databases/(default)/documents/correcciones?pageSize=300' + (f'&pageToken={tok}' if tok else '')))
+        docs += j.get('documents', []); tok = j.get('nextPageToken')
+        if not tok: break
+    C = {}
+    for d in docs:
+        f = {k: _fs_val(v) for k, v in d.get('fields', {}).items()}
+        if not f.get('k'): continue
+        tr = f.get('tr')
+        if tr and tr != 'sin':
+            try: f['tr'] = [[float(q[0]), float(q[1])] + ([float(q[2])] if len(q) > 2 and q[2] is not None else []) for q in json.loads(tr)]
+            except Exception: f.pop('tr', None)
+        C[f['k']] = {k: v for k, v in f.items() if k in ('k', 'co', 'u', 'sb', 'n', 'f', 'wk', 'tr', 'oc') and v not in (None, '')}
+    old = dict(CORR)
+    CORR = C
+    if C != old:
+        json.dump(C, open(cf, 'w'), ensure_ascii=False, separators=(',', ':'))
+        gxf = {k[2:]: _gx_de(v['tr'], v.get('n') or '') for k, v in C.items() if k.startswith('g|') and isinstance(v.get('tr'), list) and len(v['tr']) > 1}
+        json.dump(gxf, open(APP + 'correcciones_gx.json', 'w'), ensure_ascii=False, separators=(',', ':'))
+        nv = [k for k in C if C[k] != old.get(k)]; qt = [k for k in old if k not in C]
+        log(f'✏️ Correcciones a mano: {len(C)} en total' + (f' · {len(nv)} nuevas o cambiadas' if nv else '') + (f' · {len(qt)} quitadas' if qt else ''))
+        if any(k.startswith('g|') for k in nv + qt): CAMBIOS.append('correcciones a mano')
+    else:
+        log(f'Correcciones a mano: {len(C)} (sin cambios).')
+
+def _clave_ruta(r):
+    # id estable de una ruta de colaborador (no cambia aunque se corrija): su track de Drive, su Wikiloc, su entrada o su nombre
+    return str(r[11]) if len(r) > 11 and r[11] else (r[6] or r[7] or r[0])
+
+def aplicar_correcciones(co, new, T=None, calla=False):
+    rs = new.get('r') or []
+    if not rs: return
+    for r in rs:
+        while len(r) < 13: r.append('')
+        if not r[12]: r[12] = _clave_ruta(r)
+    if not CORR: return
+    fuera = set(); n = 0
+    for i, r in enumerate(rs):
+        c = CORR.get(f'{co["id"]}|{r[12]}')
+        if not c: continue
+        n += 1
+        if c.get('oc'): fuera.add(i); continue
+        if c.get('sb'): r[7] = ''
+        elif c.get('u') and c['u'] != r[7]:
+            r[7] = c['u']; r[9] = ''   # foto: la de la entrada nueva (fotos_rutas)
+            fe = re.search(r'/(20\d\d)/(\d\d)/', c['u']); r[10] = f'{fe.group(1)}-{fe.group(2)}' if fe else r[10]
+            tt = (T or {}).get(c['u']) or (new.get('bt') or {}).get(c['u'])
+            if not tt:
+                try:
+                    h = get(c['u']); m = re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)', h) or re.search(r'<title>([^<]+)</title>', h)
+                    tt = html.unescape(m.group(1)).split(' | ')[0].strip() if m else ''
+                except Exception: tt = ''
+            if tt: r[0] = re.sub(r'^\s*' + re.escape(co.get('nombre') or '\x00') + r'\s*[:|·–-]\s*', '', tt, flags=re.I) or tt
+        if c.get('n'): r[0] = c['n']
+        if c.get('f'): r[10] = c['f']
+        if c.get('wk'): r[6] = '' if c['wk'] == '-' else c['wk']
+        if c.get('tr') == 'sin': r[8] = r[8][:1]   # se queda solo la salida (para el icono del mapa)
+        elif isinstance(c.get('tr'), list) and len(c['tr']) > 1:
+            g = _gx_de(c['tr']); r[8] = [q[:3] for q in g['ln']]
+            r[3] = f"{g['km']:.1f}".replace('.', ',') + ' km'; r[4] = f"{g['up']} m" if g['up'] else r[4]
+    if fuera: new['r'] = [r for i, r in enumerate(rs) if i not in fuera]
+    if n and not calla: log(f'✏️ {co.get("nombre") or co["id"]}: {n} rutas con corrección a mano' + (f' ({len(fuera)} ocultas)' if fuera else ''))
 
 # ------------------------------------------------------------------ 4. REGENERAR
 def regenerar():
@@ -1027,7 +1136,7 @@ def regenerar():
 if __name__ == '__main__':
     hoy = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=1))).strftime('%d/%m/%Y %H:%M')
     err = None
-    for paso in (blog, mapa, fotos_mapa, enlaces_app, drive, colaboradores):
+    for paso in (blog, mapa, fotos_mapa, enlaces_app, drive, correcciones, colaboradores):
         try: paso()
         except Exception as e:
             log(f'⚠ Error en {paso.__name__}: {e}'); err = e
