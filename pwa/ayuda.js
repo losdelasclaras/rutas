@@ -53,6 +53,7 @@ const IR={
   dibujar(){tab("mapa");setTimeout(()=>{if(window.DIBUJAR&&DIBUJAR.abre)DIBUJAR.abre()},250)},
   android(){window.open("android.html","_blank","noopener")},
   bienvenida(){if(window.BIENVENIDA)BIENVENIDA.abre()},
+  condiciones(){if(window.CONDICIONES)CONDICIONES.abre()},
   privacidad(){window.open("privacidad.html","_blank","noopener")}
 };
 
@@ -130,6 +131,11 @@ return [
   "Marca las cumbres que has subido y, si quieres, sube una foto.",
   "Ganas medallas según avanzas y ves quién más las ha hecho. «🗺 Ver el reto en el mapa» te enseña las hechas y las que te faltan."],
   "Iremos añadiendo retos nuevos.",["Ir a Retos","retos"]],
+["⚠️","Seguridad y condiciones de uso",[
+  "La información de las rutas es orientativa: el monte cambia y los tracks pueden tener errores.",
+  "Antes de ir, lee el reportaje del blog y valora tu forma física, tu experiencia, el equipo y la meteo.",
+  "Las rutas de dificultad alta o muy alta llevan un aviso rojo. En una emergencia, llama al 112 o usa el botón SOS."],
+  "Tú decides y tú eres responsable de tu seguridad.",["Leer las condiciones de uso","condiciones"]],
 ["✉️","Contacto y privacidad",[
   "¿Algo no va o tienes una idea? Escríbenos a losdelasclaras@gmail.com.",
   "Sin cuenta, lo tuyo se guarda solo en tu móvil. En la privacidad tienes todo lo que guarda la app."],
