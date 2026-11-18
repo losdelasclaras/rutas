@@ -360,6 +360,8 @@ COLX.cumCo=p=>{const m=CUMM.find(x=>x.__p===p);if(!m)return{gi:null,ms:[]};const
 COLX.rKey=x=>rKeyCo(x.co,x.c);
 COLX.byP=p=>ALL.find(x=>x.pp===p);
 COLX.todo=()=>ALL;
+// 18 nov 2026: nombres de todos los blogs que tienen esa cumbre o lugar (para el buscador del mapa); deG = punto del grupo por su índice en P
+COLX.de=p=>duenos(p).map(c=>c.n);COLX.deG=i=>duenos({i}).map(c=>c.n);
 COLX.pasan=k=>{const v=[];for(const c of CO)for(const i of ((c.pz||{})[k]||[]))v.push({c,i});return v};   // 10 nov 2026: rutas que pasan por una cumbre (las calcula build_pwa.py)
 COLX.ln=(c,i)=>lineas().then(J=>(J[c.id]||[])[i]);
 COLX.findPt=(n,lat,lon)=>{const k=norm(n);let b=-1,bd=.4;for(const x of ALL){if(!x.pp||norm(x.c)!==k)continue;const d=km({lat,lon},x);if(d<bd){bd=d;b=x.ci}}return b};

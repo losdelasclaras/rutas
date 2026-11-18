@@ -39,15 +39,16 @@ const tiene=(t,q)=>{const n=nk(t),i=n.indexOf(q);if(i<0)return 9;return(n.starts
 function busca(q0){const q=nk(q0);RES=[];if(q.length<2){res.hidden=true;return}
   const out={r:[],c:[],l:[],p:[]};
   // rutas del grupo y de los colaboradores
-  for(const r of R){if(!r.u)continue;const sc=Math.min(tiene(routeTitle(r),q),tiene((r.p||[]).map(i=>P[i].c).join(" "),q)+1);if(sc<9)out.r.push({sc,t:routeTitle(r),s:[r.r,r.km?(+r.km).toLocaleString("es-ES",{maximumFractionDigits:1})+" km":""].filter(Boolean).join(" · "),e:"📘",go:()=>{openRoute(r.id);flyTo(r.lat,r.lon,12)}})}
+  for(const r of R){if(!r.u)continue;const sc=Math.min(tiene(routeTitle(r),q),tiene((r.p||[]).map(i=>P[i].c).join(" "),q)+1);if(sc<9)out.r.push({sc,t:routeTitle(r),s:["Los de las Claras",r.y,r.r,r.km?(+r.km).toLocaleString("es-ES",{maximumFractionDigits:1})+" km":""].filter(Boolean).join(" · "),e:"📗",go:()=>{openRoute(r.id);flyTo(r.lat,r.lon,12)}})}
   const T=window.COLX&&COLX.todo?COLX.todo():[];
   for(const x of T){// sus títulos empiezan por la zona («Ubiña | …»): cuenta sobre todo lo de después
     const tt=x.c.includes("|")?x.c.split("|").pop():x.c,s1=tiene(tt,q),sc=s1<9?s1:tiene(x.c,q)+3;if(sc>=9)continue;
+    if(x.rr==null&&COLX.oculto&&COLX.oculto(x))continue;   // 18 nov: la misma cumbre o lugar ya sale en la fila de otro blog
     if(x.rr!=null)out.r.push({sc:sc+.5,t:x.c,s:x.co.n+(x.r?" · "+x.r:""),e:"📗",go:()=>COLX.open(x.ci)});
-    else (x.k==="cumbre"?out.c:out.l).push({sc:sc+.5,t:x.c,s:x.co.n+(x.r?" · "+x.r:""),e:x.k==="cumbre"?"⛰️":"📍",go:()=>COLX.open(x.ci)})}
+    else (x.k==="cumbre"?out.c:out.l).push({sc:sc+.5,t:x.c,s:[x.a?x.a.toLocaleString("es-ES")+" m":"",(COLX.de?COLX.de(x):[x.co.n]).join(" · "),x.r].filter(Boolean).join(" · "),e:x.k==="cumbre"?"⛰️":"📍",go:()=>COLX.open(x.ci)})}
   // cumbres y lugares del grupo (sin repetir nombre)
   const vis=new Set();P.forEach((p,i)=>{if(p.x)return;const k=nk(p.c);if(vis.has(k))return;const sc=tiene(p.c,q);if(sc>=9)return;vis.add(k);
-    (p.t==="cumbre"?out.c:out.l).push({sc,t:p.c,s:[p.a?p.a.toLocaleString("es-ES")+" m":"",p.r].filter(Boolean).join(" · "),e:p.t==="cumbre"?"⛰️":"📍",go:()=>{pickRoute(i);flyTo(p.lat,p.lon,13)}})});
+    (p.t==="cumbre"?out.c:out.l).push({sc,t:p.c,s:[p.a?p.a.toLocaleString("es-ES")+" m":"",(COLX.deG?COLX.deG(i):["Los de las Claras"]).join(" · "),p.r].filter(Boolean).join(" · "),e:p.t==="cumbre"?"⛰️":"📍",go:()=>{pickRoute(i);flyTo(p.lat,p.lon,13)}})});
   // pueblos: rutas cerca
   try{for(const s of (window.findSites?findSites(q0):[]).filter(s=>!/^(lugar del mapa|cumbre|lugar|ruta)/i.test(s.k||"")).slice(0,4))out.p.push({sc:0,pu:1,t:s.alt?s.alt.split(";")[0]:s.n,s:[s.k,s.reg].filter(Boolean).join(" · "),e:"🏘️",go:()=>verPueblo(s),rutas:()=>{quitaPin();if(window.CERCA&&CERCA.en)CERCA.en(s.lat,s.lon,s.n);else flyTo(s.lat,s.lon,13)}})}catch(e){}
   const ord=a=>a.sort((x,y)=>x.sc-y.sc||x.t.localeCompare(y.t,"es"));
