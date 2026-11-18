@@ -11,7 +11,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .ayubtn{flex:none;width:36px;height:36px;border-radius:50%;border:2px solid #fff;background:#2a7a3b;color:#fff;font:900 20px/1 system-ui,sans-serif;cursor:pointer;margin-left:6px;box-shadow:0 1px 4px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;padding:0}
 html.pc .ayubtn{margin-left:auto}
 .sosbtn + .ayubtn{margin-left:6px}
-.ayubtn + .fsbtn{margin-left:6px}
+.ayubtn + .fsbtn {margin-left:6px}
 .ayubg{position:fixed;inset:0;z-index:5900;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
 .ayubg[hidden]{display:none}
 .ayup{background:var(--card,#fff);color:var(--ink,#1d1d1d);width:100%;max-width:640px;max-height:92dvh;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border-radius:20px 20px 0 0;padding:16px 16px 28px;box-sizing:border-box}
