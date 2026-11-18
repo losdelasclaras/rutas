@@ -468,6 +468,11 @@ def rutas_drive(co, new):
         fid, nom = x[0], x[1]; ll = x[2] = _sin_saltos(x[2])
         u = busca(nom)
         if not u: sin.append(nom)
+        if u and not T.get(u):   # 18 nov: entrada encontrada pero sin título en la caché → se lee de la propia entrada
+            try:
+                h = get(u); m = re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)', h) or re.search(r'<title>([^<]+)</title>', h)
+                if m: T[u] = html.unescape(m.group(1)).split(' | ')[0].strip(); json.dump(T, open(cf, 'w'), ensure_ascii=False, indent=0)
+            except Exception: pass
         ti = T.get(u) or re.sub(r'[-_]+', ' ', nom).strip().capitalize()
         km = sum(math.dist((a[0], a[1] * math.cos(math.radians(a[0]))), (b[0], b[1] * math.cos(math.radians(b[0])))) * 111.2 for a, b in zip(ll, ll[1:]))
         up = 0; E = [q[2] for q in ll if len(q) > 2]
