@@ -1483,7 +1483,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-2f3e4966.json", "ln": "colab-ln-454bbfc7.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-f1acc692.json", "ln": "colab-ln-71b9e890.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -3920,7 +3920,7 @@ if(st.no&&Date.now()-st.no<5*864e5)return;      // «Ahora no»: no se vuelve a 
 document.head.insertAdjacentHTML("beforeend",`<style>
 .instbg{position:fixed;inset:0;z-index:6000;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
 .instdlg{background:var(--card);color:var(--ink);width:100%;max-width:480px;border-radius:22px 22px 0 0;padding:20px 20px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.3);text-align:center}
-.instdlg img{width:92px;height:92px;border-radius:20px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.instdlg img{width:150px;height:150px;border-radius:30px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
 .instdlg h2{margin:12px 0 6px;font-size:22px}.instdlg p{margin:6px 0;font-size:16px;line-height:1.4}
 .instdlg .big{display:block;width:100%;margin:16px 0 8px;border:0;border-radius:14px;padding:16px;font-size:19px;font-weight:800;background:#c3262e;color:#fff;cursor:pointer;text-decoration:none}
 .instdlg .no{border:0;background:none;color:var(--muted);font-size:15px;padding:8px;cursor:pointer}
@@ -3930,7 +3930,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 let bg=null,ev=null;
 function cerrar(no){if(bg){bg.remove();bg=null}if(no){st.no=Date.now();try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}}}
 function cuadro(html){if(bg)bg.remove();bg=document.createElement("div");bg.className="instbg";
-  bg.innerHTML=`<div class="instdlg"><img src="icons/icon-192.png" alt="">${html}<button class="no" data-ino>Ahora no</button></div>`;document.body.appendChild(bg);
+  bg.innerHTML=`<div class="instdlg"><img src="icons/logo-andariega.png" alt="Andariega">${html}<button class="no" data-ino>Ahora no</button></div>`;document.body.appendChild(bg);
   bg.addEventListener("click",e=>{if(e.target===bg||e.target.closest("[data-ino]"))cerrar(true)})}
 const titulo=`<h2>Instala la app en tu móvil</h2><p>Rutas, cumbres y mapas del grupo, también <b>sin cobertura</b>.</p>`;
 
@@ -6555,5 +6555,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="18/11 09:45 · ebfaaa";window.LDC_BUILD="ebfaaa0865";window.LDC_FUNC="fe530135bb";(function(){const B="ebfaaa0865";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="18/11 10:15 · f0a551";window.LDC_BUILD="f0a551b1a8";window.LDC_FUNC="e8a015f26c";(function(){const B="f0a551b1a8";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
