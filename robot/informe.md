@@ -1,4 +1,4 @@
-# Informe del robot · 18/11/2026 11:14
+# Informe del robot · 18/11/2026 11:22
 
 **Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín
 
@@ -22,13 +22,12 @@
 - 📅 Fechas de rutas de Rutinas Varias: 0 nuevas (146 de 406 con fecha); Wikiloc no responde (8 fallos).
 - Colaborador «Rutinas Varias»: sin cambios.
 -    (quitados 78 puntos de publicidad: capas o nombres que no queremos)
-- 📝 Índice del blog de Camudando'l camín: 647 entradas nuevas
-- 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (3): torrebariu-santumichanu-prau-fontan-picos-del-fontan · vegarredonda-cangues-donis-torcu-tres-maries · Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
+- 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (1): Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
 - ⛰ Camudando'l camín: 25 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
-- 📷 Fotos de rutas de Camudando'l camín (de su blog): 4 nuevas, 10 en total, 3 sin foto
-- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (13 de 16 con fecha); su blog no responde (7 fallos).
+- 📷 Fotos de rutas de Camudando'l camín (de su blog): 2 nuevas, 14 en total, 1 sin foto
+- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (15 de 16 con fecha).
 - 🤝 Colaborador «Camudando'l camín»: 150 puntos, 16 tracks.
--    (40 peticiones a su web en 1.1 min)
+-    (40 peticiones a su web en 1.2 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 192 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
 - ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
