@@ -436,12 +436,38 @@ def rutas_drive(co, new):
     urls = set(T) | {p[4] for p in new.get('p', []) if len(p) > 4 and p[4] and re.match(r'https?://', p[4])}
     def sl(x): x = unicodedata.normalize('NFD', x); x = ''.join(ch for ch in x if unicodedata.category(ch) != 'Mn').lower(); return re.sub(r'[^a-z0-9]+', '-', x).strip('-')
     def us(u): return sl(re.sub(r'\.html?$', '', u.split('?')[0].split('#')[0].rstrip('/').split('/')[-1]))
-    rs = []
+    # 18 nov 2026: se comparan sin guiones («L.lena» = «llena» como lo deja Blogger) y, si no sale, por parecido (≥ 0,8 y claro
+    # ganador) con la dirección o con el título de la entrada. Si alguno no se encuentra, se vuelve a leer el índice entero del blog
+    # (las entradas nuevas o que no enlaza ninguna cumbre no estaban en la caché).
+    import difflib
+    def cp(s): return s.replace('-', '')
+    def busca(nom):
+        fs = cp(sl(nom))
+        if len(fs) < 6: return ''
+        cand = [v for v in urls if us(v) and (cp(us(v)) == fs or (len(cp(us(v))) >= 14 and fs.startswith(cp(us(v)))) or (len(fs) >= 14 and cp(us(v)).startswith(fs)))]
+        if cand: return max(cand, key=lambda v: len(us(v)))
+        sc = sorted(((max(difflib.SequenceMatcher(None, fs[:len(cp(us(v))) + 3], cp(us(v))).ratio(),
+                          difflib.SequenceMatcher(None, fs, cp(sl(re.sub(r'^[^:]{3,40}:\s*', '', T.get(v) or '')))).ratio() if T.get(v) else 0), v) for v in urls if us(v)), reverse=True)
+        if sc and sc[0][0] >= 0.8 and (len(sc) < 2 or sc[0][0] - sc[1][0] >= 0.05): return sc[0][1]
+        return ''
+    if co.get('blog_web') and 'blogspot.' in co['blog_web'] and any(not busca(x[1]) for x in dd):
+        try:
+            n0 = len(T)
+            for ini in range(1, 3001, 150):
+                j = json.loads(get(f"{co['blog_web'].rstrip('/')}/feeds/posts/summary?alt=json&max-results=150&start-index={ini}"))
+                es = j.get('feed', {}).get('entry', [])
+                for e in es:
+                    li = next((l['href'] for l in e.get('link', []) if l.get('rel') == 'alternate'), None)
+                    if li: T[li.replace('http://', 'https://')] = html.unescape(e.get('title', {}).get('$t', '')).strip()
+                if len(es) < 150: break
+            json.dump(T, open(cf, 'w'), ensure_ascii=False, indent=0); urls |= set(T)
+            if len(T) > n0: log(f'📝 Índice del blog de {co.get("nombre") or co["id"]}: {len(T) - n0} entradas nuevas')
+        except Exception as e: log(f'⚠ Índice del blog de {co.get("nombre") or co["id"]}: {e}')
+    rs = []; sin = []
     for x in dd:
         fid, nom = x[0], x[1]; ll = x[2] = _sin_saltos(x[2])
-        fs = sl(nom); u = ''
-        cand = [v for v in urls if us(v) and (us(v) == fs or (len(us(v)) >= 15 and fs.startswith(us(v))) or (len(fs) >= 15 and us(v).startswith(fs)))]
-        if cand: u = max(cand, key=lambda v: len(us(v)))
+        u = busca(nom)
+        if not u: sin.append(nom)
         ti = T.get(u) or re.sub(r'[-_]+', ' ', nom).strip().capitalize()
         km = sum(math.dist((a[0], a[1] * math.cos(math.radians(a[0]))), (b[0], b[1] * math.cos(math.radians(b[0])))) * 111.2 for a, b in zip(ll, ll[1:]))
         up = 0; E = [q[2] for q in ll if len(q) > 2]
@@ -456,6 +482,7 @@ def rutas_drive(co, new):
         if tr[-1] != ll[-1]: tr = tr + [ll[-1]]
         rs.append([ti, co.get('zona', ''), '', f'{km:.1f}'.replace('.', ',') + ' km', f'{round(up / 10) * 10} m' if up else '', '', '', u, tr, fo, fe, 'drive:' + fid])
     new['r'] = rs
+    if sin: log(f'🔗 Tracks de Drive de {co.get("nombre") or co["id"]} sin entrada de blog ({len(sin)}): ' + ' · '.join(sin[:30]))
 
 def alturas_colab(new, old):
     # altura de cada punto según el modelo del terreno (Open-Meteo), para ordenar sus cumbres por altura como las del grupo
