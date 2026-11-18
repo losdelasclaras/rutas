@@ -444,10 +444,14 @@ def rutas_drive(co, new):
     def busca(nom, fz=True):
         fs = cp(sl(nom))
         if len(fs) < 6: return ''
-        cand = [v for v in urls if us(v) and (cp(us(v)) == fs or (len(cp(us(v))) >= 14 and fs.startswith(cp(us(v)))) or (len(fs) >= 14 and cp(us(v)).startswith(fs)))]
+        # 1.º igual; 2.º la dirección es el principio del nombre (Blogger corta), la más larga; 3.º el nombre es el principio de la dirección, la más corta
+        cand = [v for v in urls if us(v) and cp(us(v)) == fs]
+        if cand: return cand[0]
+        cand = [v for v in urls if us(v) and len(cp(us(v))) >= 14 and fs.startswith(cp(us(v)))]
         if cand: return max(cand, key=lambda v: len(us(v)))
-        # un nombre tipo dirección («hou-de-los-cabrones-cabrales-torre») tiene que coincidir con la dirección: nada de parecidos
-        if not fz or re.fullmatch(r'[a-z0-9]+(-[a-z0-9]+)+', nom.strip()): return ''
+        cand = [v for v in urls if us(v) and len(fs) >= 14 and cp(us(v)).startswith(fs)]
+        if cand: return min(cand, key=lambda v: len(us(v)))
+        if not fz: return ''
         sc = sorted(((max(difflib.SequenceMatcher(None, fs[:len(cp(us(v))) + 3], cp(us(v))).ratio(),
                           difflib.SequenceMatcher(None, fs, cp(sl(re.sub(r'^[^:]{3,40}:\s*', '', T.get(v) or '')))).ratio() if T.get(v) else 0), v) for v in urls if us(v)), reverse=True)
         if sc and sc[0][0] >= 0.85 and (len(sc) < 2 or sc[0][0] - sc[1][0] >= 0.08): return sc[0][1]
