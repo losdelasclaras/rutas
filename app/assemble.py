@@ -82,6 +82,7 @@ for r in d['routes']:
     if c.get('f') and re.match(r'^\d{4}-\d{2}',c['f']):
         r['y'],r['m']=int(c['f'][:4]),int(c['f'][5:7])
         if not str(r.get('d') or '').startswith(c['f']): r['d']=c['f']+'-01'
+    if c.get('di') in ('baja','moderada','alta','muy-alta'): r['dl']=c['di']
     r['cr']=1
 print('rutas con GPX',sum(1 for r in d['routes'] if r.get('gx')))
 # 11 nov 2026: foto propia del punto en tu My Maps (la baja el robot, robot/actualizar.py › fotos_mapa) -> p['fo']

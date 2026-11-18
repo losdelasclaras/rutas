@@ -1061,7 +1061,7 @@ def correcciones():
         if tr and tr != 'sin':
             try: f['tr'] = [[float(q[0]), float(q[1])] + ([float(q[2])] if len(q) > 2 and q[2] is not None else []) for q in json.loads(tr)]
             except Exception: f.pop('tr', None)
-        C[f['k']] = {k: v for k, v in f.items() if k in ('k', 'co', 'u', 'sb', 'n', 'f', 'wk', 'tr', 'oc') and v not in (None, '')}
+        C[f['k']] = {k: v for k, v in f.items() if k in ('k', 'co', 'u', 'sb', 'n', 'f', 'di', 'wk', 'tr', 'oc') and v not in (None, '')}
     old = dict(CORR)
     CORR = C
     if C != old:
@@ -1104,6 +1104,7 @@ def aplicar_correcciones(co, new, T=None, calla=False):
             if tt: r[0] = re.sub(r'^\s*' + re.escape(co.get('nombre') or '\x00') + r'\s*[:|·–-]\s*', '', tt, flags=re.I) or tt
         if c.get('n'): r[0] = c['n']
         if c.get('f'): r[10] = c['f']
+        if c.get('di'): r[5] = {'baja': 'Baja', 'moderada': 'Moderada', 'alta': 'Alta', 'muy-alta': 'Muy alta'}.get(c['di'], c['di'])
         if c.get('wk'): r[6] = '' if c['wk'] == '-' else c['wk']
         if c.get('tr') == 'sin': r[8] = r[8][:1]   # se queda solo la salida (para el icono del mapa)
         elif isinstance(c.get('tr'), list) and len(c['tr']) > 1:

@@ -4,7 +4,7 @@
      · cada colaborador en las suyas (Firestore › editores/<correo> = {co:"c3"}; los da de alta un administrador desde este mismo cuadro).
    Se puede cambiar: la entrada del blog (buscador de su blog o pegar la dirección; o «no tiene entrada»), el track (subir otro GPX/KML
    o «sin track»), el enlace de Wikiloc, el nombre, la fecha y ocultar la ruta (solo colaboradores).
-   Se guarda en Firestore › correcciones/<id> = {k, co, u, sb, n, f, wk, tr, oc, t}. El robot lo aplica esa noche y MANDA sobre
+   Se guarda en Firestore › correcciones/<id> = {k, co, u, sb, n, f, di, wk, tr, oc, t}. El robot lo aplica esa noche y MANDA sobre
    lo que saca él solo (robot/actualizar.py › correcciones / aplicar_correcciones; app/assemble.py para las del grupo).
    k = "g|<entrada>" (rutas del grupo) o "<colaborador>|<id estable>" (c.r[i][11]).
    Para quitarlo: borrar 'corregir' de _mods en pwa/build_pwa.py. */
@@ -24,6 +24,7 @@ async function miPermiso(){const e=em();if(!e){ED={em:"",co:null,ok:true};return
 const puede=co=>esAdm()||(!!co&&ED.co===co);
 const hash=s=>{let h=5381;for(const ch of String(s))h=((h<<5)+h+ch.charCodeAt(0))>>>0;return h.toString(36)};
 const idDe=k=>k.split("|")[0]+"_"+hash(k);
+const DIFS=[["baja","Baja"],["moderada","Moderada"],["alta","Alta"],["muy-alta","Muy alta"]];
 const MES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 
 document.head.insertAdjacentHTML("beforeend",`<style>
@@ -57,15 +58,15 @@ function rutaAbierta(){
   if(!sh.querySelector(".fru"))return null;
   const k=sh._cor;
   if(k&&k.c&&k.c.r&&k.c.r[k.i]){const c=k.c,r=c.r[k.i];
-    return{co:c.id,quien:c.n,bw:c.bw||"",k:c.id+"|"+(r[11]||r[6]||r[7]||r[0]),titulo:String(r[0]).split("|").pop().trim(),u:r[7]||"",wk:r[6]||"",fe:r[10]||"",colab:true}}
+    return{co:c.id,quien:c.n,bw:c.bw||"",k:c.id+"|"+(r[11]||r[6]||r[7]||r[0]),titulo:String(r[0]).split("|").pop().trim(),u:r[7]||"",wk:r[6]||"",fe:r[10]||"",di:r[5]||"",colab:true}}
   const s=sh.querySelector("[data-share]");if(!s||typeof R==="undefined")return null;
   const r=R[+s.getAttribute("data-share")];if(!r||!r.u)return null;
-  return{co:"g",quien:"Los de las Claras",bw:BLOGG,k:"g|"+r.u,titulo:r.ti||r.t||"",u:r.u,wk:r.wk||"",fe:r.y?`${r.y}-${String(r.m||1).padStart(2,"0")}`:"",colab:false,gx:!!r.gx}}
+  return{co:"g",quien:"Los de las Claras",bw:BLOGG,k:"g|"+r.u,titulo:r.ti||r.t||"",u:r.u,wk:r.wk||"",fe:r.y?`${r.y}-${String(r.m||1).padStart(2,"0")}`:"",di:r.dl?(typeof DIFN!=="undefined"?DIFN[r.dl]:r.dl):(r.dif||""),colab:false,gx:!!r.gx}}
 
 /* ---- el botón en «Otras opciones» ---- */
 async function pon(){const x=rutaAbierta();if(!x)return;const m=sh.querySelector(".frmas");if(!m||m.querySelector("[data-crbtn]"))return;
   if(!usr())return;await miPermiso();if(!puede(x.co==="g"?null:x.co))return;if(m.querySelector("[data-crbtn]"))return;
-  m.insertAdjacentHTML("beforeend",`<button class="btn ghost" data-crbtn>✏️ <span>Corregir esta ruta<small>Entrada del blog, track, Wikiloc, nombre o fecha · solo lo ves tú</small></span></button>`);
+  m.insertAdjacentHTML("beforeend",`<button class="btn ghost" data-crbtn>✏️ <span>Corregir esta ruta<small>Entrada del blog, track, Wikiloc, nombre, fecha o dificultad · solo lo ves tú</small></span></button>`);
   try{const a=await fb(),d=await a.fs.getDoc(a.fs.doc(a.db,"correcciones",idDe(x.k)));
     if(d.exists()&&!sh.querySelector(".crmark")){const h=sh.querySelector(".sheet-head");if(h)h.insertAdjacentHTML("afterend",`<span class="crmark">✏️ Corregida a mano${d.data().t>Date.now()-864e5?" · se verá mañana":""}</span>`)}}catch(_){}}
 new MutationObserver(()=>{if(!sh.hidden&&sh.querySelector(".frmas")&&!sh.querySelector("[data-crbtn]"))pon()}).observe(sh,{childList:true,subtree:true});
@@ -123,10 +124,12 @@ function pinta(){const x=X,d=DOC||{},q=document.querySelector(".crdlg .crcuerpo"
     <input type="url" class="crwk" placeholder="Dejar como está · o pega el enlace bueno" value="${esc(d.wk&&d.wk!=="-"?d.wk:"")}">
     <label><input type="checkbox" class="crwkq" ${d.wk==="-"?"checked":""}> Quitar el enlace de Wikiloc</label>
   </fieldset>
-  <fieldset><legend>🏷 Nombre y fecha</legend>
+  <fieldset><legend>🏷 Nombre, fecha y dificultad</legend>
     <input type="text" class="crn" placeholder="Nombre: dejar el que tiene" value="${esc(d.n||"")}" maxlength="140">
     <p class="crnote">Fecha de la ruta (déjala vacía para no cambiarla)${x.fe?` · ahora: ${(()=>{const m=/^(\d{4})-(\d{2})/.exec(x.fe);return m?MES[+m[2]-1]+" de "+m[1]:x.fe})()}`:""}</p>
     <input type="month" class="crfe" value="${esc(d.f||"")}">
+    <p class="crnote">Dificultad${x.di?` · ahora: ${esc(x.di)}`:" · ahora: sin poner"}</p>
+    <select class="crdi"><option value="">Dejar la que tiene</option>${DIFS.map(([k,l])=>`<option value="${k}"${d.di===k?" selected":""}>${l}</option>`).join("")}</select>
   </fieldset>
   ${x.colab?`<fieldset><legend>🙈 Ocultar</legend><label><input type="checkbox" class="croc" ${d.oc?"checked":""}> No enseñar esta ruta en la app (repetida, mal…)</label></fieldset>`:""}
   <div class="crbtns"><button class="crok">💾 Guardar · se verá mañana</button>${DOC?`<button class="crdel">↩️ Quitar mi corrección (que la saque el robot)</button>`:""}<button class="crno">Cancelar</button></div>
@@ -181,6 +184,7 @@ async function guarda(dl){const x=X,d={k:x.k,co:x.co,t:Date.now()};   // sin el 
   if(wq)d.wk="-";else if(wk){if(!/^https?:\/\/\S*wikiloc\.\S+$/i.test(wk)){toast("Ese enlace no parece de Wikiloc");return}d.wk=wk}
   const n=(dl.querySelector(".crn").value||"").trim();if(n)d.n=n.slice(0,140);
   const f=(dl.querySelector(".crfe").value||"").trim();if(/^\d{4}-\d{2}$/.test(f))d.f=f;
+  const di=dl.querySelector(".crdi").value;if(di)d.di=di;
   if(x.colab&&dl.querySelector(".croc").checked)d.oc=true;
   if(Object.keys(d).length<=3){toast("No has cambiado nada");return}
   if(d.tr&&d.tr.length>900000){toast("El track es demasiado grande");return}
