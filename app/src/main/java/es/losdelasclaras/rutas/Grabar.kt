@@ -124,6 +124,9 @@ object Buzon {
             .put("t", JSONObject().put("integerValue", System.currentTimeMillis().toString()))).toString()
         return pedir(url, "PATCH", cuerpo).first == 200
     }
+    /** 19 nov 2026: grabaciones (con recorrido) que aún esperan a pasar a la app, para avisar en Mis cosas. */
+    fun cuantos(c: Context): Int = try { val l = JSONArray(pend(c).readText()); var k = 0
+        for (i in 0 until l.length()) if ((l.optJSONObject(i)?.optJSONArray("p")?.length() ?: 0) >= 2) k++; k } catch (e: Exception) { 0 }
     fun enviar(c: Context, pts: List<DoubleArray>, nombre: String, fin: (Boolean) -> Unit) = enviar(c, pts, nombre, JSONArray(), fin)
     fun enviar(c: Context, pts: List<DoubleArray>, nombre: String, wps: JSONArray, fin: (Boolean) -> Unit) {
         val a = JSONArray(); for (q in pts) a.put(JSONArray().put(q[0]).put(q[1]).put(q[3].toLong()).put(if (q[2].isNaN()) JSONObject.NULL else Math.round(q[2])))   // [lat, lon, ms, altura GPS]
@@ -328,8 +331,14 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
     }
     private var desdeIcono = false
     override fun onNewIntent(i: Intent?) { super.onNewIntent(i); setIntent(i); desdeIcono = i?.getBooleanExtra("desdeIcono", false) == true; datosDe(i); web.evaluateJavascript("cargaSeguir();refresca();miraZona()", null) }
-    override fun onResume() { super.onResume(); mirar(); brujula(true); try { web.evaluateJavascript("window.movilListo&&movilListo()", null) } catch (e: Exception) {} }   // al volver de un ajuste, la lista «Preparar el móvil» se pone al día
+    override fun onResume() { super.onResume(); aLaApp = false; mirar(); brujula(true); try { web.evaluateJavascript("window.movilListo&&movilListo()", null) } catch (e: Exception) {} }   // al volver de un ajuste, la lista «Preparar el móvil» se pone al día
     override fun onPause() { super.onPause(); soltar(); brujula(false) }
+    /** 19 nov 2026: si se sale de esta pantalla mientras se graba (botón de inicio, otra app, pantalla apagada…) se cierra el
+     *  mapa de la app que hubiera quedado detrás (p. ej. tras ir con 🏠 o «Añadir un segundo track»). Así, al tocar el icono,
+     *  Android no reabre ese mapa sino que la app arranca de cero y viene aquí. No se hace si se va a la app a propósito. */
+    private var aLaApp = false
+    override fun onStop() { super.onStop()
+        if (!aLaApp && !isChangingConfigurations && Grab.prefs(this).getBoolean("activo", false)) cerrarAppDetras() }
 
     // ---------- brújula: hacia dónde mira el móvil (sensor de rotación), corregida al norte geográfico ----------
     private var sm: android.hardware.SensorManager? = null
@@ -601,6 +610,7 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         @JavascriptInterface fun sinBateria(): Boolean = if (Build.VERSION.SDK_INT >= 23) (getSystemService(POWER_SERVICE) as PowerManager).isIgnoringBatteryOptimizations(packageName) else true
         /** 🏠: si esta pantalla se abrió sola desde el icono (porque se estaba grabando), detrás no está la app: se abre como al tocar el icono. */
         @JavascriptInterface fun volver() = runOnUiThread {
+            aLaApp = true
             if (desdeIcono || !hayAppDetras()) {
                 Grab.prefs(c).edit().putLong("volver_t", System.currentTimeMillis()).apply()
                 try { startActivity(packageManager.getLaunchIntentForPackage(packageName)!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) {}
@@ -614,7 +624,7 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         @JavascriptInterface fun dejarSeguir() { Grab.prefs(c).edit().remove("seguir").remove("seguir_nuevo").apply() }
         // dos tracks: principal («seguir»), secundario («seguir2») y el que acaba de llegar mientras ya se seguía otro («seguir_nuevo»)
         /** «➕ Añadir un segundo track»: a la app a elegirlo; el próximo «▶ Seguir» entra como secundario. */
-        @JavascriptInterface fun anadir2() = runOnUiThread { Grab.prefs(c).edit().putLong("anadir2", System.currentTimeMillis()).putLong("volver_t", System.currentTimeMillis()).apply()
+        @JavascriptInterface fun anadir2() = runOnUiThread { aLaApp = true; Grab.prefs(c).edit().putLong("anadir2", System.currentTimeMillis()).putLong("volver_t", System.currentTimeMillis()).apply()
             try { startActivity(packageManager.getLaunchIntentForPackage(packageName)!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) {} }
         @JavascriptInterface fun anadido2(): Boolean { val p = Grab.prefs(c); val v = p.getBoolean("anadido2", false); if (v) p.edit().remove("anadido2").apply(); return v }
         @JavascriptInterface fun seguir2(): String = Grab.prefs(c).getString("seguir2", "") ?: ""
