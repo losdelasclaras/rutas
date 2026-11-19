@@ -35,8 +35,13 @@ function pinta(){
   b.querySelector(".apkx").onclick=()=>{b.remove();try{sessionStorage.setItem("ldc-apkx","1")}catch(e){}};
   document.body.appendChild(b);
 }
-setTimeout(()=>{fetch("apk-version.txt",{cache:"no-store"}).then(r=>r.ok?r.text():"").then(t=>{
+// 19 nov 2026: también al volver a la app (como mucho cada 5 min): antes solo se miraba al abrirla de cero y, si estaba abierta
+// en segundo plano, el aviso no salía hasta cerrarla del todo
+let ULT=0;function mira(){if(Date.now()-ULT<300000)return;ULT=Date.now();
+  fetch("apk-version.txt?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(t=>{
   const ult=parseInt((t||"").trim(),10)||0;
   if(ult>mia)pinta();
-}).catch(()=>{})},2500);
+}).catch(()=>{})}
+setTimeout(mira,2500);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")setTimeout(mira,1500)});
 })();
