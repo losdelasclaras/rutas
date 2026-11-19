@@ -67,6 +67,9 @@ body.segab #segMas{max-height:calc(100vh - 150px);max-height:calc(100dvh - 150px
 #of2{position:fixed;left:10px;right:10px;top:calc(124px + env(safe-area-inset-top,0px));z-index:2400;background:#fff;color:#1d2a22;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.35);padding:12px 14px;font-size:16px;max-width:520px;margin:0 auto}
 #of2[hidden]{display:none}#of2 p{margin:0 0 10px;line-height:1.35}#of2 div{display:flex;gap:8px}#of2 button{flex:1;border:1px solid #c9d2cc;background:#f3f6f4;border-radius:12px;padding:11px 8px;font:inherit;font-weight:700;color:inherit}
 #of2 .si{flex:1.6;background:#e8711a;border-color:#e8711a;color:#fff}#of2 .nunca{display:block;width:100%;margin-top:8px;border:0;background:none;font-size:14px;font-weight:600;color:#5d6b62;text-decoration:underline;padding:4px}
+#bajabar{position:fixed;left:10px;right:10px;top:calc(124px + env(safe-area-inset-top,0px));z-index:2300;background:#1d2a22;color:#fff;border-radius:14px;padding:10px 14px 14px;font-size:16px;max-width:520px;margin:0 auto;box-shadow:0 4px 16px rgba(0,0,0,.3);overflow:hidden}
+#bajabar[hidden]{display:none}#bajabar small{display:block;font-size:13.5px;opacity:.85;margin-top:2px}#bajabar i{position:absolute;left:0;bottom:0;height:5px;background:#6fd08c;transition:width .4s}
+#bajabar.ok{background:#1f6b32}#bajabar.mal{background:#8a4b00}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:130px;z-index:2500;background:rgba(20,28,24,.92);color:#fff;padding:10px 16px;border-radius:14px;font-size:16px;font-weight:700;max-width:86%;text-align:center}
 #toast[hidden]{display:none}
 .me{position:relative}.me i{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.5)}
@@ -291,13 +294,19 @@ function guardadoAqui(){try{const c=map.getCenter();return JSON.parse(Nativo.cap
 function bajarZona(){if(T.length)try{Nativo.bajar(JSON.stringify(listaZona()),TN)}catch(e){}}
 const MB=(n,k)=>Math.max(1,Math.round(n*(k==="topo"?.018:k==="orto"?.035:.03)));
 // al empezar a seguir: ¿guardar el mapa de la zona del track? (si ya está guardado, no se pregunta)
-function ofreceZona(){if(!T.length||ZR)return;if(window.__NU||!$("sheet").hidden)return;   /* 8 nov 2026: no tapar una pregunta abierta (p. ej. ¿secundario?) */
-    // si se está ofreciendo una zona elegida en la app, no se pisa
- let f=0;try{f=+Nativo.faltan(JSON.stringify(listaZona()))}catch(e){}if(!f)return;
-  $("sh").innerHTML=`<h2>🗺 ¿Guardar el mapa de la zona?</h2><p style="margin:0 0 6px">Para verlo aunque no haya cobertura en el monte. Elige el mapa:</p>`+
-    Object.entries(CAPAS).map(([k,c])=>`<button class="capa" aria-pressed="${k===CAPA}" onclick="CAPA!=='${k}'&&ponCapaSin('${k}');ofreceZona()"><span>${k===CAPA?"✓":"○"}</span><span>${c.n}<small>${c.d}</small></span></button>`).join("")+
-    `<button class="b2 go" onclick="cierra();bajarZona()">⬇ Guardar (unos ${MB(f,CAPA)} MB)</button><button class="b2" onclick="cierra();bajarTres('track')">⬇ Guardar los tres mapas (unos ${MB3(f)} MB)</button><button class="b2" onclick="cierra()">Ahora no</button>
-    <p style="font-size:14px;color:#5d6b62;margin:4px 0">Mejor con wifi. Luego también se puede desde 🗺.</p>`;$("sheet").hidden=false}
+// 19 nov 2026: más claro. Se mira cuánto hay guardado de la zona del track en los tres mapas: si ya está (≥97 %, a veces
+// el servidor no da algún trozo) no se pregunta más; si está a medias se ofrece terminarlo; si está otro mapa, se dice.
+function estadoZona(){const r={};for(const k of TRES){const l=listaZona(k);let f=l.length;try{f=+Nativo.faltan(JSON.stringify(l))}catch(e){}r[k]={t:l.length,f,p:l.length?(l.length-f)/l.length:0}}return r}
+let ZAV="";
+function ofreceZona(forzar){if(!T.length||ZR)return;if(!forzar&&(window.__NU||!$("sheet").hidden))return;   /* 8 nov 2026: no tapar una pregunta abierta */
+  const E=estadoZona(),e=E[CAPA],ok=TRES.filter(k=>E[k].p>=.97);
+  if(ok.length&&!forzar){const k=TN+"|"+ok.join();if(ZAV!==k){ZAV=k;toast("💾 Tienes guardado el mapa de esta zona"+(ok.includes(CAPA)?"":" ("+ok.map(c=>CAPAS[c].n).join(", ")+")")+": se verá sin cobertura",4500)}
+    if(!ok.includes(CAPA))ponCapaSin(ok[0]);return}
+  const med=e.p>=.05&&e.p<.97,ya=e.p>=.97;
+  $("sh").innerHTML=`<h2>🗺 ${ya?"Mapa de la zona guardado":med?"El mapa de la zona está a medias ("+Math.floor(e.p*100)+" %)":"¿Guardar el mapa de la zona?"}</h2><p style="margin:0 0 6px">${ya?"Con este mapa ya se ve sin cobertura. Puedes guardar también otro:":"Para verlo aunque no haya cobertura en el monte. Elige el mapa:"}</p>`+
+    Object.entries(CAPAS).map(([k,c])=>`<button class="capa" aria-pressed="${k===CAPA}" onclick="CAPA!=='${k}'&&ponCapaSin('${k}');ofreceZona(1)"><span>${k===CAPA?"✓":"○"}</span><span style="flex:1">${c.n}<small>${c.d}</small></span><span style="flex:none;font-size:13px;font-weight:800;padding:4px 8px;border-radius:8px;${E[k].p>=.97?"background:#e3f1e6;color:#1f6b32\">💾 Guardado":E[k].p>=.05?"background:#fff4e0;color:#8a5a00\">A medias":"background:#f1f1f1;color:#8a958e\">Sin guardar"}</span></button>`).join("")+
+    (ya?"":`<button class="b2 go" onclick="cierra();bajarZona()">⬇ ${med?"Terminar de guardarlo":"Guardar"} (unos ${MB(e.f,CAPA)} MB)</button>`)+`<button class="b2" onclick="cierra();bajarTres('track')">⬇ Guardar los tres mapas (unos ${MB3(TRES.reduce((a,k)=>a+E[k].f,0)/3)} MB)</button><button class="b2" onclick="cierra()">${ya?"Cerrar":"Ahora no"}</button>
+    <p style="font-size:14px;color:#5d6b62;margin:4px 0">Mejor con wifi. Tarda unos minutos: <b>deja esta pantalla abierta</b> hasta que salga «✅ Mapa guardado» (arriba se ve cómo va). Luego también desde 🗺.</p>`;$("sheet").hidden=false}
 function ponCapaSin(k){CAPA=k;try{localStorage.setItem("capa",k)}catch(e){}FONDO.remove();FONDO=vigila(CAPAS[k].l()).addTo(map);FONDO.bringToBack()}
 // zona elegida en el mapa de la app (Capas › Mapa de una zona para grabar sin cobertura): se enseña y se pregunta
 let ZR=null;
@@ -317,8 +326,13 @@ let ZN="Zona";function ofreceVista(bb,nm){ZN=nm||"Zona";let f=0;try{f=+Nativo.fa
     <p style="font-size:14px;color:#5d6b62;margin:4px 0">Mejor con wifi. El recuadro verde es la zona que se guarda.</p>`;$("sheet").hidden=false}
 function bajarVista(){const L0=listaVista(map.getBounds());
   try{Nativo.bajar(JSON.stringify(L0),"Zona vista el "+new Date().toLocaleDateString("es-ES",{day:"numeric",month:"short"}))}catch(e){}}
-function bajando(h,t,falta){if(falta&&h<t)toast(`🗺 Guardando el mapa de la zona para sin cobertura: ${h} de ${t}`,2500);else if(h>=t)toast(falta?"🗺 Mapa de la zona guardado: se verá sin cobertura":"🗺 El mapa de la zona ya estaba guardado",3000)}
-function sinRed(){toast("Sin cobertura: el mapa de la zona no se ha podido guardar. Se verán las partes que ya hayas visto.",5000)}
+// 19 nov 2026: barra fija arriba mientras se guarda el mapa (antes solo avisos que se iban y no se sabía si había terminado)
+function barraM(){let b=$("bajabar");if(!b){b=document.createElement("div");b.id="bajabar";document.body.appendChild(b)}return b}
+function bajando(h,t,falta,fin){const b=barraM(),p=t?Math.floor(h/t*100):100;clearTimeout(b._t);b.hidden=false;b.className="";
+  if(falta&&!fin&&h<t){b.innerHTML=`🗺 Guardando el mapa para sin cobertura… <b>${p} %</b><small>Deja esta pantalla abierta hasta que termine</small><i style="width:${p}%"></i>`;return}
+  if(!falta||h/t>=.97){b.className="ok";b.innerHTML=falta?"✅ <b>Mapa guardado.</b> Ya se ve sin cobertura.":"✅ El mapa de esta zona ya estaba guardado.";b._t=setTimeout(()=>{b.hidden=true},6000);return}
+  b.className="mal";b.innerHTML=`⚠️ Se ha guardado el ${p} % del mapa: faltan trozos. Con cobertura, vuelve a tocar ⬇ Guardar para terminarlo.`;b._t=setTimeout(()=>{b.hidden=true},12000)}
+function sinRed(){const b=barraM();clearTimeout(b._t);b.hidden=false;b.className="mal";b.innerHTML="📶 Sin cobertura: el mapa no se ha podido guardar (o se ha quedado a medias). Se verán las partes que ya hayas visto.";b._t=setTimeout(()=>{b.hidden=true},12000)}
 /* ---------- puntos ---------- */
 /* el mismo formulario que en la app (3 nov): nombre, icono, foto y nota. Al pasar a la app sale igual en Mis cosas › Puntos */
 const ICOS=[["otro","📍","Punto"],["fuente","💧","Fuente"],["parking","🅿️","Aparcamiento"],["refugio","🏠","Refugio"],["cabana","🛖","Cabaña"],["cumbre","⛰️","Cumbre"],["collado","🥾","Collado / paso"],["vista","👀","Mirador"],["foto","📷","Foto"],["peligro","⚠️","Peligro"],["agua","🏊","Baño / poza"]];

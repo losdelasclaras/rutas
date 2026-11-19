@@ -691,6 +691,8 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         @JavascriptInterface fun bajar(lista: String) = bajar(lista, "Zona")
         @JavascriptInterface fun bajar(lista: String, nombre: String) { Thread {
             val a = try { JSONArray(lista) } catch (e: Exception) { return@Thread }
+            // 19 nov 2026: pantalla encendida mientras se guarda (si se apagaba, se quedaba a medias sin enterarse)
+            val luz = { on: Boolean -> runOnUiThread { try { if (on) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) else window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) } catch (e: Exception) {} } }
             // se apunta la zona (con su lista de teselas) aunque luego falte alguna
             try { val id = System.currentTimeMillis().toString(36)
                 File(filesDir, "zona-$id.txt").writeText((0 until a.length()).joinToString("\n") { a.getString(it) })
@@ -701,14 +703,15 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
             val falta = (0 until a.length()).map { a.getString(it) }.filter { k -> val (cp, z, x, y) = k.split("/"); val f = tesela(cp, z, x, y); !(f.exists() && f.length() > 0) }
             val t = a.length(); var h = t - falta.size; var mal = 0; var ultAviso = 0L
             if (falta.isEmpty()) { runOnUiThread { web.evaluateJavascript("bajando($t,$t,false)", null) }; return@Thread }
+            luz(true)
             for ((n, k) in falta.withIndex()) {
                 val (cp, z, x, y) = k.split("/"); val ok = bajarTesela(urlDe(cp, z, x, y, n), tesela(cp, z, x, y))
                 if (ok) h++ else mal++
-                if (mal >= 10 && h == t - falta.size) { runOnUiThread { web.evaluateJavascript("sinRed()", null) }; return@Thread }
+                if (mal >= 10 && h == t - falta.size) { luz(false); runOnUiThread { web.evaluateJavascript("sinRed()", null) }; return@Thread }
                 if (System.currentTimeMillis() - ultAviso > 2500) { ultAviso = System.currentTimeMillis(); val hh = h; runOnUiThread { web.evaluateJavascript("bajando($hh,$t,true)", null) } }
                 Thread.sleep(60)
             }
-            runOnUiThread { web.evaluateJavascript("bajando($t,$t,true)", null) }
+            luz(false); val hf = h; runOnUiThread { web.evaluateJavascript("bajando($hf,$t,true,true)", null) }
         }.start() }
     }
 
