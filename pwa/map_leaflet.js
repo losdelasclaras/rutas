@@ -7,6 +7,16 @@ const zoneOf=r=>r==="Pirineos"?"pir":(r==="Alpes"||r==="Dolomitas")?"alp":"cant"
 const zoneAt=(lat,lon)=>lon>4?"alp":(lon>-1.6&&lat<43.25)?"pir":"cant";
 let ZK=ZONES[store.get("ldc-zona","cant")]?store.get("ldc-zona","cant"):"cant";
 const mapEl=document.getElementById("map");
+// 19 nov 2026: los rótulos de nombre (clase «lbl», a la derecha del punto) ya no miden su tamaño cada uno al colocarse.
+// Leaflet leía el alto de cada rótulo, y cada lectura obligaba al navegador a recolocar toda la página: con 50-100 rótulos,
+// abrir una ruta o acercar el mapa se quedaba 1-2 s parado en el ordenador. Ahora se mide uno de cada tipo y vale para todos.
+{const sp=L.Tooltip.prototype._setPosition,H={};
+ L.Tooltip.prototype._setPosition=function(t){const o=this.options,k=o.className||"";
+  if(o.direction!=="right"||!/(^|\s)lbl(\s|$)/.test(k))return sp.call(this,t);
+  const n=this._container;if(!H[k])H[k]=n.offsetHeight||18;
+  if(!n.__dr){n.__dr=1;L.DomUtil.addClass(n,"leaflet-tooltip-right")}
+  L.DomUtil.setPosition(n,t.subtract(L.point(0,H[k]/2,true)).add(L.point(o.offset)).add(this._getAnchor()))};
+ window.__lblH=H}
 const map=L.map(mapEl,{zoomControl:false,minZoom:5,maxZoom:18,zoomSnap:0.5,worldCopyJump:false});
 const OTM=L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{subdomains:"abc",maxNativeZoom:17,maxZoom:18,crossOrigin:true,
   attribution:'Mapa © <a href="https://opentopomap.org" target="_blank" rel="noopener">OpenTopoMap</a> (CC-BY-SA) · datos © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'});
@@ -32,7 +42,7 @@ __mk("puntos creados");
 const LBLZ=12.5; // nov 2026: antes 11.5
 function bindLbl(i){const m=MK[i],p=P[i];if(m.getTooltip())return;m.bindTooltip(esc(p.c)+(p.t==="cumbre"&&p.a?` <span class="la">${p.a.toLocaleString("es-ES")} m</span>`:""),{permanent:true,direction:"right",offset:[10,0],className:"lbl "+(p.t==="cumbre"?"pk":p.x?"ini":"sp"),interactive:false});clearTimeout(RMT);RMT=setTimeout(refreshMarks,30)}
 let LBLON=null;function syncLbls(){const on=map.getZoom()>=LBLZ;if(on===LBLON)return;LBLON=on;for(const i in MK){const m=MK[i];if(on){if(map.hasLayer(m))bindLbl(i)}else if(m.getTooltip())m.unbindTooltip()}}
-map.on("zoomend",syncLbls);
+map.on("zoomend",syncLbls);map.on("zoomstart",()=>{for(const k in window.__lblH)delete window.__lblH[k]});   // por si cambió el tamaño de letra (Aa+)
 const CLS={};function applyCls(i){const el=MK[i].getElement();if(!el)return;for(const c in CLS){const f=CLS[c];el.classList.toggle(c,typeof f==="function"?!!f(+i):!!f)}}
 const nodes={classed(c,f){CLS[c]=f;for(const i in MK){const el=MK[i].getElement();if(el)el.classList.toggle(c,typeof f==="function"?!!f(+i):!!f)}return nodes}};
 // solo se dibujan los puntos que caen en pantalla (más un margen): el mapa va mucho más fluido
