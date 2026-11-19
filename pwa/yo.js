@@ -81,6 +81,9 @@ if(enApp){
     if(ln.length>1500&&window.COMPARTIR&&COMPARTIR.simple){let t=2;while(ln.length>1500&&t<40){ln=COMPARTIR.simple(ln,t);t*=1.5}}
     const n=(typeof routeTitle==="function"&&r.p?routeTitle(r):r.ti||r.n)||"Track";
     location.href="intent://seguir?b="+buzon()+"#Intent;scheme=ldcgrabar;package=es.losdelasclaras.rutas;S.n="+encodeURIComponent(String(n).slice(0,90))+";S.t="+encodeURIComponent(JSON.stringify(ln))+";end"}}
+/* 19 nov 2026: el APK abre la web con «?pend=N» = grabaciones que siguen en el móvil esperando cobertura para pasar a Mis cosas.
+   Mientras haya, Mis cosas › Guardado lo dice (antes no salía nada y asustaba). Se quita al recogerlas. */
+{const q=new URLSearchParams(location.search).get("pend");if(q!=null)try{if(+q>0)localStorage.setItem("ldc-pendgrab",String(+q));else localStorage.removeItem("ldc-pendgrab")}catch(e){}}
 /* buzón: la grabadora del APK deja ahí lo grabado (Firestore buzon/{código}) y aquí se recoge y se guarda en Mis tracks */
 function buzon(){let b=null;try{b=localStorage.getItem("ldc-buzon")}catch(e){}
   if(!b||!/^[A-Za-z0-9]{20,40}$/.test(b)){const A="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";b="";for(const x of crypto.getRandomValues(new Uint8Array(24)))b+=A[x%A.length];try{localStorage.setItem("ldc-buzon",b)}catch(e){}}return b}
@@ -117,7 +120,7 @@ async function recoger(){let b=null;try{b=localStorage.getItem("ldc-buzon")}catc
       let ok=true;if(cambio){ok=MPI.saveTracks(ts)!==false;for(const o of ts.slice(-n))if(n)MPI.demAlt(o.id)}
       // 15 nov 2026: el buzón solo se vacía si quedó guardado en el móvil; si no, sigue allí y se vuelve a intentar al abrir la app
       if(!ok){toast("⚠️ Tu grabación no cabe en el móvil. Sigue a salvo esperando: borra algún track viejo de Mis cosas o entra con Google",9000);RECOG=false;return}
-      await fs.deleteDoc(ref);
+      await fs.deleteDoc(ref);if(n)try{localStorage.removeItem("ldc-pendgrab")}catch(e){}
       const tp=nw?` con ${nw} punto${nw>1?"s":""}`:"";
       if(np&&!ult)toast(np===1?"✅ Punto guardado en Mis cosas › Guardado":`✅ ${np} puntos guardados en Mis cosas › Guardado`);
       if(ult){toast(n>1?`✅ ${n} grabaciones guardadas en Mis cosas › Guardado`:n?`✅ «${ult.n}» guardado en Mis cosas${tp}`:`✅ ${nw} punto${nw>1?"s":""} añadido${nw>1?"s":""} a «${ult.n}»`);if(window.MISTRACKS)setTimeout(()=>MISTRACKS.open(ult.id,true),600)}}

@@ -8,6 +8,7 @@
 (function(){
 const MPI=window.MISPUNTOS;if(!MPI)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
+#gdbox .gdpend{background:#fff4e0;border:1px solid #f0c27a;border-radius:12px;padding:10px 12px;margin:2px 0 10px;font-size:15.5px;line-height:1.4;color:#5b3d06}
 #gdbox .gdtop{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:2px 0 10px}
 #gdbox .gdtop button{min-height:48px;font-size:16px;font-weight:800;border-radius:12px;border:1px solid var(--edge);background:var(--card);color:var(--ink);cursor:pointer}
 #gdbox .gdtop .pri{background:var(--mark,#c3262e);border-color:var(--mark,#c3262e);color:#fff}
@@ -76,7 +77,9 @@ function render(){if(box.hidden)return;const all=items(),nh=all.filter(x=>x.e===
       return`<button class="gdf" data-gdf="${esc(n)}" aria-expanded="${op}"><span class="e">📁</span><span><b>${esc(n)}</b><small>${[nt?nt+(nt===1?" track":" tracks"):"",npt?npt+(npt===1?" punto":" puntos"):""].filter(Boolean).join(" · ")}</small></span><svg class="chev" width="14" viewBox="0 0 10 10"><path d="M3 1.5 7 5 3 8.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>`+
         (op?`<div class="gdfin" data-fn="${esc(n)}"><button class="gdfop" data-gdfop>⚙ Opciones de carpeta</button>${xs.map(x=>conX(Object.assign({inF:1},x))).join("")}</div>`:"")}).join("")+
       (sueltos.length?(names.length?`<p class="gdsep">Sin carpeta</p>`:"")+sueltos.map(x=>conX(x)).join(""):"")}
-  box.innerHTML=`<div class="gdtop"><button class="pri" data-gdadd>⬆️ Abrir GPX o KML</button><button data-gdnf>📁 Crear carpeta</button></div>
+  let pg=0;try{pg=+localStorage.getItem("ldc-pendgrab")||0}catch(e){}
+  const pgb=pg?`<div class="gdpend">📶 <b>${pg>1?pg+" grabaciones esperan":"Tu última grabación espera"} cobertura.</b> ${pg>1?"Están":"Está"} a salvo en el móvil y ${pg>1?"aparecerán":"aparecerá"} aquí ${pg>1?"solas":"sola"} en cuanto haya conexión (abre la app con cobertura).</div>`:"";
+  box.innerHTML=pgb+`<div class="gdtop"><button class="pri" data-gdadd>⬆️ Abrir GPX o KML</button><button data-gdnf>📁 Crear carpeta</button></div>
   ${all.length?`<div class="gdfil">${[["todos","Todo",all.length],["pend","★ Pendientes",np],["hecho","✓ Hechos",nh]].map(([k,t,c])=>`<button data-gdfil="${k}" aria-pressed="${FIL===k}">${t} <small>${c}</small></button>`).join("")}</div>
   <input class="gdq" id="gdq" type="search" placeholder="Buscar en lo guardado…" autocomplete="off" value="${esc(Q)}">`:""}<div id="gdlist">${body}</div>${MPI.get().length?`<p class="gdexp"><button data-gdexp>⬇️ Exportar mis puntos</button></p>`:""}`;
   const q=box.querySelector("#gdq");if(q)q.addEventListener("input",()=>{Q=nk(q.value.trim());const p=q.selectionStart;render();const q2=box.querySelector("#gdq");if(q2){q2.focus();try{q2.setSelectionRange(p,p)}catch(e){}}})}
