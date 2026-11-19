@@ -58,17 +58,17 @@ function dlg(html){if(!bg){bg=document.createElement("div");bg.className="sgbg";
     bg.addEventListener("click",e=>{if(bg.querySelector("[data-sgacepto]"))return;if(e.target===bg||e.target.closest("[data-sgno]"))cierra()})}
   bg.innerHTML=`<div class="sgdl" role="dialog" aria-modal="true">${html}</div>`;bg.hidden=false;document.documentElement.classList.add("sgon")}
 function cierra(){if(bg)bg.hidden=true;document.documentElement.classList.remove("sgon")}
+// 19 nov 2026: sin el botón «📖 Leer antes el reportaje del blog»: el visor del blog (visita.js) ya se abre igual antes de seguir
 // en la ventana y en captura: así va antes que Seguir (que escucha en el documento); el visor del blog (visita.js) va antes que esto
 addEventListener("click",e=>{const b=e.target.closest&&e.target.closest(SEL);if(!b||!sh||!sh.contains(b))return;
   const f=sh.querySelector(".fru");if(!f)return;if(f.dataset.sgniv==null)ponRecuadro();const n=f.dataset.sgniv;if(!n)return;
   const tit=(f.querySelector(".sheet-head h2")||{}).textContent||"";if(OK.has(tit))return;
   e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
-  const blog=f.querySelector(".fracts a.btn.primary");
   dlg(`<div class="sgnivel ${n}">${TXT[n].t}</div><h2>⚠️ Antes de ir a esta ruta</h2><p>${TXT[n].p}</p>
     <ul><li>Un track es solo una línea: <b>no te dice si hay pasos peligrosos</b>, nieve o el camino cortado.</li>
     <li>Mira la meteo, dile a alguien adónde vas y lleva el móvil cargado.</li>
     <li>Si no lo ves claro, <b>date la vuelta</b>. El monte sigue ahí otro día.</li></ul>
-    <div class="sgb">${blog?`<a class="sgblog" href="${es(blog.href)}" target="_blank" rel="noopener">📖 Leer antes el reportaje del blog</a>`:""}
+    <div class="sgb">
     <button class="sgrisk" data-sgsi>Entiendo el riesgo, seguir</button><button class="sgno" data-sgno>Cancelar</button></div>`);
   bg.querySelector("[data-sgsi]").onclick=()=>{OK.add(tit);cierra();setTimeout(()=>b.click(),50)}},true);
 
