@@ -27,7 +27,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 </style>`);
 function pinta(){
   if(document.querySelector(".apkbar"))return;
-  if(document.querySelector(".bvbg")){setTimeout(pinta,1500);return}       // primero que termine la bienvenida
+  if(document.querySelector(".bvbg:not([hidden])")){setTimeout(pinta,1500);return}       // primero que termine la bienvenida (19 nov: está siempre en la página, escondida; antes esperaba para siempre)
   const b=document.createElement("div");b.className="apkbar";
   b.innerHTML=`<span>🆕 Hay una versión nueva de la app para Android</span><button class="apkdl">Descargar</button><button class="apkx" aria-label="Cerrar">×</button>`;
   if(document.querySelector(".actbar"))b.style.top="calc(env(safe-area-inset-top,0px) + 124px)";
