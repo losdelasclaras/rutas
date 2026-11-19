@@ -389,7 +389,7 @@ function pintaDatos(){if(!DATOS)return;if($("sheet").hidden||($("sh").innerHTML&
   ${fila("🏃 Velocidad media (en movimiento)",vm?vm.toLocaleString("es-ES",{maximumFractionDigits:1})+" km/h":"—")}${fila("⏳ Ritmo",ritmo&&ritmo<120?(x=>Math.floor(x/60)+":"+String(x%60).padStart(2,"0"))(Math.round(ritmo*60))+" min/km":"—")}
   ${fila("🕘 Empezaste",ini.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}))}${fila("📍 Puntos guardados",np)}${fila("🛰 Puntos de GPS",PTS.length.toLocaleString("es-ES"))}</table>
   <p style="font-size:13px;color:#8a958e;margin:0 0 6px">La subida y la bajada salen de la altura del GPS, suavizada: son aproximadas.</p>
-  ${filaCoche()}<button class="b2" onclick="cierra()">Cerrar</button>`}
+  ${filaCoche()}<button class="b2" onclick="DATOS=false;prep()">⚙️ Ajustes del móvil para grabar (batería, ahorro de energía…)</button><button class="b2" onclick="cierra()">Cerrar</button>`}
 function pinta(){
   const e=$("rec");
   if(!S.activo){e.className="chip";$("recTx").textContent=T.length?"Toca ● para grabar mientras lo sigues":"Toca ● para grabar";$("recIc").hidden=true}
@@ -399,7 +399,8 @@ function pinta(){
   $("abajo").innerHTML=!S.activo?`<button class="big go" onclick="empezar()" aria-label="Grabar"><i></i></button>`:
     `<button class="big ${S.pz?"pl":"ps"}" onclick="Nativo.pausa()" aria-label="${S.pz?"Seguir grabando":"Pausa"}"><i></i></button><button class="big fn" onclick="fin()" aria-label="Terminar"><i></i></button>`;
   $("b-bat").hidden=!S.activo||Nativo.sinBateria();
-  $("b-prep").hidden=S.activo;if(!S.activo){const m=movil();$("b-prep").querySelector(".avi").hidden=!m||!falta(m).length}}
+  // 19 nov 2026: ⚙️ también mientras se graba (por si se olvidó quitar el ahorro de energía, etc.); el punto rojo se mira cada 10 s
+  $("b-prep").hidden=false;if(!S.activo||!pinta._t||Date.now()-pinta._t>10000){pinta._t=Date.now();const m=movil();$("b-prep").querySelector(".avi").hidden=!m||!falta(m).length}}
 /* ---------- 9 nov 2026: aviso si te sales del track (más de 100 m) ---------- */
 /* 16 nov 2026: «🚗 Pausar si voy en coche» (encendido de serie; apagar para ir en bici) */
 function filaCoche(){const on=!S||S.coche!==false;if(!Nativo.ponCoche)return"";
