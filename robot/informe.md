@@ -1,4 +1,4 @@
-# Informe del robot · 19/11/2026 18:59
+# Informe del robot · 19/11/2026 20:56
 
 **Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; regeneración forzada
 
@@ -26,13 +26,12 @@
 - 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (1): Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
 - ⛰ Camudando'l camín: 32 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ✏️ Camudando'l camín: 1 rutas con corrección a mano
-- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (21 de 21 con fecha).
 - Colaborador «Camudando'l camín»: sin cambios.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
 -    (42 peticiones a su web en 1.5 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: <urlopen error [Errno 101] Network is unreachable>; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
