@@ -279,10 +279,14 @@ function dejar(){const n=TR[0]&&TR[0].n;if(TR[1]){Nativo.ponSeguir("p",Nativo.se
 // mapa sin cobertura: se bajan los trozos del mapa a lo largo del track (zoom 11 a 16)
 function listaZona(cp){cp=cp||CAPA;const L0=[];const vis=new Set();
   const tl=(la,lo,z)=>{const n=2**z,x=Math.floor((lo+180)/360*n),r=la*toR,y=Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n);return[x,y]};
-  for(let z=11;z<=16;z++){const ring=z<=15?1:1;let prev=null;
-    for(const q of TR.filter(Boolean).flatMap(r=>r.t)){const[x,y]=tl(q[0],q[1],z);const k=x+"/"+y;if(k===prev)continue;prev=k;
+  // 19 nov 2026: se rellena entre punto y punto del track (un track simplificado tiene tramos rectos largos y quedaban huecos sin mapa)
+  const pts=[];for(const r of TR.filter(Boolean)){const t=r.t;for(let i=0;i<t.length;i++){const a=t[i];pts.push(a);const b=t[i+1];if(!b)continue;
+    const d=Math.hypot(b[0]-a[0],(b[1]-a[1])*Math.cos(a[0]*toR))*111200,k=Math.floor(d/150);for(let j=1;j<=k;j++)pts.push([a[0]+(b[0]-a[0])*j/(k+1),a[1]+(b[1]-a[1])*j/(k+1)])}}
+  // del zoom 16 (el de más detalle) al 11: si es enorme, lo que se recorta es lo de menos detalle, no el final del track
+  for(let z=16;z>=11;z--){const ring=1;let prev=null;
+    for(const q of pts){const[x,y]=tl(q[0],q[1],z);const k=x+"/"+y;if(k===prev)continue;prev=k;
       for(let dx=-ring;dx<=ring;dx++)for(let dy=-ring;dy<=ring;dy++){const kk=cp+"/"+z+"/"+(x+dx)+"/"+(y+dy);if(!vis.has(kk)){vis.add(kk);L0.push(kk)}}}}
-  if(L0.length>4000)L0.length=4000;return L0}
+  if(L0.length>6000)L0.length=6000;return L0}
 const TRES=["topo","ign","orto"];
 // los tres mapas de una vez (una sola zona guardada, que se borra entera)
 function bajarTres(que,nm){const b=que==="vista"?map.getBounds():que==="zr"&&ZR?ZR.getBounds():null;
@@ -306,7 +310,7 @@ function ofreceZona(forzar){if(!T.length||ZR)return;if(!forzar&&(window.__NU||!$
   $("sh").innerHTML=`<h2>🗺 ${ya?"Mapa de la zona guardado":med?"El mapa de la zona está a medias ("+Math.floor(e.p*100)+" %)":"¿Guardar el mapa de la zona?"}</h2><p style="margin:0 0 6px">${ya?"Con este mapa ya se ve sin cobertura. Puedes guardar también otro:":"Para verlo aunque no haya cobertura en el monte. Elige el mapa:"}</p>`+
     Object.entries(CAPAS).map(([k,c])=>`<button class="capa" aria-pressed="${k===CAPA}" onclick="CAPA!=='${k}'&&ponCapaSin('${k}');ofreceZona(1)"><span>${k===CAPA?"✓":"○"}</span><span style="flex:1">${c.n}<small>${c.d}</small></span><span style="flex:none;font-size:13px;font-weight:800;padding:4px 8px;border-radius:8px;${E[k].p>=.97?"background:#e3f1e6;color:#1f6b32\">💾 Guardado":E[k].p>=.05?"background:#fff4e0;color:#8a5a00\">A medias":"background:#f1f1f1;color:#8a958e\">Sin guardar"}</span></button>`).join("")+
     (ya?"":`<button class="b2 go" onclick="cierra();bajarZona()">⬇ ${med?"Terminar de guardarlo":"Guardar"} (unos ${MB(e.f,CAPA)} MB)</button>`)+`<button class="b2" onclick="cierra();bajarTres('track')">⬇ Guardar los tres mapas (unos ${MB3(TRES.reduce((a,k)=>a+E[k].f,0)/3)} MB)</button><button class="b2" onclick="cierra()">${ya?"Cerrar":"Ahora no"}</button>
-    <p style="font-size:14px;color:#5d6b62;margin:4px 0">Mejor con wifi. Tarda unos minutos: <b>deja esta pantalla abierta</b> hasta que salga «✅ Mapa guardado» (arriba se ve cómo va). Luego también desde 🗺.</p>`;$("sheet").hidden=false}
+    <p style="font-size:14px;color:#5d6b62;margin:4px 0">Se guarda <b>con todo el detalle</b> (hasta el zoom más cercano) a lo largo del track, unos 400 m a cada lado, sea cual sea el zoom que tengas ahora.${med?' Los MB son solo lo que falta.':''} Mejor con wifi. Tarda unos minutos: <b>deja esta pantalla abierta</b> hasta que salga «✅ Mapa guardado» (arriba se ve cómo va). Luego también desde 🗺.</p>`;$("sheet").hidden=false}
 function ponCapaSin(k){CAPA=k;try{localStorage.setItem("capa",k)}catch(e){}FONDO.remove();FONDO=vigila(CAPAS[k].l()).addTo(map);FONDO.bringToBack()}
 // zona elegida en el mapa de la app (Capas › Mapa de una zona para grabar sin cobertura): se enseña y se pregunta
 let ZR=null;
