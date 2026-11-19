@@ -1493,7 +1493,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-de677bc6.json", "ln": "colab-ln-c84c194e.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-ed04c33e.json", "ln": "colab-ln-6b5cb884.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -5595,17 +5595,17 @@ function dlg(html){if(!bg){bg=document.createElement("div");bg.className="sgbg";
     bg.addEventListener("click",e=>{if(bg.querySelector("[data-sgacepto]"))return;if(e.target===bg||e.target.closest("[data-sgno]"))cierra()})}
   bg.innerHTML=`<div class="sgdl" role="dialog" aria-modal="true">${html}</div>`;bg.hidden=false;document.documentElement.classList.add("sgon")}
 function cierra(){if(bg)bg.hidden=true;document.documentElement.classList.remove("sgon")}
+// 19 nov 2026: sin el botón «📖 Leer antes el reportaje del blog»: el visor del blog (visita.js) ya se abre igual antes de seguir
 // en la ventana y en captura: así va antes que Seguir (que escucha en el documento); el visor del blog (visita.js) va antes que esto
 addEventListener("click",e=>{const b=e.target.closest&&e.target.closest(SEL);if(!b||!sh||!sh.contains(b))return;
   const f=sh.querySelector(".fru");if(!f)return;if(f.dataset.sgniv==null)ponRecuadro();const n=f.dataset.sgniv;if(!n)return;
   const tit=(f.querySelector(".sheet-head h2")||{}).textContent||"";if(OK.has(tit))return;
   e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
-  const blog=f.querySelector(".fracts a.btn.primary");
   dlg(`<div class="sgnivel ${n}">${TXT[n].t}</div><h2>⚠️ Antes de ir a esta ruta</h2><p>${TXT[n].p}</p>
     <ul><li>Un track es solo una línea: <b>no te dice si hay pasos peligrosos</b>, nieve o el camino cortado.</li>
     <li>Mira la meteo, dile a alguien adónde vas y lleva el móvil cargado.</li>
     <li>Si no lo ves claro, <b>date la vuelta</b>. El monte sigue ahí otro día.</li></ul>
-    <div class="sgb">${blog?`<a class="sgblog" href="${es(blog.href)}" target="_blank" rel="noopener">📖 Leer antes el reportaje del blog</a>`:""}
+    <div class="sgb">
     <button class="sgrisk" data-sgsi>Entiendo el riesgo, seguir</button><button class="sgno" data-sgno>Cancelar</button></div>`);
   bg.querySelector("[data-sgsi]").onclick=()=>{OK.add(tit);cierra();setTimeout(()=>b.click(),50)}},true);
 
@@ -7070,5 +7070,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="19/11 21:03 · ffac1d";window.LDC_BUILD="ffac1d56da";window.LDC_FUNC="cf54ea130d";(function(){const B="ffac1d56da";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="19/11 23:42 · fecc11";window.LDC_BUILD="fecc11cafc";window.LDC_FUNC="088a7fef50";(function(){const B="fecc11cafc";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
