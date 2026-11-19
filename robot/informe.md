@@ -1,6 +1,6 @@
-# Informe del robot · 19/11/2026 20:56
+# Informe del robot · 19/11/2026 23:34
 
-**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; regeneración forzada
+**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; regeneración forzada
 
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
@@ -23,15 +23,17 @@
 - 📅 Fechas de rutas de Rutinas Varias: 0 nuevas (146 de 406 con fecha); Wikiloc no responde (8 fallos).
 - Colaborador «Rutinas Varias»: sin cambios.
 -    (quitados 78 puntos de publicidad: capas o nombres que no queremos)
-- 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (1): Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
-- ⛰ Camudando'l camín: 32 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
+- 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (2): la-ercina-cangues-donis-verdilluenga-trea-cain-valdion-culie · Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
+- ⛰ Camudando'l camín: 34 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ✏️ Camudando'l camín: 1 rutas con corrección a mano
-- Colaborador «Camudando'l camín»: sin cambios.
+- 📷 Fotos de rutas de Camudando'l camín (de su blog): 1 nuevas, 22 en total
+- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (22 de 23 con fecha).
+- 🤝 Colaborador «Camudando'l camín»: 150 puntos, 23 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
--    (42 peticiones a su web en 1.5 min)
+-    (42 peticiones a su web en 1.1 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: <urlopen error [Errno 101] Network is unreachable>; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
