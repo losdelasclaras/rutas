@@ -384,9 +384,10 @@ COLX.routes=(q,limpio)=>{const o=COLX.rsrc;
   const c=(o==="grupo"||!limpio)?[]:RUT.filter(x=>(o==="todas"||o==="co_"+x.co.id)&&(!q||x.txt.includes(q))&&(!window.RFOK||RFOK(x)));
   return {c,hideG:o!=="todas"&&o!=="grupo"}};
 COLX.near=(lat,lon)=>F.reg==="todas"&&!nExtra()&&!F.wz?RUT.filter(x=>!window.RFOK||RFOK(x)).map(x=>({r:x,d:km({lat,lon},x)})):[];
+// 20 nov 2026: «🧵 Track» en la fila si la ruta no tiene entrada de blog (como en su ficha)
 COLX.rrow=(x,extra)=>{const de=x.de?(/^\+/.test(x.de)?x.de:"+"+x.de):"",nums=[x.km,de].filter(Boolean).join(" · ");
   const fo=x.pp?x.pp[5]:(x.rr!=null?x.co.r[x.rr][9]:"");
-  return `<button class="row src-co" style="--cc:${x.co.c}" data-cor="${x.ci}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:`<span style="display:grid;place-items:center;width:56px;flex:none">${COLX.ico(x)}</span>`}<div class="t"><b>${esc(x.c)}</b><span><em class="cosrc" style="color:${x.co.c}">${esc(x.co.n)}</em> · ${x.y?(x.m?MESES[x.m]+" ":"")+x.y:"Sin fecha"} · ${esc(x.r)}${extra?" · "+esc(extra):""}</span></div><span class="alt">${esc(nums)}</span></button>`};
+  return `<button class="row src-co" style="--cc:${x.co.c}" data-cor="${x.ci}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:`<span style="display:grid;place-items:center;width:56px;flex:none">${COLX.ico(x)}</span>`}<div class="t"><b>${esc(x.c)}</b><span>${x.rr!=null&&!x.co.r[x.rr][7]?`<em class="trktag" style="font-style:normal;font-weight:800;font-size:.85em;color:#7b2cbf;background:#f1e8fb;border-radius:6px;padding:0 5px;margin-right:4px" title="Solo el recorrido, sin reportaje en el blog">🧵 Track</em>`:""}<em class="cosrc" style="color:${x.co.c}">${esc(x.co.n)}</em> · ${x.y?(x.m?MESES[x.m]+" ":"")+x.y:"Sin fecha"} · ${esc(x.r)}${extra?" · "+esc(extra):""}</span></div><span class="alt">${esc(nums)}</span></button>`};
 if(typeof renderList==="function")renderList();
 renderCols()}
 if(window.LISTAS)LISTAS.render();
