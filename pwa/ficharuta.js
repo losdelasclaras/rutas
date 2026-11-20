@@ -74,7 +74,7 @@ function pinta(d){
   const t=d.trk?"":" hidden";   // lo que depende del track (colaboradores: se enseña al llegar su track)
   return`${d.grab!=null?`<div class="grab"${d.grab}></div>`:""}${d.foto?`<div class="photo"><img src="${esc(d.foto)}" alt="" onerror="this.parentNode.remove()"></div>`:""}
   <div class="fru">
-  <div class="frtop">${tipoHTML("ruta",d.quien||"")}</div>
+  <div class="frtop">${tipoHTML(d.blog?"ruta":"track",d.quien||"")}</div>   <!-- 20 nov: sin entrada de blog = «🧵 Track» (solo el recorrido, sin reportaje) -->
   <div class="sheet-head"><h2>${esc(d.titulo)}</h2><button class="x" aria-label="Cerrar" data-close${d.close||""}>×</button></div>
   ${d.mk||""}
   ${dat.length?`<div class="ficha" style="grid-template-columns:repeat(${dat.length},1fr)">${dat.map(([l,v])=>`<div><b>${esc(v)}</b><span>${l}</span></div>`).join("")}</div>`:""}
