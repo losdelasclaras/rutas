@@ -1,4 +1,4 @@
-# Informe del robot · 20/11/2026 09:00
+# Informe del robot · 20/11/2026 09:18
 
 **Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; regeneración forzada
 
@@ -15,7 +15,7 @@
 - 🗺️ Mapa: 695 puntos (0 nuevos o movidos, 0 quitados).
 - Fotos de tu mapa: 203, sin cambios.
 - Drive: sin tracks nuevos.
-- ✏️ Correcciones a mano: 14 en total · 4 nuevas o cambiadas
+- ✏️ Correcciones a mano: 16 en total · 2 nuevas o cambiadas
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 433 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - 📝 Blog de Rutinas Varias: 11 rutas emparejadas con su entrada (146 de 406 con enlace al blog; índice con 315 entradas).
@@ -25,12 +25,10 @@
 -    (quitados 78 puntos de publicidad: capas o nombres que no queremos)
 - 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (2): la-ercina-cangues-donis-verdilluenga-trea-cain-valdion-culie · Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
 - ⛰ Camudando'l camín: 34 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
-- ✏️ Camudando'l camín: 5 rutas con corrección a mano
-- 📷 Fotos de rutas de Camudando'l camín (de su blog): 1 nuevas, 23 en total
-- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (23 de 23 con fecha).
+- ✏️ Camudando'l camín: 7 rutas con corrección a mano
 - 🤝 Colaborador «Camudando'l camín»: 150 puntos, 23 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
--    (42 peticiones a su web en 1.1 min)
+-    (42 peticiones a su web en 1.3 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
 - ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
