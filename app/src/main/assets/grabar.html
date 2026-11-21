@@ -150,7 +150,7 @@ function misMapas(){PANEL="mis";$("sh").classList.add("cmp");const o=zonasG(),zs
     (T.length?`<button class="b2 go" onclick="cierra();bajarZona()">De la zona del track que sigues${TR[0]&&TR[0].n?" («"+esc(String(TR[0].n).slice(0,40))+"»)":""}</button>`:"")+
     `<button class="b2 ${T.length?"":"go"}" onclick="cierra();bajarVista()">De lo que se ve ahora en el mapa</button>
     <p style="font-size:14px;color:#5d6b62;margin:2px 0 8px">Para otra zona: cierra esto, mueve el mapa hasta ella y vuelve aquí. Desde casa, también en el mapa de la app: Capas › «Mapa de una zona para grabar sin cobertura».</p>
-    <button class="b2" onclick="capas()">Elegir el mapa (topográfico, IGN, ortofoto)</button><button class="b2" onclick="cierra()">Cerrar</button>`;
+    <button class="b2" onclick="capas()">Elegir el mapa (topográfico, IGN, ortofoto)</button>${window.__deMC?`<button class="b2 go" onclick="window.__deMC=0;cierra();try{Nativo.volver()}catch(e){}">← Volver a Mis cosas</button>`:""}<button class="b2" onclick="window.__deMC=0;cierra()">${window.__deMC?"Ir a la pantalla de grabar":"Cerrar"}</button>`;
   $("sheet").hidden=false}
 function guardados(){let o={z:[],total:0};try{o=JSON.parse(Nativo.zonas())}catch(e){return""}
   const zs=o.z.slice().reverse();if(!zs.length&&o.total<1e6)return"";
@@ -324,7 +324,7 @@ function estadoZona(){const r={};for(const k of TRES){const l=listaZona(k);let f
 let ZAV="";
 // 21 nov 2026: lo pedido desde Mis cosas: «mapas» = abrir el panel de mapas; «zona» = la pregunta de guardar el mapa de este track
 function abrePedido(){let p=window.__ped||"";window.__ped="";if(!p)try{p=Nativo.pedido()||""}catch(e){}
-  if(p==="mapas")misMapas();
+  if(p==="mapas"){window.__deMC=1;misMapas()}
   else if(p==="zona")setTimeout(()=>{if(!$("sheet").hidden&&!$("sh").innerHTML.includes("mapa de la zona"))return;ofreceZona(1)},1000)}
 function ofreceZona(forzar){if(!T.length||ZR)return;if(!forzar&&window.__ped==="mapas")return;if(!forzar&&(window.__NU||!$("sheet").hidden))return;   /* 8 nov 2026: no tapar una pregunta abierta */
   const E=estadoZona(),e=E[CAPA],ok=TRES.filter(k=>E[k].p>=.97);
