@@ -8,7 +8,6 @@
 (function(){
 const MPI=window.MISPUNTOS;if(!MPI)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
-#gdbox .gdmapas{display:flex;gap:10px;align-items:center;background:#eef4f1;border:1px solid #cfe0d7;border-radius:12px;padding:10px 12px;margin:2px 0 10px}#gdbox .gdmapas>div{flex:1;font-size:16px;line-height:1.3}#gdbox .gdmapas small{display:block;font-size:14px;color:#5d6b62;margin-top:2px}#gdbox .gdmapas .btn{flex:none;white-space:nowrap}
 #gdbox .gdpend{background:#fff4e0;border:1px solid #f0c27a;border-radius:12px;padding:10px 12px;margin:2px 0 10px;font-size:15.5px;line-height:1.4;color:#5b3d06}
 #gdbox .gdtop{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:2px 0 10px}
 #gdbox .gdtop button{min-height:48px;font-size:16px;font-weight:800;border-radius:12px;border:1px solid var(--edge);background:var(--card);color:var(--ink);cursor:pointer}
@@ -81,11 +80,13 @@ function render(){if(box.hidden)return;const all=items(),nh=all.filter(x=>x.e===
   let pg=0;try{pg=+localStorage.getItem("ldc-pendgrab")||0}catch(e){}
   const pgb=pg?`<div class="gdpend">📶 <b>${pg>1?pg+" grabaciones esperan":"Tu última grabación espera"} cobertura.</b> ${pg>1?"Están":"Está"} a salvo en el móvil y ${pg>1?"aparecerán":"aparecerá"} aquí ${pg>1?"solas":"sola"} en cuanto haya conexión (abre la app con cobertura).</div>`:"";
   // 21 nov 2026: los mapas sin cobertura viven en la pantalla de grabar (Android); aquí, un atajo para encontrarlos
-  let apk=false,nm=null;try{apk=sessionStorage.getItem("ldc-apk")==="1";const v=localStorage.getItem("ldc-mapasoff");nm=v==null?null:+v}catch(e){}
-  const mpb=apk?`<div class="gdmapas"><div><b>🗺 Mapas sin cobertura</b><small>${nm==null?"Se guardan en la pantalla de grabar.":nm?nm+(nm>1?" zonas guardadas":" zona guardada")+" en el móvil.":"Aún no tienes ninguno guardado."} Para ver el mapa en el monte sin datos.</small></div><button class="btn ghost" data-gdmapas>Ver y guardar mapas</button></div>`:"";
-  box.innerHTML=pgb+mpb+`<div class="gdtop"><button class="pri" data-gdadd>⬆️ Abrir GPX o KML</button><button data-gdnf>📁 Crear carpeta</button></div>
+  // 21 nov 2026: los mapas sin cobertura viven en la pantalla de grabar (Android); aquí una «carpeta» que lleva a ellos.
+  // Sin número: la web no puede saber al momento cuántos hay (solo al abrir la app) y un número viejo confundía.
+  let apk=false;try{apk=sessionStorage.getItem("ldc-apk")==="1"}catch(e){}
+  const mpb=apk&&FIL==="todos"&&!Q?`<button class="gdf gdmap" data-gdmapas><span class="e">🗺️</span><span><b>Mapas sin cobertura</b><small>Ver, guardar o borrar los mapas para ir sin datos</small></span><svg class="chev" width="14" viewBox="0 0 10 10"><path d="M3 1.5 7 5 3 8.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>`:"";
+  box.innerHTML=pgb+`<div class="gdtop"><button class="pri" data-gdadd>⬆️ Abrir GPX o KML</button><button data-gdnf>📁 Crear carpeta</button></div>
   ${all.length?`<div class="gdfil">${[["todos","Todo",all.length],["pend","★ Pendientes",np],["hecho","✓ Hechos",nh]].map(([k,t,c])=>`<button data-gdfil="${k}" aria-pressed="${FIL===k}">${t} <small>${c}</small></button>`).join("")}</div>
-  <input class="gdq" id="gdq" type="search" placeholder="Buscar en lo guardado…" autocomplete="off" value="${esc(Q)}">`:""}<div id="gdlist">${body}</div>${MPI.get().length?`<p class="gdexp"><button data-gdexp>⬇️ Exportar mis puntos</button></p>`:""}`;
+  <input class="gdq" id="gdq" type="search" placeholder="Buscar en lo guardado…" autocomplete="off" value="${esc(Q)}">`:""}<div id="gdlist">${mpb}${body}</div>${MPI.get().length?`<p class="gdexp"><button data-gdexp>⬇️ Exportar mis puntos</button></p>`:""}`;
   const q=box.querySelector("#gdq");if(q)q.addEventListener("input",()=>{Q=nk(q.value.trim());const p=q.selectionStart;render();const q2=box.querySelector("#gdq");if(q2){q2.focus();try{q2.setSelectionRange(p,p)}catch(e){}}})}
 function elige(tit,ops){const d=document.createElement("div");d.className="cdq";
   d.innerHTML=`<div role="dialog" aria-label="${esc(tit)}"><h3>${tit}</h3>${ops.map((o,i)=>`<button data-q="${i}"><span>${o[0]}</span>${o[1]}</button>`).join("")}<button class="x" data-q="no">Cancelar</button></div>`;
