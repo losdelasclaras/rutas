@@ -132,12 +132,26 @@ let MALT=0,AVT=0;const vigila=l=>{l.on("tileerror",()=>{MALT++;if(MALT>=6&&Date.
   toast("🗺 Sin mapa en esta zona: no hay cobertura y no estaba guardado. Con cobertura, 🗺 › Guardar lo que se ve.",6000)}});l.on("tileload",()=>{MALT=0});return l};vigila(FONDO);
 function ponCapa(k){if(!CAPAS[k])return;CAPA=k;try{localStorage.setItem("capa",k)}catch(e){}FONDO.remove();FONDO=vigila(CAPAS[k].l()).addTo(map);FONDO.bringToBack();capas()}
 const mbT=b=>b<1e6?"menos de 1 MB":Math.round(b/1e6).toLocaleString("es-ES")+" MB";
+// 21 nov 2026: «Tus mapas sin cobertura»: pantalla propia (desde Mis cosas › Mapas sin cobertura y desde 🗺), con la lista primero
+let PANEL="capas";
+function zonasG(){try{return JSON.parse(Nativo.zonas())}catch(e){return{z:[],total:0}}}
+function filaZ(z){return`<div style="display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--edge);padding:10px 0"><span style="font-size:26px">🗺️</span><span style="flex:1"><b style="font-size:17px">${esc(z.n)}</b><small style="display:block;color:var(--muted);font-size:14px">${z.capa==="varios"?"Los tres mapas":(CAPAS[z.capa]||{n:z.capa}).n} · ${mbT(z.b)} · ${new Date(z.t).toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"})}</small></span><button onclick="borraZ('${z.id}')" style="border:0;background:#fde8e6;color:#b3261e;border-radius:10px;padding:9px 12px;font-weight:800;font-size:15px">🗑 Borrar</button></div>`}
+function misMapas(){PANEL="mis";const o=zonasG(),zs=o.z.slice().reverse();
+  $("sh").innerHTML=`<h2>🗺 Tus mapas sin cobertura</h2><p style="margin:0 0 6px;color:var(--muted)">Se ven aquí, al grabar o seguir una ruta, aunque no tengas datos.</p>`+
+    (zs.length?zs.map(filaZ).join("")+`<p style="font-size:14px;color:var(--muted);margin:8px 0 2px">En total ocupan ${mbT(o.total)}.</p>`
+      :`<p style="background:#fff4e0;color:#5b3d06;border-radius:12px;padding:10px 12px;font-size:16px">Aún no tienes ningún mapa guardado.</p>`)+
+    `<h3 style="margin:16px 0 6px;font-size:18px">⬇ Guardar ${zs.length?"otro":"un"} mapa</h3>`+
+    (T.length?`<button class="b2 go" onclick="cierra();bajarZona()">De la zona del track que sigues${TR[0]&&TR[0].n?" («"+esc(String(TR[0].n).slice(0,40))+"»)":""}</button>`:"")+
+    `<button class="b2 ${T.length?"":"go"}" onclick="cierra();bajarVista()">De lo que se ve ahora en el mapa</button>
+    <p style="font-size:14px;color:#5d6b62;margin:2px 0 8px">Para otra zona: cierra esto, mueve el mapa hasta ella y vuelve aquí. Desde casa, también en el mapa de la app: Capas › «Mapa de una zona para grabar sin cobertura».</p>
+    <button class="b2" onclick="capas()">Elegir el mapa (topográfico, IGN, ortofoto)</button><button class="b2" onclick="cierra()">Cerrar</button>`;
+  $("sheet").hidden=false}
 function guardados(){let o={z:[],total:0};try{o=JSON.parse(Nativo.zonas())}catch(e){return""}
   const zs=o.z.slice().reverse();if(!zs.length&&o.total<1e6)return"";
   return`<h3 style="margin:16px 0 4px;font-size:18px">💾 Mapas guardados en el móvil</h3>`+zs.map(z=>`<div style="display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--edge);padding:9px 0"><span style="flex:1"><b>${esc(z.n)}</b><small style="display:block;color:var(--muted)">${z.capa==="varios"?"Los tres mapas":(CAPAS[z.capa]||{n:z.capa}).n} · ${mbT(z.b)} · ${new Date(z.t).toLocaleDateString("es-ES",{day:"numeric",month:"short"})}</small></span><button onclick="borraZ('${z.id}')" style="border:0;background:#fde8e6;color:#b3261e;border-radius:10px;padding:9px 12px;font-weight:800;font-size:15px">🗑 Borrar</button></div>`).join("")+
     `<p style="font-size:14px;color:var(--muted);margin:8px 0 2px">En total ocupan ${mbT(o.total)} (incluye lo que se va guardando del mapa que ves).</p><button class="b2" style="color:#b3261e" onclick="if(confirm('¿Borrar todos los mapas guardados? Sin cobertura no se verá el mapa hasta volver a guardarlo.')){Nativo.borrarTodo();capas();toast('Mapas borrados')}">🗑 Borrar todos los mapas</button>`}
-function borraZ(id){if(!confirm("¿Borrar este mapa guardado?"))return;Nativo.borrarZona(id);capas();toast("Mapa borrado")}
-function capas(){const ga=guardadoAqui();$("sh").innerHTML=`<h2>🗺 Mapa</h2>`+Object.entries(CAPAS).map(([k,c])=>`<button class="capa" aria-pressed="${k===CAPA}" onclick="ponCapa('${k}')"><span>${k===CAPA?"✓":"○"}</span><span style="flex:1">${c.n}<small>${c.d}</small></span><span style="flex:none;font-size:13px;font-weight:800;padding:4px 8px;border-radius:8px;${ga.includes(k)?"background:#e3f1e6;color:#1f6b32\">💾 Guardado aquí":"background:#f1f1f1;color:#8a958e\">Sin guardar aquí"}</span></button>`).join("")+
+function borraZ(id){if(!confirm("¿Borrar este mapa guardado?"))return;Nativo.borrarZona(id);PANEL==="mis"?misMapas():capas();toast("Mapa borrado")}
+function capas(){PANEL="capas";const ga=guardadoAqui(),nz=zonasG().z.length;$("sh").innerHTML=`<h2>🗺 Mapa</h2><button class="b2" onclick="misMapas()" style="margin:0 0 8px">💾 Tus mapas sin cobertura${nz?" ("+nz+")":""} ›</button>`+Object.entries(CAPAS).map(([k,c])=>`<button class="capa" aria-pressed="${k===CAPA}" onclick="ponCapa('${k}')"><span>${k===CAPA?"✓":"○"}</span><span style="flex:1">${c.n}<small>${c.d}</small></span><span style="flex:none;font-size:13px;font-weight:800;padding:4px 8px;border-radius:8px;${ga.includes(k)?"background:#e3f1e6;color:#1f6b32\">💾 Guardado aquí":"background:#f1f1f1;color:#8a958e\">Sin guardar aquí"}</span></button>`).join("")+
   (T.length?`<button class="b2 go" onclick="cierra();bajarZona()">⬇ Guardar la zona del track, para sin cobertura</button><button class="b2" onclick="cierra();bajarTres('track')">⬇ Guardar los tres mapas de la zona del track</button>`:"")+`<button class="b2 ${T.length?"":"go"}" onclick="cierra();bajarVista()">⬇ Guardar lo que se ve, para sin cobertura</button><button class="b2" onclick="cierra();bajarTres('vista')">⬇ Guardar los tres mapas de lo que se ve</button><p style="font-size:14px;color:#5d6b62;margin:4px 0 8px">Se guarda el mapa elegido de la zona que tienes en pantalla, con más detalle. Para preparar desde casa otra zona: en el mapa de la app, Capas › «Mapa de una zona para grabar sin cobertura».</p>${guardados()}<button class="b2" onclick="cierra()">Cerrar</button><p style="font-size:12px;color:#8a958e;text-align:center;margin:6px 0 0">Versión ${(()=>{try{return Nativo.version()}catch(e){return"?"}})()}</p>`;$("sheet").hidden=false}
 const seg2B=L.polyline([],{color:"#fff",weight:7,opacity:.8}).addTo(map),seg2L=L.polyline([],{color:"#e8711a",weight:4,opacity:.95,dashArray:"8 6"}).addTo(map);
 const segB=L.polyline([],{color:"#fff",weight:9,opacity:.85}).addTo(map),segL=L.polyline([],{color:"#7b2cbf",weight:5,opacity:.95,dashArray:"10 7"}).addTo(map);
@@ -304,7 +318,7 @@ function estadoZona(){const r={};for(const k of TRES){const l=listaZona(k);let f
 let ZAV="";
 // 21 nov 2026: lo pedido desde Mis cosas: «mapas» = abrir el panel de mapas; «zona» = la pregunta de guardar el mapa de este track
 function abrePedido(){let p=window.__ped||"";window.__ped="";if(!p)try{p=Nativo.pedido()||""}catch(e){}
-  if(p==="mapas")capas();
+  if(p==="mapas")misMapas();
   else if(p==="zona")setTimeout(()=>{if(!$("sheet").hidden&&!$("sh").innerHTML.includes("mapa de la zona"))return;ofreceZona(1)},1000)}
 function ofreceZona(forzar){if(!T.length||ZR)return;if(!forzar&&window.__ped==="mapas")return;if(!forzar&&(window.__NU||!$("sheet").hidden))return;   /* 8 nov 2026: no tapar una pregunta abierta */
   const E=estadoZona(),e=E[CAPA],ok=TRES.filter(k=>E[k].p>=.97);
