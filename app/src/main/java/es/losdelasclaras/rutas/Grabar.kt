@@ -330,7 +330,7 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) permisos()
     }
     private var desdeIcono = false
-    override fun onNewIntent(i: Intent?) { super.onNewIntent(i); setIntent(i); desdeIcono = i?.getBooleanExtra("desdeIcono", false) == true; datosDe(i); web.evaluateJavascript("cargaSeguir();refresca();miraZona()", null) }
+    override fun onNewIntent(i: Intent?) { super.onNewIntent(i); setIntent(i); desdeIcono = i?.getBooleanExtra("desdeIcono", false) == true; datosDe(i); web.evaluateJavascript("cargaSeguir();refresca();miraZona();window.abrePedido&&abrePedido()", null) }
     override fun onResume() { super.onResume(); aLaApp = false; mirar(); brujula(true); try { web.evaluateJavascript("window.movilListo&&movilListo()", null) } catch (e: Exception) {} }   // al volver de un ajuste, la lista «Preparar el móvil» se pone al día
     override fun onPause() { super.onPause(); soltar(); brujula(false) }
     /** 19 nov 2026: si se sale de esta pantalla mientras se graba (botón de inicio, otra app, pantalla apagada…) se cierra el
@@ -373,6 +373,9 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
     private fun datosDe(i: Intent?) {
         val b = i?.data?.getQueryParameter("b")
         if (b != null && Regex("[A-Za-z0-9]{12,40}").matches(b)) getSharedPreferences("buzon", MODE_PRIVATE).edit().putString("b", b).apply()
+        // 21 nov 2026: desde Mis cosas › «Ver y guardar mapas» (intent://mapas) o «Guardar el mapa de este track» (seguir + S.m=1)
+        if (i?.data?.host == "mapas") Grab.prefs(this).edit().putString("pedido", "mapas").apply()
+        if (i?.data?.host == "seguir" && i.getStringExtra("m") == "1") Grab.prefs(this).edit().putString("pedido", "zona").apply()
         val z = i?.getStringExtra("z")
         if (i?.data?.host == "zona" && z != null && Regex("^-?[\\d.]+(,-?[\\d.]+){3}$").matches(z))
             Grab.prefs(this).edit().putString("zona", JSONObject().put("z", z).put("n", i.getStringExtra("n") ?: "la zona").toString()).apply()
@@ -673,6 +676,7 @@ class GrabarActivity : Activity(), LocationListener, android.hardware.SensorEven
         private fun fichero(k: String): File? { val v = k.split("/"); return if (v.size == 4) tesela(v[0], v[1], v[2], v[3]) else null }
         private fun tamDir(d: File): Long = d.walkTopDown().filter { it.isFile }.sumOf { it.length() }
         /** Lista de zonas guardadas con lo que ocupan, y lo que ocupa todo (también lo que se ha ido viendo). */
+        @JavascriptInterface fun pedido(): String { val p = Grab.prefs(this@GrabarActivity); val v = p.getString("pedido", "") ?: ""; p.edit().remove("pedido").apply(); return v }
         @JavascriptInterface fun zonas(): String {
             val a = zl(); val out = JSONArray()
             for (i in 0 until a.length()) { val o = a.getJSONObject(i); var b = 0L; for (k in claves(o)) b += fichero(k)?.length() ?: 0L

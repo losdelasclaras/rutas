@@ -302,7 +302,11 @@ const MB=(n,k)=>Math.max(1,Math.round(n*(k==="topo"?.018:k==="orto"?.035:.03)));
 // el servidor no da algún trozo) no se pregunta más; si está a medias se ofrece terminarlo; si está otro mapa, se dice.
 function estadoZona(){const r={};for(const k of TRES){const l=listaZona(k);let f=l.length;try{f=+Nativo.faltan(JSON.stringify(l))}catch(e){}r[k]={t:l.length,f,p:l.length?(l.length-f)/l.length:0}}return r}
 let ZAV="";
-function ofreceZona(forzar){if(!T.length||ZR)return;if(!forzar&&(window.__NU||!$("sheet").hidden))return;   /* 8 nov 2026: no tapar una pregunta abierta */
+// 21 nov 2026: lo pedido desde Mis cosas: «mapas» = abrir el panel de mapas; «zona» = la pregunta de guardar el mapa de este track
+function abrePedido(){let p=window.__ped||"";window.__ped="";if(!p)try{p=Nativo.pedido()||""}catch(e){}
+  if(p==="mapas")capas();
+  else if(p==="zona")setTimeout(()=>{if(!$("sheet").hidden&&!$("sh").innerHTML.includes("mapa de la zona"))return;ofreceZona(1)},1000)}
+function ofreceZona(forzar){if(!T.length||ZR)return;if(!forzar&&window.__ped==="mapas")return;if(!forzar&&(window.__NU||!$("sheet").hidden))return;   /* 8 nov 2026: no tapar una pregunta abierta */
   const E=estadoZona(),e=E[CAPA],ok=TRES.filter(k=>E[k].p>=.97);
   if(ok.length&&!forzar){const k=TN+"|"+ok.join();if(ZAV!==k){ZAV=k;toast("💾 Tienes guardado el mapa de esta zona"+(ok.includes(CAPA)?"":" ("+ok.map(c=>CAPAS[c].n).join(", ")+")")+": se verá sin cobertura",4500)}
     if(!ok.includes(CAPA))ponCapaSin(ok[0]);return}
@@ -489,7 +493,7 @@ function cierra(){$("sheet").hidden=true;DATOS=false}
   if(v&&v.z>=13&&Date.now()-v.t<12*3600e3)map.setView([v.la,v.lo],v.z,{animate:false});
   else{let u=null;try{u=JSON.parse(localStorage.getItem("ultpos")||"null")}catch(e){}if(u)map.setView([u[0],u[1]],15,{animate:false})}})();
 map.on("moveend zoomend",()=>{if(map.getZoom()<13)return;const c=map.getCenter();try{localStorage.setItem("vista",JSON.stringify({la:c.lat,lo:c.lng,z:map.getZoom(),t:Date.now()}))}catch(e){}});
-cargaSeguir();refresca();setTimeout(miraZona,300);
+window.__ped=(()=>{try{return Nativo.pedido()||""}catch(e){return""}})();setTimeout(()=>window.abrePedido&&abrePedido(),700);cargaSeguir();refresca();setTimeout(miraZona,300);
 if(PTS.length&&!T.length){const q=PTS[PTS.length-1];map.setView([q[0],q[1]],Math.max(map.getZoom(),15),{animate:false})}
 setInterval(()=>{if(document.visibilityState!=="visible")return;S=JSON.parse(Nativo.estado());nuevos();pinta()},2000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){refresca();cargaSeguir()}});

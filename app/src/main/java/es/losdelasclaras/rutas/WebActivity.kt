@@ -43,7 +43,7 @@ class WebActivity : LauncherActivity() {
         val u = super.getLaunchingUrl()
         val v = try { val pi = packageManager.getPackageInfo(packageName, 0)
             if (Build.VERSION.SDK_INT >= 28) pi.longVersionCode else @Suppress("DEPRECATION") pi.versionCode.toLong() } catch (e: Exception) { 0L }
-        return try { u.buildUpon().appendQueryParameter("apk", v.toString()).appendQueryParameter("pend", Buzon.cuantos(this).toString()).build() } catch (e: Exception) { u }   // pend (19 nov): grabaciones esperando cobertura
+        return try { u.buildUpon().appendQueryParameter("apk", v.toString()).appendQueryParameter("pend", Buzon.cuantos(this).toString()).appendQueryParameter("mapas", (try { org.json.JSONArray(java.io.File(filesDir, "zonas.json").readText()).length() } catch (e: Exception) { 0 }).toString()).build() } catch (e: Exception) { u }   // pend (19 nov): grabaciones esperando cobertura
     }
 
     override fun shouldLaunchImmediately(): Boolean {
