@@ -80,9 +80,12 @@ if(enApp){
     let ln=r.gx.ln.map(q=>[+(+q[0]).toFixed(6),+(+q[1]).toFixed(6),q[2]!=null&&isFinite(q[2])?Math.round(q[2]):null]);if(rev)ln.reverse();
     if(ln.length>1500&&window.COMPARTIR&&COMPARTIR.simple){let t=2;while(ln.length>1500&&t<40){ln=COMPARTIR.simple(ln,t);t*=1.5}}
     const n=(typeof routeTitle==="function"&&r.p?routeTitle(r):r.ti||r.n)||"Track";
-    location.href="intent://seguir?b="+buzon()+"#Intent;scheme=ldcgrabar;package=es.losdelasclaras.rutas;S.n="+encodeURIComponent(String(n).slice(0,90))+";S.t="+encodeURIComponent(JSON.stringify(ln))+";end"}}
+    location.href="intent://seguir?b="+buzon()+"#Intent;scheme=ldcgrabar;package=es.losdelasclaras.rutas;S.n="+encodeURIComponent(String(n).slice(0,90))+";S.t="+encodeURIComponent(JSON.stringify(ln))+(window.__mapaOff?";S.m=1":"")+";end";window.__mapaOff=false}}
 /* 19 nov 2026: el APK abre la web con «?pend=N» = grabaciones que siguen en el móvil esperando cobertura para pasar a Mis cosas.
    Mientras haya, Mis cosas › Guardado lo dice (antes no salía nada y asustaba). Se quita al recogerlas. */
+/* 21 nov 2026: «?mapas=N» = zonas de mapa sin cobertura guardadas en la pantalla de grabar (para enseñarlo en Mis cosas) */
+{const q=new URLSearchParams(location.search).get("mapas");if(q!=null)try{localStorage.setItem("ldc-mapasoff",String(+q||0))}catch(e){}}
+window.ABRE_MAPAS=()=>{location.href="intent://mapas?b="+buzon()+"#Intent;scheme=ldcgrabar;package=es.losdelasclaras.rutas;end"};
 {const q=new URLSearchParams(location.search).get("pend");if(q!=null)try{if(+q>0)localStorage.setItem("ldc-pendgrab",String(+q));else localStorage.removeItem("ldc-pendgrab")}catch(e){}}
 /* buzón: la grabadora del APK deja ahí lo grabado (Firestore buzon/{código}) y aquí se recoge y se guarda en Mis tracks */
 function buzon(){let b=null;try{b=localStorage.getItem("ldc-buzon")}catch(e){}

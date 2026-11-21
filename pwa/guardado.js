@@ -8,6 +8,7 @@
 (function(){
 const MPI=window.MISPUNTOS;if(!MPI)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
+#gdbox .gdmapas{display:flex;gap:10px;align-items:center;background:#eef4f1;border:1px solid #cfe0d7;border-radius:12px;padding:10px 12px;margin:2px 0 10px}#gdbox .gdmapas>div{flex:1;font-size:16px;line-height:1.3}#gdbox .gdmapas small{display:block;font-size:14px;color:#5d6b62;margin-top:2px}#gdbox .gdmapas .btn{flex:none;white-space:nowrap}
 #gdbox .gdpend{background:#fff4e0;border:1px solid #f0c27a;border-radius:12px;padding:10px 12px;margin:2px 0 10px;font-size:15.5px;line-height:1.4;color:#5b3d06}
 #gdbox .gdtop{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:2px 0 10px}
 #gdbox .gdtop button{min-height:48px;font-size:16px;font-weight:800;border-radius:12px;border:1px solid var(--edge);background:var(--card);color:var(--ink);cursor:pointer}
@@ -79,7 +80,10 @@ function render(){if(box.hidden)return;const all=items(),nh=all.filter(x=>x.e===
       (sueltos.length?(names.length?`<p class="gdsep">Sin carpeta</p>`:"")+sueltos.map(x=>conX(x)).join(""):"")}
   let pg=0;try{pg=+localStorage.getItem("ldc-pendgrab")||0}catch(e){}
   const pgb=pg?`<div class="gdpend">📶 <b>${pg>1?pg+" grabaciones esperan":"Tu última grabación espera"} cobertura.</b> ${pg>1?"Están":"Está"} a salvo en el móvil y ${pg>1?"aparecerán":"aparecerá"} aquí ${pg>1?"solas":"sola"} en cuanto haya conexión (abre la app con cobertura).</div>`:"";
-  box.innerHTML=pgb+`<div class="gdtop"><button class="pri" data-gdadd>⬆️ Abrir GPX o KML</button><button data-gdnf>📁 Crear carpeta</button></div>
+  // 21 nov 2026: los mapas sin cobertura viven en la pantalla de grabar (Android); aquí, un atajo para encontrarlos
+  let apk=false,nm=null;try{apk=sessionStorage.getItem("ldc-apk")==="1";const v=localStorage.getItem("ldc-mapasoff");nm=v==null?null:+v}catch(e){}
+  const mpb=apk?`<div class="gdmapas"><div><b>🗺 Mapas sin cobertura</b><small>${nm==null?"Se guardan en la pantalla de grabar.":nm?nm+(nm>1?" zonas guardadas":" zona guardada")+" en el móvil.":"Aún no tienes ninguno guardado."} Para ver el mapa en el monte sin datos.</small></div><button class="btn ghost" data-gdmapas>Ver y guardar mapas</button></div>`:"";
+  box.innerHTML=pgb+mpb+`<div class="gdtop"><button class="pri" data-gdadd>⬆️ Abrir GPX o KML</button><button data-gdnf>📁 Crear carpeta</button></div>
   ${all.length?`<div class="gdfil">${[["todos","Todo",all.length],["pend","★ Pendientes",np],["hecho","✓ Hechos",nh]].map(([k,t,c])=>`<button data-gdfil="${k}" aria-pressed="${FIL===k}">${t} <small>${c}</small></button>`).join("")}</div>
   <input class="gdq" id="gdq" type="search" placeholder="Buscar en lo guardado…" autocomplete="off" value="${esc(Q)}">`:""}<div id="gdlist">${body}</div>${MPI.get().length?`<p class="gdexp"><button data-gdexp>⬇️ Exportar mis puntos</button></p>`:""}`;
   const q=box.querySelector("#gdq");if(q)q.addEventListener("input",()=>{Q=nk(q.value.trim());const p=q.selectionStart;render();const q2=box.querySelector("#gdq");if(q2){q2.focus();try{q2.setSelectionRange(p,p)}catch(e){}}})}
@@ -102,7 +106,7 @@ function borrar(lst,tit){if(DESH)DESH.fin();const MP=MPI.get(),ts=MPI.tracks().s
   bar.querySelector("button").onclick=()=>{clearTimeout(tm);bar.remove();DESH=null;
     if(qp.length){MPI.get().push(...qp);if(MPI.guarda)MPI.guarda()}if(qt.length)MPI.saveTracks([...MPI.tracks(),...qt]);render();toast("Recuperado")};
   DESH={fin}}
-box.addEventListener("click",e=>{
+box.addEventListener("click",e=>{if(e.target.closest("[data-gdmapas]")){window.ABRE_MAPAS&&ABRE_MAPAS();return}
   const dx=e.target.closest("[data-gdx]");if(dx){if(!seguro(dx,"¿Borrar?"))return;const v=dx.dataset.gdx;borrar([{k:v[0],id:v.slice(2)}],dx.dataset.n);return}
   const fd=e.target.closest("[data-gdfdel]");if(fd){if(!seguro(fd,"¿Seguro? Toca otra vez"))return;const n=fd.closest("[data-fn]").dataset.fn;
     borrar(items().filter(x=>x.c===n).map(x=>({k:x.k,id:String(x.o.id)})),"carpeta "+n);OPEN.delete(n);return}

@@ -115,7 +115,7 @@ function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t
       <button class="mpb" data-mtren="${ie}">✏️ Cambiar nombre</button>
       <button class="mpb dan" data-mtdel="${ie}">${trs} Quitar de mis tracks</button></div>`}
   else h=cab+`<div class="meta">${d.km?`<span class="tag">${kmTxt(d.km)}</span>`:""}${d.up!=null?`<span class="tag">+${d.up.toLocaleString("es-ES")} m</span>`:""}</div>
-    <div class="tbot"><button class="btn primary" data-mtfol="${ie}">▶ Seguir</button><button class="btn ghost" data-mtver="${ie}">👁 Solo ver</button><button class="btn ghost" data-mtdat="${ie}">📊 Datos</button><button class="btn ghost" data-mtmas="${ie}">··· Más opciones</button></div>
+    <div class="tbot"><button class="btn primary" data-mtfol="${ie}">▶ Seguir</button><button class="btn ghost" data-mtver="${ie}">👁 Solo ver</button><button class="btn ghost" data-mtdat="${ie}">📊 Datos</button><button class="btn ghost" data-mtmas="${ie}">··· Más opciones</button></div>${(()=>{try{return sessionStorage.getItem("ldc-apk")==="1"}catch(e){return false}})()?`<button class="btn ghost" style="width:100%;margin-top:8px" data-mtmapa="${ie}">⬇ Guardar el mapa de este track, para sin cobertura</button>`:""}
     <div class="estbox"><button class="mpb${t.est==="hecho"?" on":""}" data-mtest="hecho" data-id="${ie}">✓ ${t.est==="hecho"?"Hecho":"Lo he hecho"}</button><button class="mpb${t.est==="pend"?" on":""}" data-mtest="pend" data-id="${ie}">★ Pendiente</button>${t.est==="hecho"?`<label class="note" style="display:flex;align-items:center;gap:6px">el <input type="date" data-mtfh="${ie}" value="${(t.fh||"").slice(0,10)}" max="${new Date().toISOString().slice(0,10)}"></label>`:""}</div>`;
   MPI.show(h);
   sheet._mt=t.id;sheet._wp=null;sheet._mv=vista||"";fotos(sheet);
@@ -165,6 +165,8 @@ sheet.addEventListener("click",e=>{
   const id=(s)=>{const b=e.target.closest(s);return b?b.getAttribute(s.slice(1,-1)):null};
   let k;
   if((k=id("[data-mtver]"))!=null){const t=T().find(x=>String(x.id)===k);if(t)soloVer(t);return}
+  // 21 nov: abre la pantalla de grabar con este track y la pregunta de guardar su mapa
+  if((k=id("[data-mtmapa]"))!=null){const t=T().find(x=>String(x.id)===k);if(!t)return;window.__mapaOff=true;const r=routeOf(t);SEGUIR.start(r||comoRuta(t),false);return}
   if((k=id("[data-mtfol]"))!=null){const t=T().find(x=>String(x.id)===k);if(!t)return;const r=routeOf(t);if(r)SEGUIR.start(r,false);else SEGUIR.start(comoRuta(t),false);return}
   if((k=id("[data-mtgpx]"))!=null){const t=T().find(x=>String(x.id)===k);if(!t)return;const r=routeOf(t);if(r)dlGPX(r);else MPI.dl(t.n.replace(/[\\/:*?"<>|]+/g," ").trim()+".gpx",gpxDe(t),"application/gpx+xml");return}
   const es=e.target.closest("[data-mtest]");if(es){const k2=es.dataset.id,v=es.dataset.mtest;
