@@ -196,5 +196,15 @@
     ]
    }
   }
+ },
+ {
+  "id": "c6",
+  "nombre": "Caleyando con Cienfuegos",
+  "color": "#00838f",
+  "mapa_mid": "1CA9gPMtsbe6ibuqie64RVB4Suos",
+  "drive_carpeta": "",
+  "blog_web": "https://pelescaleyes.blogspot.com",
+  "quitar_nombres": "restaurante|sidrer[ií]a|\\bhotel|casa rural|casa de aldea|apartamentos|camping|hostal|posada|cafeter[ií]a|\\bbar\\b|tienda|multiaventura",
+  "nota": "Alta 22 nov 2026 (Javi Cienfuegos). Solo su My Maps (cumbres y lugares); sin tracks de momento. c5 reservado para Al filo de lo improbable."
  }
 ]
