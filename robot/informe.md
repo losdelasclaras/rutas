@@ -1,4 +1,4 @@
-# Informe del robot · 23/11/2026 00:23
+# Informe del robot · 23/11/2026 00:46
 
 **Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos; regeneración forzada
 
@@ -31,13 +31,12 @@
 -    (42 peticiones a su web en 1.3 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: HTTP Error 502: Bad Gateway <html> <head><title>502 Bad Gateway</title></head> <body> <center><h1>502 Bad Gateway</h1></center> <hr><center>ngin; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
 -    (quitados 492 puntos de publicidad: capas o nombres que no queremos)
 - 📷 Fotos del colaborador c6: 0 nuevas, 644 en total, 8 no se han podido bajar (HTTP Error 404: Not Found)
-- 📝 Títulos de entradas de Caleyando con Cienfuegos: 454 de 502 (14 no han respondido)
+- 📝 Títulos de entradas de Caleyando con Cienfuegos: 479 de 502 (15 no han respondido)
 - 📊 Datos de las rutas de Caleyando con Cienfuegos: 658 de 701 puntos con datos de su entrada, 1 no han respondido
 - 🤝 Colaborador «Caleyando con Cienfuegos»: 815 puntos, 0 tracks.
 - 📅 Salidas de la web de Civilu: 1 próximas
