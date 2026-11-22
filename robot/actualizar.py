@@ -8,7 +8,7 @@ Cada noche (GitHub Actions) mira:
 Si algo ha cambiado, regenera la app (build.py, assemble.py, gpx/proc.py, pwa/build_pwa.py).
 Escribe un informe en robot/informe.md. Sale con código 0 si no hay cambios, 0 si los hay (lo indica en robot/hay-cambios).
 """
-import json, os, re, sys, io, html, math, subprocess, datetime, time, unicodedata, urllib.request, urllib.parse, xml.etree.ElementTree as ET
+import json, os, re, sys, io, html, math, hashlib, subprocess, datetime, time, unicodedata, urllib.request, urllib.parse, xml.etree.ElementTree as ET
 
 APP = '/home/claude/app/'
 CFG = {
@@ -1113,6 +1113,80 @@ def aplicar_correcciones(co, new, T=None, calla=False):
     if fuera: new['r'] = [r for i, r in enumerate(rs) if i not in fuera]
     if n and not calla: log(f'✏️ {co.get("nombre") or co["id"]}: {n} rutas con corrección a mano' + (f' ({len(fuera)} ocultas)' if fuera else ''))
 
+# ------------------------------------------------------------------ 3c. SALIDAS DE LA WEB DE LOS CLUBES
+# 21 nov 2026: algunos clubes (dados de alta en Salidas como los demás) no quieren hacer trabajo doble: el robot lee cada
+# noche la sección de salidas de su web (RSS de WordPress o Blogger, en app/clubes_web.json) y las pone en la app.
+# Se empareja con su club de Firestore por el nombre (si aún no está dado de alta y aprobado, no salen en la app).
+MESES = {m: i + 1 for i, m in enumerate('enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre'.split())}
+def _txt(h):
+    h = re.sub(r'(?is)<(script|style)[^>]*>.*?</\1>', ' ', h); h = re.sub(r'(?i)<br\s*/?>|</p>|</li>|</h\d>|</div>', '\n', h)
+    t = html.unescape(re.sub(r'<[^>]+>', ' ', h)); t = re.sub(r'[ \t\xa0]+', ' ', t)
+    return re.sub(r'\n\s*\n+', '\n', t).strip()
+def _num(x): return float(x.replace('.', '').replace(',', '.')) if re.match(r'^\d{1,3}(\.\d{3})+$', x) else float(x.replace(',', '.'))
+def _fecha_salida(ti, t, cuerpo, pub):
+    """Día de la salida: fecha en el nombre de un PDF/adjunto (2026-11-15), o «15 de noviembre», o 15/11; entre 2 días antes
+    de publicarla y 6 meses después (las salidas se anuncian antes)."""
+    cands = []
+    for m in re.finditer(r'(20\d\d)-(\d\d)-(\d\d)', cuerpo): cands.append((int(m.group(1)), int(m.group(2)), int(m.group(3))))
+    for m in re.finditer(r'(\d{1,2})\s+de\s+(' + '|'.join(MESES) + r')(?:\s+(?:de\s+|del\s+)?(20\d\d))?', (ti + '\n' + t).lower()):
+        cands.append((int(m.group(3)) if m.group(3) else 0, MESES[m.group(2)], int(m.group(1))))
+    for m in re.finditer(r'\b(\d{1,2})/(\d{1,2})(?:/(20\d\d|\d\d))?\b', ti + '\n' + t):
+        y = m.group(3); cands.append(((int(y) + (2000 if len(y) == 2 else 0)) if y else 0, int(m.group(2)), int(m.group(1))))
+    for y, mo, d in cands:
+        for yy in ([y] if y else [pub.year, pub.year + 1]):
+            try: f = datetime.date(yy, mo, d)
+            except ValueError: continue
+            if pub - datetime.timedelta(days=2) <= f <= pub + datetime.timedelta(days=183): return f
+    return None
+def salidas_web():
+    cf = APP + 'clubes_web.json'
+    if not os.path.exists(cf): return
+    conf = json.load(open(cf)); out_f = APP + 'salidas_web.json'
+    old = json.load(open(out_f)) if os.path.exists(out_f) else []
+    try:   # clubes aprobados (lectura pública de Firestore)
+        q = {"structuredQuery": {"from": [{"collectionId": "clubes"}], "where": {"fieldFilter": {"field": {"fieldPath": "estado"}, "op": "EQUAL", "value": {"stringValue": "ok"}}}}}
+        rq = urllib.request.Request(f'https://firestore.googleapis.com/v1/projects/{FS_PROY}/databases/(default)/documents:runQuery', data=json.dumps(q).encode(), headers={'Content-Type': 'application/json'})
+        clubs = [{'id': r['document']['name'].split('/')[-1], **{k: _fs_val(v) for k, v in r['document'].get('fields', {}).items()}} for r in json.loads(urllib.request.urlopen(rq, timeout=30).read()) if r.get('document')]
+    except Exception as e:
+        log(f'⚠ Salidas de webs de clubes: no se pudo leer la lista de clubes ({e}); se dejan las de la última vez'); return
+    hoy = datetime.date.today(); res = []
+    def nk(x): x = unicodedata.normalize('NFD', x or ''); return ''.join(c for c in x if unicodedata.category(c) != 'Mn').lower()
+    for c in conf:
+        club = next((k for k in clubs if c.get('club') and k['id'] == c['club']), None) or next((k for k in clubs if nk(c.get('nombre')) and nk(c['nombre']) in nk(k.get('n'))), None)
+        try: xml = get(c['feed']); xml = xml.decode('utf-8', 'replace') if isinstance(xml, bytes) else xml
+        except Exception as e:
+            log(f'⚠ Salidas de {c.get("nombre")}: su web no responde ({e}); se dejan las de la última vez'); res += [x for x in old if x.get('feed') == c['feed']]; continue
+        n_ok, sin_f = 0, []
+        for it in re.findall(r'(?s)<item>(.*?)</item>', xml)[:20]:
+            g = lambda tag: (re.search(r'(?s)<' + tag + r'[^>]*>(.*?)</' + tag + '>', it) or [None, ''])[1]
+            ti = html.unescape(re.sub(r'<!\[CDATA\[|\]\]>', '', g('title'))).strip(); link = re.sub(r'<!\[CDATA\[|\]\]>', '', g('link')).strip()
+            cuerpo = re.sub(r'<!\[CDATA\[|\]\]>', '', g('content:encoded') or g('description')); cuerpo = html.unescape(cuerpo) if '&lt;' in cuerpo else cuerpo
+            try: pub = datetime.datetime.strptime(g('pubDate').strip()[:25].strip(), '%a, %d %b %Y %H:%M:%S').date()
+            except Exception: pub = hoy
+            t = _txt(cuerpo); fd = _fecha_salida(ti, t, cuerpo, pub)
+            if not fd: sin_f.append(ti); continue
+            if fd < hoy: continue
+            hm = re.search(r'(?i)salida\D{0,25}?(\d{1,2})[:.h](\d{2})', t) or re.search(r'\b(\d{1,2}):(\d{2})\b', t)
+            hora = f'{int(hm.group(1)):02d}:{hm.group(2)}' if hm else '08:00'
+            pa = re.split(r'(?i)ruta alternativa|alternativa\s*:', t, maxsplit=1); pr, alt = pa[0], (pa[1] if len(pa) > 1 else '')
+            def datos(x):
+                km = re.search(r'(\d+(?:[.,]\d+)?)\s*km\b', x, re.I); up = re.search(r'\+\s*(\d{1,2}(?:\.\d{3})|\d{2,4})\s*m\b', x) or re.search(r'(?i)desnivel[^\d+]{0,25}\+?\s*(\d{1,2}\.\d{3}|\d{2,4})\s*m', x)
+                hr = re.search(r'(?i)(?<![\d:.,])(?<!las )(\d{1,2}(?:[.,]\d)?)\s*(?:horas|h de marcha)\b', x) or re.search(r'(?i)duraci[oó]n\D{0,15}(\d{1,2}(?:[.,]\d)?)\s*h', x)
+                return {k: v for k, v in (('km', _num(km.group(1)) if km else None), ('up', _num(up.group(1)) if up else None), ('hr', (hr.group(1).replace('.', ',') + ' h') if hr else None)) if v}
+            s = {'feed': c['feed'], 'k': 'w-' + hashlib.md5(link.encode()).hexdigest()[:10], 'ti': ti, 'fecha': fd.isoformat() + 'T' + hora, 'wu': link,
+                 'txt': (pr.strip()[:1200] + ('…' if len(pr.strip()) > 1200 else '')), **datos(pr)}
+            if alt.strip(): a = datos(alt); a['d'] = re.sub(r'^[\s:.\-–]+', '', alt.strip()).split('\n')[0][:400]; s['alt'] = a
+            pdf = re.search(r'href=["\']([^"\']+\.pdf)["\']', cuerpo, re.I); s['pdfu'] = pdf.group(1) if pdf else ''
+            im = re.search(r'<img[^>]+src=["\']([^"\'?]+)', cuerpo); s['foto'] = im.group(1) if im else ''
+            enc = re.search(r'(?i)(?:punto de encuentro|lugar de encuentro|quedamos en)\s*[:\-]?\s*([^\n]{3,90})', t); s['enc'] = enc.group(1).strip() if enc else ''
+            if club: s.update(club=club['id'], cn=club.get('n') or c.get('nombre'))
+            res.append(s); n_ok += 1
+        log(f'📅 Salidas de la web de {c.get("nombre")}: {n_ok} próximas' + ('' if club else ' (el club aún no está dado de alta y aprobado en Salidas: no salen en la app)') + (f' · sin fecha clara (no se ponen): {"; ".join(sin_f[:3])}' if sin_f else ''))
+    res.sort(key=lambda x: x['fecha'])
+    if res != old:
+        json.dump(res, open(out_f, 'w'), ensure_ascii=False, indent=0); CAMBIOS.append('salidas de webs de clubes')
+        for x in res: log(f'   · {x["fecha"].replace("T"," ")} «{x["ti"]}»' + (f' · {x["km"]:g} km' if x.get('km') else '') + (f' · +{x["up"]:g} m' if x.get('up') else '') + (' · con alternativa' if x.get('alt') else '') + (' · PDF' if x.get('pdfu') else ''))
+
 # ------------------------------------------------------------------ 4. REGENERAR
 def regenerar():
     def run(*a, cwd=APP):
@@ -1137,7 +1211,7 @@ def regenerar():
 if __name__ == '__main__':
     hoy = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=1))).strftime('%d/%m/%Y %H:%M')
     err = None
-    for paso in (blog, mapa, fotos_mapa, enlaces_app, drive, correcciones, colaboradores):
+    for paso in (blog, mapa, fotos_mapa, enlaces_app, drive, correcciones, colaboradores, salidas_web):
         try: paso()
         except Exception as e:
             log(f'⚠ Error en {paso.__name__}: {e}'); err = e

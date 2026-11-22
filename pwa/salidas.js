@@ -91,6 +91,12 @@ async function carga(fuerza){if(!fuerza&&Date.now()-CARGADO<60000)return pinta()
       F.getDocs(F.query(F.collection(db(),"salidas"),F.where("fecha",">=",hoy()),F.orderBy("fecha")))]);
     CLUBS=[];qc.forEach(d=>CLUBS.push(Object.assign({id:d.id},d.data())));
     SALS=[];qs.forEach(d=>SALS.push(Object.assign({id:d.id},d.data())));
+    // 21 nov 2026: salidas que el robot copia cada noche de la web del club (no hacen trabajo doble); solo de clubes aprobados
+    try{const W=await (await fetch("salidas-web.json?v="+(window.LDC_VER||Date.now()),{cache:"no-store"})).json(),H=hoy();
+      for(const w of W){const c=CLUBS.find(x=>x.id===w.club);if(!c||!w.fecha||w.fecha.slice(0,10)<H)continue;
+        SALS.push(Object.assign({},w,{id:w.k,club:c.id,cn:c.n,cc:c.contacto||"",cw:c.web||"",cig:c.ig||"",cfb:c.fb||"",cbus:c.bus||"",prueba:c.prueba,web:1,
+          apo:w.apo||"Toda la información y cómo apuntarse, en la web del club.",apu:w.apu||w.wu}))}
+      SALS.sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)))}catch(e){}
     const u=usr();MIO=null;if(u){const d=await F.getDoc(F.doc(db(),"clubes",u.uid));if(d.exists())MIO=Object.assign({id:d.id},d.data())}
     if(esAdm()){const qp=await F.getDocs(F.query(F.collection(db(),"clubes"),F.where("estado","==","pend")));PEND=[];qp.forEach(d=>PEND.push(Object.assign({id:d.id},d.data())))}
     CARGADO=Date.now();pinta()}
@@ -343,12 +349,12 @@ async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
   const ap=s.ap||"",apu=s.apu||(/^https?:\/\//i.test(ap)?ap:""),tel=apu===ap?"":ap,num=tel.replace(/[^\d+]/g,"");
   const telH=num.length>=9?"tel:"+num:"",waH=num.length>=9?"https://wa.me/"+(num.startsWith("+")?num.slice(1):num.length===9?"34"+num:num):"";
   const apH=apu||telH;
-  const puede=esAdm()||(MIO&&MIO.estado==="ok"&&MIO.id===s.club);
+  const puede=!s.web&&(esAdm()||(MIO&&MIO.estado==="ok"&&MIO.id===s.club));
   sheet.classList.remove("full");
   if(s.cart)setTimeout(()=>verCartel(s),0);
   sheet.innerHTML=`<div class="grab"></div>${tipoHTML("salida",s.cn||"")}<div class="sheet-head"><h2>${esc(s.ti)}</h2><button class="x" aria-label="Cerrar" data-close data-salx>×</button></div>
   <div class="meta"><span class="tag" style="background:#1e8e3e;color:#fff;border-color:#1e8e3e">📅 ${esc(fFecha(s.fecha))}</span><span class="tag">${esc(s.cn)}</span>${s.prueba?`<span class="tag">Prueba</span>`:""}</div>
-  ${s.cart?`<div class="salcart" data-salcart><span>Cargando el cartel…</span></div>`:""}
+  ${s.cart?`<div class="salcart" data-salcart><span>Cargando el cartel…</span></div>`:""}${s.web&&s.foto?`<img src="${esc(s.foto)}" alt="" loading="lazy" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin:6px 0">`:""}
   <div class="ficha"${[s.km,s.up,s.hr,s.dif].filter(Boolean).length===4?' style="grid-template-columns:1fr 1fr"':""}>${s.km?`<div><b>${kmF(s.km)}</b><span>Distancia</span></div>`:""}${s.up?`<div><b>+${Math.round(s.up).toLocaleString("es-ES")} m</b><span>Desnivel</span></div>`:""}${s.hr?`<div><b>${esc(s.hr)}</b><span>Duración</span></div>`:""}${s.dif?`<div><b>${esc(s.dif)}</b><span>Dificultad</span></div>`:""}</div>
   ${s.enc?`<p class="salida">📍 Punto de encuentro: <b>${esc(s.enc)}</b></p>`:""}
   ${(()=>{const b=busDe(s);if(!b.length)return"";   // 15 nov 2026 · paradas del autobús (datos del club); al tocar, Google Maps
@@ -359,6 +365,7 @@ async function abre(id){const s=SALS.find(x=>x.id===id);if(!s)return;
   ${apu||tel||s.apo?`<div class="salbox" style="margin-top:10px"><b>✍️ Cómo apuntarse</b>${tel?`<p style="margin:6px 0 0">📞 ${esc(tel)}</p>`:""}${s.apo?`<p style="margin:6px 0 0">${esc(s.apo)}</p>`:""}
    <div class="salbtns">${apu?`<a class="btn primary" href="${esc(apu)}" target="_blank" rel="noopener" style="grid-column:1/-1">✍️ Apuntarse</a>`:""}${telH?`<a class="btn ghost" href="${esc(telH)}">📞 Llamar</a><a class="btn ghost" href="${esc(waH)}" target="_blank" rel="noopener">💬 WhatsApp</a>`:""}</div></div>`:""}
   ${(()=>{const b=[];   // 10 nov 2026 · hoja de ruta y MIDE, cada una con su botón (archivo subido o enlace)
+    if(s.web&&s.wu)b.push(`<a class="btn ghost" href="${esc(s.wu)}" target="_blank" rel="noopener">🌐 Ver en la web del club</a>`);   // 21 nov: salida copiada de su web
     if(s.pdf)b.push(`<button class="btn ghost" data-saldoc="pdf">📄 Hoja de ruta</button>`);else if(s.pdfu)b.push(`<a class="btn ghost" href="${esc(verUrl(s.pdfu))}" target="_blank" rel="noopener">📄 Hoja de ruta</a>`);
     if(s.mide)b.push(`<button class="btn ghost" data-saldoc="mide">📊 Ficha MIDE</button>`);else if(s.mideu)b.push(`<a class="btn ghost" href="${esc(verUrl(s.mideu))}" target="_blank" rel="noopener">📊 Ficha MIDE</a>`);
     if(s.pdf&&s.pdfu)b.push(`<a class="btn ghost" href="${esc(verUrl(s.pdfu))}" target="_blank" rel="noopener">🔗 Hoja de ruta (web)</a>`);

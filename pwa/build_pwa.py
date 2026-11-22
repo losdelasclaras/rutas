@@ -331,6 +331,9 @@ PL=[[p['n'].split(' / ')[0],p['t'],p['lat'],p['lon']] for p in json.load(open(A+
 d['pz']=_GPZ   # rutas del grupo que pasan por cada cumbre (ver _pasan)
 t=t.replace('__DATA__',json.dumps(d,ensure_ascii=False,separators=(',',':'))).replace('__GEO__',open(A+'geo.json').read()).replace('__TOWNS__',open(A+'towns.json').read()).replace('__PLACES__',json.dumps(PL,ensure_ascii=False,separators=(',',':')))
 # aviso de versión nueva: QUITADO a petición suya (26 oct). version.txt se deja vacío para que las copias antiguas de la app dejen de avisar
+# 21 nov 2026: salidas leídas de la web de algunos clubes (robot › salidas_web) → salidas-web.json (la pestaña Salidas las junta)
+_sw=A+'salidas_web.json'
+open(O+'salidas-web.json','w').write(open(_sw).read() if os.path.exists(_sw) else '[]')
 open(O+'version.txt','w').write("")
 # actualización silenciosa: si vuelves a la app tras un rato y hay versión nueva, se recarga sola (sin avisos)
 import hashlib
