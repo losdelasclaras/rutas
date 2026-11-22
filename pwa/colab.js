@@ -273,20 +273,31 @@ const EXTRA=[["aloja","Alojamientos"],["pueblo","Pueblos con encanto"],["activo"
 const ALL=[],PAR={};
 // zona de un punto: la del punto del grupo o la ruta de colaborador más cercana (9 nov 2026: antes, lejos de lo vuestro salía «Asturias», p. ej. el Monte Pindo)
 const RREG=[];for(const c of CO)for(const r of c.r||[])if(r[8]&&r[1])RREG.push({lat:r[8][0],lon:r[8][1],r:r[1]});
+// 23 nov 2026: puntos del grupo que no están en PEAKS/SPOTS porque otro del grupo se llama igual (dos «Peña Blanca»): también se comparan
+const GXC=[],GXS=[];{const ya=new Set(PEAKS.concat(SPOTS).filter(x=>!x.co).map(x=>x.i));P.forEach((p,i)=>{if(p.x||ya.has(i))return;(p.t==="cumbre"?GXC:GXS).push(Object.assign({},p,{i}))})}
 const regAt=(la,lo)=>{let b=null,bd=1e9;for(const q of P){const d=(q.lat-la)**2+((q.lon-lo)*.73)**2;if(d<bd){bd=d;b=q}}
   let c=null,cd=1e9;for(const q of RREG){const d=(q.lat-la)**2+((q.lon-lo)*.73)**2;if(d<cd){cd=d;c=q}}
   if(b&&bd<.04&&bd<=cd)return String(b.r).split(" / ")[0];if(c&&cd<.25)return String(c.r).split(" / ")[0];if(b&&bd<.04)return String(b.r).split(" / ")[0];return ""};
 const kmd=(a,b)=>Math.hypot(a.lat-b.lat,(a.lon-b.lon)*.73)*111;
+// 23 nov 2026: nombres que son el mismo sitio escritos distinto (asturiano/castellano, una palabra genérica de más, una letra):
+// Cantu Limpou = Canto Limpou, Saltu del Caleyu = Salto del caleyo, Peña Mayor = Pico Peñamayor, Séu Cananda = Sedo Cananda,
+// Peña Reonda = Peña Redonda, Peña Llabres (Cabeza Brañueta) = Cabeza Brañueta. Solo entre puntos a menos de 600 m y del mismo tipo.
+const GENW=/^(pico|picu|picos|pena|penas|penes|cantu|canto|alto|altu|cuetu|cueto|torre|torres|sedo|seu|cueva|cova|lago|lagos|lagu|laguna|lagunas|llaguna|brana|branas|majada|mayada|hayedo|fayeu|fayedo|faedo|foz|cascada|cascadas|salto|saltu|senda|ruta|camin|camino|sierra|collado|collau|pasada|pasa|texedal|tejeda|tejedal|bosque|pozo|ibon|ibones|mirador|canal|monte|puerto|ermita|fuente|fonte|de|del|la|las|el|los|l|d|y|a|al|por|desde|circular|en)$/,ARTW=/^(de|del|la|las|el|los|l|d|y|a|al|en)$/;
+const nucW=(n,re)=>nk(n).replace(/[^a-z0-9 ]+/g," ").split(/\s+/).filter(w=>w&&!re.test(w)).map(w=>w.replace(/ll/g,"y").replace(/x/g,"j").replace(/u$/,"o")).join("");
+const nucs=n=>{const o=new Set();for(const a of [n,...n.split(/[()\/]|\s[-–]\s/)])for(const re of [GENW,ARTW]){const x=nucW(a,re);if(x.length>=3)o.add(x)}return[...o]};
+const levN=(a,b)=>{let p=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){const c=[i];for(let j=1;j<=b.length;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[b.length]};
+const mismoN=(a,b)=>{const B=nucs(b);return nucs(a).some(x=>B.includes(x))};
+const pareN=(a,b)=>{const A=nucs(a),B=nucs(b);for(const x of A)for(const y of B){if(x===y)return true;const L=Math.max(x.length,y.length);if(L>=6&&1-levN(x,y)/L>=.8)return true}return false};
 const sig=n=>new Set(nk(n).split(" ").filter(w=>w.length>=4&&!/^(pico|pena|picu|ruta|senda|desde|circular|braña|brana|playa|mirador|cascada|bosque|cueva)$/.test(w)));
 for(const c of CO)for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
   const it={c:p[0],r:regAt(p[1],p[2]),a:cum?altCo(p[0],p[3]):null,lat:p[1],lon:p[2],co:c,ci:ALL.length,pp:p,k};
   if(!cum)it.cat=k;
   // ¿lo tenéis también en el grupo? mismo nombre, o muy cerca y con una palabra del nombre en común
   const lista=cum?PEAKS:SPOTS,sw=sig(it.c);
-  for(const g of lista){if(g.co)continue;const d=kmd(g,it);
+  for(const g of lista.concat(cum?GXC:GXS)){if(g.co)continue;const d=kmd(g,it);
     // (dos cimas a menos de 150 m son la misma aunque el nombre vaya en asturiano: Penubina = Peña Ubiña)
-    if(distintas(g.c,it.c))continue;
-    if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))||(cum&&d<.15)){it.both="grupo";it.par=g;g.both=g.both||c.n;(PAR[g.i]=PAR[g.i]||[]).push(it);if(!it.a&&g.a)it.a=g.a;break}}
+    if(distintas(g.c,it.c)&&!(d<.6&&mismoN(g.c,it.c)))continue;
+    if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))||(cum&&d<.15)||(d<.6&&pareN(g.c,it.c))){it.both="grupo";it.par=g;g.both=g.both||c.n;(PAR[g.i]=PAR[g.i]||[]).push(it);if(!it.a&&g.a)it.a=g.a;break}}
   ALL.push(it);lista.push(it)}
 for(const c of CO)(c.r||[]).forEach((r,i)=>{ALL.push({c:r[0],r:r[1],lat:r[8][0],lon:r[8][1],co:c,ci:ALL.length,rr:i,k:icoR(r),a:null})});
 // 12 nov 2026: en Explorar, UNA fila por cumbre o lugar aunque esté en varios blogs (la del grupo si la tenéis; si no, la del primer colaborador)
@@ -295,8 +306,8 @@ for(const c of CO)(c.r||[]).forEach((r,i)=>{ALL.push({c:r[0],r:r[1],lat:r[8][0],
    const g=L.find(y=>kmd(y,x)<.3);if(g){x.dup=g;x.mismo=1;if(!g.a&&x.a)g.a=x.a;if(!g.par&&x.par)g.par=x.par}else L.push(x)}}
 {const cos=ALL.filter(x=>x.co&&x.pp&&!x.par&&!x.mismo);
  for(let i=0;i<cos.length;i++){const it=cos[i],cum=it.k==="cumbre",sw=sig(it.c);
-   for(let j=0;j<i;j++){const g=cos[j];if(g.dup||(g.k==="cumbre")!==cum||distintas(g.c,it.c))continue;const d=kmd(g,it);if(g.co===it.co)continue;
-     if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))||(cum&&d<.15)){it.dup=g;(g.mates=g.mates||[]).push(it);g.both=g.both||it.co.n;if(!g.a&&it.a)g.a=it.a;break}}}}
+   for(let j=0;j<i;j++){const g=cos[j];if(g.dup||(g.k==="cumbre")!==cum)continue;const d=kmd(g,it);if(g.co===it.co)continue;if(distintas(g.c,it.c)&&!(d<.6&&mismoN(g.c,it.c)))continue;
+     if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))||(cum&&d<.15)||(d<.6&&pareN(g.c,it.c))){it.dup=g;(g.mates=g.mates||[]).push(it);g.both=g.both||it.co.n;if(!g.a&&it.a)g.a=it.a;break}}}}
 const GRPO={n:"Los de las Claras",c:"#c3262e",id:"grupo"};
 // 18 nov 2026: en la lista salen también los blogs que no tienen el punto pero sí una ruta que sube a esa cumbre (como en su ficha)
 const pzKeys=p=>{const ks=[],ck=x=>{if(x&&x.co&&x.pp){const j=x.co.p.indexOf(x.pp);if(j>=0)ks.push(x.co.id+":"+j)}};
