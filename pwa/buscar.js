@@ -41,6 +41,12 @@ const DIFT={b:"🟢 Baja",m:"🟡 Moderada",a:"🔴 Alta",x:"⚫ Muy alta"};
 const nivG=r=>({baja:"b",moderada:"m",alta:"a","muy-alta":"x"})[String(r.dl||"").toLowerCase()]||"";
 function nivC(s){s=String(s||"");const m=/MIDE\s*\d\s*-\s*\d\s*-\s*\d\s*-\s*(\d)/i.exec(s);if(m){const e=+m[1];return e<=2?"b":e===3?"m":e===4?"a":"x"}
   const n=nk(s);return/muy dificil|muy alta/.test(n)?"x":/dificil|^alta/.test(n)?"a":/moderad/.test(n)?"m":/facil|^baja/.test(n)?"b":""}
+const PH=new Map();let PHT=0;
+const TIPOP={city:"Ciudad",town:"Villa",village:"Pueblo",hamlet:"Aldea",locality:"Lugar",isolated_dwelling:"Lugar",suburb:"Barrio",neighbourhood:"Barrio",quarter:"Barrio"};
+function photon(q0){clearTimeout(PHT);PHT=setTimeout(async()=>{const k=nk(q0);if(PH.has(k))return;
+  try{const r=await fetch("https://photon.komoot.io/api/?limit=8&osm_tag=place&bbox=-9.6,41.0,3.4,43.95&q="+encodeURIComponent(q0));if(!r.ok)return;const j=await r.json();
+    PH.set(k,(j.features||[]).filter(f=>TIPOP[f.properties.osm_value]).map(f=>{const p=f.properties;return{n:p.name,lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],k:TIPOP[p.osm_value],reg:[p.county&&p.county!==p.name?p.county:"",p.state||""].filter(Boolean).join(", ")}}));
+    if(nk(inp.value)===k&&!res.hidden)busca(inp.value)}catch(e){}},350)}
 function busca(q0){const q=nk(q0);RES=[];if(q.length<2){res.hidden=true;return}
   const out={r:[],c:[],l:[],p:[]};
   // rutas del grupo y de los colaboradores
@@ -55,7 +61,16 @@ function busca(q0){const q=nk(q0);RES=[];if(q.length<2){res.hidden=true;return}
   const vis=new Set();P.forEach((p,i)=>{if(p.x)return;const k=nk(p.c);if(vis.has(k))return;const sc=tiene(p.c,q);if(sc>=9)return;vis.add(k);
     (p.t==="cumbre"?out.c:out.l).push({sc,t:p.c,s:[p.a?p.a.toLocaleString("es-ES")+" m":"",(COLX.deG?COLX.deG(i):["Los de las Claras"]).join(" · "),p.r].filter(Boolean).join(" · "),e:p.t==="cumbre"?"⛰️":"📍",go:()=>{pickRoute(i);flyTo(p.lat,p.lon,13)}})});
   // pueblos: rutas cerca
-  try{for(const s of (window.findSites?findSites(q0):[]).filter(s=>!/^(lugar del mapa|cumbre|lugar|ruta)/i.test(s.k||"")).slice(0,4))out.p.push({sc:0,pu:1,t:s.alt?s.alt.split(";")[0]:s.n,s:[s.k,s.reg].filter(Boolean).join(" · "),e:"🏘️",go:()=>{quitaPin();if(window.CERCA&&CERCA.en)CERCA.en(s.lat,s.lon,s.n);else flyTo(s.lat,s.lon,13)},mapa:()=>verPueblo(s)})}catch(e){}
+  try{for(const s of (window.findSites?findSites(q0):[]).filter(s=>!/^(lugar del mapa|cumbre|lugar|ruta)/i.test(s.k||"")).slice(0,6))out.p.push({sc:0,pu:1,la:s.lat,lo:s.lon,t:s.alt?s.alt.split(";")[0]:s.n,s:[s.k,s.reg].filter(Boolean).join(" · "),e:"🏘️",go:()=>{quitaPin();if(window.CERCA&&CERCA.en)CERCA.en(s.lat,s.lon,s.n);else flyTo(s.lat,s.lon,13)},mapa:()=>verPueblo(s)})}catch(e){}
+  // 22 nov 2026: la lista de pueblos de la app solo cubre Asturias y alrededores. Para el resto (Galicia, País Vasco, Navarra,
+  // Pirineos…) se pregunta además a Photon (OpenStreetMap, gratis y sin clave) si hay conexión; se añaden sin repetir.
+  {const k=nk(q0),ph=PH.get(k);
+   if(ph){for(const s of ph){if(!nk(s.n).includes(q))continue;if(out.p.some(x=>nk(x.t)===nk(s.n)&&Math.abs((x.la||0)-s.lat)<.05&&Math.abs((x.lo||0)-s.lon)<.05))continue;
+     out.p.push({sc:1,pu:1,t:s.n,la:s.lat,lo:s.lon,s:[s.k,s.reg].filter(Boolean).join(" · "),e:"🏘️",go:()=>{quitaPin();if(window.CERCA&&CERCA.en)CERCA.en(s.lat,s.lon,s.n);else flyTo(s.lat,s.lon,13)},mapa:()=>verPueblo(s)})}}
+   else if(q.length>=3&&navigator.onLine)photon(q0)
+   // orden: igual que lo escrito > empieza así > el resto; y dentro, ciudad > villa > pueblo > aldea
+   const rk=x=>{const t=nk(x.t);return(t===q?0:t.startsWith(q)?10:20)+({ciudad:0,villa:1,pueblo:2,parroquia:2,concejo:2}[nk((x.s||"").split(" · ")[0])]??3)};
+   out.p=out.p.map((x,i)=>[rk(x),i,x]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]).map(a=>a[2]).slice(0,6)}
   const ord=a=>a.sort((x,y)=>x.sc-y.sc||x.t.localeCompare(y.t,"es"));
   // la misma cumbre o lugar puede estar en el grupo y en un colaborador: solo una vez
   const uno=a=>{const v=new Set();return a.filter(x=>{const k=nk(x.t.split("|").pop());if(v.has(k))return false;v.add(k);return true})};
