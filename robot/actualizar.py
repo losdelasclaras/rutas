@@ -552,6 +552,8 @@ def quedar_colab(co, q):
     for c, salvo in co.get('quitar_capas_salvo', {}).items():
         if capa == c.upper() and not re.search(salvo, q[0], re.I): return False
     if co.get('quitar_nombres') and re.search(co['quitar_nombres'], q[0], re.I): return False
+    # 22 nov 2026: puntos sin enlace a su blog fuera (no aportan nada); si les pone enlace en su My Maps, aparecen solos (Caleyando con Cienfuegos)
+    if co.get('solo_con_enlace') and not (q[4] or '').strip(): return False
     return True
 
 def blog_colab(co, new):
@@ -889,6 +891,91 @@ def titulos_blog(co, new):
     n = len(new['bt'])
     if n < len(us): log(f'📝 Títulos de entradas de {co.get("nombre") or co["id"]}: {n} de {len(us)}' + (f' ({mal} no han respondido)' if mal else ''))
 
+def _clave_blog(u):
+    # la misma entrada con http/https y .com/.com.es: una sola clave
+    u = re.sub(r'^https?://', '', (u or '').strip()).split('?')[0].split('#')[0]
+    return re.sub(r'\.blogspot\.[a-z.]+/', '.blogspot.com/', u)
+
+def _datos_entrada(h):
+    """22 nov 2026: bloque «DATOS DE LA RUTA» de una entrada (Caleyando con Cienfuegos):
+    Distancia: 20,5 Km · Desnivel acumulado positivo (o positivo acumulado): 1.600 m · Tiempos: 9 y 1/2 horas · Dificultad: Moderada. <nota>
+    Devuelve {km, de, tm, dif} con lo que haya ({} si no tiene bloque). Su dificultad tal cual (solo la palabra, sin la nota): no se calcula."""
+    t = _txt(h)
+    m = re.search(r'DATOS\s+DE\s+LA\s+RUTA', t, re.I)
+    if not m: return {}
+    t = t[m.end():m.end() + 2500]
+    def campo(et):
+        x = re.search(r'(?im)^\W*(?:' + et + r')\s*:\s*(.*)$', t)
+        if not x: return ''
+        v = x.group(1).strip()
+        if not v:   # el valor en la línea siguiente
+            sig = t[x.end():].lstrip('\n').split('\n', 1)[0].strip()
+            v = '' if re.match(r'^\W*[\wáéíóúñ ]{2,30}:', sig) else sig
+        return v
+    D = {}
+    v = campo(r'distancia')
+    x = re.search(r'(\d+(?:[.,]\d+)?)\s*km', v, re.I)
+    if x: D['km'] = x.group(1).replace('.', ',') + ' km'
+    for et in (r'desnivel\s+(?:acumulado\s+positivo|positivo\s+acumulado|positivo|de\s+subida)', r'desnivel\s+acumulado', r'desnivel'):
+        x = re.search(r'(\d[\d.]*)\s*m\b', campo(et))
+        if x: D['de'] = x.group(1) + ' m'; break
+    v = re.sub(r'\s*\(.*?\)', '', campo(r'tiempos?|duraci[oó]n|horario')).strip(' .,;')
+    if v and re.search(r'\d', v) and len(v) <= 40: D['tm'] = v
+    v = campo(r'dificultad')
+    v = re.split(r'[.,;:(]|\s+-\s+|\s+por\s+', v, 1)[0].strip()
+    if v and len(v) <= 30:
+        v = v[:1].upper() + v[1:].lower()
+        v = re.sub(r'\bdificil\b', 'difícil', re.sub(r'^Dificil', 'Difícil', v)); v = re.sub(r'^Facil', 'Fácil', v)
+        D['dif'] = v
+    return D
+
+def datos_blog(co, new):
+    """22 nov 2026: colaborador con los datos de cada ruta en su entrada del blog y no en su My Maps (Caleyando con Cienfuegos):
+    se leen de la entrada que enlaza cada punto y se añaden a la descripción del punto («Distancia: …», «Desnivel: …», «Duración: …», «Dificultad: …»),
+    que la app ya sabe leer (ficha, lista de Rutas y filtro de dificultad). Caché en app/colab/datos_<id>.json: solo se leen las entradas nuevas.
+    Los puntos que enlazan a una etiqueta (/search/label/…) no tienen bloque: se quedan sin datos."""
+    import time
+    ps = [p for p in new.get('p', []) if len(p) > 4 and re.search(r'blogspot\.[a-z.]+/20\d\d/\d\d/', p[4] or '')]
+    if not ps: return
+    cf = APP + f'colab/datos_{co["id"]}.json'
+    C = json.load(open(cf)) if os.path.exists(cf) else {}
+    falta = {_clave_blog(p[4]) for p in ps} - set(C)
+    leidas = 0
+    if falta and co.get('blog_web') and 'blogspot.' in co['blog_web']:
+        # Blogger: el índice con el texto entero de las entradas, de 150 en 150 (pocas peticiones para todas)
+        try:
+            ini = 1
+            while ini < 3001 and falta:
+                j = json.loads(get(f"{co['blog_web'].rstrip('/')}/feeds/posts/default?alt=json&max-results=150&start-index={ini}"))
+                es = j.get('feed', {}).get('entry', [])
+                if not es: break
+                ini += len(es)
+                for e in es:
+                    li = next((l['href'] for l in e.get('link', []) if l.get('rel') == 'alternate'), None)
+                    k = _clave_blog(li)
+                    if li and k in falta:
+                        C[k] = _datos_entrada(e.get('content', {}).get('$t', '')); falta.discard(k); leidas += 1
+        except Exception as e:
+            log(f'⚠ Índice del blog de {co.get("nombre") or co["id"]} (datos de las rutas): {e}')
+    mal = 0
+    for k in sorted(falta)[:40]:   # las que no estén en el índice, entrada a entrada (poco a poco: Blogger corta)
+        try:
+            time.sleep(1.5); C[k] = _datos_entrada(get('https://' + k)); leidas += 1
+        except Exception: mal += 1
+    if leidas: json.dump(C, open(cf, 'w'), ensure_ascii=False, indent=0)
+    n = 0
+    for p in ps:
+        D = C.get(_clave_blog(p[4])) or {}
+        if not D: continue
+        d = p[3] or ''
+        ya = lambda et: re.search(r'(?im)^\W*(?:' + et + r')\s*:', d)
+        add = [f'{l}: {D[k]}' for k, l, et in (('km', 'Distancia', 'distancia'), ('de', 'Desnivel', 'desnivel'), ('tm', 'Duración', 'duraci[oó]n|tiempo'), ('dif', 'Dificultad', 'dificultad'))
+               if D.get(k) and not ya(et)]
+        if add: p[3] = (d.rstrip() + '\n' if d.strip() else '') + '\n'.join(add); n += 1
+    con = sum(1 for p in ps if C.get(_clave_blog(p[4])))
+    log(f'📊 Datos de las rutas de {co.get("nombre") or co["id"]}: {con} de {len(ps)} puntos con datos de su entrada'
+        + (f' ({leidas} entradas leídas hoy)' if leidas else '') + (f', {mal} no han respondido' if mal else ''))
+
 def colaboradores():
     cf = APP + 'colaboradores.json'
     if not os.path.exists(cf): return
@@ -901,7 +988,8 @@ def colaboradores():
         if co.get('mapa_mid'):
             try:
                 tit, pts, lin = _kml_colab(get(f'https://www.google.com/maps/d/kml?mid={co["mapa_mid"]}&forcekml=1'))
-                if len([q for q in pts if quedar_colab(co, q)]) < 0.9 * len(old.get('p', [])):
+                # 22 nov 2026: se compara con los puntos de antes que siguen valiendo (si se quitan capas a propósito, no se atasca)
+                if len([q for q in pts if quedar_colab(co, q)]) < 0.9 * len([q for q in old.get('p', []) if quedar_colab(co, q)]):
                     log(f'⚠ El mapa del colaborador «{old.get("t", co["id"])}» ha devuelto solo {len(pts)} puntos (había {len(old["p"])}): no lo toco.')
                 else:
                     # capas de su My Maps que no queremos en la app (p. ej. publicidad de empresas)
@@ -991,6 +1079,9 @@ def colaboradores():
         if co.get('fotos_blog'): fotos_puntos_blog(co, new)
         try: titulos_blog(co, new)
         except Exception as e: log(f'⚠ Títulos del blog de {co["id"]}: {e}')
+        if co.get('datos_blog'):
+            try: datos_blog(co, new)
+            except Exception as e: log(f'⚠ Datos de las rutas del blog de {co["id"]}: {e}')
         if not co.get('wp_rutas'): fechas_rutas(co, new)   # las de WordPress ya traen su «Fecha de realización»
         # 17 nov 2026: sin el nombre del blog delante («Camudando'l camín: Vega Urriellu…» -> «Vega Urriellu…»), en títulos de entradas y de rutas
         _pre = lambda s: re.sub(r"^\s*" + re.escape(co.get('nombre') or '\x00') + r"\s*[:|·–-]\s*", '', s, flags=re.I) if isinstance(s, str) else s

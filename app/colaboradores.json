@@ -212,6 +212,8 @@
    "Camino Primitivo competo",
    "Camino del Norte. Unquera-Villaviciosa.gpx"
   ],
-  "sin_lineas": true
+  "sin_lineas": true,
+  "solo_con_enlace": true,
+  "datos_blog": true
  }
 ]

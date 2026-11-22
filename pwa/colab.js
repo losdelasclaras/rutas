@@ -334,7 +334,7 @@ const RUT=[];
 for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exec(r[4])||[])[1];const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:fe?+fe[1]:null,m:fe?+fe[2]:null,gx:1,iv:/raqueta|nieve|invern/i.test(r[2]+" "+r[0])?1:0,nivd:nivelCo(r[5]),km:r[3]?r[3].replace(/\s*km/i," km"):"",de:dm?"+"+dm+" m":"",txt:norm(r[0]+" "+r[1]+" "+r[2])}));continue}
   const p=it.pp;if(!(/RUTA/i.test(p[7]||"")||/distancia\s*:/i.test(limpia(p[3]))))continue;
   const[F]=ficha(p[3]),dm=/\/(20\d\d)\/(\d\d)\//.exec(p[4]||"");
-  RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:dm?+dm[1]:null,m:dm?+dm[2]:null,km:(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km||"")||[])[1]?(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km)[1].replace(".",",")+" km"):"",de:(/(\d[\d.]*)\s*m/i.exec(F.de||"")||[])[1]?"+"+(/(\d[\d.]*)\s*m/i.exec(F.de)[1])+" m":"",txt:norm(p[0]+" "+it.r+" "+limpia(p[3]))}))}
+  RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:dm?+dm[1]:null,m:dm?+dm[2]:null,nivd:nivelCo(F.dif),dl:F.dif||"",km:(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km||"")||[])[1]?(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km)[1].replace(".",",")+" km"):"",de:(/(\d[\d.]*)\s*m/i.exec(F.de||"")||[])[1]?"+"+(/(\d[\d.]*)\s*m/i.exec(F.de)[1])+" m":"",txt:norm(p[0]+" "+it.r+" "+limpia(p[3]))}))}
 // 17 nov 2026: colaboradores sin capa de rutas (Camudando'l camín): cada entrada de su blog enlazada en sus cumbres sale también en Rutas (sin track;
 //  al tocarla se abre la ficha de esa cumbre, que ya enseña la entrada como ruta). Una sola fila por entrada; las que ya son ruta suya no se repiten.
 {const vistos=new Set(RUT.map(x=>x.pp&&x.pp[4]).concat(ALL.filter(x=>x.rr!=null).map(x=>x.co.r[x.rr][7])).filter(Boolean));

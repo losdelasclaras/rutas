@@ -35,14 +35,17 @@ const mkCo=(k,cum)=>{const s=MARKS[k]||"",L=cum?["Subida","Quiero subir"]:["He e
 // 9 nov 2026: una entrada de blog sin track (p. ej. Camudando'l camín) es una ruta más: fila con su nombre y su ficha sencilla
 const tituloBlog=b=>((b.co&&b.co.bt)||{})[b.u]||decodeURIComponent((/\/([^\/]+?)(?:\.html?)?\/?$/.exec(b.u)||[,""])[1]).replace(/[-_]+/g," ").replace(/^./,m=>m.toUpperCase())||b.n;
 function rowBlog(b,i,y){const fo=b.p&&b.p[5];
-  return `<button class="row src-co" style="--cc:${b.c}" data-fbl="${i}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:""}<div class="t"><b>${esc(tituloBlog(b))}</b><span><em class="cosrc" style="color:${b.c}">${esc(b.n)}</em>${y?" · "+y:""} · Sin track</span></div></button>`}
+  return `<button class="row src-co" style="--cc:${b.c}" data-fbl="${i}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:""}<div class="t"><b>${esc(tituloBlog(b))}</b><span><em class="cosrc" style="color:${b.c}">${esc(b.n)}</em>${y?" · "+y:""}${(()=>{const F=b.p&&window.COLX&&COLX.ficha?COLX.ficha(b.p[3])[0]:{};return F.dif?" · "+esc(F.dif):""})()} · Sin track</span></div></button>`}
 function fichaBlog(i){const F=sheet._fbl;if(!F)return;const b=F.bl[i],o=F.o;if(!b)return;const y=(/\/(20\d\d)\//.exec(b.u)||[])[1],fo=b.p&&b.p[5];
   // las cumbres de esta entrada: los puntos (de cualquier blog) que enlazan a ella
   const cums=[];if(window.COLX)for(const x of COLX.todo())if(x.pp&&x.pp[4]===b.u&&!cums.some(z=>z.pp===x.pp))cums.push(x);
   sheet.classList.remove("full");sheet._cor=null;sheet._fblBack=o;
   // 9 nov 2026: ficha de ruta unificada (ficharuta.js)
   if(window.FRUTA){const ym=/\/(20\d\d)\/(\d\d)\//.exec(b.u);
+    // 22 nov 2026: distancia, desnivel y dificultad si vienen en la descripción del punto (Caleyando con Cienfuegos: los lee el robot de su entrada)
+    const DF=b.p&&window.COLX&&COLX.ficha?COLX.ficha(b.p[3])[0]:{},dkm=(/(\d+(?:[.,]\d+)?)\s*km/i.exec(DF.km||"")||[])[1],dde=(/(\d[\d.]*)\s*m/i.exec(DF.de||"")||[])[1];
     sheet.innerHTML=FRUTA.pinta({grab:"",foto:fo,quien:b.n||"",y:y?+y:null,m:ym?+ym[2]:null,titulo:tituloBlog(b),blog:b.u,
+      km:dkm?dkm.replace(".",",")+" km":"",de:dde?"+"+dde+" m":"",dif:DF.dif||"",
       share:`data-frshu="${esc(b.u)}" data-frsht="${esc(tituloBlog(b))}"`,
       cumbres:cums.map(x=>({n:x.c,a:x.a||null,k:x.co&&COLX.coKey?COLX.coKey(x.co,x.c):null})),close:" data-trcox"});
     sheet.hidden=false;sheet.scrollTop=0;if(window.showTrack)showTrack(null);return}
