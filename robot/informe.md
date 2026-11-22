@@ -1,4 +1,4 @@
-# Informe del robot · 22/11/2026 12:02
+# Informe del robot · 22/11/2026 12:10
 
 **Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; salidas de webs de clubes; regeneración forzada
 
@@ -28,7 +28,7 @@
 - ✏️ Camudando'l camín: 23 rutas con corrección a mano
 - 🤝 Colaborador «Camudando'l camín»: 151 puntos, 24 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
--    (42 peticiones a su web en 1.2 min)
+-    (42 peticiones a su web en 1.0 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
 - ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
