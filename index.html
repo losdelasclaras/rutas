@@ -1493,7 +1493,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-1009be70.json", "ln": "colab-ln-0c59ad0f.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-12f76e85.json", "ln": "colab-ln-0c59ad0f.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -6728,7 +6728,8 @@ try{
    una nota y un botón «Llévame» que te deja en ese sitio de la app. Letra grande.
    Se cierra con ✕, tocando fuera o con «Atrás» (clase cdbg + data-close: lo recoge atras.js).
    Logo de Andariega arriba del panel (18 nov, webp 240 px en base64). Textos acordados con Jonathan (doc del proyecto «bienvenida-ayuda»).
-   Para quitarlo: borrar 'ayuda' de _mods en build_pwa.py. */
+   Para quitarlo: borrar 'ayuda' de _mods en build_pwa.py.
+   22 nov 2026: en 4 bloques con título y bloque nuevo «Grabar y seguir (app Android)» con 10 preguntas. */
 (function(){
 const hdr=document.querySelector("header.top");if(!hdr)return;
 const H=document.documentElement,PC=()=>H.classList.contains("pc"),APK=()=>H.classList.contains("apk");
@@ -6746,6 +6747,9 @@ html.pc .ayubg{align-items:center}html.pc .ayup{border-radius:20px;max-height:88
 .ayux{flex:none;width:46px;height:46px;border-radius:50%;border:0;background:#c62828;color:#fff;font-size:28px;line-height:1;cursor:pointer}
 .ayulogo{text-align:center;margin:2px 0 12px}.ayulogo img{width:112px;height:112px;border-radius:22px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .ayuq{border-top:1px solid var(--edge,#ddd)}
+.ayub{margin:22px 0 4px;padding:8px 12px;border-radius:10px;background:#2a7a3b;color:#fff;font-size:18px;font-weight:800}
+.ayub:first-child{margin-top:4px}
+.ayub+.ayuq{border-top:0}
 .ayuq>button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;padding:15px 2px;font-size:19px;font-weight:700;line-height:1.3}
 .ayuq>button .i{flex:none;width:30px;text-align:center;font-size:22px}
 .ayuq>button .t{flex:1}
@@ -6782,10 +6786,16 @@ const IR={
   privacidad(){window.open("privacidad.html","_blank","noopener")}
 };
 
-/* ---------- las preguntas: [icono, pregunta, pasos, nota, [botón, destino]] ---------- */
+/* ---------- las preguntas: [icono, pregunta, pasos, nota, [botón, destino]]; un texto suelto = título de bloque ----------
+   22 nov 2026: a petición de Jonathan, lo de grabar/seguir/mapas sin cobertura pasa de 3 preguntas cortas a un bloque propio
+   de 10, sacado de la pantalla de grabar real (grabar.html del APK). La ayuda se ordena en 4 bloques. */
 function preguntas(){
 const pc=PC(),apk=APK();
+const ANDR=apk?["Ir al mapa","mapa"]:["Cómo instalar la app de Android","android"];
+const ANDRG=apk?["Ir a Guardado","guardado"]:["Cómo instalar la app de Android","android"];
+const soloA=apk?"":"Esto es de la app de Android. ";
 return [
+"Buscar y ver rutas",
 ["🔎","Qué puedes buscar",[
   "Escribe arriba del mapa, en «Busca una ruta, cumbre o pueblo».",
   "Puedes buscar un pueblo, o cualquier cumbre, ruta o lugar que salga en los blogs.",
@@ -6809,43 +6819,88 @@ return [
   "En la lista de apps, elige «Andariega».",
   "El track se abre en el mapa. Guárdalo y lo tendrás en Mis cosas › Guardado, también sin cobertura."],
   "Si no te sale la app en esa lista (iPhone o versión web), guarda el archivo en el móvil y en Mis cosas › Guardado toca «⬆️ Abrir GPX o KML». También vale para archivos KML.",["Ir a Guardado","guardado"]],
-["▶️","Sigue una ruta en el monte",[
-  "En la ficha de la ruta, toca «▶ Seguir».",
-  "Verás la línea del track y tu posición (punto azul).",
-  "En la app de Android se abre la pantalla de grabar: te dice lo que te falta, te avisa si te sales del track y puedes seguir dos tracks a la vez."],
-  "En iPhone y en la versión web, la pantalla tiene que estar encendida.",["Ir a Explorar","explorar"]],
-["📶","Usa el mapa sin cobertura",[
-  "Lo que guardas en Mis cosas se ve sin cobertura: tus tracks («✈ Listo sin cobertura»), tus puntos y tus marcas.",
-  "El mapa de fondo se guarda en la app de Android: en la pantalla de grabar, toca «🗺 Mapa».",
-  "Elige el mapa (topográfico, IGN o ortofoto) y toca «⬇ Guardar la zona del track» o «⬇ Guardar lo que se ve». También puedes guardar los tres mapas a la vez.",
-  "Al empezar a seguir un track, la app te pregunta si guardas el mapa de la zona."],
-  "Mejor con wifi. El recuadro verde es la zona que se guarda.",apk?["Ir al mapa","mapa"]:["Cómo instalar la app de Android","android"]],
 ["✓","Marca una cumbre como hecha o pendiente",[
   "Abre la cumbre en el mapa o en Explorar › Cumbres.",
   "«✓ Subida» si ya la hiciste. «★ Quiero subir» si la tienes pendiente.",
   "En lugares: «✓ He estado» / «★ Quiero ir». En rutas: «✓ Hecha» / «★ Quiero hacerla»."],
   "Todo lo marcado está en Mis cosas › Marcadas.",["Ir a Marcadas","marcadas"]],
-["🔴","Graba tu ruta",[
-  "Solo en la app de Android: toca «⏺ Grabar», abajo en el mapa.",
-  "Graba con la pantalla apagada y sin cobertura. Con «📍 Guardar un punto aquí» marcas sitios dentro del recorrido.",
-  "Al acabar, «✓ Terminar y guardar». La tendrás en Mis cosas › Guardado, con sus puntos dentro."],
-  "En iPhone y en la versión web no se puede grabar.",apk?["Ir al mapa","mapa"]:["Cómo instalar la app de Android","android"]],
 ["✏️","Dibuja un track en el ordenador",[
   "Solo en el ordenador: toca «✏️ Dibujar» en el mapa (o en Mis cosas › Guardado).",
   "Haz clic donde empieza y luego en cada punto del camino. «🥾 Por caminos» sigue las sendas; «📏 Línea recta» es para campo a través.",
   "Arrastra un punto para moverlo; clic derecho para quitarlo. Mientras dibujas ves los km, la subida y el perfil.",
   "Toca «Guardar»: queda en Mis cosas. Si entras con tu cuenta, lo tendrás también en el móvil para seguirlo."],
   "«Por caminos» sigue los caminos del mapa Topográfico. Con el IGN o la ortofoto puede haber sendas que no siga: ahí usa la línea recta.",pc?["Empezar a dibujar","dibujar"]:null],
-["🆘","Para qué sirve el SOS",[
-  "Toca el botón rojo «SOS» de arriba (en el móvil).",
-  "Ves tu posición en varios formatos, por si te la pide el 112.",
-  "Puedes llamar al 112 o mandar tu posición por SMS o WhatsApp."],
-  "Para saber tu posición no hacen falta datos, solo GPS.",pc?null:["Abrir SOS","sos"]],
-["👤","¿Necesito registrarme?",[
-  "No. Lo que guardas se queda en tu móvil.",
-  "Si entras con Google, no lo pierdes al cambiar de móvil y lo ves también en el ordenador.",
-  "Para apuntarte a un reto y salir en su lista sí hace falta entrar."],
-  "",["Entrar con Google","cuenta"]],
+
+"Grabar y seguir (app Android)",
+["📱","La pantalla de grabar: qué es cada botón",[
+  soloA+"Se abre con «⏺ Grabar» (abajo en el mapa) o con «▶ Seguir» en una ruta.",
+  "Arriba, el recuadro de la grabación: antes de empezar dice «Toca ● para grabar»; grabando, el tiempo, los km y la subida. Tócalo para ver todos los datos.",
+  "Si sigues un track, debajo sale otro recuadro con lo que te falta. Toca ▾ para desplegarlo.",
+  "🏠 (arriba): vuelves a la app. La grabación sigue.",
+  "Botones redondos de la derecha: ⚙️ preparar el móvil para grabar (con un punto rojo, falta algo) · 🔋 quitar el límite de batería (solo sale si hace falta) · 📍 guardar un punto aquí (solo grabando) · 🗺 elegir el mapa y guardarlo para sin cobertura · 🧭 norte arriba, o que el mapa gire hacia donde miras · ◎ volver a centrar el mapa en ti.",
+  "Abajo: ● empieza a grabar. Grabando: ❚❚ pausa (▶ para seguir) y ■ terminar."],
+  "La línea roja es lo que grabas. La morada, el track que sigues. La naranja, el segundo track.",ANDR],
+["⚙️","Prepara el móvil antes de grabar (la primera vez)",[
+  "Muchos móviles cortan el GPS con la pantalla apagada para ahorrar batería. Para que no pase, en la pantalla de grabar toca ⚙️.",
+  "Sale una lista con lo que hace falta. Lo que está bien lleva ✅. Lo que falta tiene su botón: Ubicación precisa, GPS encendido, Notificaciones (el aviso «Grabando» mantiene vivo el GPS) y Batería sin límite.",
+  "Si aún corta: «Permitir siempre» la ubicación, apaga el ahorro de energía mientras grabas y mira los ajustes de tu marca (Xiaomi, Samsung, Huawei…: la app te dice qué tocar).",
+  "Al volver de cada ajuste, la lista se pone al día sola."],
+  "La primera vez que tocas ● y falta algo, esta lista sale sola. Si una grabación te sale con tramos en línea recta, es que el móvil cortó el GPS: repasa esta lista.",ANDR],
+["🔴","Graba tu ruta, paso a paso",[
+  soloA+"Toca «⏺ Grabar» en el mapa (también en Mis cosas › Guardado).",
+  "Espera a que salga tu punto azul y toca ● (abajo).",
+  "Ya puedes apagar la pantalla y guardar el móvil: sigue grabando aunque no haya cobertura.",
+  "Para un descanso largo, ❚❚ pausa. Para seguir, ▶.",
+  "Al acabar, toca ■, ponle nombre y toca «✓ Terminar y guardar».",
+  "Queda en Mis cosas › Guardado, con sus puntos dentro. Desde ahí puedes mandar el GPX por WhatsApp o subirlo a Wikiloc."],
+  "Si la app se cierra o se apaga el móvil, lo grabado no se pierde. Si terminas sin cobertura, pasa solo a Mis cosas cuando vuelvas a tener datos. También se guarda una copia GPX en Descargas. En iPhone y en la versión web no se puede grabar.",ANDR],
+["📍","Guarda puntos dentro de tu recorrido",[
+  "Mientras grabas, toca 📍.",
+  "Ponle nombre y elige un icono: fuente, aparcamiento, refugio, cabaña, cumbre, collado, mirador, peligro, poza…",
+  "Si quieres, añade una foto y una nota («agua todo el año», «sitio para 5 coches»…).",
+  "Toca «✓ Guardar punto»."],
+  "El punto va dentro del track, como en Wikiloc: lo verás en el mapa, en el perfil y en la ficha del track. Solo se puede mientras grabas.",ANDR],
+["📊","Los datos mientras grabas (y el coche)",[
+  "Toca el recuadro de arriba de la pantalla de grabar.",
+  "Verás el tiempo total, en movimiento y parado, el tiempo en pausa, la distancia, la subida y la bajada, la velocidad media, el ritmo (min/km), a qué hora empezaste y cuántos puntos llevas.",
+  "«🚗 Pausar si voy en coche» viene encendido: si se te olvida parar y te subes al coche, la app pausa la grabación y quita ese tramo, para que los km y el tiempo salgan bien.",
+  "Si vas en bici, apágalo ahí mismo."],
+  "La subida y la bajada salen del GPS y son aproximadas.",ANDR],
+["▶️","Sigue un track en el monte",[
+  "En la ficha de una ruta o de un track tuyo, toca «▶ Seguir».",
+  "En la app de Android se abre la pantalla de grabar, con el track en morado. La primera vez te pregunta si guardas el mapa de la zona para sin cobertura: dile que sí, mejor con wifi.",
+  "Arriba ves lo que te falta: km y subida. Si estás lejos, a cuántos km estás de la salida.",
+  "Toca ▾ para ver más: km hechos y que faltan, subida y bajada que faltan, y los botones «🚗 Cómo llegar a la salida», «⇄ Al revés» (si lo haces en sentido contrario), «🗺 Ver el track» y «✕ Dejar de seguir».",
+  "Ahí eliges también qué hace si te sales del track (más de 100 m): «🔊 Vibrar y sonar», «📳 Solo vibrar» o «🔕 Nada»."],
+  "Seguir no es grabar: si quieres guardar tu recorrido, toca también ●. Si grabas, el aviso de salirte funciona con la pantalla apagada. En iPhone y en la web solo ves la línea y tu posición, con la pantalla encendida.",["Ir a Explorar","explorar"]],
+["🔀","Sigue dos tracks a la vez (una variante)",[
+  "Útil si dudas entre dos caminos o hay una variante. Mientras sigues un track, toca ▾ › «➕ Añadir un segundo track».",
+  "Vas a la app: elige la otra ruta o track y toca «▶ Seguir».",
+  "Vuelves a la pantalla de grabar con el segundo en naranja. El primero sigue en morado.",
+  "La app sabe por cuál vas, te avisa unos 150 m antes de donde se separan y solo te avisa de que te has salido si te sales de los dos.",
+  "En ▾ puedes cambiar cuál es el principal (⇅) o quitar el segundo (✕)."],
+  "Si ya sigues uno y tocas «▶ Seguir» en otro, la app te pregunta si lo añades como segundo o si sigues solo el nuevo.",["Ir a Explorar","explorar"]],
+["🗺","Mapas sin cobertura: cómo guardarlos",[
+  "Lo que tienes en Mis cosas (tracks, puntos, marcas) ya se ve sin datos. Lo que hay que guardar es el mapa de fondo, y solo se puede en la app de Android. Hay tres formas:",
+  "Al seguir un track: la app pregunta «¿Guardar el mapa de la zona?». Guarda todo el detalle a lo largo del track, unos 400 m a cada lado.",
+  "En la pantalla de grabar, 🗺: «⬇ Guardar la zona del track» o «⬇ Guardar lo que se ve» (mueve antes el mapa hasta la zona).",
+  "Desde casa: en el mapa de la app, Capas › «Mapa de una zona para grabar sin cobertura».",
+  "Puedes guardar uno de los tres mapas, o los tres a la vez: Topográfico (curvas de nivel, toda Europa), IGN (solo España) y Satélite (foto aérea, solo España)."],
+  "Mejor con wifi. Tarda unos minutos: deja la pantalla abierta hasta que salga «✅ Mapa guardado» (arriba ves cómo va). Para verlos o borrarlos: Mis cosas › Guardado › 🗺️ Mapas sin cobertura. Si en el monte ves el mapa en gris, esa zona no estaba guardada.",ANDRG],
+["💾","Tus tracks en Mis cosas › Guardado",[
+  "Ahí están tus grabaciones, los tracks que guardas de las rutas y los GPX que abres.",
+  "Toca uno y puedes: ▶ seguirlo · 📊 ver sus datos y el perfil · ✏️ cambiar el nombre o la nota.",
+  "También: ✓ marcarlo como hecho o ★ pendiente · 📤 compartirlo (archivo GPX o enlace de la app) · ⬇ guardar el mapa de su zona para sin cobertura · quitarlo de tus tracks."],
+  "«✈ Listo sin cobertura» quiere decir que el track está guardado en el móvil. Si entras con Google, lo tienes también en el ordenador y en otro móvil.",["Ir a Guardado","guardado"]],
+["🛠","Problemas al grabar",[
+  "Tramos en línea recta o pocos km: el móvil cortó el GPS con la pantalla apagada. Repasa ⚙️ Preparar el móvil.",
+  "Se puso en pausa sola: fue «🚗 Pausar si voy en coche». Si ibas en bici, apágalo tocando el recuadro de arriba.",
+  "No sale el punto azul: sal a cielo abierto y espera un poco. Si no, mira el permiso de ubicación en ⚙️.",
+  "La grabación no aparece en Mis cosas: pasará sola al abrir la app con datos. Si no, en ⚙️ toca «📤 Pasar otra vez la última grabación a la app».",
+  "El mapa sale en gris sin cobertura: esa zona no estaba guardada (mira «Mapas sin cobertura»)."],
+  "",ANDR],
+
+"Retos y salidas",
 ["👥","Apúntate a una salida de un grupo de montaña",[
   "Ve a la pestaña Salidas.",
   "Abre la salida: fecha, recorrido y track.",
@@ -6856,6 +6911,18 @@ return [
   "Marca las cumbres que has subido y, si quieres, sube una foto.",
   "Ganas medallas según avanzas y ves quién más las ha hecho. «🗺 Ver el reto en el mapa» te enseña las hechas y las que te faltan."],
   "Iremos añadiendo retos nuevos.",["Ir a Retos","retos"]],
+
+"Cuenta, seguridad y contacto",
+["👤","¿Necesito registrarme?",[
+  "No. Lo que guardas se queda en tu móvil.",
+  "Si entras con Google, no lo pierdes al cambiar de móvil y lo ves también en el ordenador.",
+  "Para apuntarte a un reto y salir en su lista sí hace falta entrar."],
+  "",["Entrar con Google","cuenta"]],
+["🆘","Para qué sirve el SOS",[
+  "Toca el botón rojo «SOS» de arriba (en el móvil).",
+  "Ves tu posición en varios formatos, por si te la pide el 112.",
+  "Puedes llamar al 112 o mandar tu posición por SMS o WhatsApp."],
+  "Para saber tu posición no hacen falta datos, solo GPS.",pc?null:["Abrir SOS","sos"]],
 ["⚠️","Seguridad y condiciones de uso",[
   "La información de las rutas es orientativa: el monte cambia y los tracks pueden tener errores.",
   "Antes de ir, lee el reportaje del blog y valora tu forma física, tu experiencia, el equipo y la meteo.",
@@ -6874,7 +6941,7 @@ bg.innerHTML=`<div class="ayup" role="dialog" aria-modal="true" aria-label="Ayud
 <div class="ayuf"><button class="lv" data-ir="bienvenida" style="margin-bottom:14px">👋 Ver otra vez la bienvenida</button><br>¿No encuentras lo que buscas?<br><a href="mailto:losdelasclaras@gmail.com">Escríbenos</a></div></div>`;
 document.body.appendChild(bg);
 const lista=bg.querySelector(".ayul");
-function pinta(){lista.innerHTML=preguntas().map((q,i)=>`<div class="ayuq" data-i="${i}"><button aria-expanded="false"><span class="i">${q[0]}</span><span class="t">${esc(q[1])}</span><span class="f">▾</span></button>
+function pinta(){lista.innerHTML=preguntas().map((q,i)=>typeof q==="string"?`<h3 class="ayub">${esc(q)}</h3>`:`<div class="ayuq" data-i="${i}"><button aria-expanded="false"><span class="i">${q[0]}</span><span class="t">${esc(q[1])}</span><span class="f">▾</span></button>
 <div class="ayua"><ol>${q[2].map(x=>`<li>${esc(x)}</li>`).join("")}</ol>${q[3]?`<div class="nt">${esc(q[3])}</div>`:""}${q[4]?`<button class="lv" data-ir="${q[4][1]}">${esc(q[4][0])} ›</button>`:""}</div></div>`).join("")}
 function abre(i){pinta();bg.hidden=false;bg.querySelector(".ayup").scrollTop=0;
   if(typeof i==="number"){const q=lista.querySelector(`[data-i="${i}"]`);if(q){q.classList.add("on");q.querySelector("button").setAttribute("aria-expanded",true)}}}
@@ -7088,5 +7155,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="22/11 12:49 · 20026f";window.LDC_BUILD="20026f8c27";window.LDC_FUNC="3f6226ac15";(function(){const B="20026f8c27";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="22/11 14:12 · 6c28b6";window.LDC_BUILD="6c28b69b52";window.LDC_FUNC="d4878a29bc";(function(){const B="6c28b69b52";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
