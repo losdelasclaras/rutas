@@ -1,4 +1,4 @@
-# Informe del robot · 22/11/2026 21:56
+# Informe del robot · 22/11/2026 22:46
 
 **Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos
 
@@ -28,16 +28,15 @@
 - ✏️ Camudando'l camín: 23 rutas con corrección a mano
 - 🤝 Colaborador «Camudando'l camín»: 151 puntos, 24 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
--    (42 peticiones a su web en 1.5 min)
+-    (42 peticiones a su web en 1.0 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: <urlopen error [Errno 101] Network is unreachable>; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
--    (quitados 2 puntos de publicidad: capas o nombres que no queremos)
-- 📷 Fotos del colaborador c6: 645 nuevas, 645 en total, 17 no se han podido bajar (HTTP Error 404: Not Found)
-- 📝 Títulos de entradas de Caleyando con Cienfuegos: 189 de 535 (35 no han respondido)
+- ⚠ El mapa del colaborador «Caleyando con Cienfuegos» ha devuelto solo 1307 puntos (había 1305): no lo toco.
+- 📷 Fotos del colaborador c6: 0 nuevas, 645 en total, 8 no se han podido bajar (HTTP Error 404: Not Found)
+- 📝 Títulos de entradas de Caleyando con Cienfuegos: 197 de 535 (32 no han respondido)
 - 🤝 Colaborador «Caleyando con Cienfuegos»: 1305 puntos, 4 tracks.
 - 📅 Salidas de la web de Civilu: 1 próximas
 - App regenerada: 382 rutas, 169 con track.
