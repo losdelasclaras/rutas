@@ -1,6 +1,6 @@
-# Informe del robot · 22/11/2026 23:30
+# Informe del robot · 22/11/2026 23:55
 
-**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos
+**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; colaborador Gata con botas; colaborador Caleyando con Cienfuegos
 
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
@@ -28,16 +28,17 @@
 - ✏️ Camudando'l camín: 23 rutas con corrección a mano
 - 🤝 Colaborador «Camudando'l camín»: 151 puntos, 24 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
--    (42 peticiones a su web en 1.2 min)
-- 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
+- ⚠ Gata con botas: no he podido leer 18 zona(s) de su web (rutas/resto-de-espana/cantabria, rutas/resto-de-espana/leon, rutas/resto-de-espana/palencia, rutas/resto-de-espana/burgos, rutas/resto-de-espana/vizcaya, rutas/resto-de-espana/guipuzcoa, rutas/resto-de-espana/alava, rutas/resto-de-espana/navarra, rutas/resto-de-espana/huesca, rutas/resto-de-espana/lleida, rutas/resto-de-espana/girona, rutas/andorra, rutas/francia/nueva-aquitania, rutas/occitania, rutas/galicia/a-coruna, rutas/galicia/lugo, rutas/galicia/ourense, rutas/galicia/pontevedra); esas rutas se quedan como estaban.
+-    (3 peticiones a su web en 0.1 min)
+- 🐾 Gata con botas: 20 entradas en sus zonas, 195 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
-- 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
-- Colaborador «Gata con botas»: sin cambios.
--    (quitados 470 puntos de publicidad: capas o nombres que no queremos)
-- 📷 Fotos del colaborador c6: 0 nuevas, 645 en total, 8 no se han podido bajar (HTTP Error 404: Not Found)
-- 📝 Títulos de entradas de Caleyando con Cienfuegos: 218 de 535 (33 no han respondido)
-- 🤝 Colaborador «Caleyando con Cienfuegos»: 837 puntos, 0 tracks.
+- 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 192 en total, 3 sin foto
+- 🤝 Colaborador «Gata con botas»: 19 puntos, 0 tracks.
+-    (quitados 492 puntos de publicidad: capas o nombres que no queremos)
+- 📷 Fotos del colaborador c6: 0 nuevas, 644 en total, 8 no se han podido bajar (HTTP Error 404: Not Found)
+- 📝 Títulos de entradas de Caleyando con Cienfuegos: 251 de 535 (7 no han respondido)
+- 📊 Datos de las rutas de Caleyando con Cienfuegos: 638 de 701 puntos con datos de su entrada (386 entradas leídas hoy), 17 no han respondido
+- 🤝 Colaborador «Caleyando con Cienfuegos»: 815 puntos, 0 tracks.
 - 📅 Salidas de la web de Civilu: 1 próximas
 - App regenerada: 382 rutas, 169 con track.
