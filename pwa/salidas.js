@@ -93,7 +93,7 @@ async function carga(fuerza){if(!fuerza&&Date.now()-CARGADO<60000)return pinta()
     SALS=[];qs.forEach(d=>SALS.push(Object.assign({id:d.id},d.data())));
     // 21 nov 2026: salidas que el robot copia cada noche de la web del club (no hacen trabajo doble); solo de clubes aprobados
     try{const W=await (await fetch("salidas-web.json?v="+(window.LDC_VER||Date.now()),{cache:"no-store"})).json(),H=hoy();
-      for(const w of W){const c=CLUBS.find(x=>x.id===w.club);if(!c||!w.fecha||w.fecha.slice(0,10)<H)continue;
+      for(const w of W){const c=CLUBS.find(x=>x.id===w.club);if(!c||!w.fecha||w.fecha.slice(0,10)<H||SALS.some(x=>x.id===w.k))continue;   // 22 nov: sin repetir si la pestaña se carga dos veces a la vez
         SALS.push(Object.assign({},w,{id:w.k,club:c.id,cn:c.n,cc:c.contacto||"",cw:c.web||"",cig:c.ig||"",cfb:c.fb||"",cbus:c.bus||"",prueba:c.prueba,web:1,
           apo:w.apo||"Toda la información y cómo apuntarse, en la web del club.",apu:w.apu||w.wu}))}
       SALS.sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)))}catch(e){}
