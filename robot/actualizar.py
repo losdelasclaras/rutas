@@ -891,6 +891,11 @@ def titulos_blog(co, new):
     n = len(new['bt'])
     if n < len(us): log(f'📝 Títulos de entradas de {co.get("nombre") or co["id"]}: {n} de {len(us)}' + (f' ({mal} no han respondido)' if mal else ''))
 
+def _enlace_blogger(u):
+    # http://www.blog.blogspot.com.es/2016/07/x.html -> https://blog.blogspot.com/2016/07/x.html (Blogger ya no sirve bien las de país)
+    if not isinstance(u, str): return u
+    return re.sub(r'^\s*https?://(?:www\.)?([\w-]+)\.blogspot\.[a-z]{2,3}(?:\.[a-z]{2})?/', r'https://\1.blogspot.com/', u)
+
 def _clave_blog(u):
     # la misma entrada con http/https y .com/.com.es: una sola clave
     u = re.sub(r'^https?://', '', (u or '').strip()).split('?')[0].split('#')[0]
@@ -995,6 +1000,8 @@ def colaboradores():
                     # capas de su My Maps que no queremos en la app (p. ej. publicidad de empresas)
                     n0 = len(pts); pts = [q for q in pts if quedar_colab(co, q)]
                     if n0 != len(pts): log(f'   (quitados {n0 - len(pts)} puntos de publicidad: capas o nombres que no queremos)')
+                    # 22 nov 2026: enlaces de Blogger con la dirección vieja (http://…blogspot.com.es/, www.) no cargan en el móvil: a https://…blogspot.com/
+                    pts = [list(q[:4]) + [_enlace_blogger(q[4])] + list(q[5:]) for q in pts]
                     if co.get('quitar_numero'):   # 16 nov 2026: «1- La Torre Cerredu» -> «La Torre Cerredu» (Camudando'l camín, Montes Cimeros)
                         pts = [[re.sub(r'^\s*\d+\s*[-–.)ºª]\s*', '', q[0]) or q[0]] + list(q[1:]) for q in pts]
                     new.update(t=tit, p=pts, l=[] if co.get('sin_lineas') else lin)   # sin_lineas: p. ej. líneas de límites, no rutas
