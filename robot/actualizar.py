@@ -1171,7 +1171,7 @@ def salidas_web():
             pa = re.split(r'(?i)ruta alternativa|alternativa\s*:', t, maxsplit=1); pr, alt = pa[0], (pa[1] if len(pa) > 1 else '')
             def datos(x):
                 km = re.search(r'(\d+(?:[.,]\d+)?)\s*km\b', x, re.I); up = re.search(r'\+\s*(\d{1,2}(?:\.\d{3})|\d{2,4})\s*m\b', x) or re.search(r'(?i)desnivel[^\d+]{0,25}\+?\s*(\d{1,2}\.\d{3}|\d{2,4})\s*m', x)
-                hr = re.search(r'(?i)(?<![\d:.,])(?<!las )(\d{1,2}(?:[.,]\d)?)\s*(?:horas|h de marcha)\b', x) or re.search(r'(?i)duraci[oó]n\D{0,15}(\d{1,2}(?:[.,]\d)?)\s*h', x)
+                hr = re.search(r'(?i)(?<![\d:.,])(?<!las )(\d{1,2}(?:[.,]\d)?)\s*(?:horas|h de marcha)', x) or re.search(r'(?i)duraci[oó]n\D{0,15}(\d{1,2}(?:[.,]\d)?)\s*h', x)
                 return {k: v for k, v in (('km', _num(km.group(1)) if km else None), ('up', _num(up.group(1)) if up else None), ('hr', (hr.group(1).replace('.', ',') + ' h') if hr else None)) if v}
             s = {'feed': c['feed'], 'k': 'w-' + hashlib.md5(link.encode()).hexdigest()[:10], 'ti': ti, 'fecha': fd.isoformat() + 'T' + hora, 'wu': link,
                  'txt': (pr.strip()[:1200] + ('…' if len(pr.strip()) > 1200 else '')), **datos(pr)}
