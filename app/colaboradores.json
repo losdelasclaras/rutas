@@ -214,6 +214,20 @@
   ],
   "sin_lineas": true,
   "solo_con_enlace": true,
-  "datos_blog": true
+  "datos_blog": true,
+  "iconos_cat": {
+   "1634": "cumbre",
+   "1772": "cumbre",
+   "1694": "cumbre",
+   "1597": "senda",
+   "1522": "senda",
+   "1892": "agua",
+   "1697": "agua",
+   "1768": "cueva",
+   "1886": "bosque",
+   "1591": "brana",
+   "1592": "collado",
+   "1873": "agua"
+  }
  }
 ]

@@ -25,8 +25,13 @@ const SYM={aloja:["#b5532f",'<path d="M-7.5-5h2v4.2H6a1.8 1.8 0 0 1 1.8 1.8V5.5h
 const MIN=new Set(["de","del","la","las","el","los","y","a","al","por","en","e","o","u","con","sobre","desde"]);
 const capi=n=>n&&n===n.toUpperCase()&&/[A-ZÁÉÍÓÚÑ]{3}/.test(n)?n.toLowerCase().replace(/[^\s(/-]+/g,(w,i)=>i&&MIN.has(w)?w:/^(pr|gr|sl)\b|^as-?\d/i.test(w)?w.toUpperCase():w[0].toUpperCase()+w.slice(1)).replace(/\b(PR|GR|SL)([-. ]?)As\b/g,"$1$2AS"):n;
 for(const c of CO)for(const p of c.p)p[0]=capi(p[0]);
+// 23 nov 2026: colaboradores que distinguen cumbres y lugares por el ICONO de su My Maps (Caleyando con Cienfuegos): «iconos_cat» en
+// colaboradores.json = {icono: categoría}. Va por delante de la capa (su única capa, «Rutas de montaña», hacía todo cumbre).
+for(const c of CO)if(c.ic)for(const p of c.p)if(c.ic[p[6]])p.icat=c.ic[p[6]];
 // el icono sale de la capa de su My Maps, del icono que puso y del nombre (como en los puntos del grupo)
 function catCo(p){const n=p[0]||"",ic=p[6]||"",f=(p[7]||"").toUpperCase(),c=catOf(n);
+  if(p.icat){if(p.icat==="cumbre")return c==="collado"?"collado":"cumbre";   // cumbre por su icono; un paso o portillín, collado
+    return c!=="otros"&&c!=="cumbre"?c:p.icat}                               // si no, lo que diga el nombre (cueva, braña…) o el icono
   if(/MONTA/.test(f))return /^(ruta|senda|camino|circular)\b/i.test(n)?(c==="otros"?"senda":c):"cumbre";
   if(/SENDERISMO/.test(f))return c==="otros"?"senda":c;
   if(/CASCADA|LAGO/.test(f))return ["agua","cascada","cueva"].includes(c)?c:"cascada";
