@@ -1,6 +1,6 @@
-# Informe del robot · 23/11/2026 19:13
+# Informe del robot · 23/11/2026 19:20
 
-**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; colaborador Gata con botas; colaborador Caleyando con Cienfuegos; regeneración forzada
+**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; colaborador Gata con botas; colaborador Al filo de lo improbable; colaborador Caleyando con Cienfuegos
 
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
@@ -22,22 +22,22 @@
 - Colaborador «Rutinas Varias»: sin cambios.
 -    (quitados 78 puntos de publicidad: capas o nombres que no queremos)
 - 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (5): la-ercina-cangues-donis-verdilluenga-trea-cain-valdion-culie · Puirtu Braña - Picu Torres - Picu Valverde - Puirtu Braña · puirtu-brana-ayer-torres-cabal-luna-cuevas-ayer · Salgueiro_Climb · Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
-- ⛰ Camudando'l camín: 45 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
+- ⛰ Camudando'l camín: 47 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ✏️ Camudando'l camín: 23 rutas con corrección a mano
-- 📷 Fotos de rutas de Camudando'l camín (de su blog): 1 nuevas, 26 en total, 1 sin foto
-- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (27 de 30 con fecha).
-- 🤝 Colaborador «Camudando'l camín»: 151 puntos, 30 tracks.
+- 📷 Fotos de rutas de Camudando'l camín (de su blog): 3 nuevas, 29 en total
+- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (29 de 32 con fecha).
+- 🤝 Colaborador «Camudando'l camín»: 151 puntos, 32 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
-- ⚠ Gata con botas: no he podido leer 18 zona(s) de su web (rutas/resto-de-espana/cantabria, rutas/resto-de-espana/leon, rutas/resto-de-espana/palencia, rutas/resto-de-espana/burgos, rutas/resto-de-espana/vizcaya, rutas/resto-de-espana/guipuzcoa, rutas/resto-de-espana/alava, rutas/resto-de-espana/navarra, rutas/resto-de-espana/huesca, rutas/resto-de-espana/lleida, rutas/resto-de-espana/girona, rutas/andorra, rutas/francia/nueva-aquitania, rutas/occitania, rutas/galicia/a-coruna, rutas/galicia/lugo, rutas/galicia/ourense, rutas/galicia/pontevedra); esas rutas se quedan como estaban.
--    (3 peticiones a su web en 0.1 min)
-- 🐾 Gata con botas: 20 entradas en sus zonas, 195 rutas en la app (0 nuevas).
+-    (64 peticiones a su web en 2.2 min)
+- 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (11 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: <urlopen error [Errno 101] Network is unreachable>; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass-api.de: HTTP Error 504: Gateway Timeout <?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"     "http://www.w3.org/T; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
-- 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 192 en total, 3 sin foto
+- 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
 - 🤝 Colaborador «Gata con botas»: 19 puntos, 0 tracks.
 - 📷 Fotos del colaborador c5: 0 nuevas, 839 en total, 1 no se han podido bajar (<urlopen error unknown url type: hhttps>)
-- Colaborador «Al filo de lo improbable»: sin cambios.
+- 📷 Fotos de rutas de Al filo de lo improbable (de su blog): 1 nuevas, 375 en total
+- 🤝 Colaborador «Al filo de lo improbable»: 843 puntos, 0 tracks.
 -    (quitados 492 puntos de publicidad: capas o nombres que no queremos)
 - 📷 Fotos del colaborador c6: 0 nuevas, 644 en total, 8 no se han podido bajar (HTTP Error 404: Not Found)
 - 📝 Títulos de entradas de Caleyando con Cienfuegos: 501 de 502 (1 no han respondido)
