@@ -173,14 +173,14 @@ function abrirR(c,i,nofit){coPill(null);const keep=!!(nofit&&TRCO&&TRCO.__i===c.
   sheet.classList.remove("full");
   const rmkH=`<div class="mkblock rmk"><span>Esta ruta</span><span class="mk" data-key="${esc(key)}"><button data-mk="hecha" aria-pressed="${st==="hecha"}" title="Hecha">✓ Hecha</button><button data-mk="quiero" aria-pressed="${st==="quiero"}" title="Quiero hacerla">★ Quiero hacerla</button></span></div>`;
   // 9 nov 2026: ficha de ruta unificada (ficharuta.js); lo que depende del track se enseña cuando llega (extraR)
-  if(window.FRUTA){const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");
-    sheet.innerHTML=FRUTA.pinta({grab:"",foto:fo,quien:c.n,y:fe?+fe[1]:null,m:fe?+fe[2]:null,titulo:String(n).split("|").pop().trim(),mk:rmkH,
-      de:deN?"+"+deN+" m":"",km:km||"",dif:dif?cap1(dif):"",blog:blog||"",seguir:"data-cofol",trk:true,
+  if(window.FRUTA){const fe=/^(\d{4})(?:-(\d{2}))?/.exec(r[10]||"");
+    sheet.innerHTML=FRUTA.pinta({grab:"",foto:fo,quien:c.n,y:fe?+fe[1]:null,m:fe&&fe[2]?+fe[2]:null,titulo:String(n).split("|").pop().trim(),mk:rmkH,
+      de:deN?"+"+deN+" m":"",km:km||"",dif:dif?cap1(dif):"",blog:blog||"",seguir:r[12]===0?"":"data-cofol",trk:r[12]!==0,
       gRuta:"data-frgrc",gRutaOn:FRUTA.coGuardada(c,n),gTrack:"data-cosave",share:"data-coshare",emb:`data-fremc="${esc(slugCo(c,i))}" data-n="${esc(n)}"`,llegar:ini||null,
       cumbres:(c.p||[]).filter(q=>q[9]&&q[9].includes(i)&&catCo(q)==="cumbre").map(q=>({n:q[0],a:altCo(q[0],q[3]),k:coKey(c,q[0],"cumbre")})),
       otras:ini?(FRUTA.otras.yo=n,FRUTA.otras(ini[0],ini[1],null,COLX.rutaItem?COLX.rutaItem(c,i):null)):"",close:" data-trcox"})}
   else sheet.innerHTML=`<div class="grab"></div>${fo?`<div class="photo"><img src="${esc(fo)}" alt="" onerror="this.parentNode.remove()"></div>`:""}${tipoHTML("ruta",c.n)}<div class="sheet-head"><h2>${esc(n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
-  <div class="meta">${act?`<span class="tag">${esc(act)}</span>`:""}<span class="tag">${esc(z)}</span>${(()=>{const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");return fe?`<span class="tag">📅 ${MESES[+fe[2]]?MESES[+fe[2]]+" ":""}${fe[1]}</span>`:""})()}</div>
+  <div class="meta">${act?`<span class="tag">${esc(act)}</span>`:""}<span class="tag">${esc(z)}</span>${(()=>{const fe=/^(\d{4})(?:-(\d{2}))?/.exec(r[10]||"");return fe?`<span class="tag">📅 ${fe[2]&&MESES[+fe[2]]?MESES[+fe[2]]+" ":""}${fe[1]}</span>`:""})()}</div>
   ${(c.p||[]).filter(q=>q[9]&&q[9].includes(i)&&catCo(q)==="cumbre").map(q=>{const kq=coKey(c,q[0],"cumbre"),sq=MARKS[kq]||"";return `<div class="mkblock"><span>${esc(q[0])}</span><span class="mk" data-key="${esc(kq)}"><button data-mk="hecha" aria-pressed="${sq==="hecha"}" title="Subida">✓ Subida</button><button data-mk="quiero" aria-pressed="${sq==="quiero"}" title="Quiero subir">★ Quiero subir</button></span></div>`}).join("")}
   <div class="mkblock rmk"><span>Esta ruta</span><span class="mk" data-key="${esc(key)}"><button data-mk="hecha" aria-pressed="${st==="hecha"}" title="Hecha">✓ Hecha</button><button data-mk="quiero" aria-pressed="${st==="quiero"}" title="Quiero hacerla">★ Quiero hacerla</button></span></div>
   ${(km||de||dif)?`<div class="ficha">${km?`<div><b>${esc(km)}</b><span>Distancia</span></div>`:""}${deN?`<div><b>+${esc(deN)} m</b><span>Desnivel</span></div>`:""}${dif?`<div><b>${esc(cap1(dif))}</b><span>Dificultad</span></div>`:""}</div>`:""}
@@ -355,7 +355,7 @@ function nivelCo(s){s=String(s||"");const m=/MIDE\s*\d\s*-\s*\d\s*-\s*\d\s*-\s*(
 // 23 nov 2026: blogs sin la fecha en la dirección (WordPress de Al filo de lo improbable): el año viene aparte (c.fy = {enlace: año}), sin mes
 const fyCo=(c,u)=>{const y=u&&c&&c.fy&&c.fy[u];return y?[0,y,""]:null};
 const RUT=[];
-for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exec(r[4])||[])[1];const fe=/^(\d{4})-(\d{2})/.exec(r[10]||"");RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:fe?+fe[1]:null,m:fe?+fe[2]:null,gx:1,iv:/raqueta|nieve|invern/i.test(r[2]+" "+r[0])?1:0,nivd:nivelCo(r[5]),km:r[3]?r[3].replace(/\s*km/i," km"):"",de:dm?"+"+dm+" m":"",txt:norm(r[0]+" "+r[1]+" "+r[2])}));continue}
+for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exec(r[4])||[])[1];const fe=/^(\d{4})(?:-(\d{2}))?/.exec(r[10]||"");RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:fe?+fe[1]:null,m:fe&&fe[2]?+fe[2]:null,gx:1,iv:/raqueta|nieve|invern/i.test(r[2]+" "+r[0])?1:0,nivd:nivelCo(r[5]),km:r[3]?r[3].replace(/\s*km/i," km"):"",de:dm?"+"+dm+" m":"",txt:norm(r[0]+" "+r[1]+" "+r[2])}));continue}
   const p=it.pp;if(!(/RUTA/i.test(p[7]||"")||/distancia\s*:/i.test(limpia(p[3]))))continue;
   const[F]=ficha(p[3]),dm=/\/(20\d\d)\/(\d\d)\//.exec(p[4]||"")||fyCo(it.co,p[4]);
   RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:dm?+dm[1]:null,m:dm&&dm[2]?+dm[2]:null,nivd:nivelCo(F.dif),dl:F.dif||"",km:(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km||"")||[])[1]?(/(\d+(?:[.,]\d+)?)\s*km/i.exec(F.km)[1].replace(".",",")+" km"):"",de:(/(\d[\d.]*)\s*m/i.exec(F.de||"")||[])[1]?"+"+(/(\d[\d.]*)\s*m/i.exec(F.de)[1])+" m":"",txt:norm(p[0]+" "+it.r+" "+limpia(p[3]))}))}

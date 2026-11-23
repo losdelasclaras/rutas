@@ -393,7 +393,7 @@ def _kml_colab(k):
 def _geojson_colab(co, g):
     """23 nov 2026: puntos de un GeoJSON (Al filo de lo improbable) al formato de _kml_colab:
     [nombre, lat, lon, descripción, enlace, foto, icono, capa]. La capa sale del tipo: Cima -> «Montaña» (cumbre),
-    Ruta -> «Rutas» (sale en la pestaña Rutas), Ferrata -> «Vías ferratas». Zonas fuera: «fuera_cajas» = [[lat0, lat1, lon0, lon1], …].
+    Ruta -> «Senderismo», Ferrata -> «Vías ferratas». Zonas fuera: «fuera_cajas» = [[lat0, lat1, lon0, lon1], …].
     Devuelve también {enlace: título} («Cimas desde Lugar») y {enlace: año}."""
     def campo(p, *ks):
         for k in ks:
@@ -401,7 +401,7 @@ def _geojson_colab(co, g):
                 if kk.lower() == k.lower() and p[kk] not in (None, ''): return p[kk]
         return ''
     cajas = co.get('fuera_cajas', [])
-    CAPA = {'cima': 'Montaña', 'ruta': 'Rutas', 'ferrata': 'Vías ferratas'}
+    CAPA = {'cima': 'Montaña', 'ruta': 'Senderismo', 'ferrata': 'Vías ferratas'}
     pts, ti, fy = [], {}, {}
     for f in g.get('features', []):
         geo = f.get('geometry') or {}
@@ -639,6 +639,13 @@ def fotos_rutas(co, new):
     if not rs: return
     d = APP + 'colab/fotos/'; os.makedirs(d, exist_ok=True)
     nuevas = mal = 0
+    # 23 nov 2026: si sus cimas ya traen foto (Al filo de lo improbable: la portada de la entrada), esa misma para la ruta
+    for p in new.get('p', []):
+        if len(p) > 9 and p[9] and str(p[5]).startswith('colab/'):
+            for i in p[9]:
+                if i < len(rs):
+                    while len(rs[i]) < 10: rs[i].append('')
+                    if not rs[i][9]: rs[i][9] = p[5]
     for r in rs:
         while len(r) < 10: r.append('')
         if not r[7] or r[9]: continue
@@ -1050,7 +1057,21 @@ def colaboradores():
                 else:
                     n0 = len(pts); pts = [q for q in pts if quedar_colab(co, q)]
                     if n0 != len(pts): log(f'   (quitados {n0 - len(pts)} puntos que no queremos)')
-                    new.update(t=co.get('nombre') or co['id'], p=pts, l=[], fy=fy)
+                    # 23 nov 2026: cada entrada de su blog es una RUTA suya (sin track: solo la salida), con sus cimas enlazadas.
+                    # Así sale en la pestaña Rutas y se puede corregir a mano (entrada, track, dificultad…) como las de los demás.
+                    # [nombre, zona, actividad, km, desnivel, dificultad, wikiloc, blog, track, foto, fecha]
+                    rutas, idx = [], {}
+                    for q in pts:
+                        while len(q) < 10: q.append(None)
+                        u = q[4]
+                        if not u: continue
+                        if u not in idx:
+                            idx[u] = len(rutas)
+                            lug = re.search(r'^Salida: (.+)$', q[3], re.M)
+                            rutas.append([ti.get(u) or q[0], lug.group(1) if lug else '', 'Vía ferrata' if q[7] == 'Vías ferratas' else '',
+                                          '', '', '', '', u, [[q[1], q[2]]], '', fy.get(u, '')])
+                        q[9] = [idx[u]]
+                    new.update(t=co.get('nombre') or co['id'], p=pts, l=[], fy=fy, r=rutas)
                     # título de cada entrada (para la pestaña Rutas): «Cimas desde Lugar»; si luego se lee el título real del blog, manda ese
                     cf = APP + f'colab/titulos_{co["id"]}.json'
                     T = json.load(open(cf)) if os.path.exists(cf) else {}
@@ -1140,7 +1161,7 @@ def colaboradores():
         if co.get('datos_blog'):
             try: datos_blog(co, new)
             except Exception as e: log(f'⚠ Datos de las rutas del blog de {co["id"]}: {e}')
-        if not co.get('wp_rutas'): fechas_rutas(co, new)   # las de WordPress ya traen su «Fecha de realización»
+        if not co.get('wp_rutas') and not co.get('geojson_drive'): fechas_rutas(co, new)   # las del GeoJSON traen su año   # las de WordPress ya traen su «Fecha de realización»
         # 17 nov 2026: sin el nombre del blog delante («Camudando'l camín: Vega Urriellu…» -> «Vega Urriellu…»), en títulos de entradas y de rutas
         _pre = lambda s: re.sub(r"^\s*" + re.escape(co.get('nombre') or '\x00') + r"\s*[:|·–-]\s*", '', s, flags=re.I) if isinstance(s, str) else s
         if co.get('nombre'):

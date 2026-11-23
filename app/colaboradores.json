@@ -222,7 +222,11 @@
     180
    ]
   ],
-  "nota": "Alta 23 nov 2026 (Alex). Sus puntos vienen de un archivo GeoJSON en su Drive (AFI_puntos.geojson): un punto por cima, con Lugar, Cimas, Enlace, Imagen, style (Cima/Ruta/Ferrata) y Año. Para actualizar, Alex cambia ese archivo (Administrar versiones › Subir versión nueva, para que no cambie el enlace). Fuera los sueltos lejos del norte (fuera_cajas: al sur de 40º, y al este de 1º O por debajo de 42º: Teide, Mulhacén, Montserrat, Llaberia, Penyagolosa…)."
+  "nota": "Alta 23 nov 2026 (Alex). Sus puntos vienen de un archivo GeoJSON en su Drive (AFI_puntos.geojson): un punto por cima, con Lugar, Cimas, Enlace, Imagen, style (Cima/Ruta/Ferrata) y Año. Para actualizar, Alex cambia ese archivo (Administrar versiones › Subir versión nueva, para que no cambie el enlace). Fuera los sueltos lejos del norte (fuera_cajas: al sur de 40º, y al este de 1º O por debajo de 42º: Teide, Mulhacén, Montserrat, Llaberia, Penyagolosa…). 23 nov (tarde): cada entrada es una ruta suya sin track (para poder corregirla a mano: entrada, track, dificultad…); sin capa de Rutas en el mapa.",
+  "capas": [
+   "c",
+   "l"
+  ]
  },
  {
   "id": "c6",
