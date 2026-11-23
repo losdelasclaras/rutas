@@ -11,7 +11,7 @@ function colabListo(fin){let n=0;const t=setInterval(()=>{n++;const ok=window.CO
 colabListo(ok=>{
   if(ok){const RU=COLX.rut();todasCo=RU.map(x=>COLX.rKey(x));let vc=null;try{vc=JSON.parse(localStorage.getItem(KC)||"null")}catch(e){}
     if(!Array.isArray(vc)){try{localStorage.setItem(KC,JSON.stringify(todasCo))}catch(e){}}   // primera vez: lo que hay ya no es novedad
-    else{const s=new Set(vc);const hoy=new Date(),mm=hoy.getFullYear()*12+hoy.getMonth();CN=RU.filter(x=>!s.has(COLX.rKey(x))&&!(x.blogco&&(x.y*12+x.m-1)<mm-1)).sort((a,b)=>((b.y||0)*100+(b.m||0))-((a.y||0)*100+(a.m||0)))}}
+    else{const s=new Set(vc);const hoy=new Date(),mm=hoy.getFullYear()*12+hoy.getMonth();CN=RU.filter(x=>!s.has(COLX.rKey(x))&&!((x.blogco||(x.co&&x.co.fy))&&(x.y*12+(x.m||1)-1)<mm-1)).sort((a,b)=>((b.y||0)*100+(b.m||0))-((a.y||0)*100+(a.m||0)))}}
   pinta()});
 function pinta(){const tot=NUEVAS.length+CN.length;if(!tot)return;
 document.head.insertAdjacentHTML("beforeend",`<style>

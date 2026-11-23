@@ -60,7 +60,7 @@ for _c in (json.load(open(A+'colaboradores.json')) if os.path.exists(A+'colabora
     _CO.append({'id':_c['id'],'n':_c.get('nombre') or _d.get('t') or 'Colaborador','c':_c.get('color') or '#e8710a','p':_d.get('p',[]),'l':_d.get('l',[]),'dt':[[x[1],x[2]] for x in _d.get('d',[]) if 'drive:'+x[0] not in {str(r[11]) for r in _d.get('r',[]) if len(r)>11}],   # 16 nov: los de Drive que ya son rutas suyas, no se repiten
       
       'r':[r[:8]+[r[8][0]]+[r[9] if len(r)>9 else '']+[r[10] if len(r)>10 else '']+[r[12] if len(r)>12 and r[12] else (str(r[11]) if len(r)>11 and r[11] else (r[6] or r[7] or r[0]))] for r in _d.get('r',[])],'_rl':[r[8] for r in _d.get('r',[])],
-      'bt':_d.get('bt',{}),'bw':_c.get('blog_web',''),'ic':_c.get('iconos_cat') or None,   # 23 nov: categoría por icono
+      'bt':_d.get('bt',{}),'fy':_d.get('fy') or None,'bw':_c.get('blog_web',''),'ic':_c.get('iconos_cat') or None,   # 23 nov: categoría por icono
          # 18 nov: r[11] = id estable de la ruta (correcciones a mano)
       'k':(_c.get('capas') or ((['c','l'] if _d.get('p') else [])+(['r','t'] if _d.get('r') else [])))+(['t'] if _d.get('d') and 't' not in (_c.get('capas') or (['r','t'] if _d.get('r') else [])) else [])})   # 16 nov: los tracks de su carpeta de Drive van en su capa Tracks
 # 16 nov 2026: mapas para incrustar de las rutas de los colaboradores (mapa.html#co-<colaborador>-<ruta>)

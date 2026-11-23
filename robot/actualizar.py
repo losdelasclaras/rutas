@@ -390,6 +390,38 @@ def _kml_colab(k):
             if len(ll) >= 2: lin.append([n, ll])
     return tit.strip(), pts, lin
 
+def _geojson_colab(co, g):
+    """23 nov 2026: puntos de un GeoJSON (Al filo de lo improbable) al formato de _kml_colab:
+    [nombre, lat, lon, descripción, enlace, foto, icono, capa]. La capa sale del tipo: Cima -> «Montaña» (cumbre),
+    Ruta -> «Rutas» (sale en la pestaña Rutas), Ferrata -> «Vías ferratas». Zonas fuera: «fuera_cajas» = [[lat0, lat1, lon0, lon1], …].
+    Devuelve también {enlace: título} («Cimas desde Lugar») y {enlace: año}."""
+    def campo(p, *ks):
+        for k in ks:
+            for kk in p:
+                if kk.lower() == k.lower() and p[kk] not in (None, ''): return p[kk]
+        return ''
+    cajas = co.get('fuera_cajas', [])
+    CAPA = {'cima': 'Montaña', 'ruta': 'Rutas', 'ferrata': 'Vías ferratas'}
+    pts, ti, fy = [], {}, {}
+    for f in g.get('features', []):
+        geo = f.get('geometry') or {}
+        if geo.get('type') != 'Point': continue
+        lon, lat = [float(x) for x in geo['coordinates'][:2]]
+        if any(a <= lat <= b and c <= lon <= d for a, b, c, d in cajas): continue
+        p = f.get('properties') or {}
+        st = str(campo(p, 'style')).strip().lower()
+        nom = re.sub(r'\s+', ' ', str(campo(p, 'Nombre') or campo(p, 'Cimas') or campo(p, 'Lugar'))).strip()
+        if not nom: continue
+        lug, cim, u = str(campo(p, 'Lugar')).strip(), str(campo(p, 'Cimas')).strip(), str(campo(p, 'Enlace')).strip()
+        an = str(campo(p, 'Año', 'Ano', 'Anio')).strip()
+        d = '\n'.join(x for x in [f'Salida: {lug}' if lug else '', f'Cimas de la ruta: {cim}' if cim and cim != nom else '',
+                                  'Vía ferrata' if st == 'ferrata' else '', f'Año: {an}' if an else ''] if x)
+        pts.append([nom, round(lat, 5), round(lon, 5), d, u, str(campo(p, 'Imagen')).strip(), '', CAPA.get(st, 'Montaña')])
+        if u:
+            if re.fullmatch(r'(19|20)\d\d', an): fy[u] = an
+            if u not in ti: ti[u] = (cim or nom) + (f' desde {lug}' if lug and st != 'ferrata' else '')
+    return pts, ti, fy
+
 def _gpx_linea(b):
     ll = [[round(float(a), 5), round(float(o), 5)] for a, o in re.findall(r'<(?:trkpt|rtept)[^>]*?lat="([-\d.]+)"[^>]*?lon="([-\d.]+)"', b)]
     ll += [[round(float(a), 5), round(float(o), 5)] for o, a in re.findall(r'<(?:trkpt|rtept)[^>]*?lon="([-\d.]+)"[^>]*?lat="([-\d.]+)"', b)]
@@ -1007,6 +1039,25 @@ def colaboradores():
                     new.update(t=tit, p=pts, l=[] if co.get('sin_lineas') else lin)   # sin_lineas: p. ej. líneas de límites, no rutas
             except Exception as e:
                 log(f'⚠ No he podido leer el mapa del colaborador {co["id"]}: {e}')
+        if co.get('geojson_drive'):
+            # 23 nov 2026: colaborador con sus puntos en un archivo GeoJSON de su Drive (Al filo de lo improbable, Alex):
+            # un punto por cima (style Cima: en la cima; Ruta y Ferrata: en el inicio), con Lugar, Cimas, Enlace, Imagen y Año.
+            try:
+                g = json.loads(get(f'https://drive.google.com/uc?export=download&id={co["geojson_drive"]}'))
+                pts, ti, fy = _geojson_colab(co, g)
+                if len(pts) < 0.9 * len(old.get('p', [])):
+                    log(f'⚠ El archivo del colaborador «{co.get("nombre") or co["id"]}» ha devuelto solo {len(pts)} puntos (había {len(old["p"])}): no lo toco.')
+                else:
+                    n0 = len(pts); pts = [q for q in pts if quedar_colab(co, q)]
+                    if n0 != len(pts): log(f'   (quitados {n0 - len(pts)} puntos que no queremos)')
+                    new.update(t=co.get('nombre') or co['id'], p=pts, l=[], fy=fy)
+                    # título de cada entrada (para la pestaña Rutas): «Cimas desde Lugar»; si luego se lee el título real del blog, manda ese
+                    cf = APP + f'colab/titulos_{co["id"]}.json'
+                    T = json.load(open(cf)) if os.path.exists(cf) else {}
+                    for u, t in ti.items(): T.setdefault(u, t)
+                    json.dump(T, open(cf, 'w'), ensure_ascii=False, indent=0)
+            except Exception as e:
+                log(f'⚠ No he podido leer el archivo GeoJSON del colaborador {co["id"]}: {e} (se queda como estaba)')
         if co.get('mapas_rutas'):
             # colaborador con sus rutas (tracks) en varios My Maps: uno por zona con el track entero y, al final, «Todas las rutas (simplificado)»
             try:
