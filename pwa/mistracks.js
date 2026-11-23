@@ -48,8 +48,14 @@ box.addEventListener("click",e=>{if(e.target.closest('[data-mtx="imp"]')){MPI.im
   const o=e.target.closest("[data-mtopen]");if(o)open(o.dataset.mtopen,true)});
 
 /* perfil a partir de los puntos (para los cargados) */
+// 23 nov 2026: si al track grabado le faltan alturas en algunos puntos (el GPS no la dio), el perfil sale ya con las del GPS
+// rellenando los huecos con los puntos de al lado; cuando llegan las del mapa del terreno, se repinta con esas
+function conAlt(p){if(!p||p.length<2)return null;if(p.every(x=>x[2]!=null))return p;
+  const k=[];p.forEach((x,i)=>{if(x[2]!=null&&isFinite(x[2]))k.push(i)});if(k.length<2||k.length<p.length*.5)return null;
+  let a=0;return p.map((x,i)=>{if(x[2]!=null)return x;while(a<k.length-2&&k[a+1]<i)a++;const i0=k[a],i1=k[a+1];
+    const v=i<=i0?p[i0][2]:i>=i1?p[i1][2]:p[i0][2]+(p[i1][2]-p[i0][2])*(i-i0)/(i1-i0);return[x[0],x[1],Math.round(v)]})}
 function perfil(t){const r=routeOf(t);if(r&&r.gx&&r.gx.pf&&r.gx.pf.length)return profSVG(r.gx);
-  const p=t.pts;if(!p||p.length<2||p.some(x=>x[2]==null))return"";
+  const p=conAlt(t.pts);if(!p)return"";
   const dm=(a,b)=>{const R0=6371,k=Math.PI/180,dl=(b[0]-a[0])*k,dn=(b[1]-a[1])*k,h=Math.sin(dl/2)**2+Math.cos(a[0]*k)*Math.cos(b[0]*k)*Math.sin(dn/2)**2;return 2*R0*Math.asin(Math.sqrt(h))};
   let c=0;const all=[[0,p[0][2]]];for(let i=1;i<p.length;i++){c+=dm(p[i-1],p[i]);all.push([c,p[i][2]])}
   const f=t.km&&c?t.km/c:1,step=Math.max(1,Math.floor(all.length/120)),pf=[];for(let i=0;i<all.length;i+=step)pf.push([Math.round(all[i][0]*f*100)/100,all[i][1]]);pf.push([Math.round(c*f*100)/100,all[all.length-1][1]]);
@@ -105,7 +111,7 @@ function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t
   let h;
   if(vista==="datos"){   // 9 nov 2026: solo la cuadrícula de datos, el perfil y los puntos (sin la franja grande ni el tiempo)
     h=cab+volver+`<div class="tdat">`+datosHTML(t,d)+perfil(t)+puntosHTML(t)+
-      (!r&&t.pts&&t.pts.some(x=>x[2]==null)?`<p class="note">${navigator.onLine?"Calculando las alturas…":"Este track no trae alturas; se calcularán cuando haya conexión."}</p>`:"")+`</div>`}
+      (!r&&t.pts&&t.pts.some(x=>x[2]==null)&&!conAlt(t.pts)?`<p class="note">${navigator.onLine?"Calculando las alturas…":"Este track no trae alturas; se calcularán cuando haya conexión."}</p>`:"")+`</div>`}
   else if(vista==="mas"){
     h=cab+volver+`<div class="tmas"><button class="mpb pri" data-mtshare="${ie}">📤 Compartir (GPX o enlace de la app)</button>
       ${p?`<a class="mpb" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p[0][0]},${p[0][1]}">🚗 Cómo llegar al inicio</a>`:""}
