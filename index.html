@@ -1497,7 +1497,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-f379b394.json", "ln": "colab-ln-e14f688f.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-84e771aa.json", "ln": "colab-ln-fed57f5a.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -1850,6 +1850,9 @@ function nivelCo(s){s=String(s||"");const m=/MIDE\s*\d\s*-\s*\d\s*-\s*\d\s*-\s*(
   const n=norm(s);if(/muy dificil|muy alta/.test(n))return"x";if(/dificil|^alta/.test(n))return"a";if(/moderad/.test(n))return"m";if(/facil|^baja/.test(n))return"b";return""}   // 18 nov: «Muy alta» aparte; también Baja/Moderada/Alta/Muy alta (correcciones a mano)
 // 23 nov 2026: blogs sin la fecha en la dirección (WordPress de Al filo de lo improbable): el año viene aparte (c.fy = {enlace: año}), sin mes
 const fyCo=(c,u)=>{const y=u&&c&&c.fy&&c.fy[u];return y?[0,y,""]:null};
+// 23 nov 2026: correcciones a mano de una entrada de blog sin track (c.bo = {enlace: {n, f, di, oc, o}}; lo pone el robot)
+const boCo=(c,u)=>(u&&c&&c.bo&&c.bo[u])||null;COLX.bo=boCo;
+const feBo=(c,u)=>{const b=boCo(c,u),m=b&&b.f&&/^(\d{4})-(\d{2})/.exec(b.f);return m?[0,m[1],m[2]]:null};COLX.feBo=feBo;
 const RUT=[];
 for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exec(r[4])||[])[1];const fe=/^(\d{4})(?:-(\d{2}))?/.exec(r[10]||"");RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:fe?+fe[1]:null,m:fe&&fe[2]?+fe[2]:null,gx:1,iv:/raqueta|nieve|invern/i.test(r[2]+" "+r[0])?1:0,nivd:nivelCo(r[5]),km:r[3]?r[3].replace(/\s*km/i," km"):"",de:dm?"+"+dm+" m":"",txt:norm(r[0]+" "+r[1]+" "+r[2])}));continue}
   const p=it.pp;if(!(/RUTA/i.test(p[7]||"")||/distancia\s*:/i.test(limpia(p[3]))))continue;
@@ -1858,9 +1861,9 @@ for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exe
 // 17 nov 2026: colaboradores sin capa de rutas (Camudando'l camín): cada entrada de su blog enlazada en sus cumbres sale también en Rutas (sin track;
 //  al tocarla se abre la ficha de esa cumbre, que ya enseña la entrada como ruta). Una sola fila por entrada; las que ya son ruta suya no se repiten.
 {const vistos=new Set(RUT.map(x=>x.pp&&x.pp[4]).concat(ALL.filter(x=>x.rr!=null).map(x=>x.co.r[x.rr][7])).filter(Boolean));
- for(const it of ALL){if(it.rr!=null||!it.pp||!it.co||(it.co.k||[]).includes("r"))continue;const p=it.pp,u=p[4]||"",dm=/\/(20\d\d)\/(\d\d)\//.exec(u)||fyCo(it.co,u);if(!dm||vistos.has(u))continue;vistos.add(u);
-   const t=((it.co.bt||{})[u]||"").replace(/^[^:]{3,60}:\s*/,m=>norm(m).includes(norm(it.co.n).slice(0,6))?"":m).trim()||it.c;
-   RUT.push(Object.assign(Object.create(it),{cox:1,blogco:1,c:t,p:[],y:+dm[1],m:dm[2]?+dm[2]:null,km:"",de:"",txt:norm(t+" "+it.c+" "+(it.r||""))}))}}
+ for(const it of ALL){if(it.rr!=null||!it.pp||!it.co||(it.co.k||[]).includes("r"))continue;const p=it.pp,u=p[4]||"",bo=boCo(it.co,u),dm=feBo(it.co,u)||/\/(20\d\d)\/(\d\d)\//.exec(u)||fyCo(it.co,u);if(!dm||vistos.has(u)||(bo&&bo.oc))continue;vistos.add(u);
+   const t=(bo&&bo.n)||((it.co.bt||{})[u]||"").replace(/^[^:]{3,60}:\s*/,m=>norm(m).includes(norm(it.co.n).slice(0,6))?"":m).trim()||it.c;
+   RUT.push(Object.assign(Object.create(it),{cox:1,blogco:1,c:t,p:[],y:+dm[1],m:dm[2]?+dm[2]:null,km:"",de:"",...(bo&&bo.di?{dl:bo.di,nivd:nivelCo(bo.di)}:{}),txt:norm(t+" "+it.c+" "+(it.r||""))}))}}
 COLX.rsrc="todas";
 COLX.isRuta=ci=>RUT.some(x=>x.ci===ci);
 COLX.rutasCo=()=>ALL.filter(x=>x.rr!=null);
@@ -2430,6 +2433,7 @@ function grande(t,d){const m=t.tm,tie=m&&m.b>m.a?hm(m.m||(m.b-m.a)/1000):d.km?"�
   return`<div class="tgr"><span><b>${tie}</b><small>${m&&m.b>m.a?"en movimiento":"tiempo estimado"}</small></span><span><b>${d.km?d.km.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2}):"—"}</b><small>km</small></span><span><b>${d.up!=null?"+"+d.up.toLocaleString("es-ES"):"—"}</b><small>m de subida</small></span></div>`}
 function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t)return;quitaPill();
   // 9 nov 2026: una ruta de colaborador guardada abre su ficha de ruta (si no se encuentra, se ve como track)
+  if(t.src==="co"&&t.bl&&!vista&&window.ABREBLOG){if(typeof showView==="function")showView("mapa");if(ABREBLOG(t.co,t.u))return;window.open(t.u,"_blank","noopener");return}
   if(t.src==="co"&&window.COLX&&!vista){const x=COLX.todo().find(x=>x.rr!=null&&x.co.id===t.co&&x.co.r[x.rr][0]===t.n);if(x){if(typeof showView==="function")showView("mapa");COLX.abrirRuta(x.ci);return}}
   if(t.src!=="blog"&&t.pts&&t.pts.length>1&&!(t.dv>=2)&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
   if(typeof showView==="function")showView("mapa");
@@ -5064,19 +5068,25 @@ const mkCo=(k,cum)=>{const s=MARKS[k]||"",L=cum?["Subida","Quiero subir"]:["He e
   return `<span class="mk" data-key="${esc(k)}"><button data-mk="hecha" aria-pressed="${s==="hecha"}" title="${L[0]}">✓ ${L[0]}</button><button data-mk="quiero" aria-pressed="${s==="quiero"}" title="${L[1]}">★ ${L[1]}</button></span>`};
 
 // 9 nov 2026: una entrada de blog sin track (p. ej. Camudando'l camín) es una ruta más: fila con su nombre y su ficha sencilla
-const tituloBlog=b=>((b.co&&b.co.bt)||{})[b.u]||decodeURIComponent((/\/([^\/]+?)(?:\.html?)?\/?$/.exec(b.u)||[,""])[1]).replace(/[-_]+/g," ").replace(/^./,m=>m.toUpperCase())||b.n;
+const boB=b=>window.COLX&&COLX.bo?COLX.bo(b.co,b.u):null;
+const anoB=b=>{const f=window.COLX&&COLX.feBo&&COLX.feBo(b.co,b.u);if(f)return[f[1],f[2]];const m=/\/(20\d\d)\/(\d\d)\//.exec(b.u);if(m)return[m[1],m[2]];const y=b.co&&b.co.fy&&b.co.fy[b.u];return[y||"",""]};
+const difB=b=>{const o=boB(b);if(o&&o.di)return o.di;const F=b.p&&window.COLX&&COLX.ficha?COLX.ficha(b.p[3])[0]:{};return F.dif||""};
+const tituloBlog=b=>(boB(b)||{}).n||((b.co&&b.co.bt)||{})[b.u]||decodeURIComponent((/\/([^\/]+?)(?:\.html?)?\/?$/.exec(b.u)||[,""])[1]).replace(/[-_]+/g," ").replace(/^./,m=>m.toUpperCase())||b.n;
 function rowBlog(b,i,y){const fo=b.p&&b.p[5];
-  return `<button class="row src-co" style="--cc:${b.c}" data-fbl="${i}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:""}<div class="t"><b>${esc(tituloBlog(b))}</b><span><em class="cosrc" style="color:${b.c}">${esc(b.n)}</em>${y?" · "+y:""}${(()=>{const F=b.p&&window.COLX&&COLX.ficha?COLX.ficha(b.p[3])[0]:{};return F.dif?" · "+esc(F.dif):""})()} · Sin track</span></div></button>`}
-function fichaBlog(i){const F=sheet._fbl;if(!F)return;const b=F.bl[i],o=F.o;if(!b)return;const y=(/\/(20\d\d)\//.exec(b.u)||[])[1],fo=b.p&&b.p[5];
+  return `<button class="row src-co" style="--cc:${b.c}" data-fbl="${i}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:""}<div class="t"><b>${esc(tituloBlog(b))}</b><span><em class="cosrc" style="color:${b.c}">${esc(b.n)}</em>${y?" · "+y:""}${difB(b)?" · "+esc(difB(b)):""} · Sin track</span></div></button>`}
+function fichaBlog(i){const F=sheet._fbl;if(!F)return;const b=F.bl[i],o=F.o;if(!b)return;const[y,ymes]=anoB(b),fo=b.p&&b.p[5];
   // las cumbres de esta entrada: los puntos (de cualquier blog) que enlazan a ella
   const cums=[];if(window.COLX)for(const x of COLX.todo())if(x.pp&&x.pp[4]===b.u&&!cums.some(z=>z.pp===x.pp))cums.push(x);
   sheet.classList.remove("full");sheet._cor=null;sheet._fblBack=o;
   // 9 nov 2026: ficha de ruta unificada (ficharuta.js)
-  if(window.FRUTA){const ym=/\/(20\d\d)\/(\d\d)\//.exec(b.u);
+  // 23 nov 2026: también «Guardar ruta» y «Corregir esta ruta» (como las del grupo); sheet._blg lo leen ficharuta.js y corregir.js
+  const bo=boB(b);sheet._blg={co:b.co,u:b.u,t:tituloBlog(b),fe:y?y+(ymes?"-"+ymes:""):"",dif:difB(b),ko:(bo&&bo.o)||b.u};
+  if(window.FRUTA){const ym=ymes?[0,y,ymes]:null;
     // 22 nov 2026: distancia, desnivel y dificultad si vienen en la descripción del punto (Caleyando con Cienfuegos: los lee el robot de su entrada)
     const DF=b.p&&window.COLX&&COLX.ficha?COLX.ficha(b.p[3])[0]:{},dkm=(/(\d+(?:[.,]\d+)?)\s*km/i.exec(DF.km||"")||[])[1],dde=(/(\d[\d.]*)\s*m/i.exec(DF.de||"")||[])[1];
     sheet.innerHTML=FRUTA.pinta({grab:"",foto:fo,quien:b.n||"",y:y?+y:null,m:ym?+ym[2]:null,titulo:tituloBlog(b),blog:b.u,
-      km:dkm?dkm.replace(".",",")+" km":"",de:dde?"+"+dde+" m":"",dif:DF.dif||"",
+      km:dkm?dkm.replace(".",",")+" km":"",de:dde?"+"+dde+" m":"",dif:difB(b),
+      gRuta:b.co?"data-frgrb":"",gRutaOn:!!(b.co&&FRUTA.blGuardada&&FRUTA.blGuardada(b.co.id,b.u)),
       share:`data-frshu="${esc(b.u)}" data-frsht="${esc(tituloBlog(b))}"`,
       cumbres:cums.map(x=>({n:x.c,a:x.a||null,k:x.co&&COLX.coKey?COLX.coKey(x.co,x.c):null})),close:" data-trcox"});
     sheet.hidden=false;sheet.scrollTop=0;if(window.showTrack)showTrack(null);return}
@@ -5087,6 +5097,9 @@ function fichaBlog(i){const F=sheet._fbl;if(!F)return;const b=F.bl[i],o=F.o;if(!
   <p class="note">Esta ruta no tiene track en la app: está contada en el blog.</p>
   <div class="sec"><h3>${cums.length>1?"Cumbres de esta ruta":"Cumbre de esta ruta"}</h3><div class="rows">${(cums.length?cums:[null]).map((x,k)=>`<button class="row" data-fblc="${x?x.ci:""}"><div class="t"><b>${esc(x?x.c:o.n)}</b><span>${o.cum?"Cumbre":"Lugar"}</span></div></button>`).join("")}</div></div>`;
   sheet.hidden=false;sheet.scrollTop=0;if(window.showTrack)showTrack(null)}
+// 23 nov 2026: abrir directamente la ficha de una entrada de blog sin track (rutas guardadas en Mis cosas)
+window.ABREBLOG=(coid,u)=>{if(!window.COLX)return false;const L=COLX.todo(),ci=L.findIndex(x=>x.pp&&x.co&&x.co.id===coid&&x.pp[4]===u);if(ci<0)return false;
+  COLX.open(ci);const va=k=>{const F=sheet._fbl,i=F?F.bl.findIndex(b=>b.u===u):-1;if(i>=0)fichaBlog(i);else if(k<10)setTimeout(()=>va(k+1),80)};va(0);return true};
 sheet.addEventListener("click",e=>{if(e.target.closest(".fpt-rutas .rows>.row"))try{localStorage.setItem("ldc-fpttoca","1")}catch(er){}},true);
 sheet.addEventListener("click",e=>{const f=e.target.closest(".fpt-rutas [data-fbl]");if(f){e.stopPropagation();fichaBlog(+f.dataset.fbl);return}
   const c=e.target.closest("[data-fblc]");if(c){e.stopPropagation();const ci=c.dataset.fblc;if(ci!==""&&window.COLX)COLX.open(+ci);else if(sheet._fblBack)pinta(sheet._fblBack)}});
@@ -5136,7 +5149,7 @@ function deGrupo(gi){const p=P[gi];const cum=p.t==="cumbre";
 function junta(o,ms){const by={},alias=new Set(),keys=[];let foto=o.rs&&o.rs.find(r=>r.f!=null);foto=o.fo||(foto?`fotos/${foto.f}.jpg`:null);   // 11 nov 2026: primero la foto propia del punto en My Maps
   o.blogs=o.blogs||[];
   for(const{c,p}of ms){if(nk(p[0])!==nk(o.n))alias.add(p[0]);
-    if(p[4]&&/^https?:/.test(p[4])&&!(p[9]||[]).length&&!o.blogs.some(b=>b.u===p[4]))o.blogs.push({n:c.n,c:c.c,u:p[4],co:c,p});
+    if(p[4]&&/^https?:/.test(p[4])&&!(p[9]||[]).length&&!o.blogs.some(b=>b.u===p[4])&&!((c.bo||{})[p[4]]||{}).oc)o.blogs.push({n:c.n,c:c.c,u:p[4],co:c,p});
     if(!foto&&p[5]&&/^https?:|\.(jpe?g|png|webp)/i.test(p[5]))foto=p[5];if(o.cum&&COLX.coKey)keys.push(COLX.coKey(c,p[0]));
     const b=by[c.id]||(by[c.id]={n:c.n,c:c.c,cnt:0,y:0,rows:[],its:[],vis:new Set()});
     for(const i of (p[9]||[])){if(b.vis.has(i))continue;b.vis.add(i);const it=COLX.rutaItem(c,i);if(!it)continue;b.rows.push(COLX.rrow(it));b.its.push({c,i});b.cnt++;b.y=Math.max(b.y,it.y||0);
@@ -5325,7 +5338,8 @@ routeBody=function(r){
     otras:(otras.yo=routeTitle(r),otras(st[0],st[1],r.id,null))})};
 
 /* ---- rutas de colaboradores (colab.js llama aquí) ---- */
-window.FRUTA={pinta,perfilHTML,otras,coGuardada:(c,n)=>!!(MPI&&MPI.tracks().some(t=>t.src==="co"&&t.co===c.id&&t.n===n)),
+window.FRUTA={pinta,perfilHTML,otras,coGuardada:(c,n)=>!!(MPI&&MPI.tracks().some(t=>t.src==="co"&&!t.bl&&t.co===c.id&&t.n===n)),
+  blGuardada:(coid,u)=>!!(MPI&&MPI.tracks().some(t=>t.src==="co"&&t.bl&&t.co===coid&&t.u===u)),
   // cuando llega el track de un colaborador: Seguir, Guardar track, Cómo llegar, perfil y las otras rutas medidas desde su salida
   track(c,i,ll,g){const s=document.getElementById("sheet");if(!s||!s._cor||s._cor.c!==c||s._cor.i!==i||!s.querySelector(".fru"))return;
     s.querySelectorAll(".frtrk").forEach(x=>x.hidden=false);
@@ -5405,6 +5419,12 @@ document.addEventListener("click",e=>{
         if(ll&&ll.length>1){o.pts=ll.map(p=>p.slice());if(MPI.desn)MPI.desn(o)}
         MPI.saveTracks([...MPI.tracks(),o]);gc.innerHTML=gRL(true);toast("Ruta guardada en Mis cosas")})};
     if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go();return}
+  // ☆ Guardar ruta (entrada de blog sin track, 23 nov 2026): en Mis cosas como RUTA; al abrirla sale su ficha
+  const gb=e.target.closest("[data-frgrb]");if(gb){e.preventDefault();const s=document.getElementById("sheet"),b=s&&s._blg;if(!b||!b.co||!MPI)return;
+    const go=()=>{const ya=MPI.tracks().find(t=>t.src==="co"&&t.bl&&t.co===b.co.id&&t.u===b.u);
+      if(ya){MPI.saveTracks(MPI.tracks().filter(t=>t!==ya));gb.innerHTML=gRL(false);toast("Quitada de Mis cosas");return}
+      MPI.saveTracks([...MPI.tracks(),{id:"cob-"+Date.now().toString(36),src:"co",bl:1,co:b.co.id,n:b.t,u:b.u,f:new Date().toISOString()}]);gb.innerHTML=gRL(true);toast("Ruta guardada en Mis cosas")};
+    if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go();return}
   // 📤 Compartir una entrada de blog sin track
   const sh=e.target.closest("[data-frshu]");if(sh){e.preventDefault();const u=sh.dataset.frshu,t=sh.dataset.frsht||"";
     (async()=>{try{if(navigator.share){await navigator.share({title:t,text:"🥾 "+t,url:u});return}}catch(er){if(er&&er.name==="AbortError")return}
@@ -5475,6 +5495,9 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 /* ---- qué ruta tiene abierta la ficha ---- */
 function rutaAbierta(){
   if(!sh.querySelector(".fru"))return null;
+  // 23 nov 2026: entrada de blog sin track de un colaborador (fichas2.js › fichaBlog): clave «<colaborador>|b:<entrada original>»
+  const bg=sh._blg;if(bg&&bg.co&&sh.querySelector(".fru [data-frshu]"))
+    return{co:bg.co.id,quien:bg.co.n,bw:bg.co.bw||"",k:bg.co.id+"|b:"+bg.ko,titulo:bg.t,u:bg.u,wk:"",fe:bg.fe,di:bg.dif,colab:true,blog:true};
   const k=sh._cor;
   if(k&&k.c&&k.c.r&&k.c.r[k.i]){const c=k.c,r=c.r[k.i];
     return{co:c.id,quien:c.n,bw:c.bw||"",k:c.id+"|"+(r[11]||r[6]||r[7]||r[0]),titulo:String(r[0]).split("|").pop().trim(),u:r[7]||"",wk:r[6]||"",fe:r[10]||"",di:r[5]||"",colab:true}}
@@ -5531,18 +5554,18 @@ function pinta(){const x=X,d=DOC||{},q=document.querySelector(".crdlg .crcuerpo"
     </div>
     <label><input type="radio" name="crb" value="sin" ${sbOn?"checked":""}> No tiene entrada en el blog</label>
   </fieldset>`:""}
-  <fieldset><legend>🧵 Track</legend>
+  ${x.blog?`<p class="crnote" style="margin:0 0 12px">Esta ruta sale de una entrada del blog enlazada en el mapa del colaborador. El track lo pone el colaborador en su mapa o en su carpeta de Drive.</p>`:`<fieldset><legend>🧵 Track</legend>
     <label><input type="radio" name="crt" value="igual" ${trM==="igual"?"checked":""}> Dejar el que tiene</label>
     <label><input type="radio" name="crt" value="sub" ${trM==="sub"?"checked":""}> Poner otro (subir un GPX o KML)</label>
     <div class="crsubir" ${trM==="sub"?"":"hidden"}><input type="file" class="crf" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml,text/xml,application/xml">
       <p class="crnote crfi">${d.tr&&d.tr!=="sin"?"Ya hay un track subido en la corrección. Elige otro archivo solo si quieres cambiarlo.":"Elige el archivo del track bueno."}</p></div>
     <label><input type="radio" name="crt" value="sin" ${trM==="sin"?"checked":""}> Esta ruta no tiene track</label>
-  </fieldset>
-  <fieldset><legend>🔗 Wikiloc</legend>
+  </fieldset>`}
+  ${x.blog?"":`<fieldset><legend>🔗 Wikiloc</legend>
     <p class="crnote" style="margin:0 0 6px">Ahora: ${x.wk?esc(x.wk.replace(/^https?:\/\//,"")):"sin enlace"}</p>
     <input type="url" class="crwk" placeholder="Dejar como está · o pega el enlace bueno" value="${esc(d.wk&&d.wk!=="-"?d.wk:"")}">
     <label><input type="checkbox" class="crwkq" ${d.wk==="-"?"checked":""}> Quitar el enlace de Wikiloc</label>
-  </fieldset>
+  </fieldset>`}
   <fieldset><legend>🏷 Nombre, fecha y dificultad</legend>
     <input type="text" class="crn" placeholder="Nombre: dejar el que tiene" value="${esc(d.n||"")}" maxlength="140">
     <p class="crnote">Fecha de la ruta (déjala vacía para no cambiarla)${x.fe?` · ahora: ${(()=>{const m=/^(\d{4})-(\d{2})/.exec(x.fe);return m?MES[+m[2]-1]+" de "+m[1]:x.fe})()}`:""}</p>
@@ -5580,7 +5603,7 @@ document.addEventListener("click",async e=>{const dl=e.target.closest(".crdlg");
   if(e.target.closest(".crok"))guarda(dl)});
 document.addEventListener("change",async e=>{const dl=e.target.closest(".crdlg");if(!dl)return;
   if(e.target.name==="crb")dl.querySelector(".crotra").hidden=e.target.value!=="otra";
-  if(e.target.name==="crt")dl.querySelector(".crsubir").hidden=e.target.value!=="sub";
+  if(e.target.name==="crt"&&dl.querySelector(".crsubir"))dl.querySelector(".crsubir").hidden=e.target.value!=="sub";
   if(e.target.classList.contains("crf")){const f=e.target.files[0];if(!f)return;const p=dl.querySelector(".crfi");
     try{const ll=leeTrack(await f.text());if(ll.length<2)throw 0;TR=ll;p.textContent=`✅ ${f.name}: ${ll.length} puntos · ${kmDe(ll).toFixed(1).replace(".",",")} km`}
     catch(_){TR=null;p.textContent="⚠️ Ese archivo no tiene ningún recorrido. Prueba con otro GPX o KML."}}});
@@ -5599,7 +5622,7 @@ async function guarda(dl){const x=X,d={k:x.k,co:x.co,t:Date.now()};   // sin el 
   const t=(dl.querySelector("input[name=crt]:checked")||{}).value;
   if(t==="sin")d.tr="sin";
   else if(t==="sub"){if(TR)d.tr=JSON.stringify(TR);else if(DOC&&DOC.tr&&DOC.tr!=="sin")d.tr=DOC.tr;else{toast("Elige el archivo del track");return}}
-  const wq=dl.querySelector(".crwkq").checked,wk=(dl.querySelector(".crwk").value||"").trim();
+  const wq=!!(dl.querySelector(".crwkq")||{}).checked,wk=((dl.querySelector(".crwk")||{}).value||"").trim();
   if(wq)d.wk="-";else if(wk){if(!/^https?:\/\/\S*wikiloc\.\S+$/i.test(wk)){toast("Ese enlace no parece de Wikiloc");return}d.wk=wk}
   const n=(dl.querySelector(".crn").value||"").trim();if(n)d.n=n.slice(0,140);
   const f=(dl.querySelector(".crfe").value||"").trim();if(/^\d{4}-\d{2}$/.test(f))d.f=f;
@@ -7217,5 +7240,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="23/11 19:35 · 0646ce";window.LDC_BUILD="0646ce4c1c";window.LDC_FUNC="143d43a9a9";(function(){const B="0646ce4c1c";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="23/11 19:44 · 4fc07b";window.LDC_BUILD="4fc07bbfcd";window.LDC_FUNC="75d469909b";(function(){const B="4fc07bbfcd";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
