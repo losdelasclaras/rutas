@@ -102,6 +102,7 @@ function grande(t,d){const m=t.tm,tie=m&&m.b>m.a?hm(m.m||(m.b-m.a)/1000):d.km?"�
   return`<div class="tgr"><span><b>${tie}</b><small>${m&&m.b>m.a?"en movimiento":"tiempo estimado"}</small></span><span><b>${d.km?d.km.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2}):"—"}</b><small>km</small></span><span><b>${d.up!=null?"+"+d.up.toLocaleString("es-ES"):"—"}</b><small>m de subida</small></span></div>`}
 function open(id,fit,vista){const t=T().find(x=>String(x.id)===String(id));if(!t)return;quitaPill();
   // 9 nov 2026: una ruta de colaborador guardada abre su ficha de ruta (si no se encuentra, se ve como track)
+  if(t.src==="co"&&t.bl&&!vista&&window.ABREBLOG){if(typeof showView==="function")showView("mapa");if(ABREBLOG(t.co,t.u))return;window.open(t.u,"_blank","noopener");return}
   if(t.src==="co"&&window.COLX&&!vista){const x=COLX.todo().find(x=>x.rr!=null&&x.co.id===t.co&&x.co.r[x.rr][0]===t.n);if(x){if(typeof showView==="function")showView("mapa");COLX.abrirRuta(x.ci);return}}
   if(t.src!=="blog"&&t.pts&&t.pts.length>1&&!(t.dv>=2)&&t.pts.every(x=>x[2]!=null)){MPI.desn(t);MPI.saveTracks(T().slice())}
   if(typeof showView==="function")showView("mapa");

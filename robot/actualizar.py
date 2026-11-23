@@ -1151,6 +1151,8 @@ def colaboradores():
             except Exception as e: log(f'⚠ Rutas de Drive de {co["id"]}: {e}')
         try: aplicar_correcciones(co, new)   # 18 nov: antes de las fotos, para que la de una entrada corregida se baje ya
         except Exception as e: log(f'⚠ Correcciones de {co["id"]}: {e}')
+        try: correcciones_entradas(co, new, 1)   # 23 nov: entradas sin track con otra entrada del blog (antes de los títulos y fotos)
+        except Exception as e: log(f'⚠ Correcciones de entradas de {co["id"]}: {e}')
         fotos_colab(co['id'], new)
         blog_colab(co, new)
         if new.get('r'): new['r'] = json.loads(json.dumps(new['r'])); new['p'] = json.loads(json.dumps(new.get('p', [])))
@@ -1169,6 +1171,8 @@ def colaboradores():
             for r in new.get('r') or []: r[0] = _pre(r[0]) or r[0]
         try: aplicar_correcciones(co, new, calla=True)   # y otra vez al final: lo corregido a mano manda sobre todo lo demás
         except Exception as e: log(f'⚠ Correcciones de {co["id"]}: {e}')
+        try: correcciones_entradas(co, new, 2)
+        except Exception as e: log(f'⚠ Correcciones de entradas de {co["id"]}: {e}')
         nom = co.get('nombre') or new.get('t') or co['id']
         if new != old:
             json.dump(new, open(fo, 'w'), ensure_ascii=False, separators=(',', ':'))
@@ -1282,6 +1286,34 @@ def aplicar_correcciones(co, new, T=None, calla=False):
             r[3] = f"{g['km']:.1f}".replace('.', ',') + ' km'; r[4] = f"{g['up']} m" if g['up'] else r[4]
     if fuera: new['r'] = [r for i, r in enumerate(rs) if i not in fuera]
     if n and not calla: log(f'✏️ {co.get("nombre") or co["id"]}: {n} rutas con corrección a mano' + (f' ({len(fuera)} ocultas)' if fuera else ''))
+
+def correcciones_entradas(co, new, fase):
+    # 23 nov 2026: «Corregir esta ruta» en las entradas de blog sin track de un colaborador (las que salen de un punto de su My Maps
+    # enlazado a su blog). Clave en Firestore: '<colaborador>|b:<entrada original>'.
+    #   fase 1: otra entrada (u) -> se cambia el enlace en sus puntos;
+    #   fase 2: new['bo'] = {entrada: {n nombre, f AAAA-MM, di dificultad, oc oculta (también «no tiene entrada»), o entrada original}} -> la app
+    pre = f'{co["id"]}|b:'
+    cs = {k[len(pre):]: v for k, v in CORR.items() if k.startswith(pre)}
+    if fase == 1:
+        for u0, c in cs.items():
+            if c.get('u') and c['u'] != u0 and not c.get('sb'):
+                for p in new.get('p', []):
+                    if len(p) > 4 and p[4] == u0: p[4] = c['u']
+        return
+    bo = {}
+    for u0, c in cs.items():
+        u = c['u'] if c.get('u') and not c.get('sb') else u0
+        o = {}
+        if c.get('oc') or c.get('sb'): o['oc'] = 1
+        if c.get('n'): o['n'] = c['n']
+        if c.get('f'): o['f'] = c['f']
+        if c.get('di'): o['di'] = {'baja': 'Baja', 'moderada': 'Moderada', 'alta': 'Alta', 'muy-alta': 'Muy alta'}.get(c['di'], c['di'])
+        if u != u0: o['o'] = u0
+        if o: bo[u] = o
+    if bo:
+        new['bo'] = bo
+        log(f'✏️ {co.get("nombre") or co["id"]}: {len(bo)} entradas sin track con corrección a mano')
+    else: new.pop('bo', None)
 
 # ------------------------------------------------------------------ 3c. SALIDAS DE LA WEB DE LOS CLUBES
 # 21 nov 2026: algunos clubes (dados de alta en Salidas como los demás) no quieren hacer trabajo doble: el robot lee cada

@@ -56,6 +56,9 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 /* ---- qué ruta tiene abierta la ficha ---- */
 function rutaAbierta(){
   if(!sh.querySelector(".fru"))return null;
+  // 23 nov 2026: entrada de blog sin track de un colaborador (fichas2.js › fichaBlog): clave «<colaborador>|b:<entrada original>»
+  const bg=sh._blg;if(bg&&bg.co&&sh.querySelector(".fru [data-frshu]"))
+    return{co:bg.co.id,quien:bg.co.n,bw:bg.co.bw||"",k:bg.co.id+"|b:"+bg.ko,titulo:bg.t,u:bg.u,wk:"",fe:bg.fe,di:bg.dif,colab:true,blog:true};
   const k=sh._cor;
   if(k&&k.c&&k.c.r&&k.c.r[k.i]){const c=k.c,r=c.r[k.i];
     return{co:c.id,quien:c.n,bw:c.bw||"",k:c.id+"|"+(r[11]||r[6]||r[7]||r[0]),titulo:String(r[0]).split("|").pop().trim(),u:r[7]||"",wk:r[6]||"",fe:r[10]||"",di:r[5]||"",colab:true}}
@@ -112,18 +115,18 @@ function pinta(){const x=X,d=DOC||{},q=document.querySelector(".crdlg .crcuerpo"
     </div>
     <label><input type="radio" name="crb" value="sin" ${sbOn?"checked":""}> No tiene entrada en el blog</label>
   </fieldset>`:""}
-  <fieldset><legend>🧵 Track</legend>
+  ${x.blog?`<p class="crnote" style="margin:0 0 12px">Esta ruta sale de una entrada del blog enlazada en el mapa del colaborador. El track lo pone el colaborador en su mapa o en su carpeta de Drive.</p>`:`<fieldset><legend>🧵 Track</legend>
     <label><input type="radio" name="crt" value="igual" ${trM==="igual"?"checked":""}> Dejar el que tiene</label>
     <label><input type="radio" name="crt" value="sub" ${trM==="sub"?"checked":""}> Poner otro (subir un GPX o KML)</label>
     <div class="crsubir" ${trM==="sub"?"":"hidden"}><input type="file" class="crf" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml,text/xml,application/xml">
       <p class="crnote crfi">${d.tr&&d.tr!=="sin"?"Ya hay un track subido en la corrección. Elige otro archivo solo si quieres cambiarlo.":"Elige el archivo del track bueno."}</p></div>
     <label><input type="radio" name="crt" value="sin" ${trM==="sin"?"checked":""}> Esta ruta no tiene track</label>
-  </fieldset>
-  <fieldset><legend>🔗 Wikiloc</legend>
+  </fieldset>`}
+  ${x.blog?"":`<fieldset><legend>🔗 Wikiloc</legend>
     <p class="crnote" style="margin:0 0 6px">Ahora: ${x.wk?esc(x.wk.replace(/^https?:\/\//,"")):"sin enlace"}</p>
     <input type="url" class="crwk" placeholder="Dejar como está · o pega el enlace bueno" value="${esc(d.wk&&d.wk!=="-"?d.wk:"")}">
     <label><input type="checkbox" class="crwkq" ${d.wk==="-"?"checked":""}> Quitar el enlace de Wikiloc</label>
-  </fieldset>
+  </fieldset>`}
   <fieldset><legend>🏷 Nombre, fecha y dificultad</legend>
     <input type="text" class="crn" placeholder="Nombre: dejar el que tiene" value="${esc(d.n||"")}" maxlength="140">
     <p class="crnote">Fecha de la ruta (déjala vacía para no cambiarla)${x.fe?` · ahora: ${(()=>{const m=/^(\d{4})-(\d{2})/.exec(x.fe);return m?MES[+m[2]-1]+" de "+m[1]:x.fe})()}`:""}</p>
@@ -161,7 +164,7 @@ document.addEventListener("click",async e=>{const dl=e.target.closest(".crdlg");
   if(e.target.closest(".crok"))guarda(dl)});
 document.addEventListener("change",async e=>{const dl=e.target.closest(".crdlg");if(!dl)return;
   if(e.target.name==="crb")dl.querySelector(".crotra").hidden=e.target.value!=="otra";
-  if(e.target.name==="crt")dl.querySelector(".crsubir").hidden=e.target.value!=="sub";
+  if(e.target.name==="crt"&&dl.querySelector(".crsubir"))dl.querySelector(".crsubir").hidden=e.target.value!=="sub";
   if(e.target.classList.contains("crf")){const f=e.target.files[0];if(!f)return;const p=dl.querySelector(".crfi");
     try{const ll=leeTrack(await f.text());if(ll.length<2)throw 0;TR=ll;p.textContent=`✅ ${f.name}: ${ll.length} puntos · ${kmDe(ll).toFixed(1).replace(".",",")} km`}
     catch(_){TR=null;p.textContent="⚠️ Ese archivo no tiene ningún recorrido. Prueba con otro GPX o KML."}}});
@@ -180,7 +183,7 @@ async function guarda(dl){const x=X,d={k:x.k,co:x.co,t:Date.now()};   // sin el 
   const t=(dl.querySelector("input[name=crt]:checked")||{}).value;
   if(t==="sin")d.tr="sin";
   else if(t==="sub"){if(TR)d.tr=JSON.stringify(TR);else if(DOC&&DOC.tr&&DOC.tr!=="sin")d.tr=DOC.tr;else{toast("Elige el archivo del track");return}}
-  const wq=dl.querySelector(".crwkq").checked,wk=(dl.querySelector(".crwk").value||"").trim();
+  const wq=!!(dl.querySelector(".crwkq")||{}).checked,wk=((dl.querySelector(".crwk")||{}).value||"").trim();
   if(wq)d.wk="-";else if(wk){if(!/^https?:\/\/\S*wikiloc\.\S+$/i.test(wk)){toast("Ese enlace no parece de Wikiloc");return}d.wk=wk}
   const n=(dl.querySelector(".crn").value||"").trim();if(n)d.n=n.slice(0,140);
   const f=(dl.querySelector(".crfe").value||"").trim();if(/^\d{4}-\d{2}$/.test(f))d.f=f;

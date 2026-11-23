@@ -354,6 +354,9 @@ function nivelCo(s){s=String(s||"");const m=/MIDE\s*\d\s*-\s*\d\s*-\s*\d\s*-\s*(
   const n=norm(s);if(/muy dificil|muy alta/.test(n))return"x";if(/dificil|^alta/.test(n))return"a";if(/moderad/.test(n))return"m";if(/facil|^baja/.test(n))return"b";return""}   // 18 nov: «Muy alta» aparte; también Baja/Moderada/Alta/Muy alta (correcciones a mano)
 // 23 nov 2026: blogs sin la fecha en la dirección (WordPress de Al filo de lo improbable): el año viene aparte (c.fy = {enlace: año}), sin mes
 const fyCo=(c,u)=>{const y=u&&c&&c.fy&&c.fy[u];return y?[0,y,""]:null};
+// 23 nov 2026: correcciones a mano de una entrada de blog sin track (c.bo = {enlace: {n, f, di, oc, o}}; lo pone el robot)
+const boCo=(c,u)=>(u&&c&&c.bo&&c.bo[u])||null;COLX.bo=boCo;
+const feBo=(c,u)=>{const b=boCo(c,u),m=b&&b.f&&/^(\d{4})-(\d{2})/.exec(b.f);return m?[0,m[1],m[2]]:null};COLX.feBo=feBo;
 const RUT=[];
 for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exec(r[4])||[])[1];const fe=/^(\d{4})(?:-(\d{2}))?/.exec(r[10]||"");RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:fe?+fe[1]:null,m:fe&&fe[2]?+fe[2]:null,gx:1,iv:/raqueta|nieve|invern/i.test(r[2]+" "+r[0])?1:0,nivd:nivelCo(r[5]),km:r[3]?r[3].replace(/\s*km/i," km"):"",de:dm?"+"+dm+" m":"",txt:norm(r[0]+" "+r[1]+" "+r[2])}));continue}
   const p=it.pp;if(!(/RUTA/i.test(p[7]||"")||/distancia\s*:/i.test(limpia(p[3]))))continue;
@@ -362,9 +365,9 @@ for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exe
 // 17 nov 2026: colaboradores sin capa de rutas (Camudando'l camín): cada entrada de su blog enlazada en sus cumbres sale también en Rutas (sin track;
 //  al tocarla se abre la ficha de esa cumbre, que ya enseña la entrada como ruta). Una sola fila por entrada; las que ya son ruta suya no se repiten.
 {const vistos=new Set(RUT.map(x=>x.pp&&x.pp[4]).concat(ALL.filter(x=>x.rr!=null).map(x=>x.co.r[x.rr][7])).filter(Boolean));
- for(const it of ALL){if(it.rr!=null||!it.pp||!it.co||(it.co.k||[]).includes("r"))continue;const p=it.pp,u=p[4]||"",dm=/\/(20\d\d)\/(\d\d)\//.exec(u)||fyCo(it.co,u);if(!dm||vistos.has(u))continue;vistos.add(u);
-   const t=((it.co.bt||{})[u]||"").replace(/^[^:]{3,60}:\s*/,m=>norm(m).includes(norm(it.co.n).slice(0,6))?"":m).trim()||it.c;
-   RUT.push(Object.assign(Object.create(it),{cox:1,blogco:1,c:t,p:[],y:+dm[1],m:dm[2]?+dm[2]:null,km:"",de:"",txt:norm(t+" "+it.c+" "+(it.r||""))}))}}
+ for(const it of ALL){if(it.rr!=null||!it.pp||!it.co||(it.co.k||[]).includes("r"))continue;const p=it.pp,u=p[4]||"",bo=boCo(it.co,u),dm=feBo(it.co,u)||/\/(20\d\d)\/(\d\d)\//.exec(u)||fyCo(it.co,u);if(!dm||vistos.has(u)||(bo&&bo.oc))continue;vistos.add(u);
+   const t=(bo&&bo.n)||((it.co.bt||{})[u]||"").replace(/^[^:]{3,60}:\s*/,m=>norm(m).includes(norm(it.co.n).slice(0,6))?"":m).trim()||it.c;
+   RUT.push(Object.assign(Object.create(it),{cox:1,blogco:1,c:t,p:[],y:+dm[1],m:dm[2]?+dm[2]:null,km:"",de:"",...(bo&&bo.di?{dl:bo.di,nivd:nivelCo(bo.di)}:{}),txt:norm(t+" "+it.c+" "+(it.r||""))}))}}
 COLX.rsrc="todas";
 COLX.isRuta=ci=>RUT.some(x=>x.ci===ci);
 COLX.rutasCo=()=>ALL.filter(x=>x.rr!=null);

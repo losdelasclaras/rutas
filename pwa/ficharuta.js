@@ -125,7 +125,8 @@ routeBody=function(r){
     otras:(otras.yo=routeTitle(r),otras(st[0],st[1],r.id,null))})};
 
 /* ---- rutas de colaboradores (colab.js llama aquí) ---- */
-window.FRUTA={pinta,perfilHTML,otras,coGuardada:(c,n)=>!!(MPI&&MPI.tracks().some(t=>t.src==="co"&&t.co===c.id&&t.n===n)),
+window.FRUTA={pinta,perfilHTML,otras,coGuardada:(c,n)=>!!(MPI&&MPI.tracks().some(t=>t.src==="co"&&!t.bl&&t.co===c.id&&t.n===n)),
+  blGuardada:(coid,u)=>!!(MPI&&MPI.tracks().some(t=>t.src==="co"&&t.bl&&t.co===coid&&t.u===u)),
   // cuando llega el track de un colaborador: Seguir, Guardar track, Cómo llegar, perfil y las otras rutas medidas desde su salida
   track(c,i,ll,g){const s=document.getElementById("sheet");if(!s||!s._cor||s._cor.c!==c||s._cor.i!==i||!s.querySelector(".fru"))return;
     s.querySelectorAll(".frtrk").forEach(x=>x.hidden=false);
@@ -204,6 +205,12 @@ document.addEventListener("click",e=>{
       COLX.ln(c,i).then(ll=>{const o={id:"co-"+Date.now().toString(36),src:"co",co:c.id,n,km:parseFloat(String(q[3]||"").replace(",","."))||null,u:q[7]||"",f:new Date().toISOString()};
         if(ll&&ll.length>1){o.pts=ll.map(p=>p.slice());if(MPI.desn)MPI.desn(o)}
         MPI.saveTracks([...MPI.tracks(),o]);gc.innerHTML=gRL(true);toast("Ruta guardada en Mis cosas")})};
+    if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go();return}
+  // ☆ Guardar ruta (entrada de blog sin track, 23 nov 2026): en Mis cosas como RUTA; al abrirla sale su ficha
+  const gb=e.target.closest("[data-frgrb]");if(gb){e.preventDefault();const s=document.getElementById("sheet"),b=s&&s._blg;if(!b||!b.co||!MPI)return;
+    const go=()=>{const ya=MPI.tracks().find(t=>t.src==="co"&&t.bl&&t.co===b.co.id&&t.u===b.u);
+      if(ya){MPI.saveTracks(MPI.tracks().filter(t=>t!==ya));gb.innerHTML=gRL(false);toast("Quitada de Mis cosas");return}
+      MPI.saveTracks([...MPI.tracks(),{id:"cob-"+Date.now().toString(36),src:"co",bl:1,co:b.co.id,n:b.t,u:b.u,f:new Date().toISOString()}]);gb.innerHTML=gRL(true);toast("Ruta guardada en Mis cosas")};
     if(window.cuentaOk&&!cuentaOk(go,"tracks"))return;go();return}
   // 📤 Compartir una entrada de blog sin track
   const sh=e.target.closest("[data-frshu]");if(sh){e.preventDefault();const u=sh.dataset.frshu,t=sh.dataset.frsht||"";
