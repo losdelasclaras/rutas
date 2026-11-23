@@ -63,8 +63,10 @@ if(enApp&&navigator.geolocation){const G=navigator.geolocation,gcp=G.getCurrentP
   const KF="ldc-yo-fresca",fake=f=>({coords:{latitude:f.lat,longitude:f.lon,accuracy:f.acc,altitude:null,altitudeAccuracy:null,heading:null,speed:null},timestamp:f.t});
   const fresca=()=>{try{const f=JSON.parse(sessionStorage.getItem(KF)||"null");return f&&Date.now()-f.t<120000?f:null}catch(e){return null}};
   let PARA="yo",ULT=0;
-  document.addEventListener("click",e=>{const t=e.target;PARA=t.closest("#b-pt")?"punto":t.closest("[data-cme],#b-cerca")?"cerca":t.closest("[data-ordgps],[data-ord]")?"orden":t.closest("[data-lnear]")?"listas":t.closest("#b-me")?"yo":PARA},true);
-  const pide=()=>{if(Date.now()-ULT<10000)return;ULT=Date.now();location.href="intent://ubicar?p="+PARA+"#Intent;scheme=ldcubicar;package=es.losdelasclaras.rutas;end"};
+  document.addEventListener("click",e=>{const t=e.target;PARA=t.closest("#b-pt")?"punto":t.closest("[data-cme],#b-cerca,.cdq [data-q=\"yo\"]")?"cerca":t.closest("[data-ordgps],[data-ord]")?"orden":t.closest("[data-lnear]")?"listas":t.closest("#b-me")?"yo":PARA},true);
+  // 23 nov 2026: «Cerca de mí» de Explorar (botón 🎯 del diálogo «Cerca de…») volvía al mapa: no se reconocía como «cerca». Ahora sí, y se vuelve a la misma pestaña (Rutas, Cumbres o Lugares)
+  const vistaE=()=>["rutas","cumbres","lugares"].find(k=>{const v=document.getElementById("v-"+k);return v&&!v.hidden});
+  const pide=()=>{if(Date.now()-ULT<10000)return;ULT=Date.now();try{const v=vistaE();if(v)localStorage.setItem("ldc-yo-vista",v);else localStorage.removeItem("ldc-yo-vista")}catch(e){}location.href="intent://ubicar?p="+PARA+"#Intent;scheme=ldcubicar;package=es.losdelasclaras.rutas;end"};
   G.getCurrentPosition=(ok,err,o)=>{const f=fresca();if(f){setTimeout(()=>ok&&ok(fake(f)),0);return}let hecho=false;
     gcp(p=>{if(!hecho){hecho=true;ok&&ok(p)}},()=>{},o);setTimeout(()=>{if(!hecho)pide()},1500)};
   G.watchPosition=(ok,err,o)=>{const f=fresca();let hubo=false;if(f){hubo=true;setTimeout(()=>ok&&ok(fake(f)),0)}
@@ -75,7 +77,7 @@ if(enApp&&navigator.geolocation){const G=navigator.geolocation,gcp=G.getCurrentP
     if(nada){toast("No he podido saber dónde estás. Mira que la ubicación del móvil esté encendida.");return}
     const f={lat:+m[1],lon:+m[2],acc:+m[3],t:Date.now()},para=m[5]||"yo";try{sessionStorage.setItem(KF,JSON.stringify(f))}catch(e){}
     store.set("ldc-ultpos",{lat:f.lat,lon:f.lon,t:f.t});
-    setTimeout(()=>{if(para==="cerca"&&window.CERCA)CERCA.yo();
+    setTimeout(()=>{if(para==="cerca"&&window.CERCA){let v=null;try{v=localStorage.getItem("ldc-yo-vista")}catch(e){}CERCA.yo(v||"rutas")}
       else if(para==="punto"&&window.MISPUNTOS&&MISPUNTOS.gps)MISPUNTOS.gps();
       else if(para==="orden"){showView("rutas");renderList()}
       else if(para==="listas"){showView("mios");setTimeout(()=>{const b=document.querySelector("[data-lnear]");if(b)b.click()},300)}
