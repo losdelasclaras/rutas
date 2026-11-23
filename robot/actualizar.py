@@ -422,6 +422,33 @@ def _geojson_colab(co, g):
             if u not in ti: ti[u] = (cim or nom) + (f' desde {lug}' if lug and st != 'ferrata' else '')
     return pts, ti, fy
 
+def tracks_geojson(co, new):
+    """23 nov 2026: Al filo de lo improbable sube sus GPX a su carpeta de Drive, con el nombre de la entrada del blog
+    (…/mendiak-udalatx/ -> mendiak-udalatx.gpx). Cada uno se pega a SU ruta (la de esa entrada): track, km y desnivel.
+    Vale también el título de la ruta. Los que no casan se quedan en su capa de Tracks y se avisa en el informe.
+    La clave de la ruta (r[12] = su entrada) no cambia, así las correcciones a mano siguen valiendo."""
+    def sl(x):
+        x = unicodedata.normalize('NFD', str(x)); x = ''.join(ch for ch in x if unicodedata.category(ch) != 'Mn').lower()
+        return re.sub(r'[^a-z0-9]+', '-', x).strip('-')
+    rs = new.get('r') or []
+    por = {}
+    for i, r in enumerate(rs):
+        while len(r) < 13: r.append('')
+        if not r[12]: r[12] = r[7] or r[0]
+        u = re.sub(r'\.html?$', '', (r[7] or '').split('?')[0].split('#')[0].rstrip('/'))
+        for k in (sl(u.rsplit('/', 1)[-1]) if u else '', sl(r[0])):
+            if k: por.setdefault(k, i)
+    puestos, sin = 0, []
+    for x in new.get('d', []):
+        fid, nom, ll = x[0], x[1], x[2]
+        i = por.get(sl(nom))
+        if i is None or len(ll) < 2: sin.append(nom); continue
+        r = rs[i]; g = _gx_de(_sin_saltos(ll))
+        r[8] = [q[:3] for q in g['ln']]; r[3] = f"{g['km']:.1f}".replace('.', ',') + ' km'; r[4] = f"{g['up']} m" if g['up'] else ''
+        r[11] = 'drive:' + fid; puestos += 1
+    if puestos or sin:
+        log(f'🧵 Tracks de {co.get("nombre") or co["id"]}: {puestos} puestos en su ruta' + (f'; sin ruta (¿nombre del archivo?): {", ".join(sin[:10])}' if sin else ''))
+
 def _gpx_linea(b):
     ll = [[round(float(a), 5), round(float(o), 5)] for a, o in re.findall(r'<(?:trkpt|rtept)[^>]*?lat="([-\d.]+)"[^>]*?lon="([-\d.]+)"', b)]
     ll += [[round(float(a), 5), round(float(o), 5)] for o, a in re.findall(r'<(?:trkpt|rtept)[^>]*?lon="([-\d.]+)"[^>]*?lat="([-\d.]+)"', b)]
@@ -1142,7 +1169,10 @@ def colaboradores():
                 else: log(f'⚠ No he podido leer la carpeta de Drive del colaborador {co["id"]} (¿compartida con «Cualquier persona con el enlace»?).')
             except Exception as e:
                 log(f'⚠ Drive del colaborador {co["id"]}: {e}')
-        if co.get('drive_carpeta') and not co.get('mapas_rutas') and not co.get('wp_rutas'):
+        if co.get('geojson_drive') and co.get('drive_carpeta'):
+            try: tracks_geojson(co, new)
+            except Exception as e: log(f'⚠ Tracks de Drive de {co["id"]}: {e}')
+        if co.get('drive_carpeta') and not co.get('mapas_rutas') and not co.get('wp_rutas') and not co.get('geojson_drive'):
             try:
                 rutas_drive(co, new)
                 for p in new.get('p', []):   # los enlaces cumbre → ruta se rehacen cada noche (el orden de Drive puede cambiar)
