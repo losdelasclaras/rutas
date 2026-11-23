@@ -32,6 +32,7 @@ for(const c of CO)if(c.ic)for(const p of c.p)if(c.ic[p[6]])p.icat=c.ic[p[6]];
 function catCo(p){const n=p[0]||"",ic=p[6]||"",f=(p[7]||"").toUpperCase(),c=catOf(n);
   if(p.icat){if(p.icat==="cumbre")return c==="collado"?"collado":"cumbre";   // cumbre por su icono; un paso o portillín, collado
     return c!=="otros"&&c!=="cumbre"?c:p.icat}                               // si no, lo que diga el nombre (cueva, braña…) o el icono
+  if(c==="escalada"||/ESCALADA|BOULDER/.test(f))return "escalada";   // 23 nov 2026: escuelas de escalada (por el nombre o por la capa)
   if(/MONTA/.test(f))return /^(ruta|senda|camino|circular)\b/i.test(n)?(c==="otros"?"senda":c):"cumbre";
   if(/SENDERISMO/.test(f))return c==="otros"?"senda":c;
   if(/CASCADA|LAGO/.test(f))return ["agua","cascada","cueva"].includes(c)?c:"cascada";
