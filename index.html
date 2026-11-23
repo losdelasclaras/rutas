@@ -419,6 +419,10 @@ const astZ=r=>r.lon<-6.05?"ast-oc":r.lon>-5.4?"ast-or":"ast-ce";
 const ASTZ=[["ast-or","Asturias oriente"],["ast-ce","Asturias centro"],["ast-oc","Asturias occidente"]];
 const F={reg:"todas",year:"todos",km:"",de:"",ex:"",co:"",nw:"",iv:"",pa:"",wz:null};
 const DIFN={"baja":"Baja","moderada":"Moderada","alta":"Alta","muy-alta":"Muy alta"};
+// 23 nov 2026 (pedido por BertoXuan): la dificultad también en las filas de Rutas, para ver de un vistazo si está puesta
+const DIFR={b:"🟢 Baja",m:"🟡 Moderada",a:"🔴 Alta",x:"⚫ Muy alta"};
+const difK=r=>r.nivd!=null?r.nivd:({baja:"b",moderada:"m",alta:"a","muy-alta":"x"})[String(r.dl||"").toLowerCase()]||"";
+const difTag=r=>{const k=difK(r);return k&&DIFR[k]?`<i class="dft" style="font-style:normal;font-weight:700;white-space:nowrap">${DIFR[k]}</i> · `:""};
 const KM={a:[0,10],b:[10,15],c:[15,20],d:[20,999]}, DE={a:[0,600],b:[600,1000],c:[1000,1500],d:[1500,9999]};
 const inR=(v,rg)=>v!=null&&v>=rg[0]&&v<rg[1];
 function routeOk(r){return (!window.RFOK||RFOK(r))&& (!F.wz||F.wz.ids.has(r.id))&&(F.reg==="todas"||(F.reg.startsWith("ast-")?isAst(r)&&astZ(r)===F.reg:r.r===F.reg||(r.rs||[]).includes(F.reg)))&&(!F.pa||(r.pa||[]).includes(F.pa))&&(!F.iv||(F.iv==="si"?r.iv:!r.iv))&&(F.year==="todos"||String(r.y)===F.year)
@@ -628,7 +632,7 @@ function nearestRoutes(lat,lon,n,excl){return R.filter(r=>r.id!==excl&&routeOk(r
 const fmtKm=v=>v.toLocaleString("es-ES",{maximumFractionDigits:1})+" km";
 const thumbHTML=r=>r.f!=null?`<img class="thumb" src="fotos/${r.f}.jpg" alt="" loading="lazy">`:`<span class="thumb none" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20l7-12 4 6 3-4 6 10z"/></svg></span>`;
 function rowHTML(r,extra,compact){const nums=[r.km?fmtKm(r.km):"",r.de?"+"+r.de.toLocaleString("es-ES")+" m":""].filter(Boolean).join(" · ");
- return `<button class="row${compact?" compact":""}" data-r="${r.id}">${compact?"":thumbHTML(r)}<div class="t"><b>${esc(routeTitle(r))}</b><span><em class="cosrc" style="font-style:normal;font-weight:800;color:#c3262e">Los de las Claras</em> · ${r.iv?`<i class="ivm" style="font-style:normal">❄ Invernal</i> · `:""}${r.y?(r.m?MESES[r.m]+" ":"")+r.y:"Sin fecha"} · ${esc(r.r)}${extra?" · "+extra:""}</span></div><span class="alt">${nums||fmtA(r.a)}</span></button>`}
+ return `<button class="row${compact?" compact":""}" data-r="${r.id}">${compact?"":thumbHTML(r)}<div class="t"><b>${esc(routeTitle(r))}</b><span><em class="cosrc" style="font-style:normal;font-weight:800;color:#c3262e">Los de las Claras</em> · ${difTag(r)}${r.iv?`<i class="ivm" style="font-style:normal">❄ Invernal</i> · `:""}${r.y?(r.m?MESES[r.m]+" ":"")+r.y:"Sin fecha"} · ${esc(r.r)}${extra?" · "+extra:""}</span></div><span class="alt">${nums||fmtA(r.a)}</span></button>`}
 // enlace directo a una ruta: https://losdelasclaras.github.io/rutas/#r-2023-02-lago-del-valle-invernal
 const APPURL="https://losdelasclaras.github.io/rutas/";
 const slug=r=>r.u?"r-"+r.u.replace(/^https?:\/\/[^/]+\//,"").replace(/\.html$/,"").replace(/[^A-Za-z0-9]+/g,"-").replace(/-+$/,"").toLowerCase():null;
@@ -1497,7 +1501,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-e0e99296.json", "ln": "colab-ln-fed57f5a.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-39e61426.json", "ln": "colab-ln-fed57f5a.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -1911,7 +1915,7 @@ COLX.near=(lat,lon)=>F.reg==="todas"&&!nExtra()&&!F.wz?RUT.filter(x=>!window.RFO
 // 20 nov 2026: «🧵 Track» en la fila si la ruta no tiene entrada de blog (como en su ficha)
 COLX.rrow=(x,extra)=>{const de=x.de?(/^\+/.test(x.de)?x.de:"+"+x.de):"",nums=[x.km,de].filter(Boolean).join(" · ");
   const fo=x.pp?x.pp[5]:(x.rr!=null?x.co.r[x.rr][9]:"");
-  return `<button class="row src-co" style="--cc:${x.co.c}" data-cor="${x.ci}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:`<span style="display:grid;place-items:center;width:56px;flex:none">${COLX.ico(x)}</span>`}<div class="t"><b>${esc(x.c)}</b><span>${x.rr!=null&&!x.co.r[x.rr][7]?`<em class="trktag" style="font-style:normal;font-weight:800;font-size:.85em;color:#7b2cbf;background:#f1e8fb;border-radius:6px;padding:0 5px;margin-right:4px" title="Solo el recorrido, sin reportaje en el blog">🧵 Track</em>`:""}<em class="cosrc" style="color:${x.co.c}">${esc(x.co.n)}</em> · ${x.y?(x.m?MESES[x.m]+" ":"")+x.y:"Sin fecha"} · ${esc(x.r)}${extra?" · "+esc(extra):""}</span></div><span class="alt">${esc(nums)}</span></button>`};
+  return `<button class="row src-co" style="--cc:${x.co.c}" data-cor="${x.ci}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:`<span style="display:grid;place-items:center;width:56px;flex:none">${COLX.ico(x)}</span>`}<div class="t"><b>${esc(x.c)}</b><span>${x.rr!=null&&!x.co.r[x.rr][7]?`<em class="trktag" style="font-style:normal;font-weight:800;font-size:.85em;color:#7b2cbf;background:#f1e8fb;border-radius:6px;padding:0 5px;margin-right:4px" title="Solo el recorrido, sin reportaje en el blog">🧵 Track</em>`:""}<em class="cosrc" style="color:${x.co.c}">${esc(x.co.n)}</em> · ${typeof difTag==="function"?difTag(x):""}${x.y?(x.m?MESES[x.m]+" ":"")+x.y:"Sin fecha"} · ${esc(x.r)}${extra?" · "+esc(extra):""}</span></div><span class="alt">${esc(nums)}</span></button>`};
 if(typeof renderList==="function")renderList();
 renderCols()}
 if(window.LISTAS)LISTAS.render();
@@ -7241,5 +7245,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="23/11 20:41 · e02117";window.LDC_BUILD="e02117915f";window.LDC_FUNC="0107e85307";(function(){const B="e02117915f";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="23/11 20:54 · 4a4913";window.LDC_BUILD="4a491371bb";window.LDC_FUNC="ea1755c513";(function(){const B="4a491371bb";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
