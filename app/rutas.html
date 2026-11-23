@@ -331,7 +331,7 @@ const km=(a,b)=>{const R0=6371,toR=Math.PI/180,dl=(b.lat-a.lat)*toR,dn=(b.lon-a.
 
 /* ---------- tipos de lugar ---------- */
 // 23 nov 2026: escuelas y zonas de escalada (Camudando las mete en su mapa): por el nombre, delante de todo («Escuela de escalada de la Foz…» no es una foz)
-const CATS=[["escalada","Escalada",/(?:^|[\s(/-])(escalada|escaladas|boulder|búlder|bulder|rocódromo|rocodromo|bloque de escalada)(?=$|[\s,.)/-])/i],
+const CATS=[["escalada","Escalada",/(?:^|[\s(/'’-])(escalada|escaladas|boulder|búlder|bulder|rocódromo|rocodromo|bloque de escalada)(?=$|[\s,.)/-])/i],
  ["brana","Brañas y majadas",/(?:^|[\s(/-])(braña|brañas|majada|majdada|mayada|mayá|mayau|mayáu|invernales|prau|vega|puertos de verano|panera)(?=$|[\s,.)/-])/i],
  ["foz","Foces, canales y sedos",/(?:^|[\s(/-])(foz|foces|foix|garganta|desfiladero|canal|canalón|sedo|sedos|travesedo|olla|jour|hierbas altas|cañón|faja|fajas|clavijas|forau)(?=$|[\s,.)/-])/i],
  ["agua","Lagos y fuentes",/(?:^|[\s(/-])(lago|lagos|laguna|lagunas|llaguna|llagos|nacimiento|fuente|fuentes|oyu|pozo|ibón|ibon|ibones|ibonet|estany|estanque|stany|lac|lacs|embalse|étang|lago di)(?=$|[\s,.)/-])/i],
