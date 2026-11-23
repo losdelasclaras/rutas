@@ -122,7 +122,7 @@ for(const c of CO){for(const[k]of KC(c))if(LAY[`co_${c.id}_${k}`]===undefined||n
    Cumbres está encendida; si no, el del primer colaborador encendido. Al tocarlo, la ficha dice «También en …» con los demás. */
 // 12 nov 2026: «Peña Ubiña Pequeña» no es «Peña Ubiña»: si una lleva Pequeña/Grande/Norte/Sur… y la otra no, son distintas
 const DIST=/^(pequena|pequeno|grande|norte|sur|este|oeste|oriental|occidental|mayor|menor|chica|chico|alta|alto|baja|bajo|primera|segunda|central|vieja|nueva)$/;
-const distW=n=>nk(n).split(" ").filter(w=>DIST.test(w)).sort().join(" ");
+const DWM=new Map(),distW=n=>{let v=DWM.get(n);if(v===undefined){v=nk(n).split(" ").filter(w=>DIST.test(w)).sort().join(" ");DWM.set(n,v)}return v};
 const distintas=(a,b)=>distW(a)!==distW(b);
 const CUMM=[];for(const c of CO)for(const m of (MKG[c.id+"_c"]||[]))CUMM.push(m);
 {const pal=n=>new Set(norm(n).replace(/[^a-z0-9 ]+/g," ").split(" ").filter(w=>w.length>=4&&!/^(pico|pena|picu|monte|alto|cueto|torre|desde)$/.test(w)));
@@ -289,7 +289,7 @@ const kmd=(a,b)=>Math.hypot(a.lat-b.lat,(a.lon-b.lon)*.73)*111;
 // Peña Reonda = Peña Redonda, Peña Llabres (Cabeza Brañueta) = Cabeza Brañueta. Solo entre puntos a menos de 600 m y del mismo tipo.
 const GENW=/^(pico|picu|picos|pena|penas|penes|cantu|canto|alto|altu|cuetu|cueto|torre|torres|sedo|seu|cueva|cova|lago|lagos|lagu|laguna|lagunas|llaguna|brana|branas|majada|mayada|hayedo|fayeu|fayedo|faedo|foz|cascada|cascadas|salto|saltu|senda|ruta|camin|camino|sierra|collado|collau|pasada|pasa|texedal|tejeda|tejedal|bosque|pozo|ibon|ibones|mirador|canal|monte|puerto|ermita|fuente|fonte|de|del|la|las|el|los|l|d|y|a|al|por|desde|circular|en)$/,ARTW=/^(de|del|la|las|el|los|l|d|y|a|al|en)$/;
 const nucW=(n,re)=>nk(n).replace(/[^a-z0-9 ]+/g," ").split(/\s+/).filter(w=>w&&!re.test(w)).map(w=>w.replace(/ll/g,"y").replace(/x/g,"j").replace(/u$/,"o")).join("");
-const nucs=n=>{const o=new Set();for(const a of [n,...n.split(/[()\/]|\s[-–]\s/)])for(const re of [GENW,ARTW]){const x=nucW(a,re);if(x.length>=3)o.add(x)}return[...o]};
+const NUCM=new Map(),nucs=n=>NUCM.get(n)||(NUCM.set(n,nucs0(n)),NUCM.get(n)),nucs0=n=>{const o=new Set();for(const a of [n,...n.split(/[()\/]|\s[-–]\s/)])for(const re of [GENW,ARTW]){const x=nucW(a,re);if(x.length>=3)o.add(x)}return[...o]};
 const levN=(a,b)=>{let p=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){const c=[i];for(let j=1;j<=b.length;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[b.length]};
 const mismoN=(a,b)=>{const B=nucs(b);return nucs(a).some(x=>B.includes(x))};
 const pareN=(a,b)=>{const A=nucs(a),B=nucs(b);for(const x of A)for(const y of B){if(x===y)return true;const L=Math.max(x.length,y.length);if(L>=6&&1-levN(x,y)/L>=.8)return true}return false};
