@@ -325,7 +325,8 @@ const TIPOS={cumbre:["⛰","Cumbre","#2e7d32"],lugar:["📍","Lugar","#00838f"],
 function tipoHTML(k,quien){const t=TIPOS[k];if(!t)return"";return`<div class="tipo" style="--tc:${t[2]}">${t[0]} ${t[1]}${quien?` <i>· ${esc(quien)}</i>`:""}</div>`}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmtA=a=>a? a.toLocaleString("es-ES")+" m":"";
-const norm=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+// 23 nov 2026: con memoria (se llamaba cientos de miles de veces al arrancar con los puntos de Cienfuegos)
+const NORMM=new Map(),norm=s=>{let v=NORMM.get(s);if(v===undefined){v=s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();NORMM.set(s,v)}return v};
 const km=(a,b)=>{const R0=6371,toR=Math.PI/180,dl=(b.lat-a.lat)*toR,dn=(b.lon-a.lon)*toR;const h=Math.sin(dl/2)**2+Math.cos(a.lat*toR)*Math.cos(b.lat*toR)*Math.sin(dn/2)**2;return 2*R0*Math.asin(Math.sqrt(h))};
 
 /* ---------- tipos de lugar ---------- */
@@ -636,7 +637,7 @@ function nearAt(lat,lon,label){
 }
 /* buscador de lugares: pueblos + puntos del mapa */
 const TIPO={c:"Ciudad",t:"Villa",v:"Pueblo",h:"Aldea"};
-const nk=s=>norm(s).replace(/[^a-z0-9ñ ]+/g," ").replace(/\s+/g," ").trim();
+const NKM=new Map(),nk=s=>{let v=NKM.get(s);if(v===undefined){v=norm(s).replace(/[^a-z0-9ñ ]+/g," ").replace(/\s+/g," ").trim();NKM.set(s,v)}return v};
 const SITES=TOWNS.map(p=>({n:p[0],alt:p[4]||"",k:TIPO[p[1]],lat:p[2],lon:p[3],o:{c:0,t:1,v:2,h:3}[p[1]]}))
   .concat(P.map(p=>({n:p.c,alt:"",k:p.a?"Cumbre":"Lugar del mapa",lat:p.lat,lon:p.lon,o:2.5})));
 SITES.forEach(s=>{s.q=[s.n,...s.alt.split(";")].filter(Boolean).map(nk)});
