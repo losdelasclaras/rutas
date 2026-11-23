@@ -133,7 +133,12 @@ const CUMM=[];for(const c of CO)for(const m of (MKG[c.id+"_c"]||[]))CUMM.push(m)
  const mismaCo=(a,b)=>{const x=a.getLatLng(),y=b.getLatLng();return norm(a.__n)===norm(b.__n)&&Math.hypot(x.lat-y.lat,(x.lng-y.lng)*.73)*111<.3};
  CUMM.forEach((m,i)=>{for(let j=0;j<i;j++){const n=CUMM[j];if(n.__co!==m.__co?igual(m,n):mismaCo(m,n)){m.__sup=n.__sup||n;break}}})}
 const grpDe=m=>{if(m.__grp===undefined){const it=window.COLX&&COLX.byP&&COLX.byP(m.__p);if(!it)return null;m.__grp=it.par||null}return m.__grp};
-const tapado=m=>{if(!m.__cum)return false;const r=m.__sup;
+// 23 nov 2026: también los LUGARES (Braña de Mumián salía dos veces en el mapa: la del grupo y la de Cienfuegos)
+const itDe=m=>{if(m.__it===undefined){const it=window.COLX&&COLX.byP&&COLX.byP(m.__p);if(!it)return null;m.__it=it}return m.__it};
+const tapado=m=>{if(!m.__cum){const it=itDe(m);if(!it)return false;
+    if(it.par&&LAY.spots&&!LAY.solo)return true;   // ya lo enseña el grupo
+    const d=it.dup;return !!(d&&d.co&&G[d.co.id+"_l"]&&map.hasLayer(G[d.co.id+"_l"]))}
+  const r=m.__sup;
   if(LAY.peaks&&!LAY.solo&&(grpDe(m)||(r&&grpDe(r))))return true;     // ya la enseña el grupo
   return !!(r&&G[r.__co.id+"_c"]&&map.hasLayer(G[r.__co.id+"_c"]))};   // ya la enseña otro colaborador
 const grupoDe=m=>CUMM.filter(x=>x!==m&&(x.__sup||x)===(m.__sup||m));
