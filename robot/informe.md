@@ -1,6 +1,6 @@
-# Informe del robot · 23/11/2026 20:23
+# Informe del robot · 23/11/2026 20:32
 
-**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; correcciones a mano; colaborador Caleyando con Cienfuegos
+**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Caleyando con Cienfuegos
 
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
@@ -13,7 +13,7 @@
 - 🗺️ Mapa: 701 puntos (0 nuevos o movidos, 0 quitados).
 - Fotos de tu mapa: 228, sin cambios.
 - Drive: sin tracks nuevos.
-- ✏️ Correcciones a mano: 33 en total · 1 nuevas o cambiadas
+- Correcciones a mano: 33 (sin cambios).
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 433 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - 📝 Blog de Rutinas Varias: 11 rutas emparejadas con su entrada (146 de 406 con enlace al blog; índice con 315 entradas).
@@ -33,6 +33,7 @@
 - ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
+- ⚠ Drive del colaborador c5: HTTP Error 401: Unauthorized
 - 📷 Fotos del colaborador c5: 0 nuevas, 839 en total, 1 no se han podido bajar (<urlopen error unknown url type: hhttps>)
 - Colaborador «Al filo de lo improbable»: sin cambios.
 -    (quitados 492 puntos de publicidad: capas o nombres que no queremos)
@@ -41,5 +42,4 @@
 - 📊 Datos de las rutas de Caleyando con Cienfuegos: 658 de 701 puntos con datos de su entrada, 1 no han respondido
 - 🤝 Colaborador «Caleyando con Cienfuegos»: 815 puntos, 0 tracks.
 - 📅 Salidas de la web de Civilu: 0 próximas
-- 🧵 Track añadido a «Concha de Artedo a San Pedro de la Ribera (Cudillero)» (10.8 km, +150 m)
 - App regenerada: 382 rutas, 170 con track.
