@@ -1,6 +1,6 @@
-# Informe del robot · 23/11/2026 05:36
+# Informe del robot · 23/11/2026 09:48
 
-**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Caleyando con Cienfuegos; regeneración forzada
+**Cambios:** foto recuperada; foto recuperada; mapa: 1 puntos nuevos o cambiados; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos; regeneración forzada
 
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
@@ -12,7 +12,8 @@
 - 🔎 «Los Fontanes norte y sur desde Tuiza»: sin dificultad. Texto del cuadro: « Arriba (Lena) por la vega de Brañalluenga y el refugio del Meicín hasta la Forqueta del Portillín (2.065 m) y, por el Canalón del Buey, al Fontán Sur (2.408 m) y al Fontán Norte (2.417 m), techo del concejo de Quirós. 📏 12 km Ida y vuelta 📈 1.200 m Desnivel acumulado 🏔️ 2.417 m Fontán Norte ⛰️ 2 cimas Fontán Sur y Fontán Norte ⚡ Pedrera Canalón del Buey, casi 300 m 🔄 Ida y vuelta Desde Tuiza de Arriba · 1.230 m 📍 Tuiza de Arriba (Lena, Asturias) ↗ 🗺️ Macizo de Ubiña · Los Fontanes 📅 Agosto de 2010 📲 Descargar el track en Wikiloc --> Salimos de Tuiza de Arriba por la vega de Brañalluenga hasta»
 - 📷 «La Senda de las Merinas y los Castillines (Travesía Cubilla-Tuiza)»: foto recuperada
 - Blog: sin entradas nuevas.
-- 🗺️ Mapa: 695 puntos (0 nuevos o movidos, 0 quitados).
+- 🗺️ Mapa: 695 puntos (1 nuevos o movidos, 1 quitados).
+-    + Cascada de La Aguamiexa o Llamera
 - Fotos de tu mapa: 203, sin cambios.
 - Drive: sin tracks nuevos.
 - Correcciones a mano: 32 (sin cambios).
@@ -26,9 +27,9 @@
 - 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (3): la-ercina-cangues-donis-verdilluenga-trea-cain-valdion-culie · Salgueiro_Climb · Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
 - ⛰ Camudando'l camín: 34 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ✏️ Camudando'l camín: 23 rutas con corrección a mano
-- Colaborador «Camudando'l camín»: sin cambios.
+- 🤝 Colaborador «Camudando'l camín»: 151 puntos, 24 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
--    (42 peticiones a su web en 1.3 min)
+-    (42 peticiones a su web en 1.2 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
 - ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
