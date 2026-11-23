@@ -379,7 +379,8 @@ const TIPOS={cumbre:["⛰","Cumbre","#2e7d32"],lugar:["📍","Lugar","#00838f"],
 function tipoHTML(k,quien){const t=TIPOS[k];if(!t)return"";return`<div class="tipo" style="--tc:${t[2]}">${t[0]} ${t[1]}${quien?` <i>· ${esc(quien)}</i>`:""}</div>`}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmtA=a=>a? a.toLocaleString("es-ES")+" m":"";
-const norm=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+// 23 nov 2026: con memoria (se llamaba cientos de miles de veces al arrancar con los puntos de Cienfuegos)
+const NORMM=new Map(),norm=s=>{let v=NORMM.get(s);if(v===undefined){v=s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();NORMM.set(s,v)}return v};
 const km=(a,b)=>{const R0=6371,toR=Math.PI/180,dl=(b.lat-a.lat)*toR,dn=(b.lon-a.lon)*toR;const h=Math.sin(dl/2)**2+Math.cos(a.lat*toR)*Math.cos(b.lat*toR)*Math.sin(dn/2)**2;return 2*R0*Math.asin(Math.sqrt(h))};
 
 /* ---------- tipos de lugar ---------- */
@@ -757,7 +758,7 @@ function nearAt(lat,lon,label){
 }
 /* buscador de lugares: pueblos + puntos del mapa */
 const TIPO={c:"Ciudad",t:"Villa",v:"Pueblo",h:"Aldea"};
-const nk=s=>norm(s).replace(/[^a-z0-9ñ ]+/g," ").replace(/\s+/g," ").trim();
+const NKM=new Map(),nk=s=>{let v=NKM.get(s);if(v===undefined){v=norm(s).replace(/[^a-z0-9ñ ]+/g," ").replace(/\s+/g," ").trim();NKM.set(s,v)}return v};
 const SITES=TOWNS.map(p=>({n:p[0],alt:p[4]||"",k:TIPO[p[1]],lat:p[2],lon:p[3],o:{c:0,t:1,v:2,h:3}[p[1]]}))
   .concat(P.map(p=>({n:p.c,alt:"",k:p.a?"Cumbre":"Lugar del mapa",lat:p.lat,lon:p.lon,o:2.5})));
 SITES.forEach(s=>{s.q=[s.n,...s.alt.split(";")].filter(Boolean).map(nk)});
@@ -1493,7 +1494,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-92105c45.json", "ln": "colab-ln-119ab05c.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-97650d0d.json", "ln": "colab-ln-119ab05c.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -1614,7 +1615,7 @@ for(const c of CO){for(const[k]of KC(c))if(LAY[`co_${c.id}_${k}`]===undefined||n
    Cumbres está encendida; si no, el del primer colaborador encendido. Al tocarlo, la ficha dice «También en …» con los demás. */
 // 12 nov 2026: «Peña Ubiña Pequeña» no es «Peña Ubiña»: si una lleva Pequeña/Grande/Norte/Sur… y la otra no, son distintas
 const DIST=/^(pequena|pequeno|grande|norte|sur|este|oeste|oriental|occidental|mayor|menor|chica|chico|alta|alto|baja|bajo|primera|segunda|central|vieja|nueva)$/;
-const distW=n=>nk(n).split(" ").filter(w=>DIST.test(w)).sort().join(" ");
+const DWM=new Map(),distW=n=>{let v=DWM.get(n);if(v===undefined){v=nk(n).split(" ").filter(w=>DIST.test(w)).sort().join(" ");DWM.set(n,v)}return v};
 const distintas=(a,b)=>distW(a)!==distW(b);
 const CUMM=[];for(const c of CO)for(const m of (MKG[c.id+"_c"]||[]))CUMM.push(m);
 {const pal=n=>new Set(norm(n).replace(/[^a-z0-9 ]+/g," ").split(" ").filter(w=>w.length>=4&&!/^(pico|pena|picu|monte|alto|cueto|torre|desde)$/.test(w)));
@@ -1781,7 +1782,7 @@ const kmd=(a,b)=>Math.hypot(a.lat-b.lat,(a.lon-b.lon)*.73)*111;
 // Peña Reonda = Peña Redonda, Peña Llabres (Cabeza Brañueta) = Cabeza Brañueta. Solo entre puntos a menos de 600 m y del mismo tipo.
 const GENW=/^(pico|picu|picos|pena|penas|penes|cantu|canto|alto|altu|cuetu|cueto|torre|torres|sedo|seu|cueva|cova|lago|lagos|lagu|laguna|lagunas|llaguna|brana|branas|majada|mayada|hayedo|fayeu|fayedo|faedo|foz|cascada|cascadas|salto|saltu|senda|ruta|camin|camino|sierra|collado|collau|pasada|pasa|texedal|tejeda|tejedal|bosque|pozo|ibon|ibones|mirador|canal|monte|puerto|ermita|fuente|fonte|de|del|la|las|el|los|l|d|y|a|al|por|desde|circular|en)$/,ARTW=/^(de|del|la|las|el|los|l|d|y|a|al|en)$/;
 const nucW=(n,re)=>nk(n).replace(/[^a-z0-9 ]+/g," ").split(/\s+/).filter(w=>w&&!re.test(w)).map(w=>w.replace(/ll/g,"y").replace(/x/g,"j").replace(/u$/,"o")).join("");
-const nucs=n=>{const o=new Set();for(const a of [n,...n.split(/[()\/]|\s[-–]\s/)])for(const re of [GENW,ARTW]){const x=nucW(a,re);if(x.length>=3)o.add(x)}return[...o]};
+const NUCM=new Map(),nucs=n=>NUCM.get(n)||(NUCM.set(n,nucs0(n)),NUCM.get(n)),nucs0=n=>{const o=new Set();for(const a of [n,...n.split(/[()\/]|\s[-–]\s/)])for(const re of [GENW,ARTW]){const x=nucW(a,re);if(x.length>=3)o.add(x)}return[...o]};
 const levN=(a,b)=>{let p=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){const c=[i];for(let j=1;j<=b.length;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[b.length]};
 const mismoN=(a,b)=>{const B=nucs(b);return nucs(a).some(x=>B.includes(x))};
 const pareN=(a,b)=>{const A=nucs(a),B=nucs(b);for(const x of A)for(const y of B){if(x===y)return true;const L=Math.max(x.length,y.length);if(L>=6&&1-levN(x,y)/L>=.8)return true}return false};
@@ -7194,5 +7195,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="23/11 05:31 · e1a2cb";window.LDC_BUILD="e1a2cbdfd7";window.LDC_FUNC="4a448ac4f4";(function(){const B="e1a2cbdfd7";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="23/11 05:45 · 5586e8";window.LDC_BUILD="5586e81cc2";window.LDC_FUNC="525e6b3af6";(function(){const B="5586e81cc2";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
