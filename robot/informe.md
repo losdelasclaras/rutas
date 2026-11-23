@@ -1,7 +1,9 @@
-# Informe del robot · 23/11/2026 10:01
+# Informe del robot · 23/11/2026 10:50
 
-**Cambios:** foto recuperada; foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Caleyando con Cienfuegos; regeneración forzada
+**Cambios:** foto recuperada; foto recuperada; mapa: 4 puntos nuevos o cambiados; fotos del mapa: 6 nuevas, 0 cambiadas, 0 quitadas; colaborador Caleyando con Cienfuegos; regeneración forzada
 
+- ✏️ «Al Canellín por antiguos sedos beyuscos»: completado dif = Muy alta
+- ✏️ «Valdepino y Traviesa de la Jastia desde Angón»: completado km = 15,4
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
 - 🔎 «De La Redondina a Tajadura (LA AGRESTE PEÑAMELLERA PARTE II)»: sin dificultad. Texto del cuadro: «pre buscando el camino. El final es para disfrutarlo: el mirador del Coterín del Toral , la braña de las Gatunas, el atardecer en la majada de Tajadura y la bajada por la canal del Jorcao hasta la carretera de Tresviso. 📏 7,5 km Distancia 📈 +1.100 m Desnivel de subida 📉 −400 m Desnivel de bajada 🏔️ 1.204 m Collado La Piedra 💧 260 m Las Mestas, el punto más bajo ⬅️ Travesía Tramo 2 de 2 ⬅️ Volver al tramo 1 Este tramo continúa la aventura que empezamos en el tramo 1, de Tajadura a la Redondina . Atravesamos parajes agrestes, majadas solitarias y bosques impresionantes, que piden atención a la o»
@@ -12,8 +14,17 @@
 - 🔎 «Los Fontanes norte y sur desde Tuiza»: sin dificultad. Texto del cuadro: « Arriba (Lena) por la vega de Brañalluenga y el refugio del Meicín hasta la Forqueta del Portillín (2.065 m) y, por el Canalón del Buey, al Fontán Sur (2.408 m) y al Fontán Norte (2.417 m), techo del concejo de Quirós. 📏 12 km Ida y vuelta 📈 1.200 m Desnivel acumulado 🏔️ 2.417 m Fontán Norte ⛰️ 2 cimas Fontán Sur y Fontán Norte ⚡ Pedrera Canalón del Buey, casi 300 m 🔄 Ida y vuelta Desde Tuiza de Arriba · 1.230 m 📍 Tuiza de Arriba (Lena, Asturias) ↗ 🗺️ Macizo de Ubiña · Los Fontanes 📅 Agosto de 2010 📲 Descargar el track en Wikiloc --> Salimos de Tuiza de Arriba por la vega de Brañalluenga hasta»
 - 📷 «La Senda de las Merinas y los Castillines (Travesía Cubilla-Tuiza)»: foto recuperada
 - Blog: sin entradas nuevas.
-- 🗺️ Mapa: 695 puntos (0 nuevos o movidos, 0 quitados).
-- Fotos de tu mapa: 203, sin cambios.
+- 🗺️ Mapa: 698 puntos (4 nuevos o movidos, 1 quitados).
+-    + Sedo la Cruz
+-    + Gustalcuendi
+-    + Majada de Baeno
+-    + Cascada la Redonda
+- 📷 Foto nueva en tu mapa: «Picu Canellín 1108 m.»
+- 📷 Foto nueva en tu mapa: «Sedo la Cruz»
+- 📷 Foto nueva en tu mapa: «Camín de la LLoreda'l Beyu.»
+- 📷 Foto nueva en tu mapa: «Gustalcuendi»
+- 📷 Foto nueva en tu mapa: «Majada de Baeno»
+- 📷 Foto nueva en tu mapa: «Cascada la Redonda»
 - Drive: sin tracks nuevos.
 - Correcciones a mano: 32 (sin cambios).
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
