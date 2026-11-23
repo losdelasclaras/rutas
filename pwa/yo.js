@@ -37,7 +37,15 @@ b.addEventListener("click",()=>{
   UFINO=0;mirar()});
 map.on("dragstart",()=>{if(W!=null&&SIGUE){SIGUE=false;b.classList.add("suelto")}});
 // al irte de la app el móvil corta el GPS; al volver, sigue solo
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&W!=null){soltar();mirar()}});
+// 23 nov 2026 (decidido con Jonathan): si has estado fuera más de 5 min, «Yo» se apaga y se quita el punto azul (batería, y que nadie se asuste).
+// Para volver a lo de antes: quitar FUERA y la línea «if(FUERA&&…)».
+let FUERA=0;const MAXF=5*60*1000;
+function quitaPunto(){try{if(meDot){meDot.remove();meDot=null}if(typeof meAcc!=="undefined"&&meAcc){meAcc.remove();meAcc=null}}catch(e){}}
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="hidden"){FUERA=Date.now();return}
+  if(W==null)return;
+  if(FUERA&&Date.now()-FUERA>MAXF){FUERA=0;apaga("Ubicación apagada para ahorrar batería");quitaPunto();return}
+  FUERA=0;soltar();mirar()});
 window.YO={apaga,activo:()=>W!=null};
 // botón «📍 Punto» en el mapa: guarda un punto donde estás
 const fabs=document.querySelector(".fabs");
