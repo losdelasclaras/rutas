@@ -63,7 +63,7 @@ function fichaBlog(i){const F=sheet._fbl;if(!F)return;const b=F.bl[i],o=F.o;if(!
   <div class="sec"><h3>${cums.length>1?"Cumbres de esta ruta":"Cumbre de esta ruta"}</h3><div class="rows">${(cums.length?cums:[null]).map((x,k)=>`<button class="row" data-fblc="${x?x.ci:""}"><div class="t"><b>${esc(x?x.c:o.n)}</b><span>${o.cum?"Cumbre":"Lugar"}</span></div></button>`).join("")}</div></div>`;
   sheet.hidden=false;sheet.scrollTop=0;if(window.showTrack)showTrack(null)}
 // 23 nov 2026: abrir directamente la ficha de una entrada de blog sin track (rutas guardadas en Mis cosas)
-window.ABREBLOG=(coid,u)=>{if(!window.COLX)return false;const L=COLX.todo(),ci=L.findIndex(x=>x.pp&&x.co&&x.co.id===coid&&x.pp[4]===u);if(ci<0)return false;
+window.ABREBLOG=(coid,u)=>{if(!window.COLX)return false;const L=COLX.todo(),ri=L.findIndex(x=>x.rr!=null&&x.co&&x.co.id===coid&&x.co.r[x.rr][7]===u);if(ri>=0&&COLX.abrirRuta(ri))return true;const ci=L.findIndex(x=>x.pp&&x.co&&x.co.id===coid&&x.pp[4]===u);if(ci<0)return false;
   COLX.open(ci);const va=k=>{const F=sheet._fbl,i=F?F.bl.findIndex(b=>b.u===u):-1;if(i>=0)fichaBlog(i);else if(k<10)setTimeout(()=>va(k+1),80)};va(0);return true};
 sheet.addEventListener("click",e=>{if(e.target.closest(".fpt-rutas .rows>.row"))try{localStorage.setItem("ldc-fpttoca","1")}catch(er){}},true);
 sheet.addEventListener("click",e=>{const f=e.target.closest(".fpt-rutas [data-fbl]");if(f){e.stopPropagation();fichaBlog(+f.dataset.fbl);return}

@@ -115,13 +115,13 @@ function pinta(){const x=X,d=DOC||{},q=document.querySelector(".crdlg .crcuerpo"
     </div>
     <label><input type="radio" name="crb" value="sin" ${sbOn?"checked":""}> No tiene entrada en el blog</label>
   </fieldset>`:""}
-  ${x.blog?`<p class="crnote" style="margin:0 0 12px">Esta ruta sale de una entrada del blog enlazada en el mapa del colaborador. El track lo pone el colaborador en su mapa o en su carpeta de Drive.</p>`:`<fieldset><legend>🧵 Track</legend>
-    <label><input type="radio" name="crt" value="igual" ${trM==="igual"?"checked":""}> Dejar el que tiene</label>
+  <fieldset><legend>🧵 Track</legend>
+    <label><input type="radio" name="crt" value="igual" ${trM==="igual"?"checked":""}> ${x.blog?"Seguir sin track":"Dejar el que tiene"}</label>
     <label><input type="radio" name="crt" value="sub" ${trM==="sub"?"checked":""}> Poner otro (subir un GPX o KML)</label>
     <div class="crsubir" ${trM==="sub"?"":"hidden"}><input type="file" class="crf" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml,text/xml,application/xml">
       <p class="crnote crfi">${d.tr&&d.tr!=="sin"?"Ya hay un track subido en la corrección. Elige otro archivo solo si quieres cambiarlo.":"Elige el archivo del track bueno."}</p></div>
-    <label><input type="radio" name="crt" value="sin" ${trM==="sin"?"checked":""}> Esta ruta no tiene track</label>
-  </fieldset>`}
+    ${x.blog?`<p class="crnote">Ahora no tiene track: si subes uno, desde mañana se podrá seguir.</p>`:`<label><input type="radio" name="crt" value="sin" ${trM==="sin"?"checked":""}> Esta ruta no tiene track</label>`}
+  </fieldset>
   ${x.blog?"":`<fieldset><legend>🔗 Wikiloc</legend>
     <p class="crnote" style="margin:0 0 6px">Ahora: ${x.wk?esc(x.wk.replace(/^https?:\/\//,"")):"sin enlace"}</p>
     <input type="url" class="crwk" placeholder="Dejar como está · o pega el enlace bueno" value="${esc(d.wk&&d.wk!=="-"?d.wk:"")}">

@@ -1299,12 +1299,45 @@ def correcciones_entradas(co, new, fase):
             if c.get('u') and c['u'] != u0 and not c.get('sb'):
                 for p in new.get('p', []):
                     if len(p) > 4 and p[4] == u0: p[4] = c['u']
+        # 23 nov 2026 (2): entrada con un track subido al corregirla -> pasa a ser una RUTA suya con ese track (como Al filo de lo improbable),
+        # con id estable 'b:<entrada original>' (la misma clave de la corrección). Se rehacen cada noche: primero se quitan las de la otra vez
+        # (van siempre al final de la lista, así no se mueven los números de las demás rutas).
+        rs = new.get('r') or []
+        k0 = len(rs)
+        while k0 and len(rs[k0 - 1]) > 11 and str(rs[k0 - 1][11]).startswith('b:'): k0 -= 1
+        rs = rs[:k0]
+        for p in new.get('p', []):
+            if len(p) > 9 and p[9]: p[9] = [i for i in p[9] if i < k0] or None
+        propias = bool(rs)
+        DIF = {'baja': 'Baja', 'moderada': 'Moderada', 'alta': 'Alta', 'muy-alta': 'Muy alta'}
+        for u0, c in cs.items():
+            tr = c.get('tr')
+            if c.get('oc') or c.get('sb') or not isinstance(tr, list) or len(tr) < 2: continue
+            u = c.get('u') or u0
+            pts = [p for p in new.get('p', []) if len(p) > 4 and p[4] == u]
+            g = _gx_de(tr)
+            fe = c.get('f') or ''
+            if not fe:
+                m = re.search(r'/(20\d\d)/(\d\d)/', u); fe = f'{m.group(1)}-{m.group(2)}' if m else str((new.get('fy') or {}).get(u) or '')
+            nom = c.get('n') or (new.get('bt') or {}).get(u) or (pts[0][0] if pts else '') or u
+            i = len(rs)
+            rs.append([nom, '', '', f"{g['km']:.1f}".replace('.', ',') + ' km', f"{g['up']} m" if g['up'] else '', DIF.get(c.get('di'), ''), '', u,
+                       [q[:3] for q in g['ln']], '', fe, 'b:' + u0])
+            for p in pts:
+                while len(p) < 10: p.append(None)
+                p[9] = (p[9] or []) + [i]
+        if len(rs) != len(new.get('r') or []) or rs: new['r'] = rs
+        if not rs: new.pop('r', None)
+        # sin rutas propias (Caleyando): que sus otras entradas sin track sigan saliendo en Rutas aunque ya tenga alguna ruta
+        if rs and not propias: new['kb'] = 1
+        else: new.pop('kb', None)
         return
     bo = {}
     for u0, c in cs.items():
         u = c['u'] if c.get('u') and not c.get('sb') else u0
         o = {}
         if c.get('oc') or c.get('sb'): o['oc'] = 1
+        if isinstance(c.get('tr'), list) and len(c['tr']) > 1 and not o.get('oc'): continue   # ya es una ruta con track (fase 1)
         if c.get('n'): o['n'] = c['n']
         if c.get('f'): o['f'] = c['f']
         if c.get('di'): o['di'] = {'baja': 'Baja', 'moderada': 'Moderada', 'alta': 'Alta', 'muy-alta': 'Muy alta'}.get(c['di'], c['di'])
