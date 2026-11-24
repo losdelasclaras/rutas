@@ -1150,6 +1150,11 @@ def colaboradores():
             try:
                 h = get(f'https://drive.google.com/embeddedfolderview?id={co["drive_carpeta"]}')
                 ent = re.findall(r'id="entry-([\w-]+)".*?class="flip-entry-title">(.*?)</div>', h, re.S)
+                # 24 nov 2026: los GPX también pueden ir en una subcarpeta «Tracks» (lo pidió Alex, Al filo de lo improbable)
+                for sid, snom in list(ent):
+                    if re.fullmatch(r'\s*tracks?\s*', html.unescape(snom), re.I):
+                        try: ent += re.findall(r'id="entry-([\w-]+)".*?class="flip-entry-title">(.*?)</div>', get(f'https://drive.google.com/embeddedfolderview?id={sid}'), re.S)
+                        except Exception as e: log(f'⚠ No he podido leer la carpeta «Tracks» del colaborador {co["id"]}: {e}')
                 prev = {x[0]: x for x in old.get('d', [])}
                 dd = []
                 for fid, nombre in ent:
