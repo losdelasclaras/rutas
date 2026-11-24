@@ -64,8 +64,37 @@ async function resumen(box){box.innerHTML=`<p class="note">Cargando…</p>`;
       tabla("Últimos 14 días",dias.reverse().map(k=>[dd(k),D["d-"+k]||{}]))+
       tabla("Por semanas",sem.reverse().map((k,i)=>[i===0?"Esta semana":i===1?"La pasada":"Sem. "+k.split("-S")[1],D["s-"+k]||{}]))+
       tabla("Por meses",mes.reverse().map(k=>[MES[+k.slice(5)-1]+" "+k.slice(0,4),D["m-"+k]||{}]))+
-      `<p class="note" style="font-size:12px;margin-top:10px">Cada persona cuenta una vez al día, una vez a la semana y una vez al mes, abra la app las veces que la abra. Tus cuentas de administrador no cuentan.</p>`}
+      `<p class="note" style="font-size:12px;margin-top:10px">Cada persona cuenta una vez al día, una vez a la semana y una vez al mes, abra la app las veces que la abra. Tus cuentas de administrador no cuentan.</p>`;
+    try{box.insertAdjacentHTML("beforeend",await queSeUsa(A,F,hoy))}catch(e){box.insertAdjacentHTML("beforeend",`<p class="note">«Qué se usa»: no se ha podido leer (${(e&&e.code)||e}). ¿Está puesta la regla de «usoe» en Firebase?</p>`)}}
   catch(e){box.innerHTML=`<p class="note">No se ha podido leer (${(e&&e.code)||e}). ¿Están puestas las reglas de «uso» en Firebase?</p>`}}
+/* 24 nov 2026 · «Qué se usa» (usoev.js → Firestore › usoe): hoy, 7 días y 30 días, visitas a cada blog y lo más abierto */
+const COSAS=[["ab","📱 Aperturas de la app"],["fr","📘 Fichas de rutas"],["fc","⛰️ Fichas de cumbres"],["fl","🏞️ Fichas de lugares"],["b","📖 Visitas a los blogs"],
+  ["sg","▶ Seguir"],["gr","⏺ Grabar"],["gt","〰️ Guardar track"],["md","🗺 Guardar mapas sin cobertura"],["sh","📤 Compartir"],["cl","🚗 Cómo llegar"],["bs","🔎 Búsquedas"],["sos","🆘 SOS"],
+  ["t_explorar","Pestaña Explorar"],["t_salidas","Pestaña Salidas"],["t_mis_cosas","Pestaña Mis cosas"],["t_retos","Pestaña Retos"]];
+async function queSeUsa(A,F,hoy){
+  const dia=k=>{const t=new Date(hoy+"T12:00:00Z");t.setUTCDate(t.getUTCDate()-k);return t.toISOString().slice(0,10)};
+  const ids=[];for(let i=0;i<30;i++)ids.push("d-"+dia(i));
+  const docs=await Promise.all(ids.map(id=>F.getDoc(F.doc(A.db,"usoe",id)).then(s=>s.exists()?s.data():{}).catch(()=>({}))));
+  const junta=n=>{const o={};for(const d of docs.slice(0,n))for(const k in d)o[k]=(o[k]||0)+(d[k]||0);return o};
+  const PER=[["Hoy",junta(1)],["7 días",junta(7)],["30 días",junta(30)]];
+  const val=(o,k)=>k==="b"?Object.keys(o).filter(x=>x.startsWith("b_")).reduce((a,x)=>a+o[x],0):(o[k]||0);
+  const th=`<tr><th></th>${PER.map(p=>`<th style="text-align:right;padding:2px 6px">${p[0]}</th>`).join("")}</tr>`;
+  const filas=COSAS.filter(([k])=>PER.some(p=>val(p[1],k))).map(([k,n])=>`<tr><td style="padding:3px 0">${n}</td>${PER.map(p=>`<td style="text-align:right;padding:2px 6px"><b>${val(p[1],k)}</b></td>`).join("")}</tr>`).join("");
+  const m30=PER[2][1];
+  // nombres legibles: se rehace la clave de cada ruta, cumbre y lugar de la app y se compara
+  const sl=(window.USOEV&&USOEV.sl)||(s=>s),NOMS={};
+  try{for(const r of R){const t=typeof routeTitle==="function"?routeTitle(r):(r.t||"");NOMS["r_"+sl(t)]=t}}catch(e){}
+  try{for(const p of P0())NOMS[(p.t==="cumbre"?"c_":"l_")+sl(p.c)]=p.c}catch(e){}
+  try{for(const x of COLX.todo())NOMS[(x.rr!=null?"r_":x.k==="cumbre"?"c_":"l_")+sl(x.c)]=x.c}catch(e){}
+  const top=(pre,tit)=>{const l=Object.keys(m30).filter(k=>k.startsWith(pre)).sort((a,b)=>m30[b]-m30[a]).slice(0,10);if(!l.length)return"";
+    return`<h4 style="margin:14px 0 4px">${tit} (30 días)</h4><ol style="margin:0;padding-left:22px">${l.map(k=>`<li>${esc(NOMS[k]||k.slice(2).replace(/_/g," "))} · <b>${m30[k]}</b></li>`).join("")}</ol>`};
+  const blogs=Object.keys(m30).filter(k=>k.startsWith("b_")).sort((a,b)=>m30[b]-m30[a]);
+  return`<h3 style="margin:18px 0 4px">📈 Qué se usa</h3><p class="note" style="font-size:12px;margin:0">Veces, sin saber quién (desde el 24 nov 2026).</p>`+
+   (filas?`<table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:6px">${th}${filas}</table>`:`<p class="note">Sin datos todavía.</p>`)+
+   (blogs.length?`<h4 style="margin:14px 0 4px">📖 Visitas a cada web (30 días)</h4><ol style="margin:0;padding-left:22px">${blogs.map(k=>`<li>${esc(k.slice(2).replace(/_/g,"."))} · <b>${m30[k]}</b></li>`).join("")}</ol>`:"")+
+   top("r_","📘 Rutas más abiertas")+top("c_","⛰️ Cumbres más abiertas")+top("l_","🏞️ Lugares más abiertos")}
+const P0=()=>typeof P!=="undefined"?P:[];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 document.addEventListener("click",e=>{const b=e.target.closest("[data-uso]");if(!b)return;const box=document.querySelector("[data-usoc]");if(!box)return;
   if(box.innerHTML){box.innerHTML="";return}resumen(box)});
 })();
