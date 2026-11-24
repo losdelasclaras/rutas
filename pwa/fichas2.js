@@ -85,7 +85,7 @@ function pinta(o){
   sheet.classList.remove("full");sheet._cor=null;
   sheet.innerHTML=`<div class="grab"></div>${o.foto?`<div class="photo"><img src="${esc(o.foto)}" alt="" onerror="this.parentNode.remove()"></div>`:""}
   ${tipoHTML(o.cum||o.a?"cumbre":"lugar","")}<div class="sheet-head"><h2>${esc(o.n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
-  ${o.a||esDe(o)?`<div class="meta">${o.a?`<span class="tag alt">${fmtA(o.a)}</span>`:""}${esDe(o)?`<span class="tag dsttag">⭐ Cumbre destacada</span>`:""}</div>`:""}
+  ${o.a||esDe(o)?`<div class="meta">${o.a?`<span class="tag alt">${fmtA(o.a)}</span>`:""}${esDe(o)?`<span class="tag dsttag">⭐ Cumbre destacada</span>`:""}</div>`:""}${retosF(o)}
   ${o.alias.length?`<p class="fpt-alias">También llamada ${o.alias.map(esc).join(", ")}</p>`:""}
   <div class="mkblock fpt" data-ll="${o.lat},${o.lon}"><span>${o.cum?"¿La has subido?":"¿Has estado?"}</span>${o.mk}</div>
   <div class="sec fpt-rutas"><h3>${tit}${tot>1?` (${tot})`:""}</h3>
@@ -105,6 +105,11 @@ function pinta(o){
   if(typeof ensureZone==="function")ensureZone(zoneAt(o.lat,o.lon));
   sheet.hidden=false;sheet.scrollTop=0;
   if(o.cum&&window.EDITOR)EDITOR.destBtn(o,sheet)}
+// 24 nov 2026: 🏆 retos en los que está (tocar = abrir el reto) y botón para apuntarse si aún no
+function retosF(o){try{if(!window.RETOSDE2)return"";const v=new Map();
+  for(const x of o.own||[])for(const r of RETOSDE2({c:x.n,co:x.co==="g"?null:{id:x.co}},o.cum?"cumbres":"lugares"))v.set(r.id,r);
+  if(!v.size)return"";
+  return`<div class="rtenf" style="margin:10px 0 4px">${[...v.values()].map(r=>`<div style="display:flex;align-items:center;gap:8px;margin:6px 0"><button class="rttag" data-rtag="${esc(r.id)}" style="flex:1;min-width:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🏆 ${esc(r.n)}</button>${r.ap?`<span style="flex:none;font-size:14px;color:var(--muted)">✅ Apuntado</span>`:`<button class="rtb sm" data-rtap="${esc(r.id)}" style="flex:none;padding:4px 10px">🙋 Apuntarme</button>`}</div>`).join("")}</div>`}catch(e){return""}}
 // 24 nov 2026: ⭐ cumbre destacada si cualquiera de los blogs que la tienen la destacó
 function esDe(o){return !!(o.cum&&typeof esDest==="function"&&(o.own||[]).some(x=>esDest(x.co,x.n)))}
 
