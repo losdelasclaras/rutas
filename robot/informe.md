@@ -1,8 +1,7 @@
-# Informe del robot · 24/11/2026 13:55
+# Informe del robot · 24/11/2026 14:58
 
-**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 2 nuevas, 0 cambiadas, 0 quitadas; colaborador Caleyando con Cienfuegos; regeneración forzada
+**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos
 
-- ✏️ «MOTA CETÍN DESDE LA VEGA SEBARGA»: completado dif = Difícil
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
 - 🔎 «De La Redondina a Tajadura (LA AGRESTE PEÑAMELLERA PARTE II)»: sin dificultad. Texto del cuadro: «pre buscando el camino. El final es para disfrutarlo: el mirador del Coterín del Toral , la braña de las Gatunas, el atardecer en la majada de Tajadura y la bajada por la canal del Jorcao hasta la carretera de Tresviso. 📏 7,5 km Distancia 📈 +1.100 m Desnivel de subida 📉 −400 m Desnivel de bajada 🏔️ 1.204 m Collado La Piedra 💧 260 m Las Mestas, el punto más bajo ⬅️ Travesía Tramo 2 de 2 ⬅️ Volver al tramo 1 Este tramo continúa la aventura que empezamos en el tramo 1, de Tajadura a la Redondina . Atravesamos parajes agrestes, majadas solitarias y bosques impresionantes, que piden atención a la o»
@@ -11,10 +10,9 @@
 - 🔎 «Foz de Meleros y Pico la Silla desde Geras»: sin dificultad. Texto del cuadro: «Circular desde Geras de Gordón (León): la Foz de Meleros con sus peldaños de ferrata, la cumbre del Pico la Silla (1.852 m), el refugio de Brañaredonda, el valle de Palanco y la vuelta por el hayedo de la Boyariza . 📏 15 km Distancia 📈 +900 m Desnivel ⏱️ 6 h Con paradas 🏔️ 1.852 m Pico la Silla ⚠️ Media Foz equipada 🔄 Circular Desde Geras 📍 Geras de Gordón (León) 🗺️ Reserva de la Biosfera del Alto Bernesga 📅 Junio de 2024 🏔️ Los tres hitos del día Foz de Meleros Peldaños y escaleras Un desfiladero equipado para pasar junto al arroyo. Pico la Silla 1.852 m La cumbre del día. Hayedo de la»
 - Blog: sin entradas nuevas.
 - 🗺️ Mapa: 701 puntos (0 nuevos o movidos, 0 quitados).
-- 📷 Foto nueva en tu mapa: «Foz de Semeldón»
-- 📷 Foto nueva en tu mapa: «Picu Mota Cetín , Techo de Parres (1134 m.)»
+- Fotos de tu mapa: 232, sin cambios.
 - Drive: sin tracks nuevos.
-- Correcciones a mano: 50 (sin cambios).
+- ✏️ Correcciones a mano: 52 en total · 2 nuevas o cambiadas
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 433 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - 📝 Blog de Rutinas Varias: 11 rutas emparejadas con su entrada (146 de 406 con enlace al blog; índice con 315 entradas).
@@ -23,11 +21,13 @@
 - Colaborador «Rutinas Varias»: sin cambios.
 -    (quitados 78 puntos de publicidad: capas o nombres que no queremos)
 - 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (6): Desafío Somiedo 2022 (MDS) · la-ercina-cangues-donis-verdilluenga-trea-cain-valdion-culie · Puirtu Braña - Picu Torres - Picu Valverde - Puirtu Braña · puirtu-brana-ayer-torres-cabal-luna-cuevas-ayer · Salgueiro_Climb · Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
-- ⛰ Camudando'l camín: 52 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
-- ✏️ Camudando'l camín: 35 rutas con corrección a mano
-- Colaborador «Camudando'l camín»: sin cambios.
+- ⛰ Camudando'l camín: 53 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
+- ✏️ Camudando'l camín: 37 rutas con corrección a mano
+- 📷 Fotos de rutas de Camudando'l camín (de su blog): 2 nuevas, 38 en total
+- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (38 de 38 con fecha).
+- 🤝 Colaborador «Camudando'l camín»: 151 puntos, 38 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
--    (42 peticiones a su web en 1.3 min)
+-    (42 peticiones a su web en 1.2 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
 - ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
