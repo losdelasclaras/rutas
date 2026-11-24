@@ -10,7 +10,7 @@ rep('<title>Los de las Claras · Rutas</title>\n<meta name="claude:viewport-fit-
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Andariega · Rutas de montaña</title>
-<meta name="description" content="Rutas de montaña del blog Los de las Claras: Cordillera Cantábrica, Pirineos, Alpes y Dolomitas.">
+<meta name="description" content="Rutas de montaña del blog Los de las Claras: Cordillera Cantábrica y Pirineos.">
 <meta name="theme-color" content="#c3262e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
@@ -51,12 +51,37 @@ _mods=['diag','mispuntos','colab','capas','sync','seguir','mistracks','offline',
 _w=lambda n:'try{\n'+open(f'/home/claude/pwa/{n}.js').read()+'\n}catch(e){console.error("módulo '+n+'",e);(window.__ERRS=window.__ERRS||[]).push("'+n+': "+(e&&e.message))}'
 i=t.rindex('</script>'); t=t[:i]+'\n'+'\n'.join(_w(n) for n in _mods)+'\n'+t[i:]
 # colaboradores (app/colaboradores.json + app/colab/<id>.json, los rellena el robot): van dentro de la página, así se ven también sin cobertura
+# 24 nov 2026: fuera Alpes y Dolomitas (Jonathan): nada al este de 4,5° E (los Pirineos acaban hacia 3,3° E)
+ESTE=4.5
+def _lon(q):
+    try:return float(q)
+    except Exception:return 0.0
+def _fd_sin_alpes(fd):
+    pts=fd['pts'];quita={i for i,p in enumerate(pts) if _lon(p.get('lon'))>ESTE or p.get('r') in ('Alpes','Dolomitas')}
+    nuevo={};np=[]
+    for i,p in enumerate(pts):
+        if i in quita:continue
+        nuevo[i]=len(np);np.append(p)
+    nr=[]
+    for r in fd['routes']:
+        if r.get('r') in ('Alpes','Dolomitas') or _lon(r.get('lon'))>ESTE:continue
+        r['p']=[nuevo[i] for i in r.get('p',[]) if i in nuevo];nr.append(r)
+    fd['pts']=np;fd['routes']=nr;return fd
+def _co_sin_alpes(d):
+    d['p']=[p for p in d.get('p',[]) if not(len(p)>2 and _lon(p[2])>ESTE)]
+    def tr_este(t):
+        try:return isinstance(t,list) and t and _lon(t[0][1])>ESTE
+        except Exception:return False
+    d['r']=[r for r in d.get('r',[]) if not(len(r)>8 and tr_este(r[8]))]
+    d['d']=[x for x in d.get('d',[]) if not(len(x)>2 and tr_este(x[2]))]
+    d['l']=[x for x in d.get('l',[]) if not(isinstance(x,list) and any(tr_este(v) for v in x if isinstance(v,list)))]
+    return d
 _CO=[]
 for _c in (json.load(open(A+'colaboradores.json')) if os.path.exists(A+'colaboradores.json') else []):
     _f=A+f"colab/{_c['id']}.json"
     if _c.get('activo') is False: continue   # apartado: sus datos se guardan en la rama datos, pero no salen en la app
     if not os.path.exists(_f): continue
-    _d=json.load(open(_f))
+    _d=_co_sin_alpes(json.load(open(_f)))
     _CO.append({'id':_c['id'],'n':_c.get('nombre') or _d.get('t') or 'Colaborador','c':_c.get('color') or '#e8710a','p':_d.get('p',[]),'l':_d.get('l',[]),'dt':[[x[1],x[2]] for x in _d.get('d',[]) if 'drive:'+x[0] not in {str(r[11]) for r in _d.get('r',[]) if len(r)>11}],   # 16 nov: los de Drive que ya son rutas suyas, no se repiten
       
       'r':[r[:8]+[r[8][0]]+[r[9] if len(r)>9 else '']+[r[10] if len(r)>10 else '']+[r[12] if len(r)>12 and r[12] else (str(r[11]) if len(r)>11 and r[11] else (r[6] or r[7] or r[0]))]+([0] if len(r[8])<2 else []) for r in _d.get('r',[])],'_rl':[r[8] for r in _d.get('r',[])],
@@ -108,7 +133,7 @@ _GPZ={}
 def _pasan(lim=0.25,lim_n=0.5):
     # 250 m en general; hasta 500 m si el nombre de la ruta nombra esa cumbre (p. ej. «Miravalles desde Puerto de Ancares»: el track
     # simplificado o el punto de la cumbre pueden quedar algo desviados)
-    _fd=json.load(open(A+'final_data.json'))
+    _fd=_fd_sin_alpes(json.load(open(A+'final_data.json')))
     cums=[('g%d'%i,q['lat'],q['lon'],q['c']) for i,q in enumerate(_fd['pts']) if q.get('t')=='cumbre']
     for _c in _CO:
         for i,q in enumerate(_c['p']):
@@ -311,7 +336,7 @@ rep('<b>${nd}</b> de ${ZI.length}','<b>${nd}</b> de ${ZU.length}')   # 12 nov 20
 rep('''  const m=e.target.closest("[data-m]");if(m){''','''  if(e.target.closest("[data-exp]")){const code="LDC1:"+btoa(unescape(encodeURIComponent(JSON.stringify(MARKS))));(navigator.clipboard?navigator.clipboard.writeText(code):Promise.reject()).then(()=>alert("Copiado. En el otro móvil, abre la app y pulsa «Pegar marcas de otro móvil»."),()=>prompt("Copia este código:",code));return}
   if(e.target.closest("[data-imp]")){const code=prompt("Pega aquí el código de tus marcas:");if(!code)return;try{const v=JSON.parse(decodeURIComponent(escape(atob(code.trim().replace(/^LDC1:/,"")))));Object.assign(MARKS,v);saveMarks();renderCols();alert("Marcas añadidas.")}catch(err){alert("Ese código no es válido.")}return}
   const m=e.target.closest("[data-m]");if(m){''')
-d=json.load(open(A+'final_data.json'))
+d=_fd_sin_alpes(json.load(open(A+'final_data.json')))
 # los recorridos de los tracks van en un archivo aparte que se carga después (la app abre antes)
 import hashlib,glob as _g
 TL={r['u']:r['gx'].pop('ln') for r in d['routes'] if r.get('gx') and r['gx'].get('ln')}

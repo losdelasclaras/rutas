@@ -107,7 +107,7 @@ window.RFOK=r=>(!RF.z||zoneOf(r.r)===RF.z)&&(!RF.ep||(RF.ep==="new"?(r.y||0)>=CU
 // 16 nov 2026: filtro de dificultad. Blog: la de los listados (dl); colaboradores: nv (colab.js)
 function nivelR(r){if(r.nivd!=null)return r.nivd;const d=String(r.dl||"").toLowerCase();return d==="baja"?"b":d==="moderada"?"m":d==="alta"?"a":d==="muy-alta"?"x":""}   // 18 nov: «Muy alta» aparte
 const rsrc=()=>window.COLX?COLX.rsrc:"todas";
-const RG=()=>[["z","Zona",[["","Todas"],["cant","Norte"],["pir","Pirineos"],["alp","Alpes y Dolomitas"]]],
+const RG=()=>[["z","Zona",[["","Todas"],["cant","Norte"],["pir","Pirineos"]]],
   ...(window.COLX?[["rs","De quién",[["todas","Todas"],["grupo","Los de las Claras"],...CO_LIST()]]]:[]),
   ["ep","Época",[["","Todas"],["new","Recientes (últimos 2 años)"]]],
   ["iv","Invierno",[["","Todas"],["si","Solo invernales"],["no","Sin invernales"]]],

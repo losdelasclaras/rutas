@@ -530,7 +530,7 @@ function openFromHash(){const h=decodeURIComponent((location.hash||"").slice(1))
 addEventListener("hashchange",openFromHash);
 /* ---------- ¿Qué ruta hago? ---------- */
 const WZ={zona:[],esf:[],ti:[],geo:null};
-const ZOP=[["cerca","📍 Cerca de mí"],["ast-or","Asturias oriente"],["ast-ce","Asturias centro"],["ast-oc","Asturias occidente"],["León","León"],["Cantabria","Cantabria"],["Pirineos","Pirineos"],["Alpes","Alpes y Dolomitas"],["","Me da igual"]];
+const ZOP=[["cerca","📍 Cerca de mí"],["ast-or","Asturias oriente"],["ast-ce","Asturias centro"],["ast-oc","Asturias occidente"],["León","León"],["Cantabria","Cantabria"],["Pirineos","Pirineos"],["","Me da igual"]];
 const EOP=[["baja","Fácil"],["moderada","Moderada"],["alta","Difícil"],["","Me da igual"]];
 const wzMeses=()=>{const m=new Date().getMonth();return[m+1,(m+1)%12+1]};
 const COP=()=>{const[a,b]=wzMeses();return[["ahora",`Estas fechas (${MESES[a]} y ${MESES[b]})`],["inv","❄ Invierno"],["pri","Primavera"],["ver","Verano"],["oto","Otoño"],["","Cualquier época"]]};
@@ -812,7 +812,7 @@ for(const kind of ["cumbres","lugares"]){document.getElementById("v-"+kind).addE
 
 /* ---------- init ---------- */
 drawZone(ZONES[store.get("ldc-zona","cant")]?store.get("ldc-zona","cant"):"cant"); applyFilter(); renderCols();
-document.getElementById("sub").textContent=`${R.filter(r=>r.u).length} rutas · Cantábrica, Pirineos, Alpes y Dolomitas`;
+document.getElementById("sub").textContent=`${R.filter(r=>r.u).length} rutas · Cantábrica y Pirineos`;
 showView("mapa"); // la app arranca siempre en el mapa
 setTimeout(openFromHash,300);
 // estado inicial: mapa completo de Asturias y León
