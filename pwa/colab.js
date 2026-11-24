@@ -266,9 +266,13 @@ function sync(){for(const c of CO)for(const[k]of KC(c)){const key=`co_${c.id}_${
     const b=document.querySelector(`[data-lay="${key}"]`);if(b)b.setAttribute("aria-pressed",!!LAY[key])}
   cull();if(window.capasSum)capasSum()}
 // como los puntos del grupo: solo se dibujan los que caen en pantalla (y un margen); el mapa va igual de fluido con más colaboradores
-function cull(){const b=map.getBounds().pad(.35);for(const gid in MKG){const g=G[gid];if(!map.hasLayer(g))continue;
+function cull(){if(window.AGRUPAR&&AGRUPAR.activo&&AGRUPAR.activo()){lbls();AGRUPAR.luego();return}const b=map.getBounds().pad(.35);for(const gid in MKG){const g=G[gid];if(!map.hasLayer(g))continue;
   for(const m of MKG[gid]){const inb=b.contains(m.getLatLng())&&!tapado(m);if(inb&&!g.hasLayer(m))g.addLayer(m);else if(!inb&&g.hasLayer(m))g.removeLayer(m)}}lbls()}
 map.on("moveend",cull);
+// 24 nov 2026: para agrupar.js (mapa lejos): sus puntos, si se verían (como coMarks/co-off y tapado) y cómo ponerlos/quitarlos
+window.COAGR={cull};COAGR.agr=()=>{const o=[];if(window.FOLONLY)return o;for(const gid in MKG){const g=G[gid];if(!map.hasLayer(g))continue;
+  for(const m of MKG[gid])o.push({m,col:1,vis:()=>{if(tapado(m))return false;const v=MARKS[m.__k],on=(v==="hecha"&&LAY.mh)||(v==="quiero"&&LAY.mq);return !((!!LAY.solo||!!LOFF[m.__g])&&!on)},
+    add:()=>{if(!g.hasLayer(m))g.addLayer(m)},del:()=>{if(g.hasLayer(m))g.removeLayer(m)}})}return o};
 map.on("zoomend",lbls);
 document.querySelector(".legend").addEventListener("click",()=>setTimeout(()=>{sync();for(const m of LBL)coMarks(m)},0));
 setTimeout(sync,0);

@@ -50,8 +50,14 @@ map.on("zoomend",syncLbls);map.on("zoomstart",()=>{for(const k in window.__lblH)
 const CLS={};function applyCls(i){const el=MK[i].getElement();if(!el)return;for(const c in CLS){const f=CLS[c];el.classList.toggle(c,typeof f==="function"?!!f(+i):!!f)}}
 const nodes={classed(c,f){CLS[c]=f;for(const i in MK){const el=MK[i].getElement();if(el)el.classList.toggle(c,typeof f==="function"?!!f(+i):!!f)}return nodes}};
 // solo se dibujan los puntos que caen en pantalla (más un margen): el mapa va mucho más fluido
-function cullMarks(){const b=map.getBounds().pad(0.35);for(const i in MK){const m=MK[i],inb=b.contains(m.getLatLng()),on=map.hasLayer(m);if(inb&&!on)m.addTo(map);else if(!inb&&on)m.remove()}}
+// 24 nov 2026: con el mapa lejos (círculos con número) los pone y quita agrupar.js; aquí no se crean los ~2.000 iconos
+function cullMarks(){if(window.AGRUPAR&&AGRUPAR.activo&&AGRUPAR.activo()){AGRUPAR.luego();return}const b=map.getBounds().pad(0.35);for(const i in MK){const m=MK[i],inb=b.contains(m.getLatLng()),on=map.hasLayer(m);if(inb&&!on)m.addTo(map);else if(!inb&&on)m.remove()}}
 map.on("moveend",cullMarks);
+// para agrupar.js: los puntos del grupo, si se verían (mismas reglas que el CSS: hide-peaks, hide-spots, solo-mios) y cómo ponerlos/quitarlos
+window.MKAGR=()=>{const o=[];if(mapEl.classList.contains("fol-only"))return o;
+  for(const i in MK){const m=MK[i],p=P[i];o.push({m,col:0,vis:()=>{const k=mkKey(p),mk=k?MARKS[k]:"",mio=(mk==="hecha"&&LAY.mh)||(mk==="quiero"&&LAY.mq);
+      if(LAY.solo&&!mio)return false;if(!LAY.peaks&&p.t==="cumbre"&&!mio)return false;if(!LAY.spots&&p.t!=="cumbre"&&!p.x&&!mio)return false;return true},
+    add:()=>{if(!map.hasLayer(m))m.addTo(map)},del:()=>{if(map.hasLayer(m))m.remove()}})}return o};
 const tracks={classed(){return tracks}};
 let probeC=null;
 const probe={attr(a,v){if(a==="r"&&!v&&probeC){probeC.remove();probeC=null}return probe}};
