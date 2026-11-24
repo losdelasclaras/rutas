@@ -77,6 +77,17 @@ return [
   "Toca un resultado para verlo en el mapa.",
   "Si es un pueblo, «🗺 Mapa» te lleva allí y «🥾 Rutas» te enseña las rutas de los blogs por esa zona."],
   "«Ver todo en Explorar ›» abre la lista completa, con filtros.",["Ir al buscador","buscar"]],
+["🔄","¿Están al día las rutas y las salidas?",[
+  "Sí. Cada noche la app mira los 6 blogs (Al filo de lo improbable, Caleyando con Cienfuegos, Camudando'l camín, Gata con Botas, Los de las Claras y Rutinas Varias) y trae sola sus rutas, cumbres y lugares nuevos.",
+  "Las salidas de los grupos de montaña también: las publica cada club y aparecen en Salidas. Las de algunos clubes se copian solas de su propia web.",
+  "Lo nuevo lo ves la próxima vez que abres la app con datos."],
+  "Si ves algo mal (una ruta con el track que no es, un punto repetido…), escríbenos: lo arreglamos.",["Ir a Explorar","explorar"]],
+["⭐","La dificultad, las cumbres destacadas y la escalada",[
+  "En Explorar › Rutas, cada ruta lleva su dificultad: 🟢 Baja · 🟡 Moderada · 🔴 Alta · ⚫ Muy alta. La pone cada blog; si no sale, aún no la ha puesto.",
+  "Las cumbres con ⭐ y aro dorado son las que destaca cada blog. En el mapa se ven más grandes y con su nombre desde más lejos.",
+  "En Explorar › Cumbres, el filtro «⭐ Destacadas» enseña solo esas.",
+  "Las escuelas y zonas de escalada llevan su propio icono naranja, en Lugares."],
+  "Las rutas de dificultad alta o muy alta llevan además un aviso rojo en su ficha.",["Ir a Explorar","explorar"]],
 ["🗂","Cómo funcionan las Capas del mapa",[
   "Toca «Capas», abajo a la izquierda. Se abre «Qué ver en el mapa». Cada línea tiene un interruptor: verde = se ve, gris = no se ve.",
   "Mapa: elige el mapa de fondo (topográfico, IGN u ortofoto, que es la foto aérea).",

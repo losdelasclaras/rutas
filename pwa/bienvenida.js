@@ -14,13 +14,13 @@ const marca=()=>{try{localStorage.setItem(KEY,new Date().toISOString())}catch(e)
 const logo=()=>{const i=document.querySelector(".ayulogo img");return i?i.src:""};
 
 const P=[
- {logo:1,t:"Varios blogs de montaña en un solo mapa",s:"Gente que sale al monte y lo cuenta. Cada blog pone sus rutas y la app las junta.",
-  ch:["Al filo de lo improbable","Camudando'l camín","Gata con Botas","Los de las Claras","Rutinas Varias"],
-  l:[["🥾","Más de 1.000 rutas, 700 cumbres y 300 lugares"]]},
+ {logo:1,t:"Varios blogs de montaña en un solo mapa",s:"Gente que sale al monte y lo cuenta.",
+  ch:["Al filo de lo improbable","Caleyando con Cienfuegos","Camudando'l camín","Gata con Botas","Los de las Claras","Rutinas Varias"],
+  l:[["🥾","Más de 2.000 rutas, 1.000 cumbres y 500 lugares"],["🔄","Siempre al día: lo nuevo de los 6 blogs llega solo, cada noche"]]},
  {i:"📖",t:"Antes de salir, lee la ruta",s:"Un track es solo una línea. El reportaje del blog te cuenta el monte.",
   l:[["📷","Fotos y por dónde va el camino"],["⚠️","Dificultad, pasos delicados, terreno"],["📈","Km, desnivel y perfil"],["⬇️","Y el track, gratis"]]},
  {i:"🔎",t:"Busca por donde quieras",
-  l:[["🏘️","Escribe un pueblo y mira qué rutas hay cerca"],["📍","O las que tienes cerca de ti"],["🏔️","Cumbres, lugares, refugios, lagos…"],["⚙️","Filtra por zona, invierno o con track"]]},
+  l:[["🏘️","Escribe un pueblo y mira qué rutas hay cerca"],["📍","O las que tienes cerca de ti"],["🏔️","Cumbres, lugares, lagos, escuelas de escalada…"],["⭐","Las cumbres que destaca cada blog, con estrella en el mapa"],["⚙️","Filtra por zona, dificultad, invierno o con track"]]},
  {i:"⏺️",t:"Graba y sigue tus rutas",
   l:[["📱","Graba con la pantalla apagada y sin cobertura (app Android)"],["▶️","Sigue un track, o dos a la vez"],["🆘","SOS con tu posición para el 112"]]},
  {i:"🎒",t:"Llévalo todo sin cobertura",s:"Lo que guardas en Mis cosas funciona sin datos y sin cobertura.",
@@ -28,7 +28,7 @@ const P=[
  {i:"🏆",t:"Retos",s:"Marca las cumbres que subes y mira quién más las ha hecho.",
   l:[["🚩","Empieza con los Techos de Asturias: el pico más alto de cada uno de los 78 concejos"],["🏅","Medallas a medida que avanzas"],["✨","Iremos añadiendo retos nuevos"]]},
  {i:"👥",t:"Sal con un grupo de montaña",s:"Grupos de montaña de Asturias publican aquí sus próximas salidas.",
-  l:[["🥾","Fecha, recorrido y track"],["🙋","Cómo apuntarte"],["💚","Todo gratis y sin registrarte"]],nt:"Dudas: botón ? de arriba"}
+  l:[["🥾","Fecha, recorrido y track"],["🙋","Cómo apuntarte"],["🔄","Siempre al día: lo que publica cada club aparece aquí solo"],["💚","Todo gratis y sin registrarte"]],nt:"Dudas: botón ? de arriba"}
 ];
 const N=P.length;
 
@@ -46,6 +46,7 @@ html.bienvon .instbg{display:none!important}
 .bvsl>.in{margin:auto 0;padding:6px 0}
 .bvic{width:96px;height:96px;border-radius:50%;background:#fbe4e4;display:flex;align-items:center;justify-content:center;margin:4px auto 16px;font-size:50px}
 .bvlogo{display:block;width:128px;height:128px;border-radius:26px;margin:0 auto 14px;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+@media(max-height:820px){.bvlogo{width:84px;height:84px;border-radius:18px;margin-bottom:8px}.bvch{margin-bottom:12px;gap:6px}.bvch span{font-size:15px;padding:5px 9px}.bvt{margin-bottom:8px}}
 .bvt{font-size:27px;font-weight:800;text-align:center;line-height:1.25;margin:0 0 12px}
 .bvs{font-size:19px;text-align:center;color:#555;line-height:1.45;margin:0 0 16px}
 .bvch{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:0 0 16px}

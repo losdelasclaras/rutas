@@ -3,6 +3,7 @@
    y a partir de ahí cualquier cambio se copia solo a los demás aparatos donde hayas entrado.
    La librería de Firebase solo se descarga si has entrado alguna vez o al pulsar «Entrar con Google». */
 (function(){
+setTimeout(()=>{try{window.LDCCFG={projectId:CFG.projectId,apiKey:CFG.apiKey}}catch(e){}},0);   // 24 nov 2026: para el aviso de fallos (diag.js)
 const CFG={apiKey:"AIzaSyBzYlxsZhJVPJpCk0_EgxaplD7zWMOOg1I",authDomain:"losdelasclaras-rutas.firebaseapp.com",projectId:"losdelasclaras-rutas",
   storageBucket:"losdelasclaras-rutas.firebasestorage.app",messagingSenderId:"115151504481",appId:"1:115151504481:web:9338dae56b04b4d2989620"};
 const G="https://www.gstatic.com/firebasejs/10.14.1/";
