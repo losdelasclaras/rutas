@@ -1,6 +1,6 @@
-# Informe del robot · 24/11/2026 08:47
+# Informe del robot · 24/11/2026 09:03
 
-**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 1 nuevas, 0 cambiadas, 0 quitadas; correcciones a mano; colaborador Al filo de lo improbable; colaborador Caleyando con Cienfuegos
+**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos; regeneración forzada
 
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
@@ -10,9 +10,9 @@
 - 🔎 «Foz de Meleros y Pico la Silla desde Geras»: sin dificultad. Texto del cuadro: «Circular desde Geras de Gordón (León): la Foz de Meleros con sus peldaños de ferrata, la cumbre del Pico la Silla (1.852 m), el refugio de Brañaredonda, el valle de Palanco y la vuelta por el hayedo de la Boyariza . 📏 15 km Distancia 📈 +900 m Desnivel ⏱️ 6 h Con paradas 🏔️ 1.852 m Pico la Silla ⚠️ Media Foz equipada 🔄 Circular Desde Geras 📍 Geras de Gordón (León) 🗺️ Reserva de la Biosfera del Alto Bernesga 📅 Junio de 2024 🏔️ Los tres hitos del día Foz de Meleros Peldaños y escaleras Un desfiladero equipado para pasar junto al arroyo. Pico la Silla 1.852 m La cumbre del día. Hayedo de la»
 - Blog: sin entradas nuevas.
 - 🗺️ Mapa: 701 puntos (0 nuevos o movidos, 0 quitados).
-- 📷 Foto nueva en tu mapa: «Picu Jucantu (1389 m.)»
+- Fotos de tu mapa: 229, sin cambios.
 - Drive: sin tracks nuevos.
-- ✏️ Correcciones a mano: 39 en total · 1 nuevas o cambiadas
+- Correcciones a mano: 39 (sin cambios).
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 433 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - 📝 Blog de Rutinas Varias: 11 rutas emparejadas con su entrada (146 de 406 con enlace al blog; índice con 315 entradas).
@@ -23,7 +23,7 @@
 - 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (5): la-ercina-cangues-donis-verdilluenga-trea-cain-valdion-culie · Puirtu Braña - Picu Torres - Picu Valverde - Puirtu Braña · puirtu-brana-ayer-torres-cabal-luna-cuevas-ayer · Salgueiro_Climb · Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
 - ⛰ Camudando'l camín: 50 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ✏️ Camudando'l camín: 26 rutas con corrección a mano
-- Colaborador «Camudando'l camín»: sin cambios.
+- 🤝 Colaborador «Camudando'l camín»: 151 puntos, 35 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
 -    (42 peticiones a su web en 1.3 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
@@ -33,7 +33,7 @@
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
 - 📷 Fotos del colaborador c5: 0 nuevas, 839 en total, 1 no se han podido bajar (<urlopen error unknown url type: hhttps>)
-- 🤝 Colaborador «Al filo de lo improbable»: 843 puntos, 0 tracks.
+- Colaborador «Al filo de lo improbable»: sin cambios.
 -    (quitados 492 puntos de publicidad: capas o nombres que no queremos)
 - 📷 Fotos del colaborador c6: 0 nuevas, 644 en total, 8 no se han podido bajar (HTTP Error 404: Not Found)
 - 📝 Títulos de entradas de Caleyando con Cienfuegos: 501 de 502 (1 no han respondido)
