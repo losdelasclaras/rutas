@@ -1565,7 +1565,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-bce97ac4.json", "ln": "colab-ln-de51aa02.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-18771dcb.json", "ln": "colab-ln-de51aa02.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -5515,7 +5515,9 @@ document.addEventListener("click",e=>{
   if(e.target.closest("[data-frx]")){menu(null,false);return}
   // al elegir una opción, el menú se cierra
   if(e.target.closest(".frmas>.btn"))setTimeout(()=>menu(null,false),250);
-  const oc=e.target.closest(".fru [data-frco]");if(oc&&window.COLX){e.stopPropagation();COLX.abrirRuta(+oc.dataset.frco);return}
+  const oc=e.target.closest(".fru [data-frco]");if(oc&&window.COLX){e.stopPropagation();const ci=+oc.dataset.frco;
+    // 24 nov 2026: las de un punto enlazado a su blog (Caleyando con Cienfuegos) no son rutas con track: se abre la ficha de la entrada, o la del punto
+    if(!COLX.abrirRuta(ci)){const it=COLX.todo()[ci];if(!(it&&it.pp&&it.pp[4]&&it.co&&window.ABREBLOG&&ABREBLOG(it.co.id,it.pp[4])))COLX.open(ci)}return}
   // ☆ Guardar ruta (grupo)
   const gr=e.target.closest("[data-frgr]");if(gr){e.preventDefault();const r=R[+gr.dataset.frgr];if(!r||!window.MTRUTA)return;
     const go=()=>{const on=MTRUTA.alterna(r);gr.innerHTML=gRL(on);toast(on?"Ruta guardada en Mis cosas":"Quitada de Mis cosas")};
@@ -7489,5 +7491,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="24/11 15:59 · 2e270e";window.LDC_BUILD="2e270e5592";window.LDC_FUNC="c54c413e6d";(function(){const B="2e270e5592";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="24/11 16:12 · e98284";window.LDC_BUILD="e982844200";window.LDC_FUNC="6f01dcaddb";(function(){const B="e982844200";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
