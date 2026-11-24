@@ -1578,7 +1578,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-cedbbab0.json", "ln": "colab-ln-47b4c4a6.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-c1a6d5db.json", "ln": "colab-ln-5f6546cb.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -5250,7 +5250,7 @@ function pinta(o){
   sheet.classList.remove("full");sheet._cor=null;
   sheet.innerHTML=`<div class="grab"></div>${o.foto?`<div class="photo"><img src="${esc(o.foto)}" alt="" onerror="this.parentNode.remove()"></div>`:""}
   ${tipoHTML(o.cum||o.a?"cumbre":"lugar","")}<div class="sheet-head"><h2>${esc(o.n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
-  ${o.a||esDe(o)?`<div class="meta">${o.a?`<span class="tag alt">${fmtA(o.a)}</span>`:""}${esDe(o)?`<span class="tag dsttag">⭐ Cumbre destacada</span>`:""}</div>`:""}
+  ${o.a||esDe(o)?`<div class="meta">${o.a?`<span class="tag alt">${fmtA(o.a)}</span>`:""}${esDe(o)?`<span class="tag dsttag">⭐ Cumbre destacada</span>`:""}</div>`:""}${retosF(o)}
   ${o.alias.length?`<p class="fpt-alias">También llamada ${o.alias.map(esc).join(", ")}</p>`:""}
   <div class="mkblock fpt" data-ll="${o.lat},${o.lon}"><span>${o.cum?"¿La has subido?":"¿Has estado?"}</span>${o.mk}</div>
   <div class="sec fpt-rutas"><h3>${tit}${tot>1?` (${tot})`:""}</h3>
@@ -5270,6 +5270,11 @@ function pinta(o){
   if(typeof ensureZone==="function")ensureZone(zoneAt(o.lat,o.lon));
   sheet.hidden=false;sheet.scrollTop=0;
   if(o.cum&&window.EDITOR)EDITOR.destBtn(o,sheet)}
+// 24 nov 2026: 🏆 retos en los que está (tocar = abrir el reto) y botón para apuntarse si aún no
+function retosF(o){try{if(!window.RETOSDE2)return"";const v=new Map();
+  for(const x of o.own||[])for(const r of RETOSDE2({c:x.n,co:x.co==="g"?null:{id:x.co}},o.cum?"cumbres":"lugares"))v.set(r.id,r);
+  if(!v.size)return"";
+  return`<div class="rtenf" style="margin:10px 0 4px">${[...v.values()].map(r=>`<div style="display:flex;align-items:center;gap:8px;margin:6px 0"><button class="rttag" data-rtag="${esc(r.id)}" style="flex:1;min-width:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🏆 ${esc(r.n)}</button>${r.ap?`<span style="flex:none;font-size:14px;color:var(--muted)">✅ Apuntado</span>`:`<button class="rtb sm" data-rtap="${esc(r.id)}" style="flex:none;padding:4px 10px">🙋 Apuntarme</button>`}</div>`).join("")}</div>`}catch(e){return""}}
 // 24 nov 2026: ⭐ cumbre destacada si cualquiera de los blogs que la tienen la destacó
 function esDe(o){return !!(o.cum&&typeof esDest==="function"&&(o.own||[]).some(x=>esDest(x.co,x.n)))}
 
@@ -6470,6 +6475,10 @@ function indice(){if(TGI&&performance.now()-TGT<5000)return TGI;TGT=performance.
   TGS=sig;TGI=new Map();for(const R of v){if(estado(R).k==="fi"||R.activo===false||!R.items.length)continue;for(const it of R.items)for(const k of it.keys){const a=TGI.get(k)||[];if(!a.includes(R))a.push(R);TGI.set(k,a)}}return TGI}
 window.RETOTAG=function(p,kind){try{const k=(kind==="cumbres"?"c:":"l:")+norm(p.c)+(p.co?"@"+p.co.id:""),a=indice().get(k);if(!a||!a.length)return"";
   return a.map(R=>`<button class="rttag" data-rtag="${esc(R.id)}">🏆 ${esc(R.n)}</button>`).join("")}catch(e){return""}};
+// 24 nov 2026: retos en los que está, con id y si ya estás apuntado (ficha de la cumbre), y botón «🙋 Apuntarme» de la ficha
+window.RETOSDE2=function(p,kind){try{const k=(kind==="cumbres"?"c:":"l:")+norm(p.c)+(p.co?"@"+p.co.id:""),a=indice().get(k),u=usr();
+  return a?a.map(R=>{const L=LOC[R.id];return{id:R.id,n:R.n,ap:!!(u&&L&&L.pub&&(L.pub===true||L.pub===u.uid))}}):[]}catch(e){return[]}};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-rtap]");if(!b)return;e.stopPropagation();e.preventDefault();apuntar(b.dataset.rtap)},true);
 // 24 nov 2026: los nombres de los retos en los que está (para el buscador del mapa)
 window.RETOSDE=function(p,kind){try{const k=(kind==="cumbres"?"c:":"l:")+norm(p.c)+(p.co?"@"+p.co.id:""),a=indice().get(k);return a?a.map(R=>R.n):[]}catch(e){return[]}};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-rtag]");if(!b)return;e.stopPropagation();e.preventDefault();abrir(b.dataset.rtag)},true);
@@ -7514,5 +7523,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="24/11 19:07 · 9bd8f2";window.LDC_BUILD="9bd8f26608";window.LDC_FUNC="fad9ba2ce0";(function(){const B="9bd8f26608";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="24/11 19:24 · a2f261";window.LDC_BUILD="a2f2612ca4";window.LDC_FUNC="8140b20cd4";(function(){const B="a2f2612ca4";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
