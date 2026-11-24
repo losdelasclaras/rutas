@@ -1,6 +1,6 @@
-# Informe del robot · 24/11/2026 15:51
+# Informe del robot · 24/11/2026 16:01
 
-**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 1 nuevas, 0 cambiadas, 0 quitadas; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos; regeneración forzada
+**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Caleyando con Cienfuegos
 
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
@@ -10,7 +10,7 @@
 - 🔎 «Foz de Meleros y Pico la Silla desde Geras»: sin dificultad. Texto del cuadro: «Circular desde Geras de Gordón (León): la Foz de Meleros con sus peldaños de ferrata, la cumbre del Pico la Silla (1.852 m), el refugio de Brañaredonda, el valle de Palanco y la vuelta por el hayedo de la Boyariza . 📏 15 km Distancia 📈 +900 m Desnivel ⏱️ 6 h Con paradas 🏔️ 1.852 m Pico la Silla ⚠️ Media Foz equipada 🔄 Circular Desde Geras 📍 Geras de Gordón (León) 🗺️ Reserva de la Biosfera del Alto Bernesga 📅 Junio de 2024 🏔️ Los tres hitos del día Foz de Meleros Peldaños y escaleras Un desfiladero equipado para pasar junto al arroyo. Pico la Silla 1.852 m La cumbre del día. Hayedo de la»
 - Blog: sin entradas nuevas.
 - 🗺️ Mapa: 701 puntos (0 nuevos o movidos, 0 quitados).
-- 📷 Foto nueva en tu mapa: «Pico Abogueru (906 m.)»
+- Fotos de tu mapa: 233, sin cambios.
 - Drive: sin tracks nuevos.
 - Correcciones a mano: 52 (sin cambios).
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
@@ -23,12 +23,12 @@
 - 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (6): Desafío Somiedo 2022 (MDS) · la-ercina-cangues-donis-verdilluenga-trea-cain-valdion-culie · Puirtu Braña - Picu Torres - Picu Valverde - Puirtu Braña · puirtu-brana-ayer-torres-cabal-luna-cuevas-ayer · Salgueiro_Climb · Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
 - ⛰ Camudando'l camín: 53 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ✏️ Camudando'l camín: 37 rutas con corrección a mano
-- 🤝 Colaborador «Camudando'l camín»: 151 puntos, 38 tracks.
+- Colaborador «Camudando'l camín»: sin cambios.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
 -    (42 peticiones a su web en 1.2 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: HTTP Error 504: Gateway Timeout <?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"     "http://www.w3.org/T; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: <urlopen error [Errno 101] Network is unreachable>; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
