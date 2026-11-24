@@ -18,7 +18,7 @@ const mapEl=document.getElementById("map");
   L.DomUtil.setPosition(n,t.subtract(L.point(0,H[k]/2,true)).add(L.point(o.offset)).add(this._getAnchor()))};
  window.__lblH=H}
 const map=L.map(mapEl,{zoomControl:false,minZoom:5,maxZoom:18,zoomSnap:0.5,worldCopyJump:false});
-const OTM=L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{subdomains:"abc",maxNativeZoom:17,maxZoom:18,crossOrigin:true,
+const OTM=L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{subdomains:"abc",maxNativeZoom:17,maxZoom:18,crossOrigin:true,zIndex:1,keepBuffer:3,
   attribution:'Mapa © <a href="https://opentopomap.org" target="_blank" rel="noopener">OpenTopoMap</a> (CC-BY-SA) · datos © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'});
 map.attributionControl.setPrefix(false);
 // botones +/- de zoom: solo en pantallas grandes (en el móvil se pellizca)
@@ -144,9 +144,13 @@ setTimeout(()=>{const b=document.querySelector('[data-lay="tracks"]');if(b)b.set
 /* mapa de fondo: topográfico (OpenTopoMap), IGN, ortofoto PNOA o ninguno. Los del IGN solo cubren España: debajo queda el topográfico */
 const ESP=L.latLngBounds([35.2,-9.6],[43.95,4.6]),IGNATT='© <a href="https://www.ign.es" target="_blank" rel="noopener">IGN</a> (CC BY 4.0 scne.es)';
 const wmts=(svc,layer,fmt)=>`https://www.ign.es/wmts/${svc}?service=WMTS&request=GetTile&version=1.0.0&Format=image/${fmt}&layer=${layer}&style=default&tilematrixset=GoogleMapsCompatible&TileMatrix={z}&TileRow={y}&TileCol={x}`;
-const BASES={topo:[OTM],
-  ign:[OTM,L.tileLayer(wmts("mapa-raster","MTN","jpeg"),{minZoom:4,maxNativeZoom:17,maxZoom:18,bounds:ESP,crossOrigin:true,attribution:"Mapa ráster "+IGNATT})],
-  orto:[OTM,L.tileLayer(wmts("pnoa-ma","OI.OrthoimageCoverage","jpeg"),{minZoom:4,maxNativeZoom:19,maxZoom:18,bounds:ESP,crossOrigin:true,attribution:"Ortofoto PNOA "+IGNATT})],
+// 24 nov 2026: «colchón» debajo del mapa: el mismo topográfico pero con 2 niveles menos de detalle (cada imagen tapa 4×4 de las normales).
+// Al alejar el mapa, mientras llegan las imágenes buenas, se ve el mapa algo borroso en vez de en blanco. Pide muy pocas imágenes (1 de cada 16).
+const OTMLO=L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{subdomains:"abc",tileSize:1024,zoomOffset:-2,minZoom:5,maxNativeZoom:12,maxZoom:18,crossOrigin:true,zIndex:0,keepBuffer:1,attribution:""});
+OTMLO.on("add",()=>{const c=OTMLO.getContainer&&OTMLO.getContainer();if(c)c.classList.add("otmlo")});
+const BASES={topo:[OTMLO,OTM],
+  ign:[OTMLO,OTM,L.tileLayer(wmts("mapa-raster","MTN","jpeg"),{minZoom:4,maxNativeZoom:17,maxZoom:18,bounds:ESP,crossOrigin:true,zIndex:2,keepBuffer:3,attribution:"Mapa ráster "+IGNATT})],
+  orto:[OTMLO,OTM,L.tileLayer(wmts("pnoa-ma","OI.OrthoimageCoverage","jpeg"),{minZoom:4,maxNativeZoom:19,maxZoom:18,bounds:ESP,crossOrigin:true,zIndex:2,keepBuffer:3,attribution:"Ortofoto PNOA "+IGNATT})],
   none:[]};
 let BASE=store.get("ldc-base",store.get("ldc-ign","0")==="1"?"ign":"topo");if(!BASES[BASE]||BASE==="none")BASE="topo";   // 9 nov 2026: quitado «Sin mapa» de Capas
 window.__TL={};for(const k in BASES)for(const l of BASES[k]){if(l.__w)continue;l.__w=1;const h=(l._url||"").split("/")[2]||"?";l.on("tileload",()=>{(__TL[h]=__TL[h]||{ok:0,err:0}).ok++}).on("tileerror",()=>{(__TL[h]=__TL[h]||{ok:0,err:0}).err++})}
