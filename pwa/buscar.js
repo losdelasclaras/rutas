@@ -20,7 +20,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 #mres button span{flex:1;min-width:0}#mres button b{display:block;font-size:15.5px;line-height:1.25}#mres button small{display:block;color:var(--muted);font-size:13px}
 #mres .todo{justify-content:center;font-weight:800;color:var(--mark);border-top:1px solid var(--edge);margin-top:4px}
 #mres .nada{padding:12px 14px;color:var(--muted)}
-#mres .mpu{display:flex;align-items:center}#mres .mpu>button{flex:1;min-width:0}
+#mres .rtq{color:#8a5a00;font-weight:700}:root[data-theme=dark] #mres .rtq{color:#f0c040}@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #mres .rtq{color:#f0c040}}#mres .mpu{display:flex;align-items:center}#mres .mpu>button{flex:1;min-width:0}
 #mres .mpub{display:flex;gap:6px;padding-right:10px;flex:none}#mres .mpub button{width:auto;padding:7px 10px;border:1px solid var(--edge);border-radius:999px;font-size:13.5px;font-weight:700;white-space:nowrap}
 .mpupin{pointer-events:none!important}.mpupin i{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;background:#1565c0;border:3px solid #fff;box-shadow:0 0 0 6px rgba(21,101,192,.25),0 1px 4px rgba(0,0,0,.4)}
 .mpupin b{position:absolute;left:14px;top:-12px;white-space:nowrap;background:rgba(255,255,255,.92);color:#0d47a1;font:800 14px/1.2 system-ui,sans-serif;padding:3px 7px;border-radius:7px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
@@ -52,14 +52,16 @@ function busca(q0){const q=nk(q0);RES=[];if(q.length<2){res.hidden=true;return}
   // rutas del grupo y de los colaboradores
   for(const r of R){if(!r.u)continue;const sc=Math.min(tiene(routeTitle(r),q),tiene((r.p||[]).map(i=>P[i].c).join(" "),q)+1);if(sc<9)out.r.push({sc,t:routeTitle(r),s:[DIFT[nivG(r)],"Los de las Claras",r.y,r.r,r.km?(+r.km).toLocaleString("es-ES",{maximumFractionDigits:1})+" km":""].filter(Boolean).join(" · "),e:"📗",go:()=>{openRoute(r.id);flyTo(r.lat,r.lon,12)}})}
   const T=window.COLX&&COLX.todo?COLX.todo():[];
+  // 24 nov 2026: 🏆 si la cumbre o el lugar está en algún reto (como en Explorar)
+  const retosDe=(p,cum)=>{try{return window.RETOSDE?RETOSDE(p,cum?"cumbres":"lugares"):[]}catch(e){return[]}};
   for(const x of T){// sus títulos empiezan por la zona («Ubiña | …»): cuenta sobre todo lo de después
     const tt=x.c.includes("|")?x.c.split("|").pop():x.c,s1=tiene(tt,q),sc=s1<9?s1:tiene(x.c,q)+3;if(sc>=9)continue;
     if(x.rr==null&&COLX.oculto&&COLX.oculto(x))continue;   // 18 nov: la misma cumbre o lugar ya sale en la fila de otro blog
     if(x.rr!=null){const rr=x.co.r[x.rr]||[];out.r.push({sc:sc+.5,t:x.c,s:[DIFT[nivC(rr[5])],x.co.n,x.r,rr[3]].filter(Boolean).join(" · "),e:"📗",go:()=>COLX.open(x.ci)})}
-    else (x.k==="cumbre"?out.c:out.l).push({sc:sc+.5,t:x.c,s:[x.a?x.a.toLocaleString("es-ES")+" m":"",(COLX.de?COLX.de(x):[x.co.n]).join(" · "),x.r].filter(Boolean).join(" · "),e:x.k==="cumbre"?"⛰️":"📍",go:()=>COLX.open(x.ci)})}
+    else (x.k==="cumbre"?out.c:out.l).push({sc:sc+.5,t:x.c,s:[x.a?x.a.toLocaleString("es-ES")+" m":"",(COLX.de?COLX.de(x):[x.co.n]).join(" · "),x.r].filter(Boolean).join(" · "),e:x.k==="cumbre"?"⛰️":"📍",rt:retosDe(x,x.k==="cumbre"),go:()=>COLX.open(x.ci)})}
   // cumbres y lugares del grupo (sin repetir nombre)
   const vis=new Set();P.forEach((p,i)=>{if(p.x)return;const k=nk(p.c);if(vis.has(k))return;const sc=tiene(p.c,q);if(sc>=9)return;vis.add(k);
-    (p.t==="cumbre"?out.c:out.l).push({sc,t:p.c,s:[p.a?p.a.toLocaleString("es-ES")+" m":"",(COLX.deG?COLX.deG(i):["Los de las Claras"]).join(" · "),p.r].filter(Boolean).join(" · "),e:p.t==="cumbre"?"⛰️":"📍",go:()=>{pickRoute(i);flyTo(p.lat,p.lon,13)}})});
+    (p.t==="cumbre"?out.c:out.l).push({sc,t:p.c,s:[p.a?p.a.toLocaleString("es-ES")+" m":"",(COLX.deG?COLX.deG(i):["Los de las Claras"]).join(" · "),p.r].filter(Boolean).join(" · "),e:p.t==="cumbre"?"⛰️":"📍",rt:retosDe(p,p.t==="cumbre"),go:()=>{pickRoute(i);flyTo(p.lat,p.lon,13)}})});
   // pueblos: rutas cerca
   try{for(const s of (window.findSites?findSites(q0):[]).filter(s=>!/^(lugar del mapa|cumbre|lugar|ruta)/i.test(s.k||"")).slice(0,6))out.p.push({sc:0,pu:1,la:s.lat,lo:s.lon,t:s.alt?s.alt.split(";")[0]:s.n,s:[s.k,s.reg].filter(Boolean).join(" · "),e:"🏘️",go:()=>{quitaPin();if(window.CERCA&&CERCA.en)CERCA.en(s.lat,s.lon,s.n);else flyTo(s.lat,s.lon,13)},mapa:()=>verPueblo(s)})}catch(e){}
   // 22 nov 2026: la lista de pueblos de la app solo cubre Asturias y alrededores. Para el resto (Galicia, País Vasco, Navarra,
@@ -73,9 +75,9 @@ function busca(q0){const q=nk(q0);RES=[];if(q.length<2){res.hidden=true;return}
    out.p=out.p.map((x,i)=>[rk(x),i,x]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]).map(a=>a[2]).slice(0,6)}
   const ord=a=>a.sort((x,y)=>x.sc-y.sc||x.t.localeCompare(y.t,"es"));
   // la misma cumbre o lugar puede estar en el grupo y en un colaborador: solo una vez
-  const uno=a=>{const v=new Set();return a.filter(x=>{const k=nk(x.t.split("|").pop());if(v.has(k))return false;v.add(k);return true})};
+  const uno=a=>{const v=new Map();return a.filter(x=>{const k=nk(x.t.split("|").pop()),y=v.get(k);if(y){if(x.rt&&x.rt.length)y.rt=[...new Set((y.rt||[]).concat(x.rt))];return false}v.set(k,x);return true})};
   const sec=[["Rutas",ord(out.r).slice(0,5)],["Cumbres",uno(ord(out.c)).slice(0,5)],["Lugares",uno(ord(out.l)).slice(0,3)],["Pueblos",out.p]];
-  let h="";for(const[n,l]of sec){if(!l.length)continue;h+=`<h4>${n}</h4>`+l.map(x=>{RES.push(x);const i=RES.length-1,b=`<button data-mr="${i}"><span class="e">${x.e}</span><span><b>${esc(x.t)}</b>${x.s?`<small>${esc(x.s)}</small>`:""}</span></button>`;
+  let h="";for(const[n,l]of sec){if(!l.length)continue;h+=`<h4>${n}</h4>`+l.map(x=>{RES.push(x);const i=RES.length-1,b=`<button data-mr="${i}"><span class="e">${x.e}</span><span><b>${esc(x.t)}</b>${x.s?`<small>${esc(x.s)}</small>`:""}${x.rt&&x.rt.length?`<small class="rtq">🏆 ${esc(x.rt.join(" · "))}</small>`:""}</span></button>`;
     return x.pu?`<div class="mpu">${b}<span class="mpub"><button data-mr="${i}" title="Rutas cerca de ${esc(x.t)}">🥾 Rutas</button><button data-mrr="${i}" title="Acercar el mapa a ${esc(x.t)}">🗺 Mapa</button></span></div>`:b}).join("")}
   res.innerHTML=(h||`<p class="nada">No encuentro nada con «${esc(q0)}».</p>`)+`<button class="todo" data-mtodo>Ver todo en Explorar ›</button>`;res.hidden=false}
 let tm=0;inp.addEventListener("input",()=>{bx.hidden=!inp.value;clearTimeout(tm);tm=setTimeout(()=>busca(inp.value),120)});

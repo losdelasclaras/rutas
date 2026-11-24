@@ -466,6 +466,8 @@ function indice(){if(TGI&&performance.now()-TGT<5000)return TGI;TGT=performance.
   TGS=sig;TGI=new Map();for(const R of v){if(estado(R).k==="fi"||R.activo===false||!R.items.length)continue;for(const it of R.items)for(const k of it.keys){const a=TGI.get(k)||[];if(!a.includes(R))a.push(R);TGI.set(k,a)}}return TGI}
 window.RETOTAG=function(p,kind){try{const k=(kind==="cumbres"?"c:":"l:")+norm(p.c)+(p.co?"@"+p.co.id:""),a=indice().get(k);if(!a||!a.length)return"";
   return a.map(R=>`<button class="rttag" data-rtag="${esc(R.id)}">🏆 ${esc(R.n)}</button>`).join("")}catch(e){return""}};
+// 24 nov 2026: los nombres de los retos en los que está (para el buscador del mapa)
+window.RETOSDE=function(p,kind){try{const k=(kind==="cumbres"?"c:":"l:")+norm(p.c)+(p.co?"@"+p.co.id:""),a=indice().get(k);return a?a.map(R=>R.n):[]}catch(e){return[]}};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-rtag]");if(!b)return;e.stopPropagation();e.preventDefault();abrir(b.dataset.rtag)},true);
 window.RETOS={abrir,pinta};
 // cada vez que se enseña la pestaña, se repinta y se miran retos nuevos
