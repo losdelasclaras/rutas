@@ -179,7 +179,9 @@ const PUBT={},PUBJ={};
 function payload(R){const u=usr(),L=lo(R.id),h={},v={};
   for(const it of R.items)if(hecho(R,it)){h[it.id]=(L.h&&L.h[it.id])||1;if(conTrack(it))v[it.id]=1}
   const n=prog(R);return{r:R.id,u:u.uid,nom:String(LOC._nom||"").slice(0,30),n,tot:R.tot,comp:n>=R.tot,h,v}}
-function publica(R,ya){const L=LOC[R.id];if(!L||!L.pub||!usr())return;clearTimeout(PUBT[R.id]);
+// 24 nov 2026: «apuntado» es de una cuenta, no del móvil (antes, al entrar con otra cuenta en el mismo móvil, se apuntaba también esa:
+// Jonathan salía 3 veces en Techos). L.pub guarda el uid de la cuenta apuntada; los antiguos (true) pasan a la cuenta que esté dentro.
+function publica(R,ya){const L=LOC[R.id],u=usr();if(!L||!L.pub||!u)return;if(L.pub===true){L.pub=u.uid;saveLoc()}if(L.pub!==u.uid)return;clearTimeout(PUBT[R.id]);
   PUBT[R.id]=setTimeout(async()=>{try{const d=payload(R),j=JSON.stringify(d);if(PUBJ[R.id]===j)return;
     const a=await fb();await a.fs.setDoc(a.fs.doc(a.db,"retosu",R.id+"_"+d.u),Object.assign({t:Date.now()},d));PUBJ[R.id]=j;
     const c=PART[R.id];if(c){c.l=c.l.filter(x=>x.u!==d.u);c.l.push(d);if(CUR===R.id)pinta()}}catch(e){console.warn("publicar reto",e)}},ya?0:1500)}
@@ -232,13 +234,13 @@ function pintaReto(R){const n=prog(R),st=estado(R),H=hitos(R.tot),L=lo(R.id),u=u
     <div class="rtmeds">${H.map((x,i)=>`<span class="md">${medalla(x,i,i===H.length-1,n>=x,44)}${i===H.length-1?"Completo":["Bronce","Plata","Oro","Platino"][Math.min(i,3)]}</span>`).join("")}</div>
     <p class="nx">${sig==null?"🏆 ¡Reto completado!":sig===R.tot?`Te faltan <b>${R.tot-n}</b> para completarlo`:`Te faltan <b>${sig-n}</b> para la medalla de ${sig}`}</p></div>
   <button class="rtb pri" data-rtmapa style="width:100%;margin:0 0 12px">🗺 Ver el reto en el mapa</button>`}
-  <div class="rtjoin">${L.pub&&u?`<p>✅ Estás apuntado como <b>${esc(LOC._nom||"")}</b>. Los demás ven tu progreso.</p><div class="rw"><button class="rtb sm" data-rtnom>✏️ Cambiar nombre</button><button class="rtb sm" data-rtsal>Dejar de salir en la lista</button></div>`
+  <div class="rtjoin">${L.pub&&u&&(L.pub===true||L.pub===u.uid)?`<p>✅ Estás apuntado como <b>${esc(LOC._nom||"")}</b>. Los demás ven tu progreso.</p><div class="rw"><button class="rtb sm" data-rtnom>✏️ Cambiar nombre</button><button class="rtb sm" data-rtsal>Dejar de salir en la lista</button></div>`
     :`<p>Apúntate para salir en la lista de participantes y poder subir una foto de cada cumbre.${u?"":" Hace falta entrar con Google."}</p><div class="rw"><button class="rtb pri" data-rtjoin>🙋 Apuntarme al reto</button></div>`}</div>
   <div class="subtabs" style="grid-template-columns:repeat(2,1fr)"><button role="tab" data-rtsub="cum" aria-selected="${SUB==="cum"}"><span class="i">⛰️</span><span>${R.u==="concejos"?"Cumbres":"Lista"}</span><small>${R.items.length}</small></button><button role="tab" data-rtsub="gente" aria-selected="${SUB==="gente"}"><span class="i">👥</span><span>Participantes</span><small>${PART[R.id]?part.length:"…"}</small></button></div>
   ${SUB==="cum"?`<div class="rtfil">${[["todas","Todas"],["hechas","✓ Hechas"],["pend","Me faltan"]].map(([k,t])=>`<button data-rtfil="${k}" aria-pressed="${FIL===k}">${t}</button>`).join("")}</div>
     ${its.map(it=>`<div class="rtit${hecho(R,it)?" ok":""}"><button class="rtck" data-rtck="${esc(it.id)}" aria-label="Hecha"${!st.on&&fechas?" disabled":""}>✓</button>
       <button class="rtinfo" data-rtit="${esc(it.id)}"><b>${esc(it.n)}</b><small>${[it.sub,it.a?it.a+" m":""].filter(Boolean).map(esc).join(" · ")}</small></button><span class="rtn">${cuenta[it.id]?"👥 "+cuenta[it.id]:""}</span></div>`).join("")||`<p class="rtvacio">Nada por aquí.</p>`}`
-  :`${!PART[R.id]?`<p class="rtvacio">Cargando…</p>`:part.length?part.map((p,i)=>`<div class="rtpe" data-rtpe="${i}"><span class="pos">${i+1}</span>${mejor(R,p.n||0)||`<span style="width:30px"></span>`}<span class="nm"><b>${esc(p.nom||"Sin nombre")}${p.comp?" 🏆":""}</b><small>${p.n||0} de ${R.tot} ${esc(R.u)}${Object.keys(p.v||{}).length?` · ✔ ${Object.keys(p.v).length} con track`:""}</small></span></div>`).join("")
+  :`${!PART[R.id]?`<p class="rtvacio">Cargando…</p>`:part.length?part.map((p,i)=>`<div class="rtpe" data-rtpe="${i}"><span class="pos">${i+1}</span>${mejor(R,p.n||0)||`<span style="width:30px"></span>`}<span class="nm"><b>${esc(p.nom||"Sin nombre")}${p.comp?" 🏆":""}</b><small>${p.n||0} de ${R.tot} ${esc(R.u)}${Object.keys(p.v||{}).length?` · ✔ ${Object.keys(p.v).length} con track`:""}</small></span>${esAdm()?`<button class="rtb sm" data-rtdel="${esc(p.u||"")}" title="Quitar de la lista (administrador)" style="margin-left:auto;flex:none">🗑</button>`:""}</div>`).join("")
     :`<p class="rtvacio">${PART[R.id].err?"Sin conexión: no se puede ver quién participa.":"Todavía no se ha apuntado nadie. ¡Sé el primero!"}</p>`}`}
   <p style="margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap"><button class="rtb" data-rtshare>📤 Compartir el reto</button>${!R.fijo&&esMio(R.raw)?`<button class="rtb" data-rtedit>✏️ Editar el reto</button>`:""}</p>`}
 
@@ -251,7 +253,7 @@ async function ficha(R,it){ITEM={R,it};const c=PART[R.id]?PART[R.id].l:[];const 
     <p style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><button class="rtb ${ok?"":"pri"}" data-rtck="${esc(it.id)}"${!st.on&&R.tipo==="fechas"?" disabled":""}>${ok?"✓ Hecha (tocar para quitar)":"✓ La he subido"}</button><button class="rtb" data-rtmap>🗺 Ver en el mapa</button></p>
     <h4>La han subido (${quien.length})</h4>${quien.length?`<div class="who">${quien.map(p=>`<span>${esc(p.nom||"?")}${p.v&&p.v[it.id]?" ✔":""}</span>`).join("")}</div><p style="font-size:13px;color:var(--muted);margin:6px 0 0">✔ = con un track guardado que pasa por la cumbre.</p>`:`<p style="color:var(--muted);margin:0">Nadie de los apuntados todavía.</p>`}
     <h4>Fotos</h4><div class="rtfotos" id="rtfotos"><p style="color:var(--muted);margin:0">Cargando…</p></div>
-    ${ok&&L.pub&&u?`<p style="margin:12px 0 0"><label class="rtb" style="display:inline-block;margin:0">📷 Subir mi foto<input type="file" accept="image/*" data-rtfoto hidden></label></p>`:ok?`<p style="font-size:14px;color:var(--muted)">Apúntate al reto para subir tu foto de la cumbre.</p>`:""}`);
+    ${ok&&L.pub&&u&&(L.pub===true||L.pub===u.uid)?`<p style="margin:12px 0 0"><label class="rtb" style="display:inline-block;margin:0">📷 Subir mi foto<input type="file" accept="image/*" data-rtfoto hidden></label></p>`:ok?`<p style="font-size:14px;color:var(--muted)">Apúntate al reto para subir tu foto de la cumbre.</p>`:""}`);
   try{const a=await fb(),fs=a.fs,s=await fs.getDocs(fs.query(fs.collection(a.db,"retosf"),fs.where("r","==",R.id),fs.where("i","==",it.id)));
     const v=[];s.forEach(d=>v.push(Object.assign({id:d.id},d.data())));v.sort((x,y)=>(y.t||0)-(x.t||0));
     if(!ITEM||ITEM.it!==it)return;FOTOS=v;const el=document.getElementById("rtfotos");if(!el)return;
@@ -290,7 +292,7 @@ function verMapa(it){cierraDlg();if(typeof showView==="function")showView("mapa"
 /* ---------- apuntarse ---------- */
 let QUIERE=null;
 function apuntar(id){const u=usr();if(!u){QUIERE=id;toast("Entra con tu cuenta de Google para apuntarte");if(window.cuentaPanel)cuentaPanel();return}
-  pideNombre(()=>{const L=lo(id);L.pub=true;L.sig=true;saveLoc();const R=reto(id);if(R){revisa(R,false);publica(R,true)}toast("✅ Apuntado. ¡A por ello!");setTimeout(()=>cargaPart(id,true),1500);pinta()})}
+  pideNombre(()=>{const L=lo(id);L.pub=u.uid;L.sig=true;saveLoc();const R=reto(id);if(R){revisa(R,false);publica(R,true)}toast("✅ Apuntado. ¡A por ello!");setTimeout(()=>cargaPart(id,true),1500);pinta()})}
 function pideNombre(fn){const u=usr();const def=LOC._nom||((u&&u.displayName)||"").trim().split(/\s+/)[0]||"";
   abreDlg(`<div class="hd"><h3>¿Con qué nombre quieres salir?</h3><button class="x" data-rtx aria-label="Cerrar">×</button></div>
     <p style="margin:0 0 6px;color:var(--muted)">Es el nombre que verán los demás en la lista del reto y en tus fotos. Puede ser un apodo.</p>
@@ -377,6 +379,9 @@ box.addEventListener("click",e=>{const t=e.target;let b;
   if(b=t.closest("[data-rtfil]")){FIL=b.dataset.rtfil;pinta();return}
   if(b=t.closest("[data-rtck]")){const it=R.items.find(x=>x.id===b.dataset.rtck);if(it)marca(R,it);return}
   if(b=t.closest("[data-rtit]")){const it=R.items.find(x=>x.id===b.dataset.rtit);if(it)ficha(R,it);return}
+  // 24 nov 2026: el administrador puede quitar a alguien de la lista (p. ej. apuntados repetidos); su progreso sigue en su móvil
+  if(b=t.closest("[data-rtdel]")){const uid=b.dataset.rtdel,p=(PART[R.id].l||[]).find(x=>x.u===uid);if(!uid||!confirmar(`¿Quitar a «${(p&&p.nom)||"?"}» (${(p&&p.n)||0} de ${R.tot}) de la lista de este reto?`))return;
+    fb().then(a=>a.fs.deleteDoc(a.fs.doc(a.db,"retosu",R.id+"_"+uid))).then(()=>{PART[R.id].l=PART[R.id].l.filter(x=>x.u!==uid);const u=usr();if(u&&u.uid===uid){const L=lo(R.id);L.pub=false;saveLoc();delete PUBJ[R.id]}toast("Quitado de la lista");pinta()},e=>toast("No se ha podido quitar: "+((e&&e.message)||e)));return}
   if(b=t.closest("[data-rtpe]")){const ls=b.querySelector(".ls");if(ls){ls.remove();return}const p=(PART[R.id].l.slice().sort((a,c)=>(c.n||0)-(a.n||0)||(a.t||0)-(c.t||0)))[+b.dataset.rtpe];if(!p)return;
     const nm=R.items.filter(x=>p.h&&p.h[x.id]).map(x=>x.n+(p.v&&p.v[x.id]?" ✔":""));b.insertAdjacentHTML("beforeend",`<div class="ls">${nm.length?esc(nm.join(" · ")):"Todavía nada."}</div>`);b.style.flexWrap="wrap";return}
   if(t.closest("[data-rtmapa]")){mapaReto(R.id);return}
