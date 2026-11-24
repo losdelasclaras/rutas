@@ -84,10 +84,12 @@ return [
   "Si ves algo mal (una ruta con el track que no es, un punto repetido…), escríbenos: lo arreglamos.",["Ir a Explorar","explorar"]],
 ["⭐","La dificultad, las cumbres destacadas y la escalada",[
   "En Explorar › Rutas, cada ruta lleva su dificultad: 🟢 Baja · 🟡 Moderada · 🔴 Alta · ⚫ Muy alta. La pone cada blog; si no sale, aún no la ha puesto.",
+  "La dificultad es orientativa. Los blogs la hemos revisado lo mejor que sabemos, pero muchas rutas son antiguas y no podemos garantizar que esté bien reflejada: el monte cambia y cada persona lo vive distinto.",
+  "Por eso la ficha de la ruta te avisa cuando la ruta es antigua y cuando creemos que la dificultad es alta o muy alta. Léelos y lee el reportaje del blog antes de ir.",
   "Las cumbres con ⭐ y aro dorado son las que destaca cada blog. En el mapa se ven más grandes y con su nombre desde más lejos.",
   "En Explorar › Cumbres, el filtro «⭐ Destacadas» enseña solo esas.",
   "Las escuelas y zonas de escalada llevan su propio icono naranja, en Lugares."],
-  "Las rutas de dificultad alta o muy alta llevan además un aviso rojo en su ficha.",["Ir a Explorar","explorar"]],
+  "Ante la duda, tú decides según tu experiencia, tu forma física y el tiempo que haga.",["Ir a Explorar","explorar"]],
 ["🗂","Cómo funcionan las Capas del mapa",[
   "Toca «Capas», abajo a la izquierda. Se abre «Qué ver en el mapa». Cada línea tiene un interruptor: verde = se ve, gris = no se ve.",
   "Mapa: elige el mapa de fondo (topográfico, IGN u ortofoto, que es la foto aérea).",
@@ -212,7 +214,8 @@ return [
 ["⚠️","Seguridad y condiciones de uso",[
   "La información de las rutas es orientativa: el monte cambia y los tracks pueden tener errores.",
   "Antes de ir, lee el reportaje del blog y valora tu forma física, tu experiencia, el equipo y la meteo.",
-  "Las rutas de dificultad alta o muy alta llevan un aviso rojo. En una emergencia, llama al 112 o usa el botón SOS."],
+  "La dificultad también es orientativa: muchas rutas son antiguas. Por eso salen avisos en las rutas antiguas y en las de dificultad alta o muy alta.",
+  "En una emergencia, llama al 112 o usa el botón SOS."],
   "Tú decides y tú eres responsable de tu seguridad.",["Leer las condiciones de uso","condiciones"]],
 ["✉️","Contacto y privacidad",[
   "¿Algo no va o tienes una idea? Escríbenos a losdelasclaras@gmail.com.",
