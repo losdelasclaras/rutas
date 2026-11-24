@@ -35,7 +35,7 @@ async function alAbrir(){try{
 
 /* --- nombres sin pisarse --- */
 function prio(el){const c=el.classList,la=el.querySelector(".la");const alt=la?parseInt(la.textContent.replace(/\D/g,""))||0:0;
-  return c.contains("pk")?3e4+alt:c.contains("co")?(c.contains("cum")?1e4:0):2e4}
+  return c.contains("dst")?1e5+alt:c.contains("pk")?3e4+alt:c.contains("co")?(c.contains("cum")?1e4:0):2e4}
 function rotulos(){const els=[...mapEl.querySelectorAll(".leaflet-tooltip.lbl")];if(!els.length)return;
   const it=[];for(const el of els){el.classList.remove("lbl-tapa");if(getComputedStyle(el).display==="none")continue;const r=el.getBoundingClientRect();if(!r.width)continue;it.push({el,r,p:prio(el)})}
   it.sort((a,b)=>b.p-a.p);const ok=[];const M=2;

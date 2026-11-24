@@ -349,6 +349,13 @@ const CATX={"Área Recreativa de Moniello":"costa","Cinque Torri":"cumbre","La L
  "El Fielato":"brana","Vallemoru":"brana","Ventaniella":"brana","Ripatera":"bosque","Traviesas de Somajía":"senda"};
 const catOf=n=>{if(CATX[n])return CATX[n];for(const [k,,re] of CATS)if(re.test(n))return k;return "otros"};
 P.forEach(p=>{p.cat=p.ic?"invernal":p.t==="cumbre"?"cumbre":p.x?"inicio":catOf(p.c)});
+// 24 nov 2026: ⭐ cumbres destacadas por cada blog (pedido por Dani). Firestore › correcciones con k "<blog>|dest:<nombre>" (blog "g" = el grupo);
+// el robot las junta en app/destacadas.json (máx. 50 por blog). Lo que marca uno en su móvil lo ve él ya al volver a abrir (ldc-dest-loc).
+const destN=n=>norm(String(n||"")).replace(/[^a-z0-9ñ ]+/g," ").replace(/\s+/g," ").trim(),destKey=(co,n)=>co+"|dest:"+destN(n);
+const DESTL=(()=>{try{return JSON.parse(localStorage.getItem("ldc-dest-loc")||"{}")}catch(e){return{}}})();
+const DESTK=new Set(Object.keys(DATA.dest||{}));for(const k in DESTL){if(DESTL[k])DESTK.add(k);else DESTK.delete(k)}
+const esDest=(co,n)=>DESTK.has(destKey(co,n));
+P.forEach(p=>{if(p.t==="cumbre"&&esDest("g",p.c))p.dest=1});
 const ICO=c=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true"><use href="#ic-${c}" x="-12" y="-12" width="24" height="24"/></svg>`;
 /* ---------- filters ---------- */
 /* ---------- paisajes: se deducen de los puntos y del título de cada ruta ---------- */
@@ -781,22 +788,22 @@ const PEAKS=uniq(P.map((p,i)=>({...p,i})).filter(p=>p.t==="cumbre").sort((a,b)=>
 const SPOTS=uniq(P.map((p,i)=>({...p,i})).filter(p=>p.t!=="cumbre"&&!p.x&&!/^(inicio|subida|p\.?r\.?\s)|\sdesde\s/i.test(p.c)),p=>norm(p.c)).map(p=>({...p,cat:catOf(p.c)})).sort((a,b)=>a.c.localeCompare(b.c,"es"));
 const COL={cumbres:{all:PEAKS,pre:"c:",done:"Subida",want:"Quiero subir",f:"todas",g:"todas",z:"cant",el:"col-cumbres"},
            lugares:{all:SPOTS,pre:"l:",done:"He estado",want:"Quiero ir",f:"todas",g:"todas",z:"cant",el:"col-lugares"}};
-const BANDS=[["todas","Todas"],["2000","+2.000 m"],["1500","1.500–2.000"],["0","Menos de 1.500"],["techo","Techos de concejo"]];
-function bandOk(p,g){return g==="todas"||(g==="3000"&&p.a>=3000)||(g==="2000"&&p.a>=2000)||(g==="1500"&&p.a>=1500&&p.a<2000)||(g==="0"&&p.a<1500)||(g==="techo"&&p.techo)}
+const BANDS=[["todas","Todas"],["dest","⭐ Destacadas"],["2000","+2.000 m"],["1500","1.500–2.000"],["0","Menos de 1.500"],["techo","Techos de concejo"]];
+function bandOk(p,g){return g==="todas"||(g==="dest"&&!!p.dest)||(g==="3000"&&p.a>=3000)||(g==="2000"&&p.a>=2000)||(g==="1500"&&p.a>=1500&&p.a<2000)||(g==="0"&&p.a<1500)||(g==="techo"&&p.techo)}
 function renderCol(kind){const C=COL[kind];
   const zc=Object.keys(ZONES).map(z=>[z,C.all.filter(p=>zoneOf(p.r)===z).length]);
   const qs=nk(document.getElementById("qs-"+kind).value||"");
   const ZI=C.all.filter(p=>zoneOf(p.r)===C.z);
   C.items=qs?ZI.filter(p=>nk(p.c).includes(qs)):ZI;const key=p=>C.pre+norm(p.c);const st=p=>MARKS[key(p)]||"";
   const nd=ZI.filter(p=>st(p)==="hecha").length,nq=ZI.filter(p=>st(p)==="quiero").length;
-  const groups=kind==="cumbres"?(C.z==="cant"?BANDS:[["todas","Todas"],["3000","+3.000 m"],["2000","+2.000 m"],["1500","1.500–2.000"],["0","Menos de 1.500"]]):[["todas","Todos"],...CATS.map(([k,l])=>[k,l]).filter(([k])=>C.items.some(p=>p.cat===k)),...(C.items.some(p=>p.cat==="otros")?[["otros","Otros"]]:[])];
+  const groups=kind==="cumbres"?(C.z==="cant"?BANDS:[["todas","Todas"],["dest","⭐ Destacadas"],["3000","+3.000 m"],["2000","+2.000 m"],["1500","1.500–2.000"],["0","Menos de 1.500"]]):[["todas","Todos"],...CATS.map(([k,l])=>[k,l]).filter(([k])=>C.items.some(p=>p.cat===k)),...(C.items.some(p=>p.cat==="otros")?[["otros","Otros"]]:[])];
   const list=C.items.filter(p=>(kind==="cumbres"?bandOk(p,C.g):(C.g==="todas"||p.cat===C.g))&&(C.f==="todas"||(C.f==="hecha"&&st(p)==="hecha")||(C.f==="quiero"&&st(p)==="quiero")||(C.f==="nada"&&!st(p))));
   const HTML=`
   <div class="colhead"><div class="prog"><i style="width:${(ZI.length?nd/ZI.length*100:0).toFixed(1)}%"></i></div>
    <p class="note"><b>${nd}</b> de ${ZI.length} ${kind==="cumbres"?"subidas":"visitados"} · <b>${nq}</b> en tu lista de pendientes</p></div>
   ${zc.filter(x=>x[1]).length>1?`<div class="chips" data-k="${kind}" data-grp="z">${zc.filter(x=>x[1]).map(([z,n])=>`<button class="chip" data-v="${z}" aria-pressed="${C.z===z}">${ZONES[z].n} · ${n}</button>`).join("")}</div>`:""}
   <div class="chips" data-k="${kind}" data-grp="f">${[["todas","Todas"],["hecha",C.done],["quiero",C.want],["nada","Sin marcar"]].map(([v,l])=>`<button class="chip" data-v="${v}" aria-pressed="${C.f===v}">${l}</button>`).join("")}</div>
-  <div class="chips" data-k="${kind}" data-grp="g">${groups.map(([v,l])=>`<button class="chip" data-v="${v}" aria-pressed="${C.g===v}">${l}</button>`).join("")}</div>
+  <div class="chips" data-k="${kind}" data-grp="g">${groups.filter(([v])=>v!=="dest"||C.items.some(p=>p.dest)).map(([v,l])=>`<button class="chip" data-v="${v}" aria-pressed="${C.g===v}">${l}</button>`).join("")}</div>
   <div class="rows">${list.length?list.map(p=>{const s=st(p);const rsx=(P[p.i].rs||[]).filter(x=>R[x].u),ri=rsx[0];
     return `<div class="row crow${s?" is-"+s:""}">${ICO(kind==="cumbres"?"cumbre":p.cat)}<div class="t"><b>${esc(p.c)}</b><span>${kind==="cumbres"?esc(p.r)+(p.techo?" · Techo de "+esc(p.techo):""):esc((CATS.find(c=>c[0]===p.cat)||[,"Otros"])[1])+" · "+esc(p.r)}</span></div>
     ${p.a?`<span class="alt">${fmtA(p.a)}</span>`:""}

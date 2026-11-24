@@ -30,18 +30,22 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .leaflet-control-zoom a:hover{background:#f1f1f1!important}}
 </style>`);
 const TRC=L.canvas({padding:.3,tolerance:6});const MK={};let RMT=0;
+// 24 nov 2026: ⭐ cumbres destacadas: icono algo más grande con estrella dorada y nombre desde zoom 10 (las demás, 12,5)
+document.head.insertAdjacentHTML("beforeend",`<style>.leaflet-marker-icon.dest svg{transform:scale(1.4);filter:drop-shadow(0 0 1.5px #f5b301) drop-shadow(0 0 1.5px #f5b301)}.leaflet-marker-icon .dst{position:absolute;left:6px;top:-26px;font-size:17px;line-height:1;color:#ffc400;text-shadow:0 0 2px #000,0 0 2px #000;pointer-events:none;font-style:normal}#map .leaflet-tooltip.lbl.dst{font-weight:800}#map:not(.hide-peaks) .leaflet-tooltip.lbl.pk.dst{display:block}</style>`);
+const DESTZ=10;
+const icoP=p=>L.divIcon({className:"pt "+(p.t==="cumbre"?"cumbre":"spot")+(p.x?" ini":"")+(p.dest?" dest":""),html:`<svg viewBox="-12 -12 24 24"><use href="#ic-${p.cat}" x="-12" y="-12" width="24" height="24"/></svg>${p.dest?'<i class="dst">★</i>':""}`,iconSize:[0,0]});
+window.MKdest=i=>{const m=MK[i],p=P[i];if(!m)return;m.setIcon(icoP(p));m.setZIndexOffset((p.a||0)+(p.dest?6000:0));try{applyCls(i)}catch(e){}if(p.dest&&map.getZoom()>=DESTZ&&map.hasLayer(m))bindLbl(i)};
 P.forEach((p,i)=>{
-  const cls="pt "+(p.t==="cumbre"?"cumbre":"spot")+(p.x?" ini":"");
-  const m=L.marker([p.lat,p.lon],{icon:L.divIcon({className:cls,html:`<svg viewBox="-12 -12 24 24"><use href="#ic-${p.cat}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:p.c+(p.a?" · "+fmtA(p.a):""),riseOnHover:true,zIndexOffset:p.t==="cumbre"?(p.a||0):0});
+  const m=L.marker([p.lat,p.lon],{icon:icoP(p),title:p.c+(p.a?" · "+fmtA(p.a):""),riseOnHover:true,zIndexOffset:p.t==="cumbre"?(p.a||0)+(p.dest?6000:0):0});
   m.on("click",e=>{L.DomEvent.stopPropagation(e); if(nearMode){nearAt(p.lat,p.lon);return} pickRoute(i)});
-  m.on("add",()=>{applyCls(i);if(map.getZoom()>=LBLZ)bindLbl(i)}); MK[i]=m;
+  m.on("add",()=>{applyCls(i);if(map.getZoom()>=(P[i].dest?DESTZ:LBLZ))bindLbl(i)}); MK[i]=m;
 });
 __mk("puntos creados");
 // pequeñas ayudas con la misma forma que usaba el mapa anterior
 // las etiquetas de nombre solo existen cuando se ven (zoom 12 o más); así el mapa no arrastra cientos de rótulos ocultos
 const LBLZ=12.5; // nov 2026: antes 11.5
-function bindLbl(i){const m=MK[i],p=P[i];if(m.getTooltip())return;m.bindTooltip(esc(p.c)+(p.t==="cumbre"&&p.a?` <span class="la">${p.a.toLocaleString("es-ES")} m</span>`:""),{permanent:true,direction:"right",offset:[10,0],className:"lbl "+(p.t==="cumbre"?"pk":p.x?"ini":"sp"),interactive:false});clearTimeout(RMT);RMT=setTimeout(refreshMarks,30)}
-let LBLON=null;function syncLbls(){const on=map.getZoom()>=LBLZ;if(on===LBLON)return;LBLON=on;for(const i in MK){const m=MK[i];if(on){if(map.hasLayer(m))bindLbl(i)}else if(m.getTooltip())m.unbindTooltip()}}
+function bindLbl(i){const m=MK[i],p=P[i];if(m.getTooltip())return;m.bindTooltip(esc(p.c)+(p.t==="cumbre"&&p.a?` <span class="la">${p.a.toLocaleString("es-ES")} m</span>`:""),{permanent:true,direction:"right",offset:[10,0],className:"lbl "+(p.t==="cumbre"?"pk":p.x?"ini":"sp")+(p.dest?" dst":""),interactive:false});clearTimeout(RMT);RMT=setTimeout(refreshMarks,30)}
+let LBLON=null;function syncLbls(){const z=map.getZoom(),st=z>=LBLZ?2:z>=DESTZ?1:0;if(st===LBLON)return;LBLON=st;for(const i in MK){const m=MK[i],on=st===2||(st===1&&P[i].dest);if(on){if(map.hasLayer(m))bindLbl(i)}else if(m.getTooltip())m.unbindTooltip()}}
 map.on("zoomend",syncLbls);map.on("zoomstart",()=>{for(const k in window.__lblH)delete window.__lblH[k]});   // por si cambió el tamaño de letra (Aa+)
 const CLS={};function applyCls(i){const el=MK[i].getElement();if(!el)return;for(const c in CLS){const f=CLS[c];el.classList.toggle(c,typeof f==="function"?!!f(+i):!!f)}}
 const nodes={classed(c,f){CLS[c]=f;for(const i in MK){const el=MK[i].getElement();if(el)el.classList.toggle(c,typeof f==="function"?!!f(+i):!!f)}return nodes}};

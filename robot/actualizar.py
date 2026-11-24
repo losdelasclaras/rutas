@@ -1270,7 +1270,28 @@ def correcciones():
         if tr and tr != 'sin':
             try: f['tr'] = [[float(q[0]), float(q[1])] + ([float(q[2])] if len(q) > 2 and q[2] is not None else []) for q in json.loads(tr)]
             except Exception: f.pop('tr', None)
-        C[f['k']] = {k: v for k, v in f.items() if k in ('k', 'co', 'u', 'sb', 'n', 'f', 'di', 'wk', 'tr', 'oc') and v not in (None, '')}
+        C[f['k']] = {k: v for k, v in f.items() if k in ('k', 'co', 'u', 'sb', 'n', 'f', 'di', 'wk', 'tr', 'oc', 't') and v not in (None, '')}
+    # 24 nov 2026: cumbres destacadas (⭐) desde la ficha de la cumbre: k = "<co>|dest:<nombre normalizado>", co = "g" o el colaborador.
+    # Van aparte (app/destacadas.json), como mucho 50 por blog (las primeras que se marcaron), y no son correcciones de rutas.
+    DS = {k: v for k, v in C.items() if '|dest:' in k}
+    for k in DS: C.pop(k)
+    for v in C.values(): v.pop('t', None)   # la hora solo hace falta para el orden de las destacadas
+    try:
+        quedan = {}
+        cuenta = {}
+        for k in sorted(DS, key=lambda k: DS[k].get('t') or 0):
+            co = DS[k].get('co') or k.split('|')[0]
+            if cuenta.get(co, 0) >= 50: continue
+            cuenta[co] = cuenta.get(co, 0) + 1
+            quedan[k] = {'co': co, 'n': DS[k].get('n') or ''}
+        df = APP + 'destacadas.json'
+        oldd = json.load(open(df)) if os.path.exists(df) else {}
+        if quedan != oldd:
+            json.dump(quedan, open(df, 'w'), ensure_ascii=False, separators=(',', ':'))
+            log(f'⭐ Cumbres destacadas: {len(quedan)} (' + ', '.join(f'{c}: {n}' for c, n in sorted(cuenta.items())) + ')')
+            CAMBIOS.append('cumbres destacadas')
+    except Exception as e:
+        log(f'⚠️ Cumbres destacadas: {e}')
     old = dict(CORR)
     CORR = C
     if C != old:

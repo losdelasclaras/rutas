@@ -85,7 +85,7 @@ function pinta(o){
   sheet.classList.remove("full");sheet._cor=null;
   sheet.innerHTML=`<div class="grab"></div>${o.foto?`<div class="photo"><img src="${esc(o.foto)}" alt="" onerror="this.parentNode.remove()"></div>`:""}
   ${tipoHTML(o.cum||o.a?"cumbre":"lugar","")}<div class="sheet-head"><h2>${esc(o.n)}</h2><button class="x" aria-label="Cerrar" data-close data-trcox>×</button></div>
-  ${o.a?`<div class="meta"><span class="tag alt">${fmtA(o.a)}</span></div>`:""}
+  ${o.a||esDe(o)?`<div class="meta">${o.a?`<span class="tag alt">${fmtA(o.a)}</span>`:""}${esDe(o)?`<span class="tag dsttag">⭐ Cumbre destacada</span>`:""}</div>`:""}
   ${o.alias.length?`<p class="fpt-alias">También llamada ${o.alias.map(esc).join(", ")}</p>`:""}
   <div class="mkblock fpt" data-ll="${o.lat},${o.lon}"><span>${o.cum?"¿La has subido?":"¿Has estado?"}</span>${o.mk}</div>
   <div class="sec fpt-rutas"><h3>${tit}${tot>1?` (${tot})`:""}</h3>
@@ -103,7 +103,10 @@ function pinta(o){
   if(o.gi!=null)nodes.classed("sel",i=>i===o.gi);else nodes.classed("sel",false);
   if(window.showTrack)showTrack(o.solo||null);{const tp=document.getElementById("trkpill");if(tp)tp.hidden=true}
   if(typeof ensureZone==="function")ensureZone(zoneAt(o.lat,o.lon));
-  sheet.hidden=false;sheet.scrollTop=0}
+  sheet.hidden=false;sheet.scrollTop=0;
+  if(o.cum&&window.EDITOR)EDITOR.destBtn(o,sheet)}
+// 24 nov 2026: ⭐ cumbre destacada si cualquiera de los blogs que la tienen la destacó
+function esDe(o){return !!(o.cum&&typeof esDest==="function"&&(o.own||[]).some(x=>esDest(x.co,x.n)))}
 
 // datos de una cumbre o lugar del grupo (y de los colaboradores que la tengan)
 function deGrupo(gi){const p=P[gi];const cum=p.t==="cumbre";
@@ -128,6 +131,7 @@ function junta(o,ms){const by={},alias=new Set(),keys=[];let foto=o.rs&&o.rs.fin
     for(const k of ks)for(const ri of (DATA.pz[k]||[])){const r=R[ri];if(!r||!r.u)continue;
       let g=o.src.find(x=>x.grp);if(!g){g={n:GRP.n,c:GRP.c,grp:true,cnt:0,y:0,rows:[],its:[]};o.src.unshift(g)}
       if(g.its.some(x=>x.g===r))continue;g.rows.push(rowHTML(r));g.its.push({g:r});g.cnt++;g.y=Math.max(g.y||0,r.y||0);if(!foto&&r.f!=null)foto=`fotos/${r.f}.jpg`}}
+  o.own=(o.gi!=null?[{co:"g",n:P[o.gi].c}]:[]).concat(ms.map(({c,p})=>({co:c.id,n:p[0]})));   // 24 nov 2026: de qué blogs es (⭐ destacar)
   o.src=o.src.concat(Object.values(by));o.alias=[...alias];o.keys=keys.filter(k=>k!==o.main);o.foto=foto;
   const g=o.rs||[];o.solo=g.length===1&&o.src.every(x=>x.grp||!x.cnt)?g[0]:null;
   return o}

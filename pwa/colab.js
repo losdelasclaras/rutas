@@ -97,6 +97,9 @@ function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);const deR=k==="c
     if(sheet.hidden||!sheet.querySelector("h2")||sheet.querySelector("h2").textContent!==p[0])return;
     pintaCo(c,ls,p[9].filter(i=>((J[c.id]||[])[i]||[]).length>1).map(i=>c.r[i][0]),[la,lo])});
   else flyTo(la,lo)}
+// 24 nov 2026: ⭐ cumbres destacadas (ver template: esDest)
+const icoC=(c,k,cum,dst)=>L.divIcon({className:"cpt"+(cum?" cum":"")+(dst?" dest":""),html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>${dst?'<i class="dst">★</i>':""}`,iconSize:[0,0]});
+const setDestM=m=>{if(m.__dest)return;m.__dest=1;m.setIcon(icoC(m.__co,m.__kc,m.__cum,1));m.setZIndexOffset(6000);try{coMarks(m)}catch(e){}};
 const nuevo2=store.get("ldc-capas2co","0")!=="1";store.set("ldc-capas2co","1");
 // nov 2026 (4): colaboradores visibles: cumbres, lugares y rutas encendidos, tracks apagados (una vez a todos; después, lo que deje cada uno)
 const nuevo3=store.get("ldc-capas3co","0")!=="1";store.set("ldc-capas3co","1");
@@ -105,8 +108,8 @@ for(const c of CO){for(const[k]of KC(c))if(LAY[`co_${c.id}_${k}`]===undefined||n
   for(const ln of c.l){const ll=ln[1];
     g.addLayer(L.polyline(ll,{color:"#fff",weight:6,opacity:.85,interactive:false,renderer:TRC}));
     g.addLayer(L.polyline(ll,{color:c.c,weight:3.5,opacity:.95,renderer:TRC}).bindTooltip(esc(ln[0])+" · "+esc(c.n),{sticky:true}))}
-  for(const p of c.p){const k=catCo(p),cum=k==="cumbre";
-    const m=L.marker([p[1],p[2]],{icon:L.divIcon({className:"cpt"+(cum?" cum":""),html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>`,iconSize:[0,0]}),title:p[0]+" · "+c.n,riseOnHover:true,zIndexOffset:cum?-20:-50});
+  for(const p of c.p){const k=catCo(p),cum=k==="cumbre",dst=cum&&typeof esDest==="function"&&esDest(c.id,p[0]);
+    const m=L.marker([p[1],p[2]],{icon:icoC(c,k,cum,dst),title:p[0]+" · "+c.n,riseOnHover:true,zIndexOffset:dst?6000:cum?-20:-50});m.__dest=dst;m.__kc=k;
     m.on("click",e=>{L.DomEvent.stopPropagation(e);if(typeof nearMode!=="undefined"&&nearMode){nearAt(p[1],p[2]);return}abrirCum(c,p,k);setTimeout(()=>tambien(m),0)});
     m.__p=p;m.__co=c;m.__cum=cum;m.__n=p[0];m.__c=c.c;m.__g=c.id+(cum?"_c":"_l");m.__k=coKey(c,p[0],k);m.on("add",()=>setTimeout(()=>coMarks(m),0));LBL.push(m);(MKG[c.id+(cum?"_c":"_l")] ||= []).push(m)}
   G[c.id+"_l"]=g;G[c.id+"_c"]=gc;
@@ -255,8 +258,8 @@ const LOFF={};const marcados=gid=>(LAY.mh||LAY.mq)&&(MKG[gid]||[]).some(m=>{cons
 const quiere=(c,k)=>{const key=`co_${c.id}_${k}`;LOFF[c.id+"_"+k]=!LAY[key]&&k!=="t";return!window.FOLONLY&&(!!LAY[key]||(k!=="t"&&marcados(c.id+"_"+k)))};
 {const orig=window.refreshMarks;if(orig)window.refreshMarks=function(){orig.apply(this,arguments);if(CO.some(c=>KC(c).some(([k])=>{const g=G[c.id+"_"+k];return g&&quiere(c,k)!==map.hasLayer(g)})))sync();for(const m of LBL)coMarks(m)}}
 // los nombres, como los del grupo: solo con el mapa cerca
-function lbls(){const z=map.getZoom();for(const m of LBL){const on=z>=(m.__cum?13:14); // nov 2026: antes 12 para todo
-  if(!m._map){if(m.getTooltip())m.unbindTooltip();continue}if(on&&!m.getTooltip())m.bindTooltip(esc(m.__n),{permanent:true,direction:"right",offset:[10,0],className:"lbl co"+(m.__cum?" cum":""),interactive:false});const te=on&&m.getTooltip()&&m.getTooltip().getElement();if(te)te.style.setProperty("--cc",m.__c);else if(!on&&m.getTooltip())m.unbindTooltip()}}
+function lbls(){const z=map.getZoom();for(const m of LBL){const on=z>=(m.__cum?13:14)||(m.__dest&&z>=10); // nov 2026: antes 12 para todo
+  if(!m._map){if(m.getTooltip())m.unbindTooltip();continue}if(on&&!m.getTooltip())m.bindTooltip(esc(m.__n),{permanent:true,direction:"right",offset:[10,0],className:"lbl co"+(m.__cum?" cum":"")+(m.__dest?" dst":""),interactive:false});const te=on&&m.getTooltip()&&m.getTooltip().getElement();if(te)te.style.setProperty("--cc",m.__c);else if(!on&&m.getTooltip())m.unbindTooltip()}}
 function sync(){for(const c of CO)for(const[k]of KC(c)){const key=`co_${c.id}_${k}`,on=quiere(c,k),g=G[c.id+"_"+k];
     if(on&&k==="t")pintaTracks(c);
     if(on&&!map.hasLayer(g))g.addTo(map);else if(!on&&map.hasLayer(g))g.remove();
@@ -326,6 +329,12 @@ for(const c of CO)(c.r||[]).forEach((r,i)=>{ALL.push({c:r[0],r:r[1],lat:r[8][0],
  for(let i=0;i<cos.length;i++){const it=cos[i],cum=it.k==="cumbre",sw=sig(it.c);
    for(const j of VC(it.lat,it.lon,i)){const g=cos[j];if(g.dup||(g.k==="cumbre")!==cum)continue;const d=kmd(g,it);if(d>=3||g.co===it.co)continue;if(distintas(g.c,it.c)&&!(d<.6&&mismoN(g.c,it.c)))continue;
      if((nk(g.c)===nk(it.c)&&d<3)||(d<(cum?.35:.25)&&[...sig(g.c)].some(w=>sw.has(w)))||(cum&&d<.15)||(d<.6&&pareN(g.c,it.c))){it.dup=g;(g.mates=g.mates||[]).push(it);g.both=g.both||it.co.n;if(!g.a&&it.a)g.a=it.a;break}}}}
+// ⭐ destacadas: la estrella vale para la cumbre aunque se vea con el icono de otro blog (la del grupo o la del primer colaborador)
+if(typeof esDest==="function")for(const x of ALL){if(!x.pp||x.k!=="cumbre"||!esDest(x.co.id,x.c))continue;x.dest=1;
+  if(x.par){const gi=x.par.i;x.par.dest=1;if(!P[gi].dest){P[gi].dest=1;if(window.MKdest)MKdest(gi)}}
+  if(x.dup){x.dup.dest=1;const m=(MKG[x.dup.co.id+"_c"]||[]).find(m=>m.__p===x.dup.pp);if(m)setDestM(m)}}
+// y al revés: si el grupo la tiene destacada, también la fila del colaborador que la tiene
+for(const x of ALL)if(x.par&&P[x.par.i]&&P[x.par.i].dest)x.dest=1;
 const GRPO={n:"Los de las Claras",c:"#c3262e",id:"grupo"};
 // 18 nov 2026: en la lista salen también los blogs que no tienen el punto pero sí una ruta que sube a esa cumbre (como en su ficha)
 const pzKeys=p=>{const ks=[],ck=x=>{if(x&&x.co&&x.pp){const j=x.co.p.indexOf(x.pp);if(j>=0)ks.push(x.co.id+":"+j)}};

@@ -212,6 +212,7 @@ rep('const ZI=C.all.filter(p=>zoneOf(p.r)===C.z);','const ZI=C.near?C.all.filter
 rep('const HTML=`','const HTML=`${window.cercaBar?cercaBar(kind,C):""}')
 rep('${zc.filter(x=>x[1]).length>1?','${!C.near&&zc.filter(x=>x[1]).length>1?')
 rep('<b>${esc(p.c)}</b><span>${window.COLX?COLX.src(p):""}','<b>${esc(p.c)}</b><span>${C.near?`<b class="dkm">${p._d<10?p._d.toFixed(1).replace(".",","):p._d.toFixed(0)} km</b> · `:""}${window.COLX?COLX.src(p):""}')
+rep('<b>${esc(p.c)}</b><span>${C.near?','<b>${p.dest&&kind==="cumbres"?"⭐ ":""}${esc(p.c)}</b><span>${C.near?')   # 24 nov 2026: cumbres destacadas
 rep('if(st.t==="search"){h=`<h2 class="ovh">Rutas cerca de…</h2>','if(st.t==="search"){h=`<h2 class="ovh">${window.cercaTit?cercaTit():"Rutas cerca de…"}</h2>')
 rep('p=>ovShow({t:"near",lat:p.coords.latitude,lon:p.coords.longitude,label:"tu ubicación"})','p=>{if(window.nearPick&&nearPick(p.coords.latitude,p.coords.longitude,"tu ubicación"))return;ovShow({t:"near",lat:p.coords.latitude,lon:p.coords.longitude,label:"tu ubicación"})}')
 rep('const st=e.target.closest("[data-ovsite]");if(st){const s=ovFound[+st.dataset.ovsite];ovShow(','const st=e.target.closest("[data-ovsite]");if(st){const s=ovFound[+st.dataset.ovsite];if(window.nearPick&&nearPick(s.lat,s.lon,s.alt?s.alt.split(";")[0]:s.n))return;ovShow(')
@@ -354,6 +355,7 @@ for _r in d['routes']:
     if not os.path.exists(_f) or open(_f).read()!=_j: open(_f,'w').write(_j)
 t=t.replace('__TRACKS__',f'tracks-{_th}.json')
 PL=[[p['n'].split(' / ')[0],p['t'],p['lat'],p['lon']] for p in json.load(open(A+'places.json'))]; o={'c':0,'t':1,'v':2}; PL.sort(key=lambda p:o[p[1]])
+d['dest']=json.load(open(A+'destacadas.json')) if os.path.exists(A+'destacadas.json') else {}   # 24 nov 2026: cumbres destacadas (robot › correcciones)
 d['pz']=_GPZ   # rutas del grupo que pasan por cada cumbre (ver _pasan)
 t=t.replace('__DATA__',json.dumps(d,ensure_ascii=False,separators=(',',':'))).replace('__GEO__',open(A+'geo.json').read()).replace('__TOWNS__',open(A+'towns.json').read()).replace('__PLACES__',json.dumps(PL,ensure_ascii=False,separators=(',',':')))
 # aviso de versión nueva: QUITADO a petición suya (26 oct). version.txt se deja vacío para que las copias antiguas de la app dejen de avisar

@@ -24,6 +24,24 @@ async function miPermiso(){const e=em();if(!e){ED={em:"",co:null,ok:true};return
 const puede=co=>esAdm()||(!!co&&ED.co===co);
 const hash=s=>{let h=5381;for(const ch of String(s))h=((h<<5)+h+ch.charCodeAt(0))>>>0;return h.toString(36)};
 const idDe=k=>k.split("|")[0]+"_"+hash(k);
+// 24 nov 2026: ⭐ destacar cumbres (pedido por Dani). En la ficha de una cumbre, solo para administradores y para el editor del blog que la tiene.
+// Se guarda en correcciones/<id> = {k:"<blog>|dest:<nombre>", co, n, t}; quitarla = borrar el documento. El robot › app/destacadas.json (máx. 50 por blog).
+window.EDITOR={destBtn:async(o,sh0)=>{if(!usr()||typeof destKey!=="function")return;await miPermiso();
+  const own=o.own||[],x=esAdm()?(own.find(y=>y.co==="g")||own[0]):own.find(y=>y.co===ED.co);if(!x)return;
+  if(sh.hidden||!sh._pt||sh._pt.n!==o.n||sh.querySelector(".dstbox"))return;
+  const k=destKey(x.co,x.n);
+  const pinta=()=>{const on=DESTK.has(k),b=sh.querySelector(".dstb");if(b)b.textContent=on?"✖ Quitar de destacadas":"⭐ Destacar cumbre"};
+  const ref=sh.querySelector(".mkblock.fpt");if(!ref)return;
+  ref.insertAdjacentHTML("afterend",`<div class="dstbox" style="margin:8px 0 4px"><button class="btn ghost dstb" style="width:100%"></button><p class="note" style="margin:4px 2px 0;font-size:13px">Lo ves porque eres editor${x.co==="g"?" de Los de las Claras":""}. Las destacadas salen más grandes y con estrella en el mapa (máximo 50 por blog).</p></div>`);pinta();
+  sh.querySelector(".dstb").onclick=async ev=>{const b=ev.currentTarget,on=DESTK.has(k);
+    if(!on&&[...DESTK].filter(q=>q.startsWith(x.co+"|dest:")).length>=50){toast("Ya hay 50 cumbres destacadas de este blog: quita alguna antes");return}
+    b.disabled=true;
+    try{const a=await fb(),ref=a.fs.doc(a.db,"correcciones",idDe(k));
+      if(on)await a.fs.deleteDoc(ref);else await a.fs.setDoc(ref,{k,co:x.co,n:x.n,t:Date.now()});
+      if(on)DESTK.delete(k);else DESTK.add(k);DESTL[k]=!on;try{localStorage.setItem("ldc-dest-loc",JSON.stringify(DESTL))}catch(e){}
+      toast(on?"Quitada de destacadas · para todos, mañana":"⭐ Destacada · tú la verás al volver a abrir la app; los demás, mañana");pinta()}
+    catch(err){toast(/permission|insufficient/i.test(String(err&&err.message))?"No tienes permiso para destacar esta cumbre":"No se ha podido guardar ahora; prueba con cobertura")}
+    b.disabled=false}}};
 const DIFS=[["baja","Baja"],["moderada","Moderada"],["alta","Alta"],["muy-alta","Muy alta"]];
 const MES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 
