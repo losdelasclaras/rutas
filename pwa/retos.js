@@ -454,8 +454,10 @@ function mapaOff(){if(RMLAY){RMLAY.remove();RMLAY=null}if(RMSAV){for(const k in 
 // al irse del mapa (otra pestaña), las capas vuelven a como estaban
 setTimeout(()=>{const sv=window.showView;if(typeof sv==="function")window.showView=showView=function(v){if(v!=="mapa"&&RMAP)mapaOff();return sv.apply(this,arguments)}},0);
 /* ---------- en Explorar › Cumbres y Lugares: etiqueta «🏆 Techos de Asturias» en las que están en algún reto (al tocar, abre el reto) ---------- */
-let TGI=null,TGS="";
-function indice(){const v=todos(),sig=v.map(R=>R.id+":"+R.items.length).join("|")+"|"+(window.COLX&&COLX.todo?COLX.todo().length:0);if(TGI&&sig===TGS)return TGI;
+let TGI=null,TGS="",TGT=0;
+// 24 nov 2026: Explorar › Cumbres llamaba a esto una vez por fila (más de 600) y cada vez rehacía todos los retos (Montes Cimeros: ~8 ms) → 5 s parado.
+// Ahora el índice vale 5 s: lo que se pinta de golpe usa el mismo.
+function indice(){if(TGI&&performance.now()-TGT<5000)return TGI;TGT=performance.now();const v=todos(),sig=v.map(R=>R.id+":"+R.items.length).join("|")+"|"+(window.COLX&&COLX.todo?COLX.todo().length:0);if(TGI&&sig===TGS)return TGI;
   TGS=sig;TGI=new Map();for(const R of v){if(estado(R).k==="fi"||R.activo===false||!R.items.length)continue;for(const it of R.items)for(const k of it.keys){const a=TGI.get(k)||[];if(!a.includes(R))a.push(R);TGI.set(k,a)}}return TGI}
 window.RETOTAG=function(p,kind){try{const k=(kind==="cumbres"?"c:":"l:")+norm(p.c)+(p.co?"@"+p.co.id:""),a=indice().get(k);if(!a||!a.length)return"";
   return a.map(R=>`<button class="rttag" data-rtag="${esc(R.id)}">🏆 ${esc(R.n)}</button>`).join("")}catch(e){return""}};
