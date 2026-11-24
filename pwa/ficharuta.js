@@ -184,7 +184,9 @@ document.addEventListener("click",e=>{
   if(e.target.closest("[data-frx]")){menu(null,false);return}
   // al elegir una opción, el menú se cierra
   if(e.target.closest(".frmas>.btn"))setTimeout(()=>menu(null,false),250);
-  const oc=e.target.closest(".fru [data-frco]");if(oc&&window.COLX){e.stopPropagation();COLX.abrirRuta(+oc.dataset.frco);return}
+  const oc=e.target.closest(".fru [data-frco]");if(oc&&window.COLX){e.stopPropagation();const ci=+oc.dataset.frco;
+    // 24 nov 2026: las de un punto enlazado a su blog (Caleyando con Cienfuegos) no son rutas con track: se abre la ficha de la entrada, o la del punto
+    if(!COLX.abrirRuta(ci)){const it=COLX.todo()[ci];if(!(it&&it.pp&&it.pp[4]&&it.co&&window.ABREBLOG&&ABREBLOG(it.co.id,it.pp[4])))COLX.open(ci)}return}
   // ☆ Guardar ruta (grupo)
   const gr=e.target.closest("[data-frgr]");if(gr){e.preventDefault();const r=R[+gr.dataset.frgr];if(!r||!window.MTRUTA)return;
     const go=()=>{const on=MTRUTA.alterna(r);gr.innerHTML=gRL(on);toast(on?"Ruta guardada en Mis cosas":"Quitada de Mis cosas")};
