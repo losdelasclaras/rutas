@@ -1,8 +1,12 @@
-# Informe del robot · 25/11/2026 16:48
+# Informe del robot · 25/11/2026 20:46
 
-**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 1 nuevas, 0 cambiadas, 0 quitadas; correcciones a mano; colaborador Caleyando con Cienfuegos; regeneración forzada
+**Cambios:** foto recuperada; foto recuperada; mapa: 4 puntos nuevos o cambiados; fotos del mapa: 17 nuevas, 0 cambiadas, 0 quitadas; correcciones a mano; colaborador Caleyando con Cienfuegos; regeneración forzada
 
-- ✏️ «Pico Niañu - Les Cuerries - Foz de Foceyo»: completado dif = Alta
+- ✏️ «Travesia al pico Hibeo (de la Rebollada a Ardisana)»: completado dif = Moderada
+- ✏️ «LLOSA VIANGO DESDE LA TORNERÍA (TRAVESÍA)»: completado dif = Difícil
+- 📷 «Circular en torno a la Sierra de Peñamayor y ascensión al Triguero»: foto recuperada
+- ✏️ «Circular en torno a la Sierra de Peñamayor y ascensión al Triguero»: completado dif = Media
+- ✏️ «PICO LA MUA (INVERNAL) TRAVESÍA DE FRAYNOQUISO A FUENSANTA»: completado dif = Media
 - 🔎 «Pico Maoñu, Monte Moñacos y Foz de los Cubilones»: sin dificultad. Texto del cuadro: «orcada Traslasenda a Braña Nueva y bajamos por la foz de los Cubilones , un rincón sombrío y apenas pisado en el que hay que bajar por el propio cauce del arroyo. La vuelta, por la pista junto al río Infierno y sus pozas. 📏 19 km Distancia 📈 1.300 m Desnivel acumulado 🏔️ 1.429 m Maoñu ⚡ Muy Difícil Tramos sin sendero y maleza y bajada por el cauce de la foz 🔄 Circular Desde La Pesanca (405 m) 📅 2012 Publicada en noviembre ⚠️ Antes de ir Monte privado: el monte que va del Maoñu hasta pasar la cresta de Los Tornos, en la vertiente que cae hacia el río Infierno, es de uso privado y está prohibido»
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
@@ -11,10 +15,30 @@
 - 🔎 «Bosque de Purupintu desde Orle»: sin dificultad. Texto del cuadro: « circular desde Orlé (Caso) por el corazón de Redes : la foz del ríu Secu, las majadas de Melordaña y Valloseru , los collados de la Becerrera y, como premio, el solitario hayedo de Purupintu por la senda de Los Duernos. 📏 17 km Distancia 📈 +1.150 m Desnivel aprox. ⏱️ 7 h Duración estimada 🏔️ 1.740 m Hombro sobre el Collau Cardiel ⚠️ Media Por distancia, sin pasos técnicos 🔄 Circular Desde Orlé 📍 Orlé (Caso, Asturias) 🗺️ Parque Natural de Redes 📅 Noviembre de 2024 🌲 Los tres hitos del día Foz de Melordaña Por el lecho del arroyo Bloques pulidos que obligan a usar las manos. Majada de Melordaña»
 - 🔎 «Foz de Meleros y Pico la Silla desde Geras»: sin dificultad. Texto del cuadro: «Circular desde Geras de Gordón (León): la Foz de Meleros con sus peldaños de ferrata, la cumbre del Pico la Silla (1.852 m), el refugio de Brañaredonda, el valle de Palanco y la vuelta por el hayedo de la Boyariza . 📏 15 km Distancia 📈 +900 m Desnivel ⏱️ 6 h Con paradas 🏔️ 1.852 m Pico la Silla ⚠️ Media Foz equipada 🔄 Circular Desde Geras 📍 Geras de Gordón (León) 🗺️ Reserva de la Biosfera del Alto Bernesga 📅 Junio de 2024 🏔️ Los tres hitos del día Foz de Meleros Peldaños y escaleras Un desfiladero equipado para pasar junto al arroyo. Pico la Silla 1.852 m La cumbre del día. Hayedo de la»
 - Blog: sin entradas nuevas.
-- 🗺️ Mapa: 702 puntos (0 nuevos o movidos, 0 quitados).
-- 📷 Foto nueva en tu mapa: «Foz de Foceyo»
+- 🗺️ Mapa: 703 puntos (4 nuevos o movidos, 3 quitados).
+-    + ALBERGUE DE FAYACAVA (780 m.)
+-    + Bufones de Pría
+-    + Playa de La Canal
+-    + Bufones de Arenillas
+- 📷 Foto nueva en tu mapa: «Pico Babu (918 m.)»
+- 📷 Foto nueva en tu mapa: «Cuetu les Duernes (1.059 m.)»
+- 📷 Foto nueva en tu mapa: «Pico la Mua (987 m.)»
+- 📷 Foto nueva en tu mapa: «Foces del Río Pendón»
+- 📷 Foto nueva en tu mapa: «Cabeza las Duernas (720 m.)»
+- 📷 Foto nueva en tu mapa: «Acantilados del Infiernu»
+- 📷 Foto nueva en tu mapa: «Playa de Guadamía»
+- 📷 Foto nueva en tu mapa: «Cueva de Cobiḥeru»
+- 📷 Foto nueva en tu mapa: «Playa de la Franca»
+- 📷 Foto nueva en tu mapa: «Iglesia de Santa María de Tina (ruinas)»
+- 📷 Foto nueva en tu mapa: «Playa de Cuevas del Mar»
+- 📷 Foto nueva en tu mapa: «Hayedo de la Biescona»
+- 📷 Foto nueva en tu mapa: «ALBERGUE DE FAYACAVA (780 m.)»
+- 📷 Foto nueva en tu mapa: «Bufones de Pría»
+- 📷 Foto nueva en tu mapa: «Playa de La Canal»
+- 📷 Foto nueva en tu mapa: «Bufones de Arenillas»
+- 📷 Foto nueva en tu mapa: «Playa de Vidiago»
 - Drive: sin tracks nuevos.
-- ✏️ Correcciones a mano: 64 en total · 1 nuevas o cambiadas
+- ✏️ Correcciones a mano: 66 en total · 2 nuevas o cambiadas
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 433 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - 📝 Blog de Rutinas Varias: 11 rutas emparejadas con su entrada (146 de 406 con enlace al blog; índice con 315 entradas).
@@ -42,5 +66,5 @@
 - 📊 Datos de las rutas de Caleyando con Cienfuegos: 658 de 701 puntos con datos de su entrada, 1 no han respondido
 - 🤝 Colaborador «Caleyando con Cienfuegos»: 815 puntos, 0 tracks.
 - 📅 Salidas de la web de Civilu: 0 próximas
-- 🧵 Track añadido a «Pico Niañu - Les Cuerries - Foz de Foceyo» (13.2 km, +1190 m)
-- App regenerada: 383 rutas, 174 con track.
+- ✅ Ruta nueva en la app: «Circular en torno a la Sierra de Peñamayor y ascensión al Triguero» · sin track todavía
+- App regenerada: 384 rutas, 174 con track.
