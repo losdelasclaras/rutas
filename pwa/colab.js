@@ -93,10 +93,10 @@ function abrir(c,p,k){const[n,la,lo,d,u,f]=p,[F,resto]=ficha(d);const deR=k==="c
   sheet.hidden=false;sheet.scrollTop=0;
   // como en las cumbres del grupo: al tocarla se dibuja el track de su ruta (o rutas) y se queda al cerrar la ficha
   if(TRCO){TRCO.remove();TRCO=null}
-  if(p[9]&&p[9].length)lineas().then(J=>{const ls=p[9].map(i=>(J[c.id]||[])[i]).filter(ll=>ll&&ll.length>1);if(!ls.length){flyTo(la,lo);return}
+  if(p[9]&&p[9].length)lineas().then(J=>{const ls=p[9].map(i=>(J[c.id]||[])[i]).filter(ll=>ll&&ll.length>1);if(!ls.length){flyTo(la,lo,64);return}   // 25 nov 2026: más cerca (zoom 14; antes 11)
     if(sheet.hidden||!sheet.querySelector("h2")||sheet.querySelector("h2").textContent!==p[0])return;
     pintaCo(c,ls,p[9].filter(i=>((J[c.id]||[])[i]||[]).length>1).map(i=>c.r[i][0]),[la,lo])});
-  else flyTo(la,lo)}
+  else flyTo(la,lo,64)}
 // 24 nov 2026: ⭐ cumbres destacadas (ver template: esDest)
 const icoC=(c,k,cum,dst)=>L.divIcon({className:"cpt"+(cum?" cum":"")+(dst?" dest":""),html:`<svg viewBox="-12 -12 24 24" style="--cc:${c.c}"><use href="#ic-${k}" x="-12" y="-12" width="24" height="24"/></svg>${dst?'<i class="dst">★</i>':""}`,iconSize:[0,0]});
 const setDestM=m=>{if(m.__dest)return;m.__dest=1;m.setIcon(icoC(m.__co,m.__kc,m.__cum,1));m.setZIndexOffset(6000);try{coMarks(m)}catch(e){}};
@@ -367,7 +367,7 @@ window.COLX={
   ico:(p,kind)=>`<svg class="ico2" viewBox="-12 -12 24 24" aria-hidden="true" style="border-radius:50%;box-shadow:0 0 0 2.5px ${p.co.c}"><use href="#ic-${p.k}" x="-12" y="-12" width="24" height="24"/></svg>`,
   // 9 nov 2026: cada fila dice solo de quién es (sin «También en…»)
   src:p=>duenos(p).map(c=>`<em class="cosrc" style="color:${c.c}">${esc(c.n)}</em>`).join(" · ")+" · ",   // 12 nov 2026: todos los blogs que la tienen
-  open(ci){const it=ALL[ci];if(!it)return;if(it.rr!=null){if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>verR(it.co,it.rr),80);return}if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>abrirCum(it.co,it.pp,it.k),80)}};
+  open(ci){const it=ALL[ci];if(!it)return;if(it.rr!=null){if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>verR(it.co,it.rr),80);return}if(typeof ovCloseAll==="function")ovCloseAll();if(typeof showView==="function")showView("mapa");setTimeout(()=>{abrirCum(it.co,it.pp,it.k);try{flyTo(it.lat,it.lon,64)}catch(e){}},80)}};   // 25 nov 2026: y lleva el mapa al punto (zoom 14)
 /* ---------- también en la pestaña Rutas: sus puntos que son rutas (capas de rutas o con «Distancia:») ---------- */
 document.head.insertAdjacentHTML("beforeend",`<style>
 #list .row.src-co{background:color-mix(in srgb,var(--cc) 16%,transparent);box-shadow:inset 5px 0 0 var(--cc)}

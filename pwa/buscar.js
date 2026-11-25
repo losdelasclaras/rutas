@@ -61,7 +61,7 @@ function busca(q0){const q=nk(q0);RES=[];if(q.length<2){res.hidden=true;return}
     else (x.k==="cumbre"?out.c:out.l).push({sc:sc+.5,t:x.c,s:[x.a?x.a.toLocaleString("es-ES")+" m":"",(COLX.de?COLX.de(x):[x.co.n]).join(" · "),x.r].filter(Boolean).join(" · "),e:x.k==="cumbre"?"⛰️":"📍",rt:retosDe(x,x.k==="cumbre"),go:()=>COLX.open(x.ci)})}
   // cumbres y lugares del grupo (sin repetir nombre)
   const vis=new Set();P.forEach((p,i)=>{if(p.x)return;const k=nk(p.c);if(vis.has(k))return;const sc=tiene(p.c,q);if(sc>=9)return;vis.add(k);
-    (p.t==="cumbre"?out.c:out.l).push({sc,t:p.c,s:[p.a?p.a.toLocaleString("es-ES")+" m":"",(COLX.deG?COLX.deG(i):["Los de las Claras"]).join(" · "),p.r].filter(Boolean).join(" · "),e:p.t==="cumbre"?"⛰️":"📍",rt:retosDe(p,p.t==="cumbre"),go:()=>{pickRoute(i);flyTo(p.lat,p.lon,13)}})});
+    (p.t==="cumbre"?out.c:out.l).push({sc,t:p.c,s:[p.a?p.a.toLocaleString("es-ES")+" m":"",(COLX.deG?COLX.deG(i):["Los de las Claras"]).join(" · "),p.r].filter(Boolean).join(" · "),e:p.t==="cumbre"?"⛰️":"📍",rt:retosDe(p,p.t==="cumbre"),go:()=>{pickRoute(i);flyTo(p.lat,p.lon,64)}})});
   // pueblos: rutas cerca
   try{for(const s of (window.findSites?findSites(q0):[]).filter(s=>!/^(lugar del mapa|cumbre|lugar|ruta)/i.test(s.k||"")).slice(0,6))out.p.push({sc:0,pu:1,la:s.lat,lo:s.lon,t:s.alt?s.alt.split(";")[0]:s.n,s:[s.k,s.reg].filter(Boolean).join(" · "),e:"🏘️",go:()=>{quitaPin();if(window.CERCA&&CERCA.en)CERCA.en(s.lat,s.lon,s.n);else flyTo(s.lat,s.lon,13)},mapa:()=>verPueblo(s)})}catch(e){}
   // 22 nov 2026: la lista de pueblos de la app solo cubre Asturias y alrededores. Para el resto (Galicia, País Vasco, Navarra,
