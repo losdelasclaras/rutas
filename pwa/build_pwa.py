@@ -67,8 +67,16 @@ def _fd_sin_alpes(fd):
         if r.get('r') in ('Alpes','Dolomitas') or _lon(r.get('lon'))>ESTE:continue
         r['p']=[nuevo[i] for i in r.get('p',[]) if i in nuevo];nr.append(r)
     fd['pts']=np;fd['routes']=nr;return fd
+# 25 nov 2026: fuera los puntos de colaboradores sin nada que enseñar (sin enlace, sin ruta y sin descripción aparte de la altitud):
+# eran 28 cumbres de Rutinas Varias en el Sistema Central (sus rutas de allí no están en la app) y salían con la ficha vacía.
+# Si un día tienen ruta o enlace, vuelven a salir solas.
+def _vacio(p):
+    import re as _re
+    link=p[4] if len(p)>4 else '';rt=p[9] if len(p)>9 else None;desc=(p[3] if len(p)>3 else '') or ''
+    resto=_re.sub(r'(?im)^\s*(altitud|altura|cota)\s*:?\s*[\d.,]+\s*m?\.?\s*$','',desc).strip()
+    return not link and not rt and not resto
 def _co_sin_alpes(d):
-    d['p']=[p for p in d.get('p',[]) if not(len(p)>2 and _lon(p[2])>ESTE)]
+    d['p']=[p for p in d.get('p',[]) if not(len(p)>2 and _lon(p[2])>ESTE) and not _vacio(p)]
     def tr_este(t):
         try:return isinstance(t,list) and t and _lon(t[0][1])>ESTE
         except Exception:return False
