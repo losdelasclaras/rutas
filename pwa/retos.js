@@ -168,7 +168,10 @@ async function cargaRetos(){if(CARGA)return;CARGA=true;
     if(JSON.stringify(v)!==JSON.stringify(RETOS)){RETOS=v;store.set(RC,v);pinta();TGI=null;try{renderCols()}catch(e){}}}
   catch(e){console.warn("retos",e)}finally{CARGA=false}}
 async function cargaPart(id,forzar){const c=PART[id];if(c&&!forzar&&Date.now()-c.t<120000)return c.l;
-  try{const a=await fb(),fs=a.fs,s=await fs.getDocs(fs.query(fs.collection(a.db,"retosu"),fs.where("r","==",id)));const l=[];s.forEach(d=>l.push(d.data()));
+  try{const a=await fb(),fs=a.fs,s=await fs.getDocs(fs.query(fs.collection(a.db,"retosu"),fs.where("r","==",id)));let l=[];s.forEach(d=>l.push(d.data()));
+    // 25 nov 2026: la misma persona apuntada con varias cuentas (mismo nombre y exactamente las mismas cumbres) sale una sola vez: la más reciente.
+    // Antes del arreglo del 24 nov, entrar con otra cuenta en el mismo móvil la apuntaba sola (Jonatan salía 3 veces en Techos).
+    {const m=new Map();for(const p of l){const k=String(p.nom||"").trim().toLowerCase()+"|"+(p.n||0)+"|"+Object.keys(p.h||{}).sort().join(",");const y=m.get(k);if(!y||(p.t||0)>(y.t||0))m.set(k,p)}l=[...m.values()]}
     PART[id]={t:Date.now(),l};if(CUR===id)pinta();return l}catch(e){console.warn("retosu",e);if(!c)PART[id]={t:Date.now()-90000,l:[],err:1};return(c||PART[id]).l}}
 
 /* ✔ = tiene un track guardado que pasa a menos de 150 m */
