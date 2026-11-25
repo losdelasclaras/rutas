@@ -1,7 +1,9 @@
 name: Robot de la app
 # Cada noche mira el blog, el mapa de My Maps y la carpeta de Drive, y si hay algo nuevo regenera y publica la app.
 on:
-  schedule: [{cron: '23 3 * * *'}]     # 3:23 UTC (las 4:23 o 5:23 en España)
+  # 25 nov 2026: GitHub retrasa mucho las tareas programadas (la de las 3:23 se ha llegado a lanzar a las 13:58).
+  # Por eso hay tres horas: si una llega tarde, otra la cubre. Si no hay nada nuevo, el robot no cambia nada.
+  schedule: [{cron: '23 3 * * *'}, {cron: '41 5 * * *'}, {cron: '13 17 * * *'}]   # 3:23, 5:41 y 17:13 UTC
   workflow_dispatch: {}                 # «Run workflow» a mano desde la pestaña Actions
   push: {branches: [datos], paths: ['robot/**', '.github/workflows/robot.yml']}
 permissions: {contents: write, pages: write}
