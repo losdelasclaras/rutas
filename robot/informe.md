@@ -1,6 +1,6 @@
-# Informe del robot · 25/11/2026 10:25
+# Informe del robot · 25/11/2026 12:26
 
-**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; cumbres destacadas; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos; regeneración forzada
+**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 2 nuevas, 0 cambiadas, 0 quitadas; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos; regeneración forzada
 
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
 - 🔎 «Puente la Vidre - Cueto las Vacas - Cueto Carraspión y Foz del Rubó (Parte 1)»: sin dificultad. Texto del cuadro: «ra de Oceño: Cabeza Legua , Cueto las Vacas (1.167 m), su techo, y el Cueto Carraspión , asomado al cortado de la garganta del Rubó. La bajada por el valle del Rubó la contamos en la segunda parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏔️ 1.167 m Cueto las Vacas ⛰️ 3 cumbres Legua · Vacas · Carraspión 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ➡️ Seguir con la parte 2 📍 Las Peñas Cabriegas son uno de los rincones más cautivadores de la montaña asturiana. Hay tantos topónimos, sitios interesantes y fotos que contar que dividimos la ruta en do»
@@ -9,11 +9,11 @@
 - 🔎 «Bosque de Purupintu desde Orle»: sin dificultad. Texto del cuadro: « circular desde Orlé (Caso) por el corazón de Redes : la foz del ríu Secu, las majadas de Melordaña y Valloseru , los collados de la Becerrera y, como premio, el solitario hayedo de Purupintu por la senda de Los Duernos. 📏 17 km Distancia 📈 +1.150 m Desnivel aprox. ⏱️ 7 h Duración estimada 🏔️ 1.740 m Hombro sobre el Collau Cardiel ⚠️ Media Por distancia, sin pasos técnicos 🔄 Circular Desde Orlé 📍 Orlé (Caso, Asturias) 🗺️ Parque Natural de Redes 📅 Noviembre de 2024 🌲 Los tres hitos del día Foz de Melordaña Por el lecho del arroyo Bloques pulidos que obligan a usar las manos. Majada de Melordaña»
 - 🔎 «Foz de Meleros y Pico la Silla desde Geras»: sin dificultad. Texto del cuadro: «Circular desde Geras de Gordón (León): la Foz de Meleros con sus peldaños de ferrata, la cumbre del Pico la Silla (1.852 m), el refugio de Brañaredonda, el valle de Palanco y la vuelta por el hayedo de la Boyariza . 📏 15 km Distancia 📈 +900 m Desnivel ⏱️ 6 h Con paradas 🏔️ 1.852 m Pico la Silla ⚠️ Media Foz equipada 🔄 Circular Desde Geras 📍 Geras de Gordón (León) 🗺️ Reserva de la Biosfera del Alto Bernesga 📅 Junio de 2024 🏔️ Los tres hitos del día Foz de Meleros Peldaños y escaleras Un desfiladero equipado para pasar junto al arroyo. Pico la Silla 1.852 m La cumbre del día. Hayedo de la»
 - Blog: sin entradas nuevas.
-- 🗺️ Mapa: 701 puntos (0 nuevos o movidos, 0 quitados).
-- Fotos de tu mapa: 235, sin cambios.
+- 🗺️ Mapa: 700 puntos (0 nuevos o movidos, 1 quitados).
+- 📷 Foto nueva en tu mapa: «Foz de Los Moñacos»
+- 📷 Foto nueva en tu mapa: «Foces del Río Infierno»
 - Drive: sin tracks nuevos.
-- ⭐ Cumbres destacadas: 15 (g: 15)
-- ✏️ Correcciones a mano: 60 en total · 7 nuevas o cambiadas
+- ✏️ Correcciones a mano: 61 en total · 1 nuevas o cambiadas
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 433 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - 📝 Blog de Rutinas Varias: 11 rutas emparejadas con su entrada (146 de 406 con enlace al blog; índice con 315 entradas).
@@ -23,12 +23,16 @@
 -    (quitados 78 puntos de publicidad: capas o nombres que no queremos)
 - 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (6): Desafío Somiedo 2022 (MDS) · la-ercina-cangues-donis-verdilluenga-trea-cain-valdion-culie · Puirtu Braña - Picu Torres - Picu Valverde - Puirtu Braña · puirtu-brana-ayer-torres-cabal-luna-cuevas-ayer · Salgueiro_Climb · Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
 - ⛰ Camudando'l camín: 63 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
-- ✏️ Camudando'l camín: 45 rutas con corrección a mano
-- 📷 Fotos de rutas de Camudando'l camín (de su blog): 0 nuevas, 45 en total, 1 sin foto
-- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (46 de 46 con fecha); su blog no responde (1 fallos).
+- ✏️ Camudando'l camín: 46 rutas con corrección a mano
+- 📷 Fotos de rutas de Camudando'l camín (de su blog): 1 nuevas, 46 en total
+- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (46 de 46 con fecha).
 - 🤝 Colaborador «Camudando'l camín»: 151 puntos, 46 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
-- ⚠ No he podido leer la web de Gata con botas (https://gataconbotas.com): se queda como estaba.
+-    (42 peticiones a su web en 1.1 min)
+- 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
+- ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+- ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
 - 📷 Fotos del colaborador c5: 0 nuevas, 839 en total, 1 no se han podido bajar (<urlopen error unknown url type: hhttps>)
