@@ -107,7 +107,7 @@ function pinta(o){
   if(o.cum&&window.EDITOR)EDITOR.destBtn(o,sheet)}
 // 24 nov 2026: 🏆 retos en los que está (tocar = abrir el reto) y botón para apuntarse si aún no
 function retosF(o){try{if(!window.RETOSDE2)return"";const v=new Map();
-  for(const x of o.own||[])for(const r of RETOSDE2({c:x.n,co:x.co==="g"?null:{id:x.co}},o.cum?"cumbres":"lugares"))v.set(r.id,r);
+  for(const x of o.own||[])for(const r of RETOSDE2({c:x.n,co:x.co==="g"?null:{id:x.co},lat:o.lat,lon:o.lon},o.cum?"cumbres":"lugares"))v.set(r.id,r);
   if(!v.size)return"";
   return`<div class="rtenf" style="margin:10px 0 4px">${[...v.values()].map(r=>`<div style="display:flex;align-items:center;gap:8px;margin:6px 0"><button class="rttag" data-rtag="${esc(r.id)}" style="flex:1;min-width:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🏆 ${esc(r.n)}</button>${r.ap?`<span style="flex:none;font-size:14px;color:var(--muted)">✅ Apuntado</span>`:`<button class="rtb sm" data-rtap="${esc(r.id)}" style="flex:none;padding:4px 10px">🙋 Apuntarme</button>`}</div>`).join("")}</div>`}catch(e){return""}}
 // 24 nov 2026: ⭐ cumbre destacada si cualquiera de los blogs que la tienen la destacó

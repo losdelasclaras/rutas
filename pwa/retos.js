@@ -466,15 +466,20 @@ let TGI=null,TGS="",TGT=0;
 // 24 nov 2026: Explorar › Cumbres llamaba a esto una vez por fila (más de 600) y cada vez rehacía todos los retos (Montes Cimeros: ~8 ms) → 5 s parado.
 // Ahora el índice vale 5 s: lo que se pinta de golpe usa el mismo.
 function indice(){if(TGI&&performance.now()-TGT<5000)return TGI;TGT=performance.now();const v=todos(),sig=v.map(R=>R.id+":"+R.items.length).join("|")+"|"+(window.COLX&&COLX.todo?COLX.todo().length:0);if(TGI&&sig===TGS)return TGI;
-  TGS=sig;TGI=new Map();for(const R of v){if(estado(R).k==="fi"||R.activo===false||!R.items.length)continue;for(const it of R.items)for(const k of it.keys){const a=TGI.get(k)||[];if(!a.includes(R))a.push(R);TGI.set(k,a)}}return TGI}
-window.RETOTAG=function(p,kind){try{const k=(kind==="cumbres"?"c:":"l:")+norm(p.c)+(p.co?"@"+p.co.id:""),a=indice().get(k);if(!a||!a.length)return"";
+  TGS=sig;TGI=new Map();for(const R of v){if(estado(R).k==="fi"||R.activo===false||!R.items.length)continue;for(const it of R.items)for(const k of it.keys){const a=TGI.get(k)||[];a.push({R,la:+it.lat,lo:+it.lon});TGI.set(k,a)}}return TGI}
+// 25 nov 2026: las claves son por nombre y hay picos con el mismo nombre en sitios distintos (Gamonal de Asturias y de Cantabria):
+// además del nombre, la cumbre tiene que estar a menos de 3 km de la del reto (si no se sabe dónde está, vale solo el nombre).
+function retosK(p,kind){const k=(kind==="cumbres"?"c:":"l:")+norm(p.c)+(p.co?"@"+p.co.id:""),a=indice().get(k);if(!a||!a.length)return[];
+  const la=+p.lat,lo=+p.lon,con=isFinite(la)&&isFinite(lo)&&(la||lo),o=[];
+  for(const x of a){if(con&&isFinite(x.la)&&isFinite(x.lo)&&(x.la||x.lo)&&Math.hypot(la-x.la,(lo-x.lo)*.73)*111>3)continue;if(!o.includes(x.R))o.push(x.R)}return o}
+window.RETOTAG=function(p,kind){try{const a=retosK(p,kind);if(!a.length)return"";
   return a.map(R=>`<button class="rttag" data-rtag="${esc(R.id)}">🏆 ${esc(R.n)}</button>`).join("")}catch(e){return""}};
 // 24 nov 2026: retos en los que está, con id y si ya estás apuntado (ficha de la cumbre), y botón «🙋 Apuntarme» de la ficha
-window.RETOSDE2=function(p,kind){try{const k=(kind==="cumbres"?"c:":"l:")+norm(p.c)+(p.co?"@"+p.co.id:""),a=indice().get(k),u=usr();
-  return a?a.map(R=>{const L=LOC[R.id];return{id:R.id,n:R.n,ap:!!(u&&L&&L.pub&&(L.pub===true||L.pub===u.uid))}}):[]}catch(e){return[]}};
+window.RETOSDE2=function(p,kind){try{const a=retosK(p,kind),u=usr();
+  return a.map(R=>{const L=LOC[R.id];return{id:R.id,n:R.n,ap:!!(u&&L&&L.pub&&(L.pub===true||L.pub===u.uid))}})}catch(e){return[]}};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-rtap]");if(!b)return;e.stopPropagation();e.preventDefault();apuntar(b.dataset.rtap)},true);
 // 24 nov 2026: los nombres de los retos en los que está (para el buscador del mapa)
-window.RETOSDE=function(p,kind){try{const k=(kind==="cumbres"?"c:":"l:")+norm(p.c)+(p.co?"@"+p.co.id:""),a=indice().get(k);return a?a.map(R=>R.n):[]}catch(e){return[]}};
+window.RETOSDE=function(p,kind){try{return retosK(p,kind).map(R=>R.n)}catch(e){return[]}};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-rtag]");if(!b)return;e.stopPropagation();e.preventDefault();abrir(b.dataset.rtag)},true);
 window.RETOS={abrir,pinta};
 // cada vez que se enseña la pestaña, se repinta y se miran retos nuevos
