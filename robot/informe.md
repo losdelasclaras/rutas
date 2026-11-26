@@ -1,6 +1,6 @@
-# Informe del robot · 26/11/2026 17:07
+# Informe del robot · 26/11/2026 17:14
 
-**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Caleyando con Cienfuegos; regeneración forzada
+**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos
 
 - 🔎 «Pico Maoñu, Monte Moñacos y Foz de los Cubilones»: sin dificultad. Texto del cuadro: «orcada Traslasenda a Braña Nueva y bajamos por la foz de los Cubilones , un rincón sombrío y apenas pisado en el que hay que bajar por el propio cauce del arroyo. La vuelta, por la pista junto al río Infierno y sus pozas. 📏 19 km Distancia 📈 1.300 m Desnivel acumulado 🏔️ 1.429 m Maoñu ⚡ Muy Difícil Tramos sin sendero y maleza y bajada por el cauce de la foz 🔄 Circular Desde La Pesanca (405 m) 📅 2012 Publicada en noviembre ⚠️ Antes de ir Monte privado: el monte que va del Maoñu hasta pasar la cresta de Los Tornos, en la vertiente que cae hacia el río Infierno, es de uso privado y está prohibido»
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
@@ -23,12 +23,12 @@
 - 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (7): Desafío Somiedo 2022 (MDS) · la-ercina-cangues-donis-verdilluenga-trea-cain-valdion-culie · pola-gordon-fontanan-la-miezca-barrios · Puirtu Braña - Picu Torres - Picu Valverde - Puirtu Braña · puirtu-brana-ayer-torres-cabal-luna-cuevas-ayer · Salgueiro_Climb · Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
 - ⛰ Camudando'l camín: 75 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ✏️ Camudando'l camín: 47 rutas con corrección a mano
-- Colaborador «Camudando'l camín»: sin cambios.
+- 🤝 Colaborador «Camudando'l camín»: 152 puntos, 55 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
 -    (42 peticiones a su web en 1.2 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: HTTP Error 504: Gateway Timeout <?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"     "http://www.w3.org/T; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
@@ -41,5 +41,16 @@
 - 🤝 Colaborador «Caleyando con Cienfuegos»: 815 puntos, 0 tracks.
 - 📅 Salidas de la web de Civilu: 0 próximas · ya pasadas: 5
 -    FEMPA: 10 entradas en su canal; agenda con enlaces
+-       · «CAMPEONATO ASTURIANO Y OPEN JUVENIL DE VELOCIDAD Y OPEN INTERNACIONAL ABSOLUTO DE VELOCIDAD» https://fempa.net/actividad/campeonato-asturiano-y-open-juvenil-de-velocidad-y-open-internacional-absoluto-de-velocidad/ [] Thu, 05 Nov 2026 13:31:22 +0000 · en agenda: no · fechas en texto: []
+-       · «3ª Prueba Copa Asturias de Escalada El Roko» https://fempa.net/actividad/3a-prueba-copa-asturias-de-escalada-el-roko/ [] Tue, 03 Nov 2026 18:21:58 +0000 · en agenda: sí · fechas en texto: ['14 de noviembre', '12 de diciembre', '19 de diciembre']
+-       · «2ª Prueba Copa Asturias de Escalada One Move» https://fempa.net/actividad/2a-prueba-copa-asturias-de-escalada-one-move/ [] Tue, 03 Nov 2026 18:19:34 +0000 · en agenda: sí · fechas en texto: ['14 de noviembre', '12 de diciembre', '19 de diciembre']
+-       · «1ª Prueba Copa y Campeonato Asturias de Escalada Sputnik» https://fempa.net/actividad/1a-prueba-copa-asturias-de-escalada-sputnik/ [] Tue, 03 Nov 2026 13:12:21 +0000 · en agenda: no · fechas en texto: ['15 de noviembre', '14 de noviembre', '12 de diciembre', '19 de diciembre']
+-       · «Liga de Senderismo» https://fempa.net/actividad/liga-de-senderismo-10/ [] Mon, 03 Aug 2026 10:31:12 +0000 · en agenda: no · fechas en texto: ['21 de agosto', '18 de agosto']
+-       · «Liga de Senderismo» https://fempa.net/actividad/liga-de-senderismo-10-2/ [] Mon, 03 Aug 2026 09:38:47 +0000 · en agenda: no · fechas en texto: []
+-       · «Liga de Senderismo» https://fempa.net/actividad/liga-de-senderismo-9/ [] Wed, 15 Apr 2026 10:40:55 +0000 · en agenda: no · fechas en texto: []
+-       · «Liga de Senderismo» https://fempa.net/actividad/liga-de-senderismo-8/ [] Wed, 15 Apr 2026 10:40:27 +0000 · en agenda: no · fechas en texto: ['4 de julio', '30 de junio']
+-       · «Liga de Senderismo» https://fempa.net/actividad/liga-de-senderismo-7/ [] Wed, 15 Apr 2026 10:39:25 +0000 · en agenda: no · fechas en texto: ['26 de septiembre', '26 de septiembre']
+-       · «9ª Prueba Liga de Senderismo |  Trail Coto Musel Andarines» https://fempa.net/actividad/liga-de-senderismo-6/ [] Wed, 15 Apr 2026 10:38:40 +0000 · en agenda: no · fechas en texto: ['31 de octubre', '31 de octubre']
+-       agenda: enlaces a actividades = ['2a-prueba-copa-asturias-de-escalada-one-move', '3a-prueba-copa-asturias-de-escalada-el-roko', 'belen-de-cumbres-3', 'liga-de-senderismo-5']
 - 📅 Salidas de la web de FEMPA: 0 próximas (de prueba: solo las ven los administradores) · dejadas fuera: CAMPEONATO ASTURIANO Y OPEN JUVENIL DE VELOCIDAD Y OPEN INTERNACIONAL ABSOLUTO DE VELOCIDAD; 3ª Prueba Copa Asturias de Escalada El Roko; 2ª Prueba Copa Asturias de Escalada One Move; 1ª Prueba Copa y Campeonato Asturias de Escalada Sputnik · no están en su agenda: Liga de Senderismo; Liga de Senderismo; Liga de Senderismo
 - App regenerada: 384 rutas, 175 con track.
