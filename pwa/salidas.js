@@ -92,7 +92,7 @@ async function carga(fuerza){if(!fuerza&&Date.now()-CARGADO<60000)return pinta()
     CLUBS=[];qc.forEach(d=>CLUBS.push(Object.assign({id:d.id},d.data())));
     SALS=[];qs.forEach(d=>SALS.push(Object.assign({id:d.id},d.data())));
     // 21 nov 2026: salidas que el robot copia cada noche de la web del club (no hacen trabajo doble); solo de clubes aprobados
-    try{const W=await (await fetch("salidas-web.json?v="+(window.LDC_VER||Date.now()),{cache:"no-store"})).json(),H=hoy();
+    WEBOK=false;try{const W=await (await fetch("salidas-web.json?v="+(window.LDC_VER||Date.now()),{cache:"no-store"})).json(),H=hoy();WEBOK=Array.isArray(W);
       for(const w of W){const c=CLUBS.find(x=>x.id===w.club);if(!c||!w.fecha||w.fecha.slice(0,10)<H||SALS.some(x=>x.id===w.k))continue;   // 22 nov: sin repetir si la pestaña se carga dos veces a la vez
         SALS.push(Object.assign({},w,{id:w.k,club:c.id,cn:c.n,cc:c.contacto||"",cw:c.web||"",cig:c.ig||"",cfb:c.fb||"",cbus:c.bus||"",prueba:c.prueba,web:1,
           apo:w.apo||"Toda la información y cómo apuntarse, en la web del club.",apu:w.apu||w.wu}))}
@@ -439,13 +439,21 @@ sec.addEventListener("click",async e=>{const t=e.target;
    · Para quitarlo: borrar este bloque, «pintaNov()» al final de pinta() y los dos «YO.add(…)». */
 const NK="ldc-salnov",YO=new Set();
 let VISTO=(()=>{try{return JSON.parse(localStorage.getItem(NK)||"null")}catch(e){return null}})(),NOVS=[];
-const foto=()=>{const m={};SALS.forEach(s=>m[s.id]={t:s.t||0,ti:s.ti,cn:s.cn,f:s.fecha});return{m,p:PEND.map(c=>c.id)}};
-const guardaVisto=()=>{VISTO=foto();try{localStorage.setItem(NK,JSON.stringify(VISTO))}catch(e){}};
+/* 26 nov 2026: la foto ya no se sustituye entera, se JUNTA con la anterior. Antes, si un día la carga venía incompleta
+   (p. ej. no llegaba salidas-web.json al despertar el móvil), esas salidas desaparecían de la foto y al día siguiente
+   volvían a salir como «nuevas». Ahora solo se quitan de la foto las pasadas y las que ya se enseñaron como borradas. */
+let WEBOK=true;
+const foto=(quita)=>{const h=hoy(),old=(VISTO&&VISTO.m)||{},m={};
+  for(const id in old){const v=old[id];if(String(v.f||"").slice(0,10)>=h&&!(quita&&quita.has(id)))m[id]=v}
+  SALS.forEach(s=>m[s.id]={t:s.t||0,ti:s.ti,cn:s.cn,f:s.fecha,w:s.web?1:0});
+  const p=new Set(((VISTO&&VISTO.p)||[]).concat(PEND.map(c=>c.id)));return{m,p:[...p].slice(-300)}};
+const guardaVisto=(quita)=>{VISTO=foto(quita);try{localStorage.setItem(NK,JSON.stringify(VISTO))}catch(e){}};
 function difs(){const m=(VISTO&&VISTO.m)||{},L=[];
   for(const s of SALS){if(YO.has(s.id))continue;const v=m[s.id];
     if(!v)L.push({k:"nueva",id:s.id,ti:s.ti,cn:s.cn,f:s.fecha,t:s.t});else if((s.t||0)!==(v.t||0))L.push({k:"cambiada",id:s.id,ti:s.ti,cn:s.cn,f:s.fecha,t:s.t})}
   const ids=new Set(SALS.map(s=>s.id)),h=hoy();
-  for(const id in m){const v=m[id];if(!ids.has(id)&&!YO.has(id)&&String(v.f||"").slice(0,10)>=h)L.push({k:"borrada",id,ti:v.ti,cn:v.cn,f:v.f})}
+  for(const id in m){const v=m[id];if(!WEBOK&&v.w)continue;   // sin la lista de la web no se sabe si se borró
+    if(!ids.has(id)&&!YO.has(id)&&String(v.f||"").slice(0,10)>=h)L.push({k:"borrada",id,ti:v.ti,cn:v.cn,f:v.f})}
   return L}
 const pendNuevos=()=>{const vp=new Set((VISTO&&VISTO.p)||[]);return PEND.filter(c=>!vp.has(c.id))};
 function globo(n){const tb=document.querySelector('nav.tabs [data-v="salidas"]');if(!tb)return;let b=tb.querySelector(".salnb");
@@ -460,7 +468,7 @@ function pintaNov(){const box=$("sal-nov");if(!box)return;
   if(sec.hidden){box.innerHTML="";NOVS=[];globo(difs().length+pendNuevos().length);return}
   // pestaña abierta: se junta con lo que ya se estaba enseñando y se da por visto
   const d=difs(),ya=new Set(NOVS.map(x=>x.k+x.id));NOVS=d.filter(x=>!ya.has(x.k+x.id)).concat(NOVS);NOVS=NOVS.filter(x=>!YO.has(x.id));
-  guardaVisto();globo(0);
+  guardaVisto(new Set(d.filter(x=>x.k==="borrada").map(x=>x.id)));globo(0);
   if(!NOVS.length&&!PEND.length){box.innerHTML="";return}
   const et={nueva:["🆕","Nueva","#1e8e3e"],cambiada:["✏️","Cambiada","#b26a00"],borrada:["🗑","Borrada","#c3262e"]};
   box.innerHTML=`<div class="salbox salnov"><h2>🔔 Novedades de clubes</h2>

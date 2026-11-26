@@ -7,7 +7,13 @@ if(!Array.isArray(vistas)){try{localStorage.setItem(K,JSON.stringify(todas))}cat
 const vs=new Set(vistas),NUEVAS=R.filter(r=>r.u&&!vs.has(r.u)).sort((a,b)=>(b.d||"").localeCompare(a.d||""));
 // 10 nov 2026: también las rutas nuevas de los colaboradores (sus datos llegan un poco después de arrancar)
 const KC="ldc-vistas-co";let CN=[],todasCo=null;
-function colabListo(fin){let n=0;const t=setInterval(()=>{n++;const ok=window.COLX&&COLX.rut&&COLX.rut().length;if(ok||n>40){clearInterval(t);fin(!!ok)}},250)}
+// 26 nov 2026: se espera a que TODOS los colaboradores hayan cargado (antes bastaba con el primero: se guardaba
+// una lista a medias como «vista» y los demás volvían a salir como nuevos al abrir la app otra vez)
+function colabListo(fin){let n=0,ant=-1,quieto=0;const t=setInterval(()=>{n++;const L=window.COLX&&COLX.rut?COLX.rut().length:0;
+  if(L&&L===ant)quieto++;else quieto=0;ant=L;if((L&&quieto>=6)||n>60){clearInterval(t);fin(!!L)}},250)}
+// lo visto se JUNTA con lo que ya había (si una ruta desaparece un día y vuelve, no sale otra vez como nueva)
+const junta=(k,nuevas)=>{let v=[];try{v=JSON.parse(localStorage.getItem(k)||"[]")||[]}catch(e){}const S=new Set(v);nuevas.forEach(x=>{S.delete(x);S.add(x)});
+  try{localStorage.setItem(k,JSON.stringify([...S].slice(-20000)))}catch(e){}};
 colabListo(ok=>{
   if(ok){const RU=COLX.rut();todasCo=RU.map(x=>COLX.rKey(x));let vc=null;try{vc=JSON.parse(localStorage.getItem(KC)||"null")}catch(e){}
     if(!Array.isArray(vc)){try{localStorage.setItem(KC,JSON.stringify(todasCo))}catch(e){}}   // primera vez: lo que hay ya no es novedad
@@ -35,7 +41,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
     const row=e.target.closest("[data-r]");if(row){ovShow({t:"route",id:+row.dataset.r});return}
     const co=e.target.closest("[data-cor]");if(co){e.stopPropagation();const ci=+co.dataset.cor;if(typeof showView==="function")showView("mapa");if(!(COLX.abrirRuta&&COLX.abrirRuta(ci)))COLX.open(ci)}});
   // al ver la lista de rutas se dan por vistas (el recuadro sigue hasta cerrar la app o pulsar «Ya las he visto»)
-  function vistasYa(){try{localStorage.setItem(K,JSON.stringify(todas));if(todasCo)localStorage.setItem(KC,JSON.stringify(todasCo))}catch(e){}if(badge){badge.remove();badge=null}}
+  function vistasYa(){junta(K,todas);if(todasCo)junta(KC,todasCo);if(badge){badge.remove();badge=null}}
   const vr=document.getElementById("v-rutas");
   const mo=new MutationObserver(()=>{if(!vr.hidden){vistasYa();mo.disconnect()}});mo.observe(vr,{attributes:true,attributeFilter:["hidden"]});
   if(!vr.hidden)vistasYa();
