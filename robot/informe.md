@@ -1,4 +1,4 @@
-# Informe del robot · 26/11/2026 16:46
+# Informe del robot · 26/11/2026 16:57
 
 **Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Caleyando con Cienfuegos
 
@@ -25,10 +25,10 @@
 - ✏️ Camudando'l camín: 47 rutas con corrección a mano
 - Colaborador «Camudando'l camín»: sin cambios.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
--    (42 peticiones a su web en 1.3 min)
+-    (42 peticiones a su web en 1.1 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass-api.de: HTTP Error 504: Gateway Timeout <?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"     "http://www.w3.org/T; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
@@ -39,6 +39,7 @@
 - 📝 Títulos de entradas de Caleyando con Cienfuegos: 501 de 502 (1 no han respondido)
 - 📊 Datos de las rutas de Caleyando con Cienfuegos: 658 de 701 puntos con datos de su entrada, 1 no han respondido
 - 🤝 Colaborador «Caleyando con Cienfuegos»: 815 puntos, 0 tracks.
-- 📅 Salidas de la web de Civilu: 0 próximas
-- 📅 Salidas de la web de FEMPA: 0 próximas (de prueba: solo las ven los administradores) · dejadas fuera: CAMPEONATO ASTURIANO Y OPEN JUVENIL DE VELOCIDAD Y OPEN INTERNACIONAL ABSOLUTO DE VELOCIDAD; 3ª Prueba Copa Asturias de Escalada El Roko; 2ª Prueba Copa Asturias de Escalada One Move; 1ª Prueba Copa y Campeonato Asturias de Escalada Sputnik
+- 📅 Salidas de la web de Civilu: 0 próximas · ya pasadas: 5
+-    FEMPA: 10 entradas en su canal; agenda con enlaces
+- 📅 Salidas de la web de FEMPA: 0 próximas (de prueba: solo las ven los administradores) · dejadas fuera: CAMPEONATO ASTURIANO Y OPEN JUVENIL DE VELOCIDAD Y OPEN INTERNACIONAL ABSOLUTO DE VELOCIDAD; 3ª Prueba Copa Asturias de Escalada El Roko; 2ª Prueba Copa Asturias de Escalada One Move; 1ª Prueba Copa y Campeonato Asturias de Escalada Sputnik · no están en su agenda: Liga de Senderismo; Liga de Senderismo; Liga de Senderismo
 - App regenerada: 384 rutas, 175 con track.
