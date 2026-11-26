@@ -4,5 +4,16 @@
   "feed": "https://civilu.wordpress.com/category/salidas/feed/",
   "web": "https://civilu.wordpress.com/",
   "nota": "Grupo de Montaña El Civilu (Oviedo). Autorizado por Javier Villa Cienfuegos el 21/11/2026"
+ },
+ {
+  "nombre": "FEMPA",
+  "feed": "https://fempa.net/actividad/feed/",
+  "web": "https://fempa.net/",
+  "agenda": "https://fempa.net/actividades-y-cursos/",
+  "excluir": "escalada|campeonato|copa asturias|carreras? (por|de) monta|trail|esqu[ií]|barranquismo|curso|formaci[oó]n|asamblea",
+  "unir": "liga de senderismo",
+  "apuntarse": "Toda la información e inscripción, en la web de la FEMPA.",
+  "solo_admin": true,
+  "nota": "Federación de Montaña de Asturias. PRUEBA (26/11/2026) para enseñársela a la presidenta: solo la ven los administradores. Si da permiso: darla de alta en Salidas y quitar solo_admin"
  }
 ]

@@ -1447,14 +1447,39 @@ def salidas_web():
         try: xml = get(c['feed']); xml = xml.decode('utf-8', 'replace') if isinstance(xml, bytes) else xml
         except Exception as e:
             log(f'⚠ Salidas de {c.get("nombre")}: su web no responde ({e}); se dejan las de la última vez'); res += [x for x in old if x.get('feed') == c['feed']]; continue
-        n_ok, sin_f = 0, []
+        n_ok, sin_f, fuera, res_c = 0, [], [], []
+        # 26 nov 2026 · opciones por club (FEMPA): «categorias» que se admiten, «excluir» (expresión sobre título y categorías),
+        # «agenda» (página con la fecha de cada actividad), «unir» (si coincide con otra el mismo día, se queda la otra),
+        # «apuntarse» (texto del botón) y «solo_admin» (de prueba: solo la ven los administradores, sin club dado de alta)
+        ag_html = ''
+        if c.get('agenda'):
+            try: ag_html = get(c['agenda']); ag_html = ag_html.decode('utf-8', 'replace') if isinstance(ag_html, bytes) else ag_html
+            except Exception as e: log(f'⚠ Salidas de {c.get("nombre")}: no se pudo leer su agenda ({e}); se usan las fechas del texto')
+        def fecha_agenda(link):
+            if not ag_html or not link: return None
+            pos = [m.start() for m in re.finditer(re.escape(link.rstrip('/')), ag_html)]
+            if not pos: return False      # no está en la agenda: ya pasó o no se anuncia
+            mejor = None
+            for m in re.finditer(r'\b(\d{1,2})/(\d{1,2})/(20\d\d|\d\d)\b', ag_html):
+                d = min(abs(m.start() - q) for q in pos)
+                if d < 1500 and (mejor is None or d < mejor[0]): mejor = (d, m)
+            if not mejor: return None
+            y = mejor[1].group(3); y = int(y) + (2000 if len(y) == 2 else 0)
+            try: return datetime.date(y, int(mejor[1].group(2)), int(mejor[1].group(1)))
+            except ValueError: return None
+        cats_ok = [nk(x) for x in c.get('categorias', [])]
         for it in re.findall(r'(?s)<item>(.*?)</item>', xml)[:20]:
             g = lambda tag: (re.search(r'(?s)<' + tag + r'[^>]*>(.*?)</' + tag + '>', it) or [None, ''])[1]
             ti = html.unescape(re.sub(r'<!\[CDATA\[|\]\]>', '', g('title'))).strip(); link = re.sub(r'<!\[CDATA\[|\]\]>', '', g('link')).strip()
             cuerpo = re.sub(r'<!\[CDATA\[|\]\]>', '', g('content:encoded') or g('description')); cuerpo = html.unescape(cuerpo) if '&lt;' in cuerpo else cuerpo
             try: pub = datetime.datetime.strptime(g('pubDate').strip()[:25].strip(), '%a, %d %b %Y %H:%M:%S').date()
             except Exception: pub = hoy
-            t = _txt(cuerpo); fd = _fecha_salida(ti, t, cuerpo, pub)
+            cats = [html.unescape(re.sub(r'<!\[CDATA\[|\]\]>', '', x)).strip() for x in re.findall(r'(?s)<category[^>]*>(.*?)</category>', it)]
+            if c.get('excluir') and re.search(c['excluir'], ti + ' | ' + ' | '.join(cats), re.I): fuera.append(ti); continue
+            if cats_ok and cats and not any(nk(x) in cats_ok for x in cats): fuera.append(ti); continue
+            t = _txt(cuerpo); fa = fecha_agenda(link)
+            if fa is False: continue
+            fd = fa or _fecha_salida(ti, t, cuerpo, pub)
             if not fd: sin_f.append(ti); continue
             if fd < hoy: continue
             hm = re.search(r'(?i)salida\D{0,25}?(\d{1,2})[:.h](\d{2})', t) or re.search(r'\b(\d{1,2}):(\d{2})\b', t)
@@ -1471,8 +1496,15 @@ def salidas_web():
             im = re.search(r'<img[^>]+src=["\']([^"\'?]+)', cuerpo); s['foto'] = im.group(1) if im else ''
             enc = re.search(r'(?i)(?:punto de encuentro|lugar de encuentro|quedamos en)\s*[:\-]?\s*([^\n]{3,90})', t); s['enc'] = enc.group(1).strip() if enc else ''
             if club: s.update(club=club['id'], cn=club.get('n') or c.get('nombre'))
-            res.append(s); n_ok += 1
-        log(f'📅 Salidas de la web de {c.get("nombre")}: {n_ok} próximas' + ('' if club else ' (el club aún no está dado de alta y aprobado en Salidas: no salen en la app)') + (f' · sin fecha clara (no se ponen): {"; ".join(sin_f[:3])}' if sin_f else ''))
+            if c.get('apuntarse'): s['apo'] = c['apuntarse']
+            if c.get('solo_admin'): s['adm'] = 1; s.setdefault('cn', c.get('nombre')); s['cw'] = c.get('web', '')
+            res_c.append(s)
+        if c.get('unir'):     # p. ej. «Liga de Senderismo» el mismo día que el «Belén de Cumbres»: es la misma salida
+            dias = {}
+            for x in res_c: dias.setdefault(x['fecha'][:10], []).append(x)
+            res_c = [x for x in res_c if not (re.search(c['unir'], x['ti'], re.I) and any(not re.search(c['unir'], y['ti'], re.I) for y in dias[x['fecha'][:10]]))]
+        res += res_c; n_ok = len(res_c)
+        log(f'📅 Salidas de la web de {c.get("nombre")}: {n_ok} próximas' + ('' if club or c.get('solo_admin') else ' (el club aún no está dado de alta y aprobado en Salidas: no salen en la app)') + (' (de prueba: solo las ven los administradores)' if c.get('solo_admin') else '') + (f' · dejadas fuera: {"; ".join(fuera[:4])}' if fuera else '') + (f' · sin fecha clara (no se ponen): {"; ".join(sin_f[:3])}' if sin_f else ''))
     res.sort(key=lambda x: x['fecha'])
     if res != old:
         json.dump(res, open(out_f, 'w'), ensure_ascii=False, indent=0); CAMBIOS.append('salidas de webs de clubes')
