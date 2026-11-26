@@ -31,7 +31,7 @@ let LOC=store.get(LK,{});           // {_nom, <id>:{pub, sig, h:{cumbre:fecha}, 
 const saveLoc=()=>store.set(LK,LOC);
 const lo=id=>LOC[id]||(LOC[id]={});
 let RETOS=store.get(RC,[]);          // los creados por el administrador (copia para verlos sin cobertura)
-let CUR=null,SUB="cum",FIL="todas",PART={},CARGA=false;
+let CUR=null,SUB="cum",FIL="todas",PART={},CARGA=false,LSUB="todos",MIOS=null;
 const slug=s=>norm(String(s||"")).replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"x";
 const hoyMs=()=>Date.now();
 const fecha=s=>{if(!s)return"";const d=new Date(s+"T12:00:00");return isNaN(d)?s:d.toLocaleDateString("es-ES",{day:"numeric",month:"long",year:"numeric"})};
@@ -40,6 +40,11 @@ const dkm=(a,b,c,d)=>{const R=6371,x=(c-a)*Math.PI/180,y=(d-b)*Math.PI/180,s=Mat
 document.head.insertAdjacentHTML("beforeend",`<style>
 #v-retos .inner{max-width:720px;margin:0 auto}
 .rthead h2{margin:6px 0 4px;font-size:24px}.rthead p{margin:0 0 12px;color:var(--muted);font-size:15px;line-height:1.4}
+.rtmini{flex:none;position:relative;width:44px;height:44px;padding:0;border:2px solid #f5b301;border-radius:9px;overflow:hidden;background:var(--edge);cursor:pointer;margin-left:4px}
+.rtmini img{width:100%;height:100%;object-fit:cover;display:block}.rtmini i{position:absolute;right:1px;bottom:1px;background:rgba(0,0,0,.72);color:#fff;font:800 11px/15px system-ui;font-style:normal;border-radius:7px;padding:0 4px}
+.rtvit{border:2px solid #f5b301;border-radius:14px;padding:10px 10px 2px;margin:0 0 6px;background:linear-gradient(180deg,rgba(245,179,1,.10),transparent 70%)}
+.rtvit h3{margin:2px 4px 10px;font-size:17px}.rtvit h3 small{display:block;font-size:13.5px;color:var(--muted);font-weight:600;margin-top:2px}
+.rtgan .rtmeds.sm{display:flex;justify-content:flex-start;gap:6px;margin-top:5px;flex-wrap:wrap}.rtgan .rtmeds.sm svg,.rtgan .rtmeds.sm>*{flex:none}
 .rtcard{display:flex;gap:12px;align-items:center;width:100%;box-sizing:border-box;margin:0 0 10px;padding:14px;border:1.5px solid var(--edge);border-radius:16px;background:var(--card);color:var(--ink);font:inherit;text-align:left;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.07)}
 .rtcard .rte{font-size:34px;line-height:1;flex:none}.rtcard .rtt{flex:1;min-width:0}.rtcard b{display:block;font-size:18px}
 .rtcard small{display:block;color:var(--muted);font-size:14px;margin:2px 0 8px}.rtcard .prog{display:block;margin:0}.rtcard .rtm{flex:none}
@@ -181,7 +186,9 @@ function conTrack(it){const ts=window.MISPUNTOS&&MISPUNTOS.tracks?MISPUNTOS.trac
 const PUBT={},PUBJ={};
 function payload(R){const u=usr(),L=lo(R.id),h={},v={};
   for(const it of R.items)if(hecho(R,it)){h[it.id]=(L.h&&L.h[it.id])||1;if(conTrack(it))v[it.id]=1}
-  const n=prog(R);return{r:R.id,u:u.uid,nom:String(LOC._nom||"").slice(0,30),n,tot:R.tot,comp:n>=R.tot,h,v}}
+  // 26 nov 2026: rn/re = nombre y emoji del reto (para «Mis retos» aunque el reto se borre); fo = miniatura de tu foto en cada cumbre
+  const fo={};for(const k in (L.fo||{}))if(h[k])fo[k]=L.fo[k];
+  const n=prog(R);return{r:R.id,u:u.uid,nom:String(LOC._nom||"").slice(0,30),n,tot:R.tot,comp:n>=R.tot,h,v,fo,rn:String(R.n||"").slice(0,80),re:R.e||"🏆"}}
 // 24 nov 2026: «apuntado» es de una cuenta, no del móvil (antes, al entrar con otra cuenta en el mismo móvil, se apuntaba también esa:
 // Jonathan salía 3 veces en Techos). L.pub guarda el uid de la cuenta apuntada; los antiguos (true) pasan a la cuenta que esté dentro.
 function publica(R,ya){const L=LOC[R.id],u=usr();if(!L||!L.pub||!u)return;if(L.pub===true){L.pub=u.uid;saveLoc()}if(L.pub!==u.uid)return;clearTimeout(PUBT[R.id]);
@@ -192,6 +199,8 @@ function publicaTodos(){for(const R of todos())publica(R)}
 
 /* ---------- celebrar medallas nuevas ---------- */
 function revisa(R,celebrar){if(!R.items.length)return;const L=lo(R.id),n=prog(R),H=hitos(R.tot),g=H.filter(x=>n>=x);
+  if(g.length&&estado(R).k!=="pr"){const A=LOC._arch||(LOC._arch={}),o=A[R.id]||{};   // 26 nov: «Mis retos › Conseguidos» (se queda aunque el reto termine o se borre)
+    if(o.n!==n||o.rn!==R.n||o.tot!==R.tot){A[R.id]={rn:R.n,re:R.e,n:Math.max(n,R.tipo==="fechas"?(o.n||0):0),tot:R.tot,fin:R.fin||"",t:Date.now()};saveLoc()}}
   if(!L.med){L.med=g;saveLoc();return}
   const nuevas=g.filter(x=>!L.med.includes(x));L.med=g;saveLoc();
   if(nuevas.length&&celebrar!==false){const x=nuevas[nuevas.length-1],i=H.indexOf(x),last=i===H.length-1;
@@ -216,9 +225,35 @@ function pinta(){if(CUR){const R=reto(CUR);if(R){pintaReto(R);return}CUR=null}pi
 function tarjeta(R){const n=prog(R),st=estado(R);
   return `<button class="rtcard${st.k==="fi"?" fin":""}" data-rt="${esc(R.id)}"><span class="rte">${esc(R.e)}</span><span class="rtt"><b>${esc(R.n)}</b>
     <small><span class="rtst ${st.k}">${esc(st.t)}</span>${R.activo===false?`<span class="rtst pr">📝 Borrador</span>`:""} Llevas ${n} de ${R.tot}</small><span class="prog"><i style="width:${(R.tot?n/R.tot*100:0).toFixed(1)}%"></i></span></span><span class="rtm">${mejor(R,n)}</span></button>`}
+/* 26 nov 2026 · 🏅 Mis retos: los que llevas en marcha y la vitrina de medallas conseguidas. Las medallas se quedan aunque
+   el reto (p. ej. uno temporal) termine o se borre: se guardan en este móvil (ldc-retos › _arch) y, si estás apuntado,
+   en tu cuenta (retosu, con el nombre del reto), así que también salen en otro móvil al entrar con la misma cuenta. */
+async function cargaMios(){const u=usr();if(!u){MIOS={uid:"",l:[]};return}if(MIOS&&MIOS.uid===u.uid&&Date.now()-MIOS.t<120000)return;
+  try{const a=await fb(),fs=a.fs,q=await fs.getDocs(fs.query(fs.collection(a.db,"retosu"),fs.where("u","==",u.uid)));const l=[];q.forEach(d=>l.push(d.data()));MIOS={uid:u.uid,t:Date.now(),l}}
+  catch(e){MIOS={uid:u.uid,t:Date.now()-90000,l:(MIOS&&MIOS.l)||[]}}if(!CUR&&LSUB==="mios")pinta()}
+function conseguidos(){const m={},A=LOC._arch||{},vivos=new Map(todos().map(R=>[R.id,R]));
+  const pon=(id,o)=>{const x=m[id];if(!x||(o.n||0)>(x.n||0))m[id]=Object.assign({},x||{},o)};
+  for(const id in A)pon(id,A[id]);
+  for(const d of (MIOS&&MIOS.l)||[])if(d.r&&d.tot)pon(d.r,{rn:d.rn||(m[d.r]&&m[d.r].rn)||(vivos.get(d.r)||{}).n||"Reto",re:d.re||(vivos.get(d.r)||{}).e||"🏆",n:d.n||0,tot:d.tot,t:d.t});
+  return Object.entries(m).map(([id,o])=>{const R=vivos.get(id);if(R&&R.tipo!=="fechas"){o.n=Math.max(o.n||0,prog(R));o.tot=R.tot}
+    const H=hitos(o.tot||1),g=H.filter(x=>(o.n||0)>=x);return Object.assign(o,{id,R,H,g,st:R?estado(R):{k:"fi",t:"Ya no está en la app"}})})
+    .filter(o=>o.g.length).sort((a,b)=>b.g.length/b.H.length-a.g.length/a.H.length||(b.n||0)-(a.n||0))}
+function pintaMios(){const u=usr();if(u&&(!MIOS||MIOS.uid!==u.uid))cargaMios();
+  const v=todos().filter(R=>{const L=LOC[R.id]||{},k=estado(R).k;return k!=="fi"&&R.activo!==false&&(prog(R)>0||(L.pub&&u&&L.pub===u.uid))});
+  const C=conseguidos(),nmed=C.reduce((s,o)=>s+o.g.length,0),comp=C.filter(o=>o.g.length===o.H.length).length;
+  return `${C.length?`<div class="rtvit"><h3>🏅 Conseguidos <small>${nmed} medalla${nmed===1?"":"s"}${comp?` · ${comp} reto${comp===1?"":"s"} completado${comp===1?"":"s"} 🏆`:""}</small></h3>
+    ${C.map(o=>{const last=o.g.length===o.H.length,i=o.g.length-1;return `<${o.R?"button":"div"} class="rtcard rtgan"${o.R?` data-rt="${esc(o.id)}"`:""}><span class="rtm">${medalla(o.H[i],i,last,true,46)}</span><span class="rtt"><b>${esc(o.re||"🏆")} ${esc(o.rn||"")}</b>
+      <small>${last?"¡Completado!":`${o.n} de ${o.tot}`}${o.st.k==="fi"?` · <span class="rtst fi">${esc(o.st.t)}</span>`:""}</small>
+      <span class="rtmeds sm">${o.g.map((x,j)=>medalla(x,j,j===o.H.length-1,true,24)).join("")}</span></span></${o.R?"button":"div"}>`}).join("")}</div>`
+    :`<p class="rtvacio">Todavía no tienes medallas. Marca ✓ las cumbres que subas: a las 5 llega la primera.</p>`}
+  <h3 style="margin:16px 0 8px;font-size:16px">⛰️ En marcha</h3>${v.map(tarjeta).join("")||`<p class="rtvacio">No llevas ningún reto en marcha. Mira en «Todos».</p>`}
+  <p class="note" style="font-size:13.5px;color:var(--muted);margin:12px 2px">${u?"Las medallas de los retos a los que estás apuntado se guardan también en tu cuenta.":"Se guardan en este móvil. Entra con tu cuenta y apúntate a los retos para no perderlas si cambias de móvil."}</p>`}
 function pintaLista(){const v=todos();const ord=R=>{const k=estado(R).k;return R.fijo?0:k==="on"?1:k==="pe"?2:k==="pr"?3:4};v.sort((a,b)=>ord(a)-ord(b));
   const bor=v.filter(R=>R.activo===false),vivos=v.filter(R=>R.activo!==false&&estado(R).k!=="fi"),fin=v.filter(R=>R.activo!==false&&estado(R).k==="fi");
-  box.innerHTML=`<div class="rthead"><h2>🏆 Retos</h2><p>Marca las cumbres que vas subiendo y gana medallas. Si te apuntas, verás quién más las ha subido y saldrás en la lista.</p></div>
+  const C=conseguidos().reduce((s,o)=>s+o.g.length,0);
+  const tabs=`<div class="subtabs" style="grid-template-columns:repeat(2,1fr)"><button role="tab" data-rtlsub="todos" aria-selected="${LSUB==="todos"}"><span class="i">🏆</span><span>Todos</span><small>${v.filter(R=>R.activo!==false).length}</small></button><button role="tab" data-rtlsub="mios" aria-selected="${LSUB==="mios"}"><span class="i">🏅</span><span>Mis retos</span><small>${C?C+" medalla"+(C===1?"":"s"):""}</small></button></div>`;
+  if(LSUB==="mios"){box.innerHTML=`<div class="rthead"><h2>🏆 Retos</h2></div>${tabs}${pintaMios()}`;return}
+  box.innerHTML=`<div class="rthead"><h2>🏆 Retos</h2><p>Marca las cumbres que vas subiendo y gana medallas. Si te apuntas, verás quién más las ha subido y saldrás en la lista.</p></div>${tabs}
   ${puedeCrear()?`<button class="rtnew" data-rtnew>＋ Crear un reto</button>`:""}
   ${bor.length?`<h3 style="margin:6px 0 8px;font-size:16px">📝 Borradores · ${esAdm()?"solo los veis los administradores":"solo los ves tú (y los administradores)"}</h3>${bor.map(tarjeta).join("")}<h3 style="margin:14px 0 8px;font-size:16px">Publicados</h3>`:""}
   ${vivos.map(tarjeta).join("")||`<p class="rtvacio">Cargando los retos…</p>`}
@@ -226,6 +261,8 @@ function pintaLista(){const v=todos();const ord=R=>{const k=estado(R).k;return R
 function pintaReto(R){const n=prog(R),st=estado(R),H=hitos(R.tot),L=lo(R.id),u=usr();
   const sig=H.find(x=>n<x),pc=c=>c&&c.l?c.l:[];const part=pc(PART[R.id]).slice().sort((a,b)=>(b.n||0)-(a.n||0)||(a.t||0)-(b.t||0));
   const cuenta={};for(const p of part)for(const k in (p.h||{}))cuenta[k]=(cuenta[k]||0)+1;
+  // 26 nov 2026: miniatura de la última foto de cada cumbre (sale de los apuntados, sin descargar las fotos grandes)
+  const fot={};for(const p of part.slice().sort((a,b)=>(a.t||0)-(b.t||0)))for(const k in (p.fo||{})){const o=fot[k]||(fot[k]={n:0});o.n++;o.m=p.fo[k]}
   const its=R.items.filter(it=>FIL==="todas"||(FIL==="hechas")===hecho(R,it));
   const fechas=R.tipo==="fechas";
   box.innerHTML=`<button class="rtback" data-rtback>‹ Retos</button>
@@ -242,7 +279,7 @@ function pintaReto(R){const n=prog(R),st=estado(R),H=hitos(R.tot),L=lo(R.id),u=u
   <div class="subtabs" style="grid-template-columns:repeat(2,1fr)"><button role="tab" data-rtsub="cum" aria-selected="${SUB==="cum"}"><span class="i">⛰️</span><span>${R.u==="concejos"?"Cumbres":"Lista"}</span><small>${R.items.length}</small></button><button role="tab" data-rtsub="gente" aria-selected="${SUB==="gente"}"><span class="i">👥</span><span>Participantes</span><small>${PART[R.id]?part.length:"…"}</small></button></div>
   ${SUB==="cum"?`<div class="rtfil">${[["todas","Todas"],["hechas","✓ Hechas"],["pend","Me faltan"]].map(([k,t])=>`<button data-rtfil="${k}" aria-pressed="${FIL===k}">${t}</button>`).join("")}</div>
     ${its.map(it=>`<div class="rtit${hecho(R,it)?" ok":""}"><button class="rtck" data-rtck="${esc(it.id)}" aria-label="Hecha"${!st.on&&fechas?" disabled":""}>✓</button>
-      <button class="rtinfo" data-rtit="${esc(it.id)}"><b>${esc(it.n)}</b><small>${[it.sub,it.a?it.a+" m":""].filter(Boolean).map(esc).join(" · ")}</small></button><span class="rtn">${cuenta[it.id]?"👥 "+cuenta[it.id]:""}</span><button class="rtfo" data-rtfo="${esc(it.id)}" aria-label="Foto" title="Subir o ver fotos" style="flex:none;border:0;background:none;font-size:20px;padding:4px 6px;cursor:pointer;${hecho(R,it)?"":"opacity:.45"}">📷</button></div>`).join("")||`<p class="rtvacio">Nada por aquí.</p>`}`
+      <button class="rtinfo" data-rtit="${esc(it.id)}"><b>${esc(it.n)}</b><small>${[it.sub,it.a?it.a+" m":""].filter(Boolean).map(esc).join(" · ")}</small></button><span class="rtn">${cuenta[it.id]?"👥 "+cuenta[it.id]:""}</span>${fot[it.id]?`<button class="rtfo rtmini" data-rtfo="${esc(it.id)}" data-rtver1 aria-label="Ver fotos" title="Ver las fotos"><img src="${esc(fot[it.id].m)}" alt="">${fot[it.id].n>1?`<i>${fot[it.id].n}</i>`:""}</button>`:`<button class="rtfo" data-rtfo="${esc(it.id)}" aria-label="Foto" title="Subir o ver fotos" style="flex:none;border:0;background:none;font-size:20px;padding:4px 6px;cursor:pointer;${hecho(R,it)?"":"opacity:.45"}">📷</button>`}</div>`).join("")||`<p class="rtvacio">Nada por aquí.</p>`}`
   :`${!PART[R.id]?`<p class="rtvacio">Cargando…</p>`:part.length?part.map((p,i)=>`<div class="rtpe" data-rtpe="${i}"><span class="pos">${i+1}</span>${mejor(R,p.n||0)||`<span style="width:30px"></span>`}<span class="nm"><b>${esc(p.nom||"Sin nombre")}${p.comp?" 🏆":""}</b><small>${p.n||0} de ${R.tot} ${esc(R.u)}${Object.keys(p.v||{}).length?` · ✔ ${Object.keys(p.v).length} con track`:""}</small></span>${esAdm()?`<button class="rtb sm" data-rtdel="${esc(p.u||"")}" title="Quitar de la lista (administrador)" style="margin-left:auto;flex:none">🗑</button>`:""}</div>`).join("")
     :`<p class="rtvacio">${PART[R.id].err?"Sin conexión: no se puede ver quién participa.":"Todavía no se ha apuntado nadie. ¡Sé el primero!"}</p>`}`}
   <p style="margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap"><button class="rtb" data-rtshare>📤 Compartir el reto</button>${!R.fijo&&esMio(R.raw)?`<button class="rtb" data-rtedit>✏️ Editar el reto</button>`:""}</p>`}
@@ -254,19 +291,24 @@ async function ficha(R,it){ITEM={R,it};const c=PART[R.id]?PART[R.id].l:[];const 
   abreDlg(`<div class="hd"><h3>${esc(it.n)}</h3><button class="x" data-rtx aria-label="Cerrar">×</button></div>
     <p style="margin:0;color:var(--muted)">${[it.sub,it.a?it.a+" m":"",R.n].filter(Boolean).map(esc).join(" · ")}</p>
     <p style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><button class="rtb ${ok?"":"pri"}" data-rtck="${esc(it.id)}"${!st.on&&R.tipo==="fechas"?" disabled":""}>${ok?"✓ Hecha (tocar para quitar)":"✓ La he subido"}</button><button class="rtb" data-rtmap>🗺 Ver en el mapa</button></p>
-    <h4>La han subido (${quien.length})</h4>${quien.length?`<div class="who">${quien.map(p=>`<span>${esc(p.nom||"?")}${p.v&&p.v[it.id]?" ✔":""}</span>`).join("")}</div><p style="font-size:13px;color:var(--muted);margin:6px 0 0">✔ = con un track guardado que pasa por la cumbre.</p>`:`<p style="color:var(--muted);margin:0">Nadie de los apuntados todavía.</p>`}
+    <h4>La han subido (${quien.length})</h4>${quien.length?`<div class="who">${quien.map(p=>`<span>${esc(p.nom||"?")}${p.v&&p.v[it.id]?" ✔":""}${p.fo&&p.fo[it.id]?" 📷":""}</span>`).join("")}</div><p style="font-size:13px;color:var(--muted);margin:6px 0 0">✔ = con un track guardado que pasa por la cumbre.</p>`:`<p style="color:var(--muted);margin:0">Nadie de los apuntados todavía.</p>`}
     <h4>Fotos</h4><div class="rtfotos" id="rtfotos"><p style="color:var(--muted);margin:0">Cargando…</p></div>
     ${ok&&L.pub&&u&&(L.pub===true||L.pub===u.uid)?`<p style="margin:12px 0 0"><label class="rtb" style="display:inline-block;margin:0">📷 Subir mi foto<input type="file" accept="image/*" data-rtfoto hidden></label></p>`:ok?`<p style="font-size:14px;color:var(--muted)">Apúntate al reto para subir tu foto de la cumbre.</p>`:`<p style="font-size:14px;color:var(--muted);margin:12px 0 0">📷 Para subir tu foto, márcala como subida (✓) y apúntate al reto.</p>`}`);
   try{const a=await fb(),fs=a.fs,s=await fs.getDocs(fs.query(fs.collection(a.db,"retosf"),fs.where("r","==",R.id),fs.where("i","==",it.id)));
     const v=[];s.forEach(d=>v.push(Object.assign({id:d.id},d.data())));v.sort((x,y)=>(y.t||0)-(x.t||0));
-    if(!ITEM||ITEM.it!==it)return;FOTOS=v;const el=document.getElementById("rtfotos");if(!el)return;
+    if(!ITEM||ITEM.it!==it)return;FOTOS=v;
+    if(u&&L.fo&&L.fo[it.id]&&!v.some(f=>f.u===u.uid)){delete L.fo[it.id];saveLoc();publica(R,true)}const el=document.getElementById("rtfotos");if(!el)return;
     el.innerHTML=v.length?v.map((f,i)=>`<figure><img src="${esc(f.f)}" alt="" data-rtver="${i}" loading="lazy"><figcaption>${esc(f.nom||"")}</figcaption></figure>`).join(""):`<p style="color:var(--muted);margin:0">Todavía no hay fotos.</p>`}
   catch(e){const el=document.getElementById("rtfotos");if(el)el.innerHTML=`<p style="color:var(--muted);margin:0">${navigator.onLine?"No se han podido cargar las fotos.":"Sin conexión."}</p>`}}
 let FOTOS=[];
+function quitaMini(f){const R=ITEM&&ITEM.R;if(!R)return;const u=usr();
+  if(u&&f.u===u.uid){const L=lo(R.id);if(L.fo){delete L.fo[f.i];saveLoc();publica(R,true)}}
+  else fb().then(a=>{if(a.fs.updateDoc&&a.fs.deleteField)return a.fs.updateDoc(a.fs.doc(a.db,"retosu",R.id+"_"+f.u),{["fo."+f.i]:a.fs.deleteField()})}).catch(()=>{});
+  const c=PART[R.id];if(c)for(const p of c.l)if(p.u===f.u&&p.fo)delete p.fo[f.i];pinta()}
 function verFoto(i){const f=FOTOS[i];if(!f)return;const u=usr(),mia=u&&f.u===u.uid;
   const d=document.createElement("div");d.className="rtfull";d.innerHTML=`<img src="${esc(f.f)}" alt=""><p>${esc(f.nom||"")}</p><p style="display:flex;gap:8px">${mia||esAdm()?`<button class="rtb sm" data-rtdel>🗑 Borrar</button>`:""}<button class="rtb sm" data-rtcl>Cerrar</button></p>`;
   document.body.appendChild(d);
-  d.addEventListener("click",async e=>{if(e.target.closest("[data-rtdel]")){if(!confirmar("¿Borrar esta foto?"))return;try{const a=await fb();await a.fs.deleteDoc(a.fs.doc(a.db,"retosf",f.id));d.remove();toast("Foto borrada");if(ITEM)ficha(ITEM.R,ITEM.it)}catch(er){toast("No se ha podido borrar")}return}
+  d.addEventListener("click",async e=>{if(e.target.closest("[data-rtdel]")){if(!confirmar("¿Borrar esta foto?"))return;try{const a=await fb();await a.fs.deleteDoc(a.fs.doc(a.db,"retosf",f.id));d.remove();quitaMini(f);toast("Foto borrada");if(ITEM)ficha(ITEM.R,ITEM.it)}catch(er){toast("No se ha podido borrar")}return}
     if(e.target===d||e.target.closest("[data-rtcl]"))d.remove()})}
 const confirmar=t=>{try{return window.confirm(t)}catch(e){return true}};
 function reduce(file,max,q){return new Promise((ok,no)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);ok(c.toDataURL("image/jpeg",q))};img.onerror=()=>{URL.revokeObjectURL(url);no(new Error("imagen"))};img.src=url})}
@@ -274,6 +316,7 @@ async function subeFoto(file){if(!ITEM||!file)return;const{R,it}=ITEM,u=usr();if
   toast("Subiendo la foto…");
   try{let j=await reduce(file,1200,.75);if(j.length>650000)j=await reduce(file,900,.65);
     const a=await fb();await a.fs.setDoc(a.fs.doc(a.db,"retosf",R.id+"_"+u.uid+"_"+it.id),{r:R.id,u:u.uid,i:it.id,nom:String(LOC._nom||"").slice(0,30),f:j,t:Date.now()});
+    try{const mi=await reduce(file,96,.6);const L=lo(R.id);(L.fo||(L.fo={}))[it.id]=mi;saveLoc();publica(R,true)}catch(er){}
     toast("✅ Foto subida");ficha(R,it)}catch(e){console.warn("foto reto",e);toast(navigator.onLine?"No se ha podido subir la foto":"Sin conexión: prueba cuando tengas datos")}}
 
 /* ---------- marcar ---------- */
@@ -377,13 +420,14 @@ box.addEventListener("click",e=>{const t=e.target;let b;
   if(b=t.closest("[data-rt]")){CUR=b.dataset.rt;SUB="cum";FIL="todas";pinta();sec.scrollTop=0;cargaPart(CUR);return}
   if(t.closest("[data-rtback]")){CUR=null;pinta();sec.scrollTop=0;return}
   if(t.closest("[data-rtnew]")){editar(null);return}
+  if(b=t.closest("[data-rtlsub]")){LSUB=b.dataset.rtlsub;if(LSUB==="mios")cargaMios();pinta();return}
   const R=CUR&&reto(CUR);if(!R)return;
   if(b=t.closest("[data-rtsub]")){SUB=b.dataset.rtsub;if(SUB==="gente")cargaPart(R.id);pinta();return}
   if(b=t.closest("[data-rtfil]")){FIL=b.dataset.rtfil;pinta();return}
   if(b=t.closest("[data-rtck]")){const it=R.items.find(x=>x.id===b.dataset.rtck);if(it)marca(R,it);return}
   if(b=t.closest("[data-rtit]")){const it=R.items.find(x=>x.id===b.dataset.rtit);if(it)ficha(R,it);return}
   // 25 nov 2026: 📷 en cada cumbre de la lista: abre su ficha y, si ya puedes (hecha y apuntado), directamente el selector de foto; si no, la ficha explica qué falta
-  if(b=t.closest("[data-rtfo]")){const it=R.items.find(x=>x.id===b.dataset.rtfo);if(!it)return;ficha(R,it);
+  if(b=t.closest("[data-rtfo]")){const it=R.items.find(x=>x.id===b.dataset.rtfo);if(!it)return;ficha(R,it);if(b.hasAttribute("data-rtver1")){setTimeout(()=>{const f=document.getElementById("rtfotos");if(f)f.scrollIntoView({block:"center"})},400);return}
     const inp=dlg.querySelector("[data-rtfoto]");if(inp)inp.click();else{const p=[...dlg.querySelectorAll("p")].find(x=>/foto/i.test(x.textContent));if(p){p.scrollIntoView({block:"center"});p.style.outline="2px solid #f5b301";p.style.borderRadius="8px"}}return}
   // 24 nov 2026: el administrador puede quitar a alguien de la lista (p. ej. apuntados repetidos); su progreso sigue en su móvil
   if(b=t.closest("[data-rtdel]")){const uid=b.dataset.rtdel,p=(PART[R.id].l||[]).find(x=>x.u===uid);if(!uid||!confirmar(`¿Quitar a «${(p&&p.nom)||"?"}» (${(p&&p.n)||0} de ${R.tot}) de la lista de este reto?`))return;
