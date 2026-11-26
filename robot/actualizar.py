@@ -1469,6 +1469,25 @@ def salidas_web():
             except ValueError: return None
         cats_ok = [nk(x) for x in c.get('categorias', [])]
         its = re.findall(r'(?s)<item>(.*?)</item>', xml)[:20]
+        if c.get('desde_agenda') and ag_html:
+            # 26 nov 2026 · la FEMPA no saca todas sus actividades en el canal RSS: se leen las páginas que enlaza su agenda
+            base = re.match(r'https?://[^/]+', c['agenda']).group(0); vistos = set(); its = []
+            for u in re.findall(r'href=["\x27]((?:https?://[^/"\x27]+)?/actividad/[^"\x27?#]+)', ag_html):
+                u = (u if u.startswith('http') else base + u).rstrip('/') + '/'
+                if u in vistos: continue
+                vistos.add(u)
+                try: pg = get(u); pg = pg.decode('utf-8', 'replace') if isinstance(pg, bytes) else pg
+                except Exception as e: log(f'   ⚠ {u}: no responde ({e})'); continue
+                t1 = re.search(r'(?s)<h1[^>]*>(.*?)</h1>', pg) or re.search(r'(?s)<title>(.*?)</title>', pg)
+                tit = _txt(t1.group(1)).split(' – ')[0].split(' | ')[0].strip() if t1 else u
+                cu = pg[t1.end():] if t1 else pg
+                cu = re.split(r'(?i)horario de atenci|<footer|<aside|class=["\x27][^"\x27]*(?:sidebar|widget-area)', cu)[0]; cu = re.sub(r'<[^>]*$', '', cu)
+                fp = re.search(r'\b(\d{1,2})/(\d{1,2})/(20\d\d|\d\d)\b', _txt(cu)); fpag = ''
+                if fp:
+                    try: fpag = datetime.date(int(fp.group(3)) + (2000 if len(fp.group(3)) == 2 else 0), int(fp.group(2)), int(fp.group(1))).isoformat()
+                    except ValueError: pass
+                its.append(f'<title>{html.escape(tit)}</title><link>{u}</link><fpag>{fpag}</fpag><content:encoded><![CDATA[{cu}]]></content:encoded>')
+            ag_html = ag_html.replace(base + '/actividad/', '/actividad/').replace('/actividad/', base + '/actividad/')
         ag_ok = bool(ag_html) and sum(1 for it in its if re.sub(r'<!\[CDATA\[|\]\]>', '', (re.search(r'<link>(.*?)</link>', it) or [0, ''])[1]).strip().rstrip('/') in ag_html) > 0
         if c.get('agenda'): log(f'   {c.get("nombre")}: {len(its)} entradas en su canal; agenda {"con enlaces" if ag_ok else "sin enlaces (se usan las fechas del texto)"}')
         no_ag, pasadas = [], []
@@ -1489,7 +1508,8 @@ def salidas_web():
             cats = [html.unescape(re.sub(r'<!\[CDATA\[|\]\]>', '', x)).strip() for x in re.findall(r'(?s)<category[^>]*>(.*?)</category>', it)]
             if c.get('excluir') and re.search(c['excluir'], ti + ' | ' + ' | '.join(cats), re.I): fuera.append(ti); continue
             if cats_ok and cats and not any(nk(x) in cats_ok for x in cats): fuera.append(ti); continue
-            t = _txt(cuerpo); fa = fecha_agenda(link)
+            t = _txt(cuerpo); fp = re.search(r'<fpag>(\d{4})-(\d\d)-(\d\d)</fpag>', it)
+            fa = datetime.date(int(fp.group(1)), int(fp.group(2)), int(fp.group(3))) if fp else fecha_agenda(link)   # la fecha de la propia página manda
             if fa is False: no_ag.append(ti); continue
             fd = fa or _fecha_salida(ti, t, cuerpo, pub)
             if not fd: sin_f.append(ti); continue

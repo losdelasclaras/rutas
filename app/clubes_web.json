@@ -14,6 +14,7 @@
   "unir": "liga de senderismo",
   "apuntarse": "Toda la información e inscripción, en la web de la FEMPA.",
   "solo_admin": true,
-  "nota": "Federación de Montaña de Asturias. PRUEBA (26/11/2026) para enseñársela a la presidenta: solo la ven los administradores. Si da permiso: darla de alta en Salidas y quitar solo_admin"
+  "nota": "Federación de Montaña de Asturias. PRUEBA (26/11/2026) para enseñársela a la presidenta: solo la ven los administradores. Si da permiso: darla de alta en Salidas y quitar solo_admin",
+  "desde_agenda": true
  }
 ]
