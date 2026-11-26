@@ -1472,6 +1472,14 @@ def salidas_web():
         ag_ok = bool(ag_html) and sum(1 for it in its if re.sub(r'<!\[CDATA\[|\]\]>', '', (re.search(r'<link>(.*?)</link>', it) or [0, ''])[1]).strip().rstrip('/') in ag_html) > 0
         if c.get('agenda'): log(f'   {c.get("nombre")}: {len(its)} entradas en su canal; agenda {"con enlaces" if ag_ok else "sin enlaces (se usan las fechas del texto)"}')
         no_ag, pasadas = [], []
+        if c.get('agenda'):   # 26 nov 2026 · informe detallado de cada entrada (para ajustar la FEMPA)
+            for it in its:
+                _l = re.sub(r'<!\[CDATA\[|\]\]>', '', (re.search(r'<link>(.*?)</link>', it) or [0, ''])[1]).strip()
+                _t = html.unescape(re.sub(r'<!\[CDATA\[|\]\]>', '', (re.search(r'(?s)<title>(.*?)</title>', it) or [0, ''])[1])).strip()
+                _c = [re.sub(r'<!\[CDATA\[|\]\]>', '', x).strip() for x in re.findall(r'(?s)<category[^>]*>(.*?)</category>', it)]
+                _p = (re.search(r'<pubDate>(.*?)</pubDate>', it) or [0, ''])[1]
+                log(f'      · «{_t}» {_l} [{", ".join(_c)}] {_p} · en agenda: {"sí" if _l.rstrip("/") in ag_html else "no"} · fechas en texto: {re.findall(r"[0-9]{1,2}/[0-9]{1,2}(?:/[0-9]{2,4})?|[0-9]{1,2} de [a-z]+", _txt(it))[:4]}')
+            log(f'      agenda: enlaces a actividades = {sorted(set(re.findall(r"/actividad/([^/\"\x27?#]+)", ag_html)))[:12]}')
         for it in its:
             g = lambda tag: (re.search(r'(?s)<' + tag + r'[^>]*>(.*?)</' + tag + '>', it) or [None, ''])[1]
             ti = html.unescape(re.sub(r'<!\[CDATA\[|\]\]>', '', g('title'))).strip(); link = re.sub(r'<!\[CDATA\[|\]\]>', '', g('link')).strip()
