@@ -188,7 +188,7 @@ function payload(R){const u=usr(),L=lo(R.id),h={},v={};
   for(const it of R.items)if(hecho(R,it)){h[it.id]=(L.h&&L.h[it.id])||1;if(conTrack(it))v[it.id]=1}
   // 26 nov 2026: rn/re = nombre y emoji del reto (para «Mis retos» aunque el reto se borre); fo = miniatura de tu foto en cada cumbre
   const fo={};for(const k in (L.fo||{}))if(h[k])fo[k]=L.fo[k];
-  const n=prog(R);return{r:R.id,u:u.uid,nom:String(LOC._nom||"").slice(0,30),n,tot:R.tot,comp:n>=R.tot,h,v,fo,rn:String(R.n||"").slice(0,80),re:R.e||"🏆"}}
+  const n=prog(R);return{r:R.id,u:u.uid,nom:String(LOC._nom||"").slice(0,30),n,tot:R.tot,comp:n>=R.tot,h,v,fo,rn:String(R.n||"").slice(0,80),re:R.e||"🏆",ro:String(R.org||"").slice(0,80),ri:R.ini||"",rf:R.fin||"",rd:String(R.d||"").slice(0,300)}}
 // 24 nov 2026: «apuntado» es de una cuenta, no del móvil (antes, al entrar con otra cuenta en el mismo móvil, se apuntaba también esa:
 // Jonathan salía 3 veces en Techos). L.pub guarda el uid de la cuenta apuntada; los antiguos (true) pasan a la cuenta que esté dentro.
 function publica(R,ya){const L=LOC[R.id],u=usr();if(!L||!L.pub||!u)return;if(L.pub===true){L.pub=u.uid;saveLoc()}if(L.pub!==u.uid)return;clearTimeout(PUBT[R.id]);
@@ -200,7 +200,8 @@ function publicaTodos(){for(const R of todos())publica(R)}
 /* ---------- celebrar medallas nuevas ---------- */
 function revisa(R,celebrar){if(!R.items.length)return;const L=lo(R.id),n=prog(R),H=hitos(R.tot),g=H.filter(x=>n>=x);
   if(g.length&&estado(R).k!=="pr"){const A=LOC._arch||(LOC._arch={}),o=A[R.id]||{};   // 26 nov: «Mis retos › Conseguidos» (se queda aunque el reto termine o se borre)
-    if(o.n!==n||o.rn!==R.n||o.tot!==R.tot){A[R.id]={rn:R.n,re:R.e,n:Math.max(n,R.tipo==="fechas"?(o.n||0):0),tot:R.tot,fin:R.fin||"",t:Date.now()};saveLoc()}}
+    if(o.n!==n||o.rn!==R.n||o.tot!==R.tot){A[R.id]={rn:R.n,re:R.e,ro:R.org||"",ri:R.ini||"",rf:R.fin||"",rd:String(R.d||"").slice(0,300),n:Math.max(n,R.tipo==="fechas"?(o.n||0):0),tot:R.tot,t:Date.now(),
+      cu:R.items.filter(it=>hecho(R,it)).map(it=>it.n).slice(0,200)};saveLoc()}}
   if(!L.med){L.med=g;saveLoc();return}
   const nuevas=g.filter(x=>!L.med.includes(x));L.med=g;saveLoc();
   if(nuevas.length&&celebrar!==false){const x=nuevas[nuevas.length-1],i=H.indexOf(x),last=i===H.length-1;
@@ -234,7 +235,9 @@ async function cargaMios(){const u=usr();if(!u){MIOS={uid:"",l:[]};return}if(MIO
 function conseguidos(){const m={},A=LOC._arch||{},vivos=new Map(todos().map(R=>[R.id,R]));
   const pon=(id,o)=>{const x=m[id];if(!x||(o.n||0)>(x.n||0))m[id]=Object.assign({},x||{},o)};
   for(const id in A)pon(id,A[id]);
-  for(const d of (MIOS&&MIOS.l)||[])if(d.r&&d.tot)pon(d.r,{rn:d.rn||(m[d.r]&&m[d.r].rn)||(vivos.get(d.r)||{}).n||"Reto",re:d.re||(vivos.get(d.r)||{}).e||"🏆",n:d.n||0,tot:d.tot,t:d.t});
+  for(const d of (MIOS&&MIOS.l)||[])if(d.r&&d.tot){const x=m[d.r]||{},bonito=k=>String(k).replace(/[-_]+/g," ").replace(/^\w|\s\w/g,c=>c.toUpperCase());
+    pon(d.r,{rn:d.rn||x.rn||(vivos.get(d.r)||{}).n||"Reto",re:d.re||x.re||(vivos.get(d.r)||{}).e||"🏆",ro:d.ro||x.ro||"",ri:d.ri||x.ri||"",rf:d.rf||x.rf||"",rd:d.rd||x.rd||"",
+      n:d.n||0,tot:d.tot,t:d.t,cu:x.cu&&x.cu.length>=Object.keys(d.h||{}).length?x.cu:Object.keys(d.h||{}).map(bonito)})}
   return Object.entries(m).map(([id,o])=>{const R=vivos.get(id);if(R&&R.tipo!=="fechas"){o.n=Math.max(o.n||0,prog(R));o.tot=R.tot}
     const H=hitos(o.tot||1),g=H.filter(x=>(o.n||0)>=x);return Object.assign(o,{id,R,H,g,st:R?estado(R):{k:"fi",t:"Ya no está en la app"}})})
     .filter(o=>o.g.length).sort((a,b)=>b.g.length/b.H.length-a.g.length/a.H.length||(b.n||0)-(a.n||0))}
@@ -242,12 +245,22 @@ function pintaMios(){const u=usr();if(u&&(!MIOS||MIOS.uid!==u.uid))cargaMios();
   const v=todos().filter(R=>{const L=LOC[R.id]||{},k=estado(R).k;return k!=="fi"&&R.activo!==false&&(prog(R)>0||(L.pub&&u&&L.pub===u.uid))});
   const C=conseguidos(),nmed=C.reduce((s,o)=>s+o.g.length,0),comp=C.filter(o=>o.g.length===o.H.length).length;
   return `${C.length?`<div class="rtvit"><h3>🏅 Conseguidos <small>${nmed} medalla${nmed===1?"":"s"}${comp?` · ${comp} reto${comp===1?"":"s"} completado${comp===1?"":"s"} 🏆`:""}</small></h3>
-    ${C.map(o=>{const last=o.g.length===o.H.length,i=o.g.length-1;return `<${o.R?"button":"div"} class="rtcard rtgan"${o.R?` data-rt="${esc(o.id)}"`:""}><span class="rtm">${medalla(o.H[i],i,last,true,46)}</span><span class="rtt"><b>${esc(o.re||"🏆")} ${esc(o.rn||"")}</b>
-      <small>${last?"¡Completado!":`${o.n} de ${o.tot}`}${o.st.k==="fi"?` · <span class="rtst fi">${esc(o.st.t)}</span>`:""}</small>
-      <span class="rtmeds sm">${o.g.map((x,j)=>medalla(x,j,j===o.H.length-1,true,24)).join("")}</span></span></${o.R?"button":"div"}>`}).join("")}</div>`
+    ${C.map(o=>{const last=o.g.length===o.H.length,i=o.g.length-1;const fc=x=>{const d=new Date(x+"T12:00:00");return isNaN(d)?x:d.toLocaleDateString("es-ES",{month:"short",year:"numeric"})};
+      const qd=[o.ri&&o.rf?`${fc(o.ri)} – ${fc(o.rf)}`:o.rf?"Hasta "+fc(o.rf):"",o.ro?o.ro:""].filter(Boolean).join(" · ");
+      return `<button class="rtcard rtgan" ${o.R?`data-rt="${esc(o.id)}"`:`data-rtarch="${esc(o.id)}"`}><span class="rtm">${medalla(o.H[i],i,last,true,46)}</span><span class="rtt"><b>${esc(o.re||"🏆")} ${esc(o.rn||"")}</b>
+      <small>${last?"¡Completado!":`${o.n} de ${o.tot}`}${o.st.k==="fi"?` · <span class="rtst fi">${esc(o.st.t)}</span>`:""}</small>${qd?`<small style="margin-top:2px">${esc(qd)}</small>`:""}
+      <span class="rtmeds sm">${o.g.map((x,j)=>medalla(x,j,j===o.H.length-1,true,24)).join("")}</span></span></button>`}).join("")}</div>`
     :`<p class="rtvacio">Todavía no tienes medallas. Marca ✓ las cumbres que subas: a las 5 llega la primera.</p>`}
   <h3 style="margin:16px 0 8px;font-size:16px">⛰️ En marcha</h3>${v.map(tarjeta).join("")||`<p class="rtvacio">No llevas ningún reto en marcha. Mira en «Todos».</p>`}
   <p class="note" style="font-size:13.5px;color:var(--muted);margin:12px 2px">${u?"Las medallas de los retos a los que estás apuntado se guardan también en tu cuenta.":"Se guardan en este móvil. Entra con tu cuenta y apúntate a los retos para no perderlas si cambias de móvil."}</p>`}
+function verArch(id){const o=conseguidos().find(x=>x.id===id);if(!o)return;const last=o.g.length===o.H.length;
+  abreDlg(`<div class="hd"><h3>${esc(o.re||"🏆")} ${esc(o.rn||"Reto")}</h3><button class="x" data-rtx aria-label="Cerrar">×</button></div>
+    <p style="margin:0;color:var(--muted)">${esc([o.ri&&o.rf?fecha(o.ri)+" – "+fecha(o.rf):o.rf?"Hasta el "+fecha(o.rf):"",o.ro?"Reto de "+o.ro:""].filter(Boolean).join(" · "))}</p>
+    ${o.rd?`<p>${esc(o.rd)}</p>`:""}
+    <div class="rtmeds" style="margin:12px 0">${o.H.map((x,i)=>`<span class="md">${medalla(x,i,i===o.H.length-1,(o.n||0)>=x,40)}</span>`).join("")}</div>
+    <p><b>${last?"🏆 ¡Lo completaste!":`Hiciste ${o.n} de ${o.tot}`}</b></p>
+    ${o.cu&&o.cu.length?`<h4>Lo que subiste (${o.cu.length})</h4><p style="line-height:1.6">${o.cu.map(esc).join(" · ")}</p>`:""}
+    <p style="font-size:13.5px;color:var(--muted)">Este reto ya no está en la app, pero tus medallas se quedan aquí.</p>`)}
 function pintaLista(){const v=todos();const ord=R=>{const k=estado(R).k;return R.fijo?0:k==="on"?1:k==="pe"?2:k==="pr"?3:4};v.sort((a,b)=>ord(a)-ord(b));
   const bor=v.filter(R=>R.activo===false),vivos=v.filter(R=>R.activo!==false&&estado(R).k!=="fi"),fin=v.filter(R=>R.activo!==false&&estado(R).k==="fi");
   const C=conseguidos().reduce((s,o)=>s+o.g.length,0);
@@ -420,6 +433,7 @@ box.addEventListener("click",e=>{const t=e.target;let b;
   if(b=t.closest("[data-rt]")){CUR=b.dataset.rt;SUB="cum";FIL="todas";pinta();sec.scrollTop=0;cargaPart(CUR);return}
   if(t.closest("[data-rtback]")){CUR=null;pinta();sec.scrollTop=0;return}
   if(t.closest("[data-rtnew]")){editar(null);return}
+  if(b=t.closest("[data-rtarch]")){verArch(b.dataset.rtarch);return}
   if(b=t.closest("[data-rtlsub]")){LSUB=b.dataset.rtlsub;if(LSUB==="mios")cargaMios();pinta();return}
   const R=CUR&&reto(CUR);if(!R)return;
   if(b=t.closest("[data-rtsub]")){SUB=b.dataset.rtsub;if(SUB==="gente")cargaPart(R.id);pinta();return}
