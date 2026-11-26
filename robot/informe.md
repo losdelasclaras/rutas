@@ -1,6 +1,6 @@
-# Informe del robot · 26/11/2026 17:14
+# Informe del robot · 26/11/2026 17:23
 
-**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos
+**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos; regeneración forzada
 
 - 🔎 «Pico Maoñu, Monte Moñacos y Foz de los Cubilones»: sin dificultad. Texto del cuadro: «orcada Traslasenda a Braña Nueva y bajamos por la foz de los Cubilones , un rincón sombrío y apenas pisado en el que hay que bajar por el propio cauce del arroyo. La vuelta, por la pista junto al río Infierno y sus pozas. 📏 19 km Distancia 📈 1.300 m Desnivel acumulado 🏔️ 1.429 m Maoñu ⚡ Muy Difícil Tramos sin sendero y maleza y bajada por el cauce de la foz 🔄 Circular Desde La Pesanca (405 m) 📅 2012 Publicada en noviembre ⚠️ Antes de ir Monte privado: el monte que va del Maoñu hasta pasar la cresta de Los Tornos, en la vertiente que cae hacia el río Infierno, es de uso privado y está prohibido»
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
@@ -25,7 +25,7 @@
 - ✏️ Camudando'l camín: 47 rutas con corrección a mano
 - 🤝 Colaborador «Camudando'l camín»: 152 puntos, 55 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
--    (42 peticiones a su web en 1.2 min)
+-    (42 peticiones a su web en 1.4 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
 - ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
