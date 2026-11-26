@@ -1458,7 +1458,7 @@ def salidas_web():
         def fecha_agenda(link):
             if not ag_html or not link: return None
             pos = [m.start() for m in re.finditer(re.escape(link.rstrip('/')), ag_html)]
-            if not pos: return False      # no está en la agenda: ya pasó o no se anuncia
+            if not pos: return False if ag_ok else None     # no está en la agenda: ya pasó (si la agenda trae enlaces)
             mejor = None
             for m in re.finditer(r'\b(\d{1,2})/(\d{1,2})/(20\d\d|\d\d)\b', ag_html):
                 d = min(abs(m.start() - q) for q in pos)
@@ -1468,7 +1468,11 @@ def salidas_web():
             try: return datetime.date(y, int(mejor[1].group(2)), int(mejor[1].group(1)))
             except ValueError: return None
         cats_ok = [nk(x) for x in c.get('categorias', [])]
-        for it in re.findall(r'(?s)<item>(.*?)</item>', xml)[:20]:
+        its = re.findall(r'(?s)<item>(.*?)</item>', xml)[:20]
+        ag_ok = bool(ag_html) and sum(1 for it in its if re.sub(r'<!\[CDATA\[|\]\]>', '', (re.search(r'<link>(.*?)</link>', it) or [0, ''])[1]).strip().rstrip('/') in ag_html) > 0
+        if c.get('agenda'): log(f'   {c.get("nombre")}: {len(its)} entradas en su canal; agenda {"con enlaces" if ag_ok else "sin enlaces (se usan las fechas del texto)"}')
+        no_ag, pasadas = [], []
+        for it in its:
             g = lambda tag: (re.search(r'(?s)<' + tag + r'[^>]*>(.*?)</' + tag + '>', it) or [None, ''])[1]
             ti = html.unescape(re.sub(r'<!\[CDATA\[|\]\]>', '', g('title'))).strip(); link = re.sub(r'<!\[CDATA\[|\]\]>', '', g('link')).strip()
             cuerpo = re.sub(r'<!\[CDATA\[|\]\]>', '', g('content:encoded') or g('description')); cuerpo = html.unescape(cuerpo) if '&lt;' in cuerpo else cuerpo
@@ -1478,10 +1482,10 @@ def salidas_web():
             if c.get('excluir') and re.search(c['excluir'], ti + ' | ' + ' | '.join(cats), re.I): fuera.append(ti); continue
             if cats_ok and cats and not any(nk(x) in cats_ok for x in cats): fuera.append(ti); continue
             t = _txt(cuerpo); fa = fecha_agenda(link)
-            if fa is False: continue
+            if fa is False: no_ag.append(ti); continue
             fd = fa or _fecha_salida(ti, t, cuerpo, pub)
             if not fd: sin_f.append(ti); continue
-            if fd < hoy: continue
+            if fd < hoy: pasadas.append(ti); continue
             hm = re.search(r'(?i)salida\D{0,25}?(\d{1,2})[:.h](\d{2})', t) or re.search(r'\b(\d{1,2}):(\d{2})\b', t)
             hora = f'{int(hm.group(1)):02d}:{hm.group(2)}' if hm else '08:00'
             pa = re.split(r'(?i)ruta alternativa|alternativa\s*:', t, maxsplit=1); pr, alt = pa[0], (pa[1] if len(pa) > 1 else '')
@@ -1504,7 +1508,7 @@ def salidas_web():
             for x in res_c: dias.setdefault(x['fecha'][:10], []).append(x)
             res_c = [x for x in res_c if not (re.search(c['unir'], x['ti'], re.I) and any(not re.search(c['unir'], y['ti'], re.I) for y in dias[x['fecha'][:10]]))]
         res += res_c; n_ok = len(res_c)
-        log(f'📅 Salidas de la web de {c.get("nombre")}: {n_ok} próximas' + ('' if club or c.get('solo_admin') else ' (el club aún no está dado de alta y aprobado en Salidas: no salen en la app)') + (' (de prueba: solo las ven los administradores)' if c.get('solo_admin') else '') + (f' · dejadas fuera: {"; ".join(fuera[:4])}' if fuera else '') + (f' · sin fecha clara (no se ponen): {"; ".join(sin_f[:3])}' if sin_f else ''))
+        log(f'📅 Salidas de la web de {c.get("nombre")}: {n_ok} próximas' + ('' if club or c.get('solo_admin') else ' (el club aún no está dado de alta y aprobado en Salidas: no salen en la app)') + (' (de prueba: solo las ven los administradores)' if c.get('solo_admin') else '') + (f' · dejadas fuera: {"; ".join(fuera[:4])}' if fuera else '') + (f' · sin fecha clara (no se ponen): {"; ".join(sin_f[:3])}' if sin_f else '') + (f' · ya pasadas: {len(pasadas)}' if pasadas else '') + (f' · no están en su agenda: {"; ".join(no_ag[:3])}' if no_ag else ''))
     res.sort(key=lambda x: x['fecha'])
     if res != old:
         json.dump(res, open(out_f, 'w'), ensure_ascii=False, indent=0); CAMBIOS.append('salidas de webs de clubes')
