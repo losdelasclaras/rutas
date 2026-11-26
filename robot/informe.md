@@ -1,4 +1,4 @@
-# Informe del robot · 26/11/2026 17:34
+# Informe del robot · 26/11/2026 17:43
 
 **Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Caleyando con Cienfuegos; salidas de webs de clubes
 
@@ -25,7 +25,7 @@
 - ✏️ Camudando'l camín: 47 rutas con corrección a mano
 - Colaborador «Camudando'l camín»: sin cambios.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
--    (42 peticiones a su web en 1.1 min)
+-    (42 peticiones a su web en 1.4 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
 - ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
@@ -41,11 +41,6 @@
 - 🤝 Colaborador «Caleyando con Cienfuegos»: 815 puntos, 0 tracks.
 - 📅 Salidas de la web de Civilu: 0 próximas · ya pasadas: 5
 -    FEMPA: 4 entradas en su canal; agenda con enlaces
--       · «2ª Prueba Copa Asturias de Escalada One Move» https://fempa.net/actividad/2a-prueba-copa-asturias-de-escalada-one-move/ []  · en agenda: sí · fechas en texto: ['12/12/26', '14 de noviembre', '12 de diciembre', '19 de diciembre']
--       · «Belén de Cumbres» https://fempa.net/actividad/belen-de-cumbres-3/ []  · en agenda: sí · fechas en texto: ['13/12/26', '26/12/13', '13 de diciembre', '12/12/26']
--       · «Liga de Senderismo» https://fempa.net/actividad/liga-de-senderismo-5/ []  · en agenda: sí · fechas en texto: ['13/12/26', '12/12/26', '13/12/26', '13/12/26']
--       · «3ª Prueba Copa Asturias de Escalada El Roko» https://fempa.net/actividad/3a-prueba-copa-asturias-de-escalada-el-roko/ []  · en agenda: sí · fechas en texto: ['19/12/26', '14 de noviembre', '12 de diciembre', '19 de diciembre']
--       agenda: enlaces a actividades = ['2a-prueba-copa-asturias-de-escalada-one-move', '3a-prueba-copa-asturias-de-escalada-el-roko', 'belen-de-cumbres-3', 'liga-de-senderismo-5']
 - 📅 Salidas de la web de FEMPA: 1 próximas (de prueba: solo las ven los administradores) · dejadas fuera: 2ª Prueba Copa Asturias de Escalada One Move; 3ª Prueba Copa Asturias de Escalada El Roko
 -    · 2026-12-13 10:00 «Belén de Cumbres» · 10.5 km
 - App regenerada: 384 rutas, 175 con track.
