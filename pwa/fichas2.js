@@ -37,8 +37,11 @@ const boB=b=>window.COLX&&COLX.bo?COLX.bo(b.co,b.u):null;
 const anoB=b=>{const f=window.COLX&&COLX.feBo&&COLX.feBo(b.co,b.u);if(f)return[f[1],f[2]];const m=/\/(20\d\d)\/(\d\d)\//.exec(b.u);if(m)return[m[1],m[2]];const y=b.co&&b.co.fy&&b.co.fy[b.u];return[y||"",""]};
 const difB=b=>{const o=boB(b);if(o&&o.di)return o.di;const F=b.p&&window.COLX&&COLX.ficha?COLX.ficha(b.p[3])[0]:{};return F.dif||""};
 const tituloBlog=b=>(boB(b)||{}).n||((b.co&&b.co.bt)||{})[b.u]||decodeURIComponent((/\/([^\/]+?)(?:\.html?)?\/?$/.exec(b.u)||[,""])[1]).replace(/[-_]+/g," ").replace(/^./,m=>m.toUpperCase())||b.n;
+// 27 nov 2026: la dificultad de las entradas sin track (Caleyando con Cienfuegos…) con su punto de color, como en Explorar
+const difCo=t=>{const k=window.COLX&&COLX.nivel?COLX.nivel(t):"",D={b:"🟢",m:"🟡",a:"🔴",x:"⚫"};return(k?`<i class="dft" style="font-style:normal;font-weight:700;white-space:nowrap">${D[k]} ${esc(t)}</i>`:esc(t))};
+const difCoTxt=t=>{const k=window.COLX&&COLX.nivel?COLX.nivel(t):"";return k?({b:"🟢",m:"🟡",a:"🔴",x:"⚫"})[k]+" "+t:t};
 function rowBlog(b,i,y){const fo=b.p&&b.p[5];
-  return `<button class="row src-co" style="--cc:${b.c}" data-fbl="${i}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:""}<div class="t"><b>${esc(tituloBlog(b))}</b><span><em class="cosrc" style="color:${b.c}">${esc(b.n)}</em>${y?" · "+y:""}${difB(b)?" · "+esc(difB(b)):""} · Sin track</span></div></button>`}
+  return `<button class="row src-co" style="--cc:${b.c}" data-fbl="${i}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:""}<div class="t"><b>${esc(tituloBlog(b))}</b><span><em class="cosrc" style="color:${b.c}">${esc(b.n)}</em>${y?" · "+y:""}${difB(b)?" · "+difCo(difB(b)):""} · Sin track</span></div></button>`}
 function fichaBlog(i){const F=sheet._fbl;if(!F)return;const b=F.bl[i],o=F.o;if(!b)return;const[y,ymes]=anoB(b),fo=b.p&&b.p[5];
   // las cumbres de esta entrada: los puntos (de cualquier blog) que enlazan a ella
   const cums=[];if(window.COLX)for(const x of COLX.todo())if(x.pp&&x.pp[4]===b.u&&!cums.some(z=>z.pp===x.pp))cums.push(x);
@@ -50,7 +53,7 @@ function fichaBlog(i){const F=sheet._fbl;if(!F)return;const b=F.bl[i],o=F.o;if(!
     // 22 nov 2026: distancia, desnivel y dificultad si vienen en la descripción del punto (Caleyando con Cienfuegos: los lee el robot de su entrada)
     const DF=b.p&&window.COLX&&COLX.ficha?COLX.ficha(b.p[3])[0]:{},dkm=(/(\d+(?:[.,]\d+)?)\s*km/i.exec(DF.km||"")||[])[1],dde=(/(\d[\d.]*)\s*m/i.exec(DF.de||"")||[])[1];
     sheet.innerHTML=FRUTA.pinta({grab:"",foto:fo,quien:b.n||"",y:y?+y:null,m:ym?+ym[2]:null,titulo:tituloBlog(b),blog:b.u,
-      km:dkm?dkm.replace(".",",")+" km":"",de:dde?"+"+dde+" m":"",dif:difB(b),
+      km:dkm?dkm.replace(".",",")+" km":"",de:dde?"+"+dde+" m":"",dif:difCoTxt(difB(b)),
       gRuta:b.co?"data-frgrb":"",gRutaOn:!!(b.co&&FRUTA.blGuardada&&FRUTA.blGuardada(b.co.id,b.u)),
       share:`data-frshu="${esc(b.u)}" data-frsht="${esc(tituloBlog(b))}"`,
       cumbres:cums.map(x=>({n:x.c,a:x.a||null,k:x.co&&COLX.coKey?COLX.coKey(x.co,x.c):null})),close:" data-trcox"});
