@@ -270,6 +270,12 @@ def enlaces_app():
         cs = re.findall(r'/rutas/?(?:index\.html)?#c=([A-Za-z0-9]{4,20})', d)
         bl = re.findall(r'https?://losdelasclaras\.blogspot\.com/\d{4}/\d{2}/[^\s"<>\']+?\.html', d)
         if cs and bl: pares[cs[0]] = bl[0].replace('http://', 'https://')
+    # 27 nov 2026: enlaces puestos a mano (robot/enlaces_extra.json: {"código": "url de la entrada"}), por si no están en My Maps
+    try:
+        ex = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'enlaces_extra.json')))
+        for c, u in ex.items(): pares.setdefault(c, u)
+    except FileNotFoundError: pass
+    except Exception as e: log(f'⚠ robot/enlaces_extra.json no se puede leer: {e}')
     reg_f = APP + 'gpx/enlaces.json'
     reg = json.load(open(reg_f)) if os.path.exists(reg_f) else {}
     for fn in [f for f in reg if f[len('enlace__'):-4] not in pares]:   # enlaces quitados de My Maps
