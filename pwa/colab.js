@@ -151,11 +151,14 @@ const tapado=m=>{if(!m.__cum){const it=itDe(m);if(!it)return false;
   if(LAY.peaks&&!LAY.solo&&(grpDe(m)||(r&&grpDe(r))))return true;     // ya la enseña el grupo
   return !!(r&&G[r.__co.id+"_c"]&&map.hasLayer(G[r.__co.id+"_c"]))};   // ya la enseña otro colaborador
 const grupoDe=m=>CUMM.filter(x=>x!==m&&(x.__sup||x)===(m.__sup||m));
-function tambien(m){if(!m.__cum||sheet.hidden||!sheet.querySelector("h2"))return;
+function tambien(m){if(sheet.hidden||!sheet.querySelector("h2"))return;
+  // 27 nov 2026: también los LUGARES (Braña de Mumián de Cienfuegos con la capa del grupo apagada no enseñaba vuestra ruta)
+  if(!m.__cum){const it=itDe(m),g=it&&(it.par||(it.dup&&it.dup.par));if(!g||g.i==null||/También en Los de las Claras/.test(sheet.innerHTML))return;
+    const rs=(P[g.i].rs||[]).filter(ri=>R[ri].u);if(rs.length)sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>También en Los de las Claras</h3><div class="rows">${rs.map(ri=>rowHTML(R[ri],"",true)).join("")}</div></div>`);return}
   const otros=grupoDe(m),rows=[];
   for(const x of otros){const it=window.COLX&&COLX.byP(x.__p);if(it)rows.push([x.__co.n,COLX.rrow(it)])}
   const g=grpDe(m)||otros.map(grpDe).find(Boolean);
-  if(g&&!/También del grupo/.test(sheet.innerHTML)){const rs=(P[g.i].rs||[]).filter(ri=>R[ri].u);if(rs.length)sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>También en Los de las Claras</h3><div class="rows">${rs.map(ri=>rowHTML(R[ri],"",true)).join("")}</div></div>`)}
+  if(g&&!/También del grupo|También en Los de las Claras/.test(sheet.innerHTML)){const rs=(P[g.i].rs||[]).filter(ri=>R[ri].u);if(rs.length)sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>También en Los de las Claras</h3><div class="rows">${rs.map(ri=>rowHTML(R[ri],"",true)).join("")}</div></div>`)}
   const by={};for(const[n,h]of rows)(by[n] ||= []).push(h);
   for(const[n,hs]of Object.entries(by))sheet.insertAdjacentHTML("beforeend",`<div class="sec"><h3>También en ${esc(n)}</h3><div class="rows">${hs.join("")}</div></div>`)}
 /* ---------- rutas de colaboradores que solo traen el track (p. ej. Rutinas Varias, de Wikiloc) ---------- */
