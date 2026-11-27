@@ -23,6 +23,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .fol .fb button.on{background:#1a73e8;color:#fff;border-color:#1a73e8}.fol .fb button.end{color:#b3261e}
 .fol .bar{height:6px;border-radius:3px;background:#e6e6e6;margin:8px 0 2px;overflow:hidden}.fol .bar i{display:block;height:100%;background:#c3262e}
 .folme{width:20px;height:20px}
+.fol .fprf{margin-bottom:6px}.fol .fprf svg{display:block;width:100%;height:auto;margin:4px 0 0}.fol .fprf text{font:700 21px system-ui,sans-serif;fill:currentColor;opacity:.75}
+.fol.min .fprf{display:none}
 .fol .fmin{flex:none;width:56px;height:48px;border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:12px;font-size:26px;font-weight:800;cursor:pointer;line-height:1}
 .fol.min{top:64px;bottom:auto;right:8px;padding:8px 10px}
 @media(min-width:860px){.fol.min{right:auto}}
@@ -60,12 +62,29 @@ function locate(lat,lon){const T=F.T,ln=T.ln,c=Math.cos(lat*toR),X=p=>(p[1]-lon)
 function panelHTML(){const r=F.r;
   return`<div class="fh"><b>${esc(routeTitle(r))}</b><button data-fmin class="fmin" aria-label="Minimizar">▾</button></div>
   <div class="fst wait" data-fst>📡 Buscando tu posición…</div>
-  <div class="bar"><i data-fbar style="width:0"></i></div>
+  <div class="bar"><i data-fbar style="width:0"></i></div><div class="fprf" data-fprf>${perfil(0)}</div>
   <div class="fg"><div><small>Hecho</small><b data-fdone>—</b></div><div><small>Falta</small><b data-fleft>${fk(F.T.tot)}</b></div>
    <div><small>Subida que falta</small><b data-fup>+${fm(F.T.up[F.T.up.length-1])}</b></div><div><small>Bajada que falta</small><b data-fdn>−${fm(F.T.dn[F.T.dn.length-1])}</b></div></div>
   <div class="fb"><button data-fc class="on">◎ Centrar</button><button data-fr title="Si haces la ruta desde el otro extremo">⇄ Al revés</button><button data-fx class="end">✕ Terminar</button></div>
   ${(()=>{const m=modoAv(),b=(k,t)=>`<button data-fav="${k}" class="${m===k?"on":""}">${t}</button>`;return`<div class="fav"><small>Si me salgo del track (más de 100 m):</small><div>${b("vs","🔊 Vibrar y sonar")}${b("v","📳 Solo vibrar")}${b("no","🔕 Nada")}</div></div>`})()}`}
 /* 9 nov 2026: aviso al salirse del track (a más de 100 m), con ajuste: vibrar y sonar / solo vibrar / nada. Solo con la pantalla encendida */
+/* 27 nov 2026 (idea de Rocío): perfil de la ruta en el panel, con lo hecho más oscuro y dónde estás */
+function perfil(hasta){const T=F.T,P=[];for(let i=0;i<T.ln.length;i++){const e=T.ln[i][2];if(e!=null&&isFinite(e))P.push([T.cum[i],+e])}
+  if(P.length<2||!(P[P.length-1][0]>0))return"";
+  const st=Math.ceil(P.length/300),Q=P.filter((p,i)=>i%st===0||i===P.length-1),col="#c3262e";
+  const W=600,H=150,pl=58,pr=10,pt=12,pb=28,X=Q[Q.length-1][0];let mn=1e9,mx=-1e9;for(const p of Q){if(p[1]<mn)mn=p[1];if(p[1]>mx)mx=p[1]}
+  const lo=Math.floor((mn-20)/50)*50,hi=Math.max(lo+100,Math.ceil((mx+20)/50)*50);
+  const x=d=>(pl+(W-pl-pr)*d/X).toFixed(1),y=e=>(pt+(H-pt-pb)*(1-(e-lo)/(hi-lo))).toFixed(1),B=H-pb;
+  const pts=Q.map(p=>x(p[0])+","+y(p[1])).join(" ");let hec="",yo="";
+  if(hasta>0){const h=Math.min(X,hasta);let j=Q.findIndex(p=>p[0]>=h);if(j<0)j=Q.length-1;
+    const a=Q[Math.max(0,j-1)],b=Q[j],eh=b[0]>a[0]?a[1]+(b[1]-a[1])*(h-a[0])/(b[0]-a[0]):b[1];
+    const A=Q.slice(0,j).filter(p=>p[0]<h).map(p=>x(p[0])+","+y(p[1]));A.push(x(h)+","+y(eh));
+    hec=`<polygon points="${x(0)},${B} ${A.join(" ")} ${x(h)},${B}" fill="${col}" fill-opacity=".42"/>`;
+    yo=`<line x1="${x(h)}" x2="${x(h)}" y1="${pt}" y2="${B}" stroke="${col}" stroke-width="2" stroke-dasharray="5 4"/><circle cx="${x(h)}" cy="${y(eh)}" r="9" fill="#fff" stroke="${col}" stroke-width="5"/>`}
+  return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Perfil de la ruta"><polygon points="${x(0)},${B} ${pts} ${x(X)},${B}" fill="${col}" fill-opacity=".13"/>${hec}
+   <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="3" stroke-linejoin="round"/><line x1="${pl}" x2="${W-pr}" y1="${B}" y2="${B}" stroke="currentColor" stroke-opacity=".25"/>
+   <text x="${pl-6}" y="${+y(hi)+7}" text-anchor="end">${hi.toLocaleString("es-ES")}</text><text x="${pl-6}" y="${+y(lo)+2}" text-anchor="end">${lo.toLocaleString("es-ES")}</text>
+   <text x="${pl}" y="${H-4}">0</text><text x="${W-pr}" y="${H-4}" text-anchor="end">${(X/1000).toLocaleString("es-ES",{maximumFractionDigits:1})} km</text>${yo}</svg>`}
 const modoAv=()=>{try{return localStorage.getItem("ldc-avisofuera")||"vs"}catch(e){return"vs"}};
 function avisoFuera(){const m=modoAv();if(m==="no")return;vib([400,200,400]);if(m==="vs")beep()}
 const Q=s=>F&&F.el.querySelector(s);
@@ -92,6 +111,7 @@ function fix(pos){if(!F)return;const c=pos.coords,la=c.latitude,lo=c.longitude,a
   Q("[data-fdone]").textContent=fk(s);Q("[data-fleft]").textContent=fk(left);
   Q("[data-fup]").textContent="+"+fm(T.up[T.up.length-1]-at(T.up,i,t));Q("[data-fdn]").textContent="−"+fm(T.dn[T.dn.length-1]-at(T.dn,i,t));
   Q("[data-fbar]").style.width=(T.tot?s/T.tot*100:0).toFixed(1)+"%";
+  if(!F.min&&Math.abs((F.ps||0)-s)>=10){F.ps=s;const pf=Q("[data-fprf]");if(pf)pf.innerHTML=perfil(s)}
   const dl=[];for(let k=0;k<=i;k++)dl.push([T.ln[k][0],T.ln[k][1]]);const lp=T.ln[i+1]?[T.ln[i][0]+(T.ln[i+1][0]-T.ln[i][0])*t,T.ln[i][1]+(T.ln[i+1][1]-T.ln[i][1])*t]:null;if(lp&&F.on)dl.push(lp);F.done.setLatLngs(F.on?dl:[]);
   // altura: en la ruta, la del track en ese punto; fuera, la del GPS corregida. El GPS de Android da la altura sobre el elipsoide
   // (unos 50 m más que sobre el mar en España): se corrige con lo aprendido al ir por la ruta, o con 50 m de partida
