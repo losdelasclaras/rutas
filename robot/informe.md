@@ -1,6 +1,6 @@
-# Informe del robot · 27/11/2026 11:40
+# Informe del robot · 27/11/2026 13:48
 
-**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; fotos del mapa: 8 nuevas, 0 cambiadas, 0 quitadas; colaborador Caleyando con Cienfuegos; regeneración forzada
+**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos
 
 - 🔎 «Pico Maoñu, Monte Moñacos y Foz de los Cubilones»: sin dificultad. Texto del cuadro: «orcada Traslasenda a Braña Nueva y bajamos por la foz de los Cubilones , un rincón sombrío y apenas pisado en el que hay que bajar por el propio cauce del arroyo. La vuelta, por la pista junto al río Infierno y sus pozas. 📏 19 km Distancia 📈 1.300 m Desnivel acumulado 🏔️ 1.429 m Maoñu ⚡ Muy Difícil Tramos sin sendero y maleza y bajada por el cauce de la foz 🔄 Circular Desde La Pesanca (405 m) 📅 2012 Publicada en noviembre ⚠️ Antes de ir Monte privado: el monte que va del Maoñu hasta pasar la cresta de Los Tornos, en la vertiente que cae hacia el río Infierno, es de uso privado y está prohibido»
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
@@ -10,14 +10,7 @@
 - 🔎 «Bosque de Purupintu desde Orle»: sin dificultad. Texto del cuadro: « circular desde Orlé (Caso) por el corazón de Redes : la foz del ríu Secu, las majadas de Melordaña y Valloseru , los collados de la Becerrera y, como premio, el solitario hayedo de Purupintu por la senda de Los Duernos. 📏 17 km Distancia 📈 +1.150 m Desnivel aprox. ⏱️ 7 h Duración estimada 🏔️ 1.740 m Hombro sobre el Collau Cardiel ⚠️ Media Por distancia, sin pasos técnicos 🔄 Circular Desde Orlé 📍 Orlé (Caso, Asturias) 🗺️ Parque Natural de Redes 📅 Noviembre de 2024 🌲 Los tres hitos del día Foz de Melordaña Por el lecho del arroyo Bloques pulidos que obligan a usar las manos. Majada de Melordaña»
 - Blog: sin entradas nuevas.
 - 🗺️ Mapa: 703 puntos (0 nuevos o movidos, 0 quitados).
-- 📷 Foto nueva en tu mapa: «Picu Guanalón (1229 m)»
-- 📷 Foto nueva en tu mapa: «Camín romano del Sellón»
-- 📷 Foto nueva en tu mapa: «Majada Pandanes»
-- 📷 Foto nueva en tu mapa: «Pico Moroma (1.665 m.)»
-- 📷 Foto nueva en tu mapa: «Playa de Toró»
-- 📷 Foto nueva en tu mapa: «Playa de Cue»
-- 📷 Foto nueva en tu mapa: «Bufones de Ballota»
-- 📷 Foto nueva en tu mapa: «Playa de Ballota»
+- Fotos de tu mapa: 286, sin cambios.
 - Drive: sin tracks nuevos.
 - Correcciones a mano: 82 (sin cambios).
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
@@ -28,14 +21,16 @@
 - Colaborador «Rutinas Varias»: sin cambios.
 -    (quitados 78 puntos de publicidad: capas o nombres que no queremos)
 - 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (7): Desafío Somiedo 2022 (MDS) · la-ercina-cangues-donis-verdilluenga-trea-cain-valdion-culie · pola-gordon-fontanan-la-miezca-barrios · Puirtu Braña - Picu Torres - Picu Valverde - Puirtu Braña · puirtu-brana-ayer-torres-cabal-luna-cuevas-ayer · Salgueiro_Climb · Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
-- ⛰ Camudando'l camín: 83 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
+- ⛰ Camudando'l camín: 85 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ✏️ Camudando'l camín: 61 rutas con corrección a mano
-- Colaborador «Camudando'l camín»: sin cambios.
+- 📷 Fotos de rutas de Camudando'l camín (de su blog): 0 nuevas, 61 en total, 2 sin foto
+- 📅 Fechas de rutas de Camudando'l camín: 0 nuevas (63 de 63 con fecha); su blog no responde (2 fallos).
+- 🤝 Colaborador «Camudando'l camín»: 152 puntos, 63 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
--    (42 peticiones a su web en 1.5 min)
+-    (42 peticiones a su web en 1.3 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
-- ⚠ OpenStreetMap no ha respondido (overpass-api.de: <urlopen error [Errno 101] Network is unreachable>; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 502: Bad Gateway # 502 Gateway Timeout  This Overpass API server is currently at capacity. All query workers are busy and the request que; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
