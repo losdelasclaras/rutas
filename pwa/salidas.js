@@ -91,6 +91,9 @@ async function carga(fuerza){if(!fuerza&&Date.now()-CARGADO<60000)return pinta()
       F.getDocs(F.query(F.collection(db(),"salidas"),F.where("fecha",">=",hoy()),F.orderBy("fecha")))]);
     CLUBS=[];qc.forEach(d=>CLUBS.push(Object.assign({id:d.id},d.data())));
     SALS=[];qs.forEach(d=>SALS.push(Object.assign({id:d.id},d.data())));
+    // 27 nov 2026: al despertar el móvil a veces llega una carga a medias (de la copia guardada o sin la cuenta lista: 0 clubes).
+    // Con una carga así no se calculan novedades (salían todas como «borradas» y luego otra vez como «nuevas»): se reintenta en 20 s.
+    FRESCO=!(qc.metadata&&qc.metadata.fromCache)&&!(qs.metadata&&qs.metadata.fromCache)&&CLUBS.length>0;
     // 21 nov 2026: salidas que el robot copia cada noche de la web del club (no hacen trabajo doble); solo de clubes aprobados
     WEBOK=false;try{const W=await (await fetch("salidas-web.json?v="+(window.LDC_VER||Date.now()),{cache:"no-store"})).json(),H=hoy();WEBOK=Array.isArray(W);
       for(const w of W){if(w.adm&&!esAdm())continue;const c=CLUBS.find(x=>x.id===w.club)||(w.adm?{id:"web-"+w.cn,n:w.cn,web:w.cw||"",prueba:true}:null);if(!c||!w.fecha||w.fecha.slice(0,10)<H||SALS.some(x=>x.id===w.k))continue;   // 22 nov: sin repetir si la pestaña se carga dos veces a la vez
@@ -100,7 +103,7 @@ async function carga(fuerza){if(!fuerza&&Date.now()-CARGADO<60000)return pinta()
     const u=usr();MIO=null;if(u){const d=await F.getDoc(F.doc(db(),"clubes",u.uid));if(d.exists())MIO=Object.assign({id:d.id},d.data())}
     if(esAdm()){const qp=await F.getDocs(F.query(F.collection(db(),"clubes"),F.where("estado","==","pend")));PEND=[];qp.forEach(d=>PEND.push(Object.assign({id:d.id},d.data())))}
     CARGADO=Date.now();pinta()}
-  catch(e){console.warn("salidas",e);try{pinta()}catch(_){}$("sal-lista").innerHTML=`<p class="note">No se han podido cargar las salidas. ${/permission/i.test(String(e))?"(Faltan los permisos en la base de datos.)":"Prueba dentro de un rato."}</p>`}}
+  catch(e){console.warn("salidas",e);FRESCO=false;try{pinta()}catch(_){}$("sal-lista").innerHTML=`<p class="note">No se han podido cargar las salidas. ${/permission/i.test(String(e))?"(Faltan los permisos en la base de datos.)":"Prueba dentro de un rato."}</p>`}}
 let PEND=[];
 
 function pinta(){
@@ -442,7 +445,7 @@ let VISTO=(()=>{try{return JSON.parse(localStorage.getItem(NK)||"null")}catch(e)
 /* 26 nov 2026: la foto ya no se sustituye entera, se JUNTA con la anterior. Antes, si un día la carga venía incompleta
    (p. ej. no llegaba salidas-web.json al despertar el móvil), esas salidas desaparecían de la foto y al día siguiente
    volvían a salir como «nuevas». Ahora solo se quitan de la foto las pasadas y las que ya se enseñaron como borradas. */
-let WEBOK=true;
+let WEBOK=true,FRESCO=false,REINT=0,RTIM=0;   // FRESCO: solo tras una carga completa del servidor
 const foto=(quita)=>{const h=hoy(),old=(VISTO&&VISTO.m)||{},m={};
   for(const id in old){const v=old[id];if(String(v.f||"").slice(0,10)>=h&&!(quita&&quita.has(id)))m[id]=v}
   SALS.forEach(s=>m[s.id]={t:s.t||0,ti:s.ti,cn:s.cn,f:s.fecha,w:s.web?1:0});
@@ -464,6 +467,8 @@ const cuando=t=>{if(!t)return"";const d=new Date(t),a=new Date(),hh=String(d.get
 const fCorta=f=>{const d=new Date(f);return isNaN(d)?"":DS[d.getDay()].slice(0,3)+" "+d.getDate()+" "+MS[d.getMonth()].slice(0,3)};
 function pintaNov(){const box=$("sal-nov");if(!box)return;
   if(!esAdm()){box.innerHTML="";globo(0);NOVS=[];return}
+  if(!FRESCO){box.innerHTML="";if(CARGADO&&!RTIM&&REINT<6){REINT++;RTIM=setTimeout(()=>{RTIM=0;carga(true)},20000)}return}   // carga a medias: ni se enseña ni se guarda nada
+  REINT=0;
   if(!VISTO){guardaVisto();box.innerHTML="";globo(0);return}   // primera vez en este móvil: lo que ya hay no es novedad
   if(sec.hidden){box.innerHTML="";NOVS=[];globo(difs().length+pendNuevos().length);return}
   // pestaña abierta: se junta con lo que ya se estaba enseñando y se da por visto
