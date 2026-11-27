@@ -1578,7 +1578,7 @@ try{
 /* ---------- capas de colaboradores: sus puntos (My Maps) y sus tracks (My Maps o Drive), cada uno con su color ---------- */
 (function(){
 // los datos van en un archivo aparte que se carga después de abrir la app (no alargan el arranque)
-const CO0={"f": "colab-009ca42f.json", "ln": "colab-ln-fb1912c3.json"};if(!CO0.f||typeof map==="undefined")return;
+const CO0={"f": "colab-f0dc2cd1.json", "ln": "colab-ln-fb1912c3.json"};if(!CO0.f||typeof map==="undefined")return;
 fetch(CO0.f).then(r=>r.json()).then(CO=>{if(!CO.length)return;
 document.head.insertAdjacentHTML("beforeend",`<style>
 #map .cpt svg{position:absolute;width:calc(var(--ms,24px)*.92);height:calc(var(--ms,24px)*.92);transform:translate(-50%,-50%);cursor:pointer;border-radius:50%;box-shadow:0 0 0 2.5px var(--cc),0 1px 4px rgba(0,0,0,.45)}
@@ -1954,11 +1954,11 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 // 16 nov 2026: dificultad de los colaboradores al mismo nivel que la del blog (b baja, m moderada, a alta) para el filtro
 //  Wikiloc: Fácil / Moderado / Difícil, Muy difícil · MIDE a-b-c-d: d = esfuerzo (1-2 baja, 3 moderada, 4-5 alta)
 function nivelCo(s){s=String(s||"");const m=/MIDE\s*\d\s*-\s*\d\s*-\s*\d\s*-\s*(\d)/i.exec(s);if(m){const e=+m[1];return e<=2?"b":e===3?"m":e===4?"a":"x"}
-  const n=norm(s);if(/muy dificil|muy alta/.test(n))return"x";if(/dificil|^alta/.test(n))return"a";if(/moderad/.test(n))return"m";if(/facil|^baja/.test(n))return"b";return""}   // 18 nov: «Muy alta» aparte; también Baja/Moderada/Alta/Muy alta (correcciones a mano)
+  const n=norm(s);if(/muy dificil|muy alta/.test(n))return"x";if(/dificil|^alta/.test(n))return"a";if(/moder/.test(n))return"m";if(/facil|^baja/.test(n))return"b";return""}   // 18 nov: «Muy alta» aparte; también Baja/Moderada/Alta/Muy alta (correcciones a mano)
 // 23 nov 2026: blogs sin la fecha en la dirección (WordPress de Al filo de lo improbable): el año viene aparte (c.fy = {enlace: año}), sin mes
 const fyCo=(c,u)=>{const y=u&&c&&c.fy&&c.fy[u];return y?[0,y,""]:null};
 // 23 nov 2026: correcciones a mano de una entrada de blog sin track (c.bo = {enlace: {n, f, di, oc, o}}; lo pone el robot)
-const boCo=(c,u)=>(u&&c&&c.bo&&c.bo[u])||null;COLX.bo=boCo;
+const boCo=(c,u)=>(u&&c&&c.bo&&c.bo[u])||null;COLX.bo=boCo;COLX.nivel=nivelCo;   // 27 nov: para el punto de color de la dificultad en las entradas sin track (fichas2.js)
 const feBo=(c,u)=>{const b=boCo(c,u),m=b&&b.f&&/^(\d{4})-(\d{2})/.exec(b.f);return m?[0,m[1],m[2]]:null};COLX.feBo=feBo;
 const RUT=[];
 for(const it of ALL){if(it.rr!=null){const r=it.co.r[it.rr],dm=(/(\d[\d.]*)/.exec(r[4])||[])[1];const fe=/^(\d{4})(?:-(\d{2}))?/.exec(r[10]||"");RUT.push(Object.assign(Object.create(it),{cox:1,p:[],y:fe?+fe[1]:null,m:fe&&fe[2]?+fe[2]:null,gx:1,iv:/raqueta|nieve|invern/i.test(r[2]+" "+r[0])?1:0,nivd:nivelCo(r[5]),km:r[3]?r[3].replace(/\s*km/i," km"):"",de:dm?"+"+dm+" m":"",txt:norm(r[0]+" "+r[1]+" "+r[2])}));continue}
@@ -5252,8 +5252,11 @@ const boB=b=>window.COLX&&COLX.bo?COLX.bo(b.co,b.u):null;
 const anoB=b=>{const f=window.COLX&&COLX.feBo&&COLX.feBo(b.co,b.u);if(f)return[f[1],f[2]];const m=/\/(20\d\d)\/(\d\d)\//.exec(b.u);if(m)return[m[1],m[2]];const y=b.co&&b.co.fy&&b.co.fy[b.u];return[y||"",""]};
 const difB=b=>{const o=boB(b);if(o&&o.di)return o.di;const F=b.p&&window.COLX&&COLX.ficha?COLX.ficha(b.p[3])[0]:{};return F.dif||""};
 const tituloBlog=b=>(boB(b)||{}).n||((b.co&&b.co.bt)||{})[b.u]||decodeURIComponent((/\/([^\/]+?)(?:\.html?)?\/?$/.exec(b.u)||[,""])[1]).replace(/[-_]+/g," ").replace(/^./,m=>m.toUpperCase())||b.n;
+// 27 nov 2026: la dificultad de las entradas sin track (Caleyando con Cienfuegos…) con su punto de color, como en Explorar
+const difCo=t=>{const k=window.COLX&&COLX.nivel?COLX.nivel(t):"",D={b:"🟢",m:"🟡",a:"🔴",x:"⚫"};return(k?`<i class="dft" style="font-style:normal;font-weight:700;white-space:nowrap">${D[k]} ${esc(t)}</i>`:esc(t))};
+const difCoTxt=t=>{const k=window.COLX&&COLX.nivel?COLX.nivel(t):"";return k?({b:"🟢",m:"🟡",a:"🔴",x:"⚫"})[k]+" "+t:t};
 function rowBlog(b,i,y){const fo=b.p&&b.p[5];
-  return `<button class="row src-co" style="--cc:${b.c}" data-fbl="${i}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:""}<div class="t"><b>${esc(tituloBlog(b))}</b><span><em class="cosrc" style="color:${b.c}">${esc(b.n)}</em>${y?" · "+y:""}${difB(b)?" · "+esc(difB(b)):""} · Sin track</span></div></button>`}
+  return `<button class="row src-co" style="--cc:${b.c}" data-fbl="${i}">${fo?`<img class="thumb" src="${esc(fo)}" alt="" loading="lazy">`:""}<div class="t"><b>${esc(tituloBlog(b))}</b><span><em class="cosrc" style="color:${b.c}">${esc(b.n)}</em>${y?" · "+y:""}${difB(b)?" · "+difCo(difB(b)):""} · Sin track</span></div></button>`}
 function fichaBlog(i){const F=sheet._fbl;if(!F)return;const b=F.bl[i],o=F.o;if(!b)return;const[y,ymes]=anoB(b),fo=b.p&&b.p[5];
   // las cumbres de esta entrada: los puntos (de cualquier blog) que enlazan a ella
   const cums=[];if(window.COLX)for(const x of COLX.todo())if(x.pp&&x.pp[4]===b.u&&!cums.some(z=>z.pp===x.pp))cums.push(x);
@@ -5265,7 +5268,7 @@ function fichaBlog(i){const F=sheet._fbl;if(!F)return;const b=F.bl[i],o=F.o;if(!
     // 22 nov 2026: distancia, desnivel y dificultad si vienen en la descripción del punto (Caleyando con Cienfuegos: los lee el robot de su entrada)
     const DF=b.p&&window.COLX&&COLX.ficha?COLX.ficha(b.p[3])[0]:{},dkm=(/(\d+(?:[.,]\d+)?)\s*km/i.exec(DF.km||"")||[])[1],dde=(/(\d[\d.]*)\s*m/i.exec(DF.de||"")||[])[1];
     sheet.innerHTML=FRUTA.pinta({grab:"",foto:fo,quien:b.n||"",y:y?+y:null,m:ym?+ym[2]:null,titulo:tituloBlog(b),blog:b.u,
-      km:dkm?dkm.replace(".",",")+" km":"",de:dde?"+"+dde+" m":"",dif:difB(b),
+      km:dkm?dkm.replace(".",",")+" km":"",de:dde?"+"+dde+" m":"",dif:difCoTxt(difB(b)),
       gRuta:b.co?"data-frgrb":"",gRutaOn:!!(b.co&&FRUTA.blGuardada&&FRUTA.blGuardada(b.co.id,b.u)),
       share:`data-frshu="${esc(b.u)}" data-frsht="${esc(tituloBlog(b))}"`,
       cumbres:cums.map(x=>({n:x.c,a:x.a||null,k:x.co&&COLX.coKey?COLX.coKey(x.co,x.c):null})),close:" data-trcox"});
@@ -7642,5 +7645,5 @@ addEventListener("load",()=>{__mk("todo cargado");requestAnimationFrame(()=>requ
   const slow=res.slice().sort((a,b)=>b.duration-a.duration).slice(0,4).map(e=>e.name.split("?")[0].split("/").slice(-3).join("/").slice(-45)+" · "+Math.round(e.duration));
   d.innerHTML="<b>Tiempos de arranque (ms)</b><br>"+rows.map(r=>r[0]+": <b>"+r[1]+"</b>").join("<br>")+"<br><b>Por servidor</b><br>"+hs.join("<br>")+"<br><b>Lo más lento</b><br>"+slow.join("<br>")+"<br>Service worker: "+(navigator.serviceWorker&&navigator.serviceWorker.controller?"sí":"no")+__extra()+"<br><small>"+navigator.userAgent+"</small><br><button onclick='this.parentNode.remove()'>Cerrar</button>";d.style.maxHeight="88vh";d.style.overflow="auto";d.style.fontSize="13px";document.body.appendChild(d)},4000)});
 </script>
-<script>window.LDC_VER="27/11 11:39 · 8bc43f";window.LDC_BUILD="8bc43f6eb6";window.LDC_FUNC="63d9080e54";(function(){const B="8bc43f6eb6";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
+<script>window.LDC_VER="27/11 11:50 · 8c552d";window.LDC_BUILD="8c552d14fd";window.LDC_FUNC="af472c5bb0";(function(){const B="8c552d14fd";let oc=Date.now();const T0=Date.now();if(navigator.serviceWorker)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.t==="ldc-nueva"&&Date.now()-T0<20000&&!(window.GRABAR&&GRABAR.get())&&!(window.SEGUIR&&SEGUIR.get&&SEGUIR.get()))location.reload()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){oc=Date.now();return}if(Date.now()-oc<18e5||!navigator.onLine)return;const cn=navigator.connection;if(cn&&(cn.saveData||/2g|3g/.test(cn.effectiveType||"")))return;if(window.YO&&YO.activo&&YO.activo())return;if(window.SEGUIR&&SEGUIR.get&&SEGUIR.get())return;if(window.GRABAR&&GRABAR.get())return;const sh=document.getElementById("sheet");if(sh&&!sh.hidden&&sh.querySelector("input,textarea"))return;fetch("build.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=v.trim().split(/\s+/)[0];if(v&&v!==B)location.reload()}).catch(()=>{})})})()</script>
 </body></html>
