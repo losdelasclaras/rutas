@@ -34,6 +34,8 @@ body.segab #segMas{max-height:calc(100vh - 150px);max-height:calc(100dvh - 150px
 #seg .plg{display:block;width:100%;margin:12px 0 0;padding:14px;font-size:19px;font-weight:800;border-radius:12px;border:2px solid currentColor;background:rgba(255,255,255,.55);color:inherit}
 .bar{height:6px;border-radius:3px;background:rgba(0,0,0,.12);overflow:hidden;margin:2px 0 8px}.bar i{display:block;height:100%;background:#7b2cbf}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 4px;text-align:center}
+.prf{display:block;width:100%;height:auto;margin:6px 0 0}.prf text{font:700 21px system-ui,sans-serif;fill:currentColor;opacity:.78}
+.prfl{font-size:13.5px;font-weight:700;opacity:.8;margin:0 0 4px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .g3 b{display:block;font-size:19px;font-variant-numeric:tabular-nums}.g3 small{display:block;font-size:12px;opacity:.8;font-weight:700;line-height:1.15}
 .ir{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.ir button{flex:1 1 40%;border:0;border-radius:10px;padding:9px 6px;font:inherit;font-size:15px;font-weight:800;background:#7b2cbf;color:#fff}
 .ir button.b{background:#fff;color:#3d1466}.ir button.x{background:#fff;color:#b3261e}
@@ -242,6 +244,32 @@ function nuevoComo(k){const nu=window.__NU;cierra();if(!nu)return;
 // para lo que ya usaba un solo track
 function prepara(){const r=TR[ACT];if(!r)return;r.rev=REV;prepR(r);act(ACT)}
 const fmM=m=>Math.round(m).toLocaleString("es-ES")+" m";
+/* 27 nov 2026 (idea de Rocío): perfil de alturas siguiendo un track (lo hecho más oscuro y dónde estás) y grabando (lo grabado).
+   xs = metros acumulados, es = alturas (puede haber huecos), hasta = metros hechos (o null) */
+function perfil(xs,es,hasta,col){const P=[];for(let i=0;i<xs.length;i++){const e=es[i];if(e!=null&&isFinite(e))P.push([xs[i],+e])}
+  if(P.length<2||!(P[P.length-1][0]>0))return"";
+  const st=Math.ceil(P.length/300),Q=P.filter((p,i)=>i%st===0||i===P.length-1);
+  const W=600,H=160,pl=58,pr=10,pt=12,pb=28,X=Q[Q.length-1][0];let mn=1e9,mx=-1e9;for(const p of Q){if(p[1]<mn)mn=p[1];if(p[1]>mx)mx=p[1]}
+  const lo=Math.floor((mn-20)/50)*50,hi=Math.max(lo+100,Math.ceil((mx+20)/50)*50);
+  const x=d=>(pl+(W-pl-pr)*d/X).toFixed(1),y=e=>(pt+(H-pt-pb)*(1-(e-lo)/(hi-lo))).toFixed(1),B=H-pb;
+  const pts=Q.map(p=>x(p[0])+","+y(p[1])).join(" ");let hec="",yo="";
+  if(hasta!=null&&hasta>0){const h=Math.min(X,hasta);let j=Q.findIndex(p=>p[0]>=h);if(j<0)j=Q.length-1;
+    const a=Q[Math.max(0,j-1)],b=Q[j],eh=b[0]>a[0]?a[1]+(b[1]-a[1])*(h-a[0])/(b[0]-a[0]):b[1];
+    const A=Q.slice(0,j).filter(p=>p[0]<h).map(p=>x(p[0])+","+y(p[1]));A.push(x(h)+","+y(eh));
+    hec=`<polygon points="${x(0)},${B} ${A.join(" ")} ${x(h)},${B}" fill="${col}" fill-opacity=".45"/>`;
+    yo=`<line x1="${x(h)}" x2="${x(h)}" y1="${pt}" y2="${B}" stroke="${col}" stroke-width="2" stroke-dasharray="5 4"/><circle cx="${x(h)}" cy="${y(eh)}" r="9" fill="#fff" stroke="${col}" stroke-width="5"/>`}
+  return`<svg class="prf" viewBox="0 0 ${W} ${H}" role="img" aria-label="Perfil de alturas"><polygon points="${x(0)},${B} ${pts} ${x(X)},${B}" fill="${col}" fill-opacity=".14"/>${hec}
+   <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="3" stroke-linejoin="round"/><line x1="${pl}" x2="${W-pr}" y1="${B}" y2="${B}" stroke="currentColor" stroke-opacity=".25"/>
+   <text x="${pl-6}" y="${+y(hi)+7}" text-anchor="end">${hi.toLocaleString("es-ES")}</text><text x="${pl-6}" y="${+y(lo)+2}" text-anchor="end">${lo.toLocaleString("es-ES")}</text>
+   <text x="${pl}" y="${H-4}">0</text><text x="${W-pr}" y="${H-4}" text-anchor="end">${(X/1000).toLocaleString("es-ES",{maximumFractionDigits:1})} km</text>${yo}</svg>`}
+function perfilSeg(hecho){const es=T.map(p=>p[2]);if(es.filter(e=>e!=null).length<2)return"";
+  let mx=-1e9;for(const e of es)if(e!=null&&e>mx)mx=e;
+  let j=0;while(j+1<TC.length&&TC[j+1]<=hecho)j++;let ea=null;for(let k=j;k>=0&&ea==null;k--)ea=T[k][2];
+  return perfil(TC,es,hecho,"#7b2cbf")+`<div class="prfl"><span>${hecho>0&&ea!=null?"📍 Vas a unos "+fmM(ea):"📍 Aún no has empezado"}</span><span>⛰ Lo más alto: ${fmM(mx)}</span></div>`}
+// lo grabado: altura del GPS suavizada (aproximada)
+function perfilGrab(){const q=PTS.filter(p=>p[2]!=null);if(q.length<5)return"";const xs=[0];for(let i=1;i<q.length;i++)xs.push(xs[i-1]+dm(q[i-1],q[i]));
+  const es=q.map((p,i)=>{let s=0,n=0;for(let k=Math.max(0,i-3);k<=Math.min(q.length-1,i+3);k++){s+=q[k][2];n++}return s/n});
+  return`<h3 style="margin:8px 0 0;font-size:16px">⛰ Perfil de lo grabado</h3>`+perfil(xs,es,null,"#b3261e")}
 function pintaSeg(d){if(d!==undefined)SEGD=d;d=SEGD;const e=$("seg");if(!T.length){e.hidden=true;return}e.hidden=false;
   const n=T.length,tot=TC[n-1],hecho=TC[IDX]||0,queda=tot-hecho,upQ=UPC[n-1]-UPC[IDX],dnQ=DNC[n-1]-DNC[IDX],lejos=d!=null&&d>1000,fuera=!lejos&&d!=null&&d>60,fin=!lejos&&!fuera&&queda<60&&hecho>tot*.5;
   const sec=ACT===1,otro=TR[sec?0:1];
@@ -253,6 +281,7 @@ function pintaSeg(d){if(d!==undefined)SEGD=d;d=SEGD;const e=$("seg");if(!T.lengt
   const m=$("segMas");m.hidden=!SEGOPEN;if(!SEGOPEN)return;
   const fila=(r,i)=>`<div class="tr2"><span class="pt" style="background:${i?"#e8711a":"#7b2cbf"}"></span><span style="flex:1"><b>${esc(r.n)}</b>${r.rev?" <small>(al revés)</small>":""}<small style="display:block;opacity:.8">${i?"Secundario":"Principal"}${ACT===i&&r.d!=null&&r.d<=60?" · vas por este":""}${r.d!=null?` · a ${r.d<1000?Math.round(r.d)+" m":kmT(r.d)+" km"}`:""}</small></span>${i?`<button onclick="haceP()">⇅ Principal</button><button onclick="quita2()">✕</button>`:""}</div>`;
   m.innerHTML=`<div style="margin-bottom:4px">${esc(TN)}${REV?" <small>(al revés)</small>":""}</div><div class="bar"><i style="width:${tot?(hecho/tot*100).toFixed(1):0}%"></i></div>
+   ${perfilSeg(hecho)}
    <div class="g3"><div><b>${kmT(hecho)}</b><small>km hechos</small></div><div><b>${kmT(queda)}</b><small>km que faltan</small></div><div><b>${kmT(tot)}</b><small>km en total</small></div>
    <div><b>+${fmM(UPC[IDX]||0)}</b><small>subida hecha</small></div><div><b>+${fmM(upQ)}</b><small>subida que falta</small></div><div><b>−${fmM(dnQ)}</b><small>bajada que falta</small></div></div>
    <div class="ir">${lejos||IDX<3?`<button onclick="llegar()">🚗 Cómo llegar a la salida</button>`:""}<button class="b" onclick="alReves()">⇄ Al revés</button><button class="b" onclick="verTrack()">🗺 Ver ${TR[1]?"los tracks":"el track"}</button><button class="x" onclick="dejar()">✕ Dejar de seguir</button></div>
@@ -408,6 +437,7 @@ function pintaDatos(){if(!DATOS)return;if($("sheet").hidden||($("sh").innerHTML&
   const tt=dur(),m=mov(),np=+(Nativo.nPuntos()||0),vm=m.t?m.d/(m.t/1000)*3.6:0,ritmo=vm?60/vm:0,ini=new Date(S.t0);
   const fila=(a,b)=>`<tr><td>${a}</td><td>${b}</td></tr>`;
   $("sh").innerHTML=`<h2>📊 ${S.pz?"❚❚ En pausa":"● Grabando"}</h2><p style="margin:0 0 6px;color:#5d6b62;font-size:15px">${PTS.length?"Puedes apagar la pantalla: sigue grabando.":"Esperando la señal del GPS…"}</p>
+  ${perfilGrab()}
   <table class="dt">${fila("⏱ Tiempo total",hms(tt))}${fila("🚶 En movimiento",hms(m.t))}${fila("☕ Parado",hms(Math.max(0,tt-m.t)))}${S.pau||S.pz?fila("❚❚ En pausa",hms(S.pau+(S.pz?Date.now()-S.pz:0))):""}
   ${fila("📏 Distancia",kmT(D)+" km")}${fila("↗ Subida",fmM(sube()))}${fila("↘ Bajada",fmM(baja()))}
   ${fila("🏃 Velocidad media (en movimiento)",vm?vm.toLocaleString("es-ES",{maximumFractionDigits:1})+" km/h":"—")}${fila("⏳ Ritmo",ritmo&&ritmo<120?(x=>Math.floor(x/60)+":"+String(x%60).padStart(2,"0"))(Math.round(ritmo*60))+" min/km":"—")}
