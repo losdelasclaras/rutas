@@ -126,6 +126,21 @@ const J=s=>{try{return JSON.parse(s)}catch(e){return null}};
 const tOut=t=>({n:t.n||"",km:t.km||0,j:JSON.stringify(t)});
 const tIn=(id,d)=>{const o=J(d.j);if(o&&!Array.isArray(o))return o;return{id:isNaN(+id)?id:+id,n:d.n,km:d.km,pts:o||[]}};
 const tKey=ts=>JSON.stringify(ts.slice().sort((a,b)=>String(a.id)<String(b.id)?-1:1));
+/* 27 nov 2026: tracks BORRADOS. Antes, si un aparato tenía cambios sin subir (o volvía a entrar en la cuenta), juntaba lo suyo con
+   la nube y los tracks borrados en otro aparato volvían a aparecer (y se subían otra vez). Ahora cada track borrado deja una
+   «lápida» (su id) en este aparato (ldc-tr-del) y en la cuenta (usuarios/<uid>/datos/borrados): al juntar, lo que tiene lápida
+   no vuelve. Si un track borrado se vuelve a guardar con el mismo id (raro), se le quita la lápida. */
+const DK="ldc-tr-del",IK="ldc-tr-ids";
+let DEL=store.get(DK,{});
+const idsDe=ts=>(ts||[]).map(t=>String(t.id));
+const vivo=t=>!DEL[String(t.id)];
+function anotaIds(){store.set(IK,idsDe(MPI.tracks()))}
+function lapidas(){const antes=store.get(IK,null),ahora=new Set(idsDe(MPI.tracks()));let cambio=false;
+  if(Array.isArray(antes))for(const id of antes)if(!ahora.has(id)&&!DEL[id]){DEL[id]=Date.now();cambio=true}
+  for(const id of ahora)if(DEL[id]){delete DEL[id];cambio=true}
+  if(cambio){const L=Object.entries(DEL).sort((a,b)=>b[1]-a[1]).slice(0,2000);DEL=Object.fromEntries(L);store.set(DK,DEL)}
+  anotaIds();return cambio}
+if(!Array.isArray(store.get(IK,null)))setTimeout(anotaIds,0);   // primera vez: lo que hay ahora es el punto de partida
 
 // juntar: una cumbre «subida» manda sobre «quiero»; puntos y tracks se suman (sin repetir)
 function joinMarks(a,b){const r=Object.assign({},b);for(const k in a){if(a[k]==="hecha"||!r[k])r[k]=a[k]}return r}
@@ -139,7 +154,9 @@ async function onUser(u){
   if(!u){USER=null;store.set(SK,"0");repaint();return}
   USER=u;store.set(SK,"1");BUSY=true;repaint();
   const fs=A.fs,first=store.get(UK,null)!==u.uid;
-  const [dm,dp,dt,dz]=await Promise.all([fs.getDoc(ref("marcas")),fs.getDoc(ref("puntos")),fs.getDocs(tcol()),fs.getDoc(ref("mapas"))]);
+  const [dm,dp,dt,dz,db]=await Promise.all([fs.getDoc(ref("marcas")),fs.getDoc(ref("puntos")),fs.getDocs(tcol()),fs.getDoc(ref("mapas")),fs.getDoc(ref("borrados")).catch(()=>null)]);
+  lapidas();const cdel=db&&db.exists()?(J(db.data().j)||{}):{};const delAntes=JSON.stringify(cdel);
+  for(const k in cdel)if(!DEL[k]||cdel[k]>DEL[k])DEL[k]=cdel[k];store.set(DK,DEL);
   // 8 nov 2026: lo pendiente se mira DESPUÉS de leer la nube: si mientras tanto llegó algo al móvil (p. ej. una grabación), no se pisa
   // 18 nov 2026: también lo que se cambió en el móvil sin haber entrado (p. ej. tras salir de la cuenta): se junta, no se pisa
   const p=Object.assign({},store.get(LK,{}),pend());
@@ -151,11 +168,12 @@ async function onUser(u){
   // con cambios sin subir manda lo del móvil (y se añade lo que solo esté en la nube); la primera vez, como antes
   const sameT=(a,b)=>String(a.id)===String(b.id);
   const pts=cp==null?MPI.get():p.puntos?joinList(cp,MPI.get(),sameP):first?joinList(MPI.get(),cp,sameP):cp;
-  const trs=!dt.size?MPI.tracks():p.tracks?joinList(ct,MPI.tracks(),sameT):first?joinList(MPI.tracks(),ct,sameT):ct;
+  const trs=(!dt.size?MPI.tracks():p.tracks?joinList(ct,MPI.tracks(),sameT):first?joinList(MPI.tracks(),ct,sameT):ct).filter(vivo);
   const nm=Object.keys(m).length-Object.keys(MARKS).length,np=pts.length-MPI.get().length,nt=trs.length-MPI.tracks().length;
   const zs=cz==null?lw:(first||p.mapas)?joinList(lw,cz,(a,b)=>a.id===b.id):cz;
-  applyMarks(m);MPI.set(pts,trs);if(OFF)OFF.setWanted(zs);
+  applyMarks(m);MPI.set(pts,trs);anotaIds();if(OFF)OFF.setWanted(zs);
   const w=[];
+  if(JSON.stringify(DEL)!==delAntes)w.push(fs.setDoc(ref("borrados"),{j:JSON.stringify(DEL),t:Date.now()}).catch(e=>console.warn("lápidas",e)));
   if(cm==null||JSON.stringify(m)!==JSON.stringify(cm))w.push(fs.setDoc(ref("marcas"),{j:JSON.stringify(m),t:Date.now()}));
   if(cp==null||JSON.stringify(pts)!==JSON.stringify(cp))w.push(fs.setDoc(ref("puntos"),{j:JSON.stringify(pts),t:Date.now()}));
   if(cz==null?zs.length:JSON.stringify(zs)!==JSON.stringify(cz))w.push(fs.setDoc(ref("mapas"),{j:JSON.stringify(zs),t:Date.now()}));
@@ -177,24 +195,37 @@ async function onUser(u){
   unsub.push(fs.onSnapshot(ref("marcas"),s=>{if(s.metadata.hasPendingWrites||!s.exists()||pend().marcas)return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(MARKS)){applyMarks(v);done()}}));
   unsub.push(fs.onSnapshot(ref("puntos"),s=>{if(s.metadata.hasPendingWrites||!s.exists()||pend().puntos)return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(MPI.get())){MPI.set(v,null);done()}}));
   unsub.push(fs.onSnapshot(ref("mapas"),s=>{if(s.metadata.hasPendingWrites||!s.exists()||!window.OFFLINE||pend().mapas)return;const v=J(s.data().j);if(v&&JSON.stringify(v)!==JSON.stringify(OFFLINE.wanted())){OFFLINE.setWanted(v);done()}}));
-  unsub.push(fs.onSnapshot(tcol(),s=>{if(s.metadata.hasPendingWrites||pend().tracks)return;const v=[];s.forEach(d=>{v.push(tIn(d.id,d.data()));CLOUDT.set(d.id,d.data().j)});for(const k of [...CLOUDT.keys()])if(!v.some(t=>String(t.id)===k))CLOUDT.delete(k);
-    if(tKey(v)!==tKey(MPI.tracks())){MPI.set(null,v);done()}}));
+  // 27 nov 2026: con cambios sin subir en este aparato ya no se ignora lo que llega de la nube: se añaden los tracks nuevos
+  // de otros aparatos (p. ej. uno dibujado en el ordenador) sin quitar lo de aquí; los borrados llegan por las lápidas
+  unsub.push(fs.onSnapshot(tcol(),s=>{if(s.metadata.hasPendingWrites)return;const v=[];s.forEach(d=>{v.push(tIn(d.id,d.data()));CLOUDT.set(d.id,d.data().j)});for(const k of [...CLOUDT.keys()])if(!v.some(t=>String(t.id)===k))CLOUDT.delete(k);
+    const vv=v.filter(vivo);
+    if(pend().tracks){const loc=MPI.tracks(),nue=vv.filter(t=>!loc.some(q=>String(q.id)===String(t.id)));if(nue.length){MPI.set(null,loc.concat(nue));anotaIds();done()}return}
+    if(tKey(vv)!==tKey(MPI.tracks())){MPI.set(null,vv);anotaIds();done()}}));
+  unsub.push(fs.onSnapshot(ref("borrados"),s=>{if(s.metadata.hasPendingWrites||!s.exists())return;const v=J(s.data().j)||{};let n=0;
+    for(const k in v)if(!DEL[k]||v[k]>DEL[k]){DEL[k]=v[k];n++}if(!n)return;store.set(DK,DEL);
+    const loc=MPI.tracks(),q=loc.filter(vivo);if(q.length!==loc.length){MPI.set(null,q);anotaIds();done()}},()=>{}));
   repaint()}
 function done(){store.set(TK,new Date().toISOString());repaint()}
-async function pushTracks(){const fs=A.fs,loc=MPI.tracks(),ids=new Set(loc.map(t=>String(t.id))),w=[];
-  for(const t of loc){const o=tOut(t);if(CLOUDT.get(String(t.id))!==o.j){w.push(fs.setDoc(tref(t.id),o));CLOUDT.set(String(t.id),o.j)}}   // nuevos o cambiados (p. ej. de nombre)
-  for(const id of [...CLOUDT.keys()])if(!ids.has(id)){w.push(fs.deleteDoc(tref(id)));CLOUDT.delete(id)}
-  await Promise.all(w)}
+// 27 nov 2026: un track que no se puede subir (p. ej. demasiado grande para la nube, 1 MB) ya no deja todo «pendiente» para
+// siempre: se intenta con menos puntos y, si aun así falla, se apunta el fallo y el resto sigue subiendo.
+const reducir=t=>{const o=Object.assign({},t);o.pts=(t.pts||[]).filter((q,i,a)=>i%2===0||i===a.length-1);return o};
+async function pushTracks(){const fs=A.fs,loc=MPI.tracks(),ids=new Set(loc.map(t=>String(t.id))),w=[];let mal=0;
+  for(const t of loc){let o=tOut(t);const id=String(t.id);if(CLOUDT.get(id)===o.j)continue;   // nuevos o cambiados (p. ej. de nombre)
+    let q=t;while(o.j.length>950000&&q.pts&&q.pts.length>50){q=reducir(q);o=tOut(q)}
+    const ant=CLOUDT.get(id);CLOUDT.set(id,o.j);
+    w.push(fs.setDoc(tref(t.id),o).catch(e=>{console.warn("track",t.n,e);mal++;if(ant==null)CLOUDT.delete(id);else CLOUDT.set(id,ant);try{DIAG&&DIAG.apunta("SYNC","track no subido: "+(t.n||id)+" · "+o.j.length+" bytes · "+(e&&e.code||e))}catch(_){}}))}
+  for(const id of [...CLOUDT.keys()])if(!ids.has(id)){w.push(fs.deleteDoc(tref(id)).catch(e=>console.warn("borrar track",e)));CLOUDT.delete(id)}
+  await Promise.all(w);if(mal&&!pushTracks.avisado){pushTracks.avisado=1;toast(`⚠ ${mal===1?"Un track no se ha podido":mal+" tracks no se han podido"} subir a tu cuenta`)}}
 async function push(k){if(!USER||!READY){return}
   try{if(k==="marcas")await A.fs.setDoc(ref("marcas"),{j:JSON.stringify(MARKS),t:Date.now()});
     else if(k==="puntos")await A.fs.setDoc(ref("puntos"),{j:JSON.stringify(MPI.get()),t:Date.now()});
     else if(k==="mapas"){if(window.OFFLINE)await A.fs.setDoc(ref("mapas"),{j:JSON.stringify(OFFLINE.wanted()),t:Date.now()})}
-    else await pushTracks();
+    else{await pushTracks();await A.fs.setDoc(ref("borrados"),{j:JSON.stringify(DEL),t:Date.now()}).catch(e=>console.warn("lápidas",e))}
     setPend(k,0);done()}catch(e){console.warn("sync",k,e);repaint()}}
 // para otros módulos (Seguidores): Firebase y quién ha entrado
 window.LDCFB={load,user:()=>USER,listo:()=>store.get(SK,"0")!=="1"||READY};   // 15 nov 2026: listo = sin cuenta, o la cuenta ya conectada y juntada
 // lo llaman saveMarks, saveMP y saveMT cada vez que cambias algo
-window.ldcSync=k=>{if(store.get(SK,"0")!=="1"){const l=store.get(LK,{});if(!l[k]){l[k]=1;store.set(LK,l)}return}setPend(k,1);paintBtn();clearTimeout(T[k]);T[k]=setTimeout(()=>push(k),800)};
+window.ldcSync=k=>{if(k==="tracks")try{lapidas()}catch(e){}if(store.get(SK,"0")!=="1"){const l=store.get(LK,{});if(!l[k]){l[k]=1;store.set(LK,l)}return}setPend(k,1);paintBtn();clearTimeout(T[k]);T[k]=setTimeout(()=>push(k),800)};
 
 // 18 nov 2026: si en este móvil se entró alguna vez y ahora estás fuera de la cuenta, lo de aquí se junta al volver a entrar
 if(store.get(SK,"0")!=="1"&&store.get(UK,null)&&!Object.keys(store.get(LK,{})).length)store.set(LK,{marcas:1,puntos:1,tracks:1,mapas:1});
