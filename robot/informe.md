@@ -1,6 +1,6 @@
-# Informe del robot · 28/11/2026 01:33
+# Informe del robot · 28/11/2026 13:00
 
-**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; correcciones a mano; colaborador Caleyando con Cienfuegos
+**Cambios:** foto recuperada; mapa: 0 puntos nuevos o cambiados; correcciones a mano; colaborador Camudando'l camín; colaborador Caleyando con Cienfuegos
 
 - 🔎 «Pico Maoñu, Monte Moñacos y Foz de los Cubilones»: sin dificultad. Texto del cuadro: «orcada Traslasenda a Braña Nueva y bajamos por la foz de los Cubilones , un rincón sombrío y apenas pisado en el que hay que bajar por el propio cauce del arroyo. La vuelta, por la pista junto al río Infierno y sus pozas. 📏 19 km Distancia 📈 1.300 m Desnivel acumulado 🏔️ 1.429 m Maoñu ⚡ Muy Difícil Tramos sin sendero y maleza y bajada por el cauce de la foz 🔄 Circular Desde La Pesanca (405 m) 📅 2012 Publicada en noviembre ⚠️ Antes de ir Monte privado: el monte que va del Maoñu hasta pasar la cresta de Los Tornos, en la vertiente que cae hacia el río Infierno, es de uso privado y está prohibido»
 - 🔎 «PUENTE LA VIDRE - CUETO LAS VACAS - CUETO CARRASPION Y FOZ DEL RUBÓ  (PARTE 2)»: sin dificultad. Texto del cuadro: « la majada de Sobreviña , la Cueva Negra y la Foz del Rubó , con su senda tallada en la roca, el Pontigo y la senda del Gato de vuelta al puente La Vidre. La subida la contamos en la primera parte . 📏 17 km Circular completa (partes 1 y 2) 📈 1.350 m Desnivel 🏞️ 900 m Majada de Tamandón 🌉 180 m Pontigo Rubó 🔄 Circular Desde el puente La Vidre (Trescares) 📅 Julio 2014 11 de julio ⬅️ Volver a la parte 1 🌄 Esta segunda parte deja atrás las cumbres y se mete de lleno en el valle del Rubó , desde su cabecera hasta su desembocadura en el Cares. Es el tramo más salvaje del día: majadas olvidadas, cana»
@@ -12,7 +12,7 @@
 - 🗺️ Mapa: 703 puntos (0 nuevos o movidos, 0 quitados).
 - Fotos de tu mapa: 286, sin cambios.
 - Drive: sin tracks nuevos.
-- ✏️ Correcciones a mano: 90 en total · 5 nuevas o cambiadas
+- ✏️ Correcciones a mano: 91 en total · 1 nuevas o cambiadas
 - ⛰ Rutinas Varias: 284 cumbres de su mapa de cumbres (281 con altitud).
 - ⛰ Rutinas Varias: 433 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - 📝 Blog de Rutinas Varias: 11 rutas emparejadas con su entrada (146 de 406 con enlace al blog; índice con 315 entradas).
@@ -23,27 +23,27 @@
 - 🔗 Tracks de Drive de Camudando'l camín sin entrada de blog (9): Arenas (Cabrales) - La Trenosa (Cabrales) · Desafío Somiedo 2022 (MDS) · la-ercina-cangues-donis-verdilluenga-trea-cain-valdion-culie · pola-gordon-fontanan-la-miezca-barrios · Puirtu Braña - Picu Torres - Picu Valverde - Puirtu Braña · puirtu-brana-ayer-torres-cabal-luna-cuevas-ayer · Salgueiro_Climb · sotres-pene-main · Vegarrionda (Cangues dOnís) - Peñesanta d'Asturiesl - H.orcada - Enmediu
 - ⛰ Camudando'l camín: 92 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ✏️ Camudando'l camín: 61 rutas con corrección a mano
-- Colaborador «Camudando'l camín»: sin cambios.
+- 🤝 Colaborador «Camudando'l camín»: 152 puntos, 69 tracks.
 - ⚠ Gata con botas: no he podido leer la lista de todas sus rutas; sigo solo con sus zonas.
 -    (42 peticiones a su web en 1.0 min)
 - 🐾 Gata con botas: 206 entradas en sus zonas, 206 rutas en la app (0 nuevas).
 - ⛰ Gata con botas: 2 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 250 m).
+- ⚠ OpenStreetMap no ha respondido (overpass-api.de: HTTP Error 504: Gateway Timeout <?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"     "http://www.w3.org/T; overpass.private.coffee: The read operation timed out; overpass.kumi.systems: The read operation timed out): cumbres de Gata con botas con lo guardado de otras noches.
 - ⛰ Cumbres de Gata con botas: 17 de 19 colocadas en el pico de OpenStreetMap; 2 siguen en el punto más alto de su track (lista en robot/cumbres_c4.txt).
 - 📷 Fotos de rutas de Gata con botas (de su blog): 0 nuevas, 203 en total, 3 sin foto
 - Colaborador «Gata con botas»: sin cambios.
 - 📷 Fotos del colaborador c5: 0 nuevas, 839 en total, 1 no se han podido bajar (<urlopen error unknown url type: hhttps>)
 - Colaborador «Al filo de lo improbable»: sin cambios.
 -    (quitados 492 puntos de publicidad: capas o nombres que no queremos)
-- ⛰ Caleyando con Cienfuegos: 9 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
+- ⛰ Caleyando con Cienfuegos: 79 enlaces nuevos entre cumbres y rutas que pasan por ellas (a menos de 300 m).
 - ✏️ Caleyando con Cienfuegos: 4 rutas con corrección a mano
 - 📷 Fotos del colaborador c6: 0 nuevas, 644 en total, 8 no se han podido bajar (HTTP Error 404: Not Found)
-- 📷 Fotos de rutas de Caleyando con Cienfuegos (de su blog): 1 nuevas, 5 en total
-- 📝 Títulos de entradas de Caleyando con Cienfuegos: 496 de 497 (1 no han respondido)
+- 📷 Fotos de rutas de Caleyando con Cienfuegos (de su blog): 1 nuevas, 45 en total, 2 sin foto
+- 📝 Títulos de entradas de Caleyando con Cienfuegos: 470 de 471 (1 no han respondido)
 - 📊 Datos de las rutas de Caleyando con Cienfuegos: 658 de 701 puntos con datos de su entrada, 1 no han respondido
-- 📅 Fechas de rutas de Caleyando con Cienfuegos: 0 nuevas (5 de 5 con fecha).
-- 🤝 Colaborador «Caleyando con Cienfuegos»: 815 puntos, 5 tracks.
+- 📅 Fechas de rutas de Caleyando con Cienfuegos: 0 nuevas (47 de 47 con fecha).
+- 🤝 Colaborador «Caleyando con Cienfuegos»: 815 puntos, 47 tracks.
 - 📅 Salidas de la web de Civilu: 0 próximas · ya pasadas: 5
 -    FEMPA: 4 entradas en su canal; agenda con enlaces
 - 📅 Salidas de la web de FEMPA: 1 próximas (de prueba: solo las ven los administradores) · dejadas fuera: 2ª Prueba Copa Asturias de Escalada One Move; 3ª Prueba Copa Asturias de Escalada El Roko
-- 🧵 Track añadido a «Los Porros de Vizcalluenga desde Tornín» (21.0 km, +1580 m)
 - App regenerada: 384 rutas, 180 con track.
